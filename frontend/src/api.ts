@@ -66,7 +66,7 @@ async function get<T>(url: string): Promise<T> {
 }
 
 async function send(text: string): Promise<string> {
-  const r = await fetch(BASE + '/assistant/send', {
+  const r = await fetch(BASE + '/api/assistant/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
@@ -85,10 +85,10 @@ export interface ProjectSummary { id: number; name: string }
 export const api = {
   get,
   send,
-  dashboard: () => get<Dashboard>('/dashboard'),
-  report: (period: string) => get<ReportData>(`/reports?period=${period}`),
-  billingKpis: () => get<BillingKpis>('/billing/kpis'),
-  parties: () => get<Party[]>('/billing/parties'),
-  items: () => get<CatalogItem[]>('/billing/items'),
-  projects: () => get<ProjectSummary[]>('/projects'),
+  dashboard: () => get<Dashboard>('/api/dashboard'),
+  report: (period: string) => get<ReportData>(`/api/reports?period=${period}`),
+  billingKpis: () => get<BillingKpis>('/api/billing/kpis'),
+  parties: () => get<Party[]>('/api/billing/parties'),
+  items: () => get<CatalogItem[]>('/api/billing/items'),
+  projects: () => get<ProjectSummary[]>('/api/projects'),
 }
