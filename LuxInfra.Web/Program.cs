@@ -1,8 +1,18 @@
 using LuxInfra.Models;
 using LuxInfra.Services;
 using LuxInfra.Web.Components;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
+// Configure Data Protection key persistence to survive container restarts.
+// Default path: {ContentRoot}/data/keys, or override with DATA_PROTECTION_KEYS_PATH env var.
+var keysPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH")
+               ?? Path.Combine(builder.Environment.ContentRootPath, "data", "keys");
+Directory.CreateDirectory(keysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+    .SetApplicationName("LuxInfra");
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
