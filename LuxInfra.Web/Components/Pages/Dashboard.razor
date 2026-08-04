@@ -1,0 +1,82 @@
+@page "/dashboard"
+@rendermode InteractiveServer
+@using LuxInfra.Models
+@using LuxInfra.Services
+@inject DatabaseService Db
+
+<PageTitle>LuxInfra · Dashboard</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>📊 Dashboard</h1>
+        <div class="muted">Your interiors business at a glance</div>
+    </div>
+</div>
+
+@if (_isEmpty)
+{
+    <div class="empty">🛋️ No expenses yet — tell the assistant on the <a href="/">Assistant</a> page, e.g. "site A paint exp = 5k".</div>
+}
+else
+{
+    <div class="kpis">
+        <div class="kpi">
+            <div class="kpi-label">TODAY</div>
+            <div class="kpi-value">@_todayTotal</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">THIS MONTH</div>
+            <div class="kpi-value">@_monthTotal</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">GRAND TOTAL</div>
+            <div class="kpi-value accent">@_grandTotal</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">ACTIVE SITES</div>
+            <div class="kpi-value">@_siteCount</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🏗️ By Site</h2>
+        <table class="main-table">
+            <thead><tr><th>Site</th><th>Entries</th><th class="num">Total</th></tr></thead>
+            <tbody>
+                @foreach (var g in _groups)
+                {
+                    <tr>
+                        <td class="cat">@g.Site</td>
+                        <td class="muted">@g.Count</td>
+                        <td class="num">@g.TotalLabel</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot><tr><td colspan="2">GRAND TOTAL</td><td class="num total">@_grandTotal</td></tr></tfoot>
+        </table>
+    </div>
+}
+
+@code {
+    private string _todayTotal = "₹0";
+    private string _monthTotal = "₹0";
+    private string _grandTotal = "₹0";
+    private string _siteCount = "0";
+    private bool _isEmpty = true;
+    private List<(string Site, int Count, string TotalLabel)> _groups = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var all = await Db.GetAllAsync();
+        _todayTotal = ReportService.Money(all.Where(e => e.Date.Date == DateTime.Today).Sum(e => e.Amount));
+        _monthTotal = ReportService.Money(all.Where(e => e.Date.Year == DateTime.Today.Year && e.Date.Month == DateTime.Today.Month).Sum(e => e.Amount));
+        _grandTotal = ReportService.Money(all.Sum(e => e.Amount));
+        _siteCount = all.Select(e => e.Site).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString();
+        _isEmpty = all.Count == 0;
+        _groups = all
+            .GroupBy(e => e.Site)
+            .Select(g => (g.Key, g.Count(), ReportService.Money(g.Sum(e => e.Amount))))
+            .OrderByDescending(x => x.Item3)
+            .ToList();
+    }
+}
