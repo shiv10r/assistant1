@@ -8,8 +8,14 @@ const GROUPS: { title: string; items: Nav }[] = [
     { label: '💬 Assistant', to: '/', end: true },
     { label: '📊 Dashboard', to: '/dashboard' },
     { label: '📑 Reports', to: '/reports' },
+    { label: '⚙️ Settings', to: '/settings' },
   ] },
-  { title: '🧾 Billing', items: [{ label: '🧾 Billing', to: '/billing' }] },
+  { title: '🧾 Billing', items: [
+    { label: '🧾 Billing', to: '/billing' },
+    { label: '📦 Items', to: '/billing/items' },
+    { label: '💵 Cash & Bank', to: '/billing/cashbank' },
+    { label: '⚙️ Billing Settings', to: '/billing/settings' },
+  ] },
   { title: '🏗️ Projects', items: [{ label: '🏗️ Projects', to: '/projects' }] },
   { title: 'Account', items: [
     { label: '👑 Plans & Pricing', to: '/plans' },

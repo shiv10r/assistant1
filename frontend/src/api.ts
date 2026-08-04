@@ -4,91 +4,125 @@ const BASE =
   (import.meta.env.VITE_API_URL as string | undefined) ??
   (import.meta.env.PROD ? 'https://assistant1-1-3dhx.onrender.com' : '')
 
-export interface ChatMessage {
-  text: string
-  isUser: boolean
-  isReport?: boolean
-  reportTitle?: string
-  rows?: ReportRow[]
-  totalLabel?: string
-}
+// ---------------- types ----------------
+export interface ChatMessage { text: string; isUser: boolean; isReport?: boolean; reportTitle?: string; rows?: ReportRow[]; totalLabel?: string }
+export interface ReportRow { dateLabel: string; site: string; client: string; category: string; amountLabel: string; amount: number }
+export interface CategoryTotal { category: string; count: number; total: number; totalLabel: string }
+export interface ReportData { period: string; periodLabel: string; rows: ReportRow[]; categoryTotals: CategoryTotal[]; siteTotals: CategoryTotal[]; total: number; totalLabel: string; count: number }
+export interface SiteGroup { site: string; count: number; totalLabel: string; total: number }
+export interface Dashboard { todayTotal: number; todayLabel: string; monthTotal: number; monthLabel: string; grandTotal: number; grandTotalLabel: string; siteCount: number; isEmpty: boolean; groups: SiteGroup[] }
 
-export interface ReportRow {
-  dateLabel: string
-  site: string
-  client: string
-  category: string
-  amountLabel: string
-  amount: number
-}
+export interface BillingKpis { youllGet: number; youllGive: number; monthSale: number }
 
-export interface CategoryTotal {
-  category: string
-  count: number
-  total: number
-  totalLabel: string
-}
+export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; billingAddress: string; email: string; currentBalance: number }
+export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
+export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; status: string }
+export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }
+export interface CashEntry { id: number; kind: string; amount: number; date: string; description: string }
+export interface BankAccount { id: number; name: string; accNo: string; ifsc: string; upiId: string; openingBalance: number; asOf: string }
+export type Settings = Record<string, string>
 
-export interface ReportData {
-  period: string
-  periodLabel: string
-  rows: ReportRow[]
-  categoryTotals: CategoryTotal[]
-  siteTotals: CategoryTotal[]
-  total: number
-  totalLabel: string
-  count: number
-}
+export interface Project { id: number; name: string; address: string; value: number; status: string; createdAt: string }
+export interface SiteParty { id: number; projectId: number; name: string; phone: string; role: string; openingBalance: number; balanceType: string; currentBalance: number; isActive: boolean }
+export interface ProjectTask { id: number; projectId: number; name: string; status: string; members: string; location: string; durationDays: number; startDate: string; endDate: string; estQuantity: number; progressPercent: number; imagePath: string; link: string }
+export interface ProjectTxn { id: number; projectId: number; type: string; partyId: number; partyName: string; amount: number; description: string; referenceNumber: string; paymentMethod: string; costCode: string; date: string }
+export interface AttendanceRecord { id: number; projectId: number; partyId: number; partyName: string; date: string; status: string; hoursLogged: number }
+export interface MaterialTxn { id: number; projectId: number; kind: string; materialName: string; quantity: number; unit: string; vendorName: string; vendorLocation: string; paymentMode: string; amount: number; date: string }
+export interface SiteLog { id: number; projectId: number; date: string; progressPercent: number; note: string }
+export interface MeetingMinute { id: number; projectId: number; title: string; date: string; attendees: string; notes: string }
+export interface DesignFile { id: number; projectId: number; category: string; name: string; imagePath: string; note: string; date: string }
+export interface ProjectFolder { id: number; projectId: number; name: string; createdAt: string }
+export interface ProjectFile { id: number; projectId: number; folderId: number; fileName: string; filePath: string; uploadedAt: string }
 
-export interface SiteGroup {
-  site: string
-  count: number
-  totalLabel: string
-  total: number
-}
+export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
+export interface CashData { balance: number; entries: CashEntry[] }
 
-export interface Dashboard {
-  todayTotal: number
-  todayLabel: string
-  monthTotal: number
-  monthLabel: string
-  grandTotal: number
-  grandTotalLabel: string
-  siteCount: number
-  isEmpty: boolean
-  groups: SiteGroup[]
-}
-
+// ---------------- core ----------------
 async function get<T>(url: string): Promise<T> {
   const r = await fetch(BASE + url)
   if (!r.ok) throw new Error(`API error ${r.status}`)
   return r.json()
 }
 
-async function send(text: string): Promise<string> {
-  const r = await fetch(BASE + '/api/assistant/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-  })
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
+  return r.json()
+}
+
+async function postVoid(url: string, body: unknown): Promise<void> {
+  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   if (!r.ok) throw new Error(`API error ${r.status}`)
-  // server returns an array of messages; we rejoin for the chat bubble
-  const msgs = (await r.json()) as ChatMessage[]
+}
+
+async function put<T>(url: string, body: unknown): Promise<T> {
+  const r = await fetch(BASE + url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  if (!r.ok) throw new Error(`API error ${r.status}`)
+  return r.json()
+}
+
+async function del(url: string): Promise<void> {
+  const r = await fetch(BASE + url, { method: 'DELETE' })
+  if (!r.ok) throw new Error(`API error ${r.status}`)
+}
+
+function today(): string { return new Date().toISOString().slice(0, 10) }
+export { today }
+
+// ---------------- Assistant ----------------
+async function send(text: string): Promise<string> {
+  const msgs = (await post<ChatMessage[]>('/api/assistant/send', { text }))
   return msgs.map((m) => m.text).filter(Boolean).join('\n')
 }
+const dashboard = () => get<Dashboard>('/api/dashboard')
+const report = (period: string) => get<ReportData>(`/api/reports?period=${period}`)
 
-export interface BillingKpis { youllGet: number; youllGive: number; monthSale: number }
-export interface Party { id: number; name: string }
-export interface CatalogItem { id: number; name: string }
-export interface ProjectSummary { id: number; name: string }
-
-export const api = {
-  get,
-  send,
-  dashboard: () => get<Dashboard>('/api/dashboard'),
-  report: (period: string) => get<ReportData>(`/api/reports?period=${period}`),
-  billingKpis: () => get<BillingKpis>('/api/billing/kpis'),
+// ---------------- Billing ----------------
+const billing = {
+  kpis: () => get<BillingKpis>('/api/billing/kpis'),
   parties: () => get<Party[]>('/api/billing/parties'),
+  saveParty: (p: Party) => post<Party>('/api/billing/parties', p),
   items: () => get<CatalogItem[]>('/api/billing/items'),
-  projects: () => get<ProjectSummary[]>('/api/projects'),
+  saveItem: (i: CatalogItem) => post<CatalogItem>('/api/billing/items', i),
+  txns: () => get<BizTxn[]>('/api/billing/txns'),
+  txnLines: (id: number) => get<BizTxnItem[]>(`/api/billing/txns/${id}/lines`),
+  saveTxn: (txn: BizTxn, lines: BizTxnItem[]) => post<BizTxn>('/api/billing/txns', { txn, lines }),
+  cash: () => get<CashData>('/api/billing/cash'),
+  adjustCash: (e: CashEntry) => post<CashEntry>('/api/billing/cash', e),
+  banks: () => get<BankAccount[]>('/api/billing/banks'),
+  saveBank: (b: BankAccount) => post<BankAccount>('/api/billing/banks', b),
+  cheques: () => get<BizTxn[]>('/api/billing/cheques'),
+  clearCheque: (id: number) => postVoid(`/api/billing/cheques/${id}/cleared`, {}),
+  settings: () => get<Settings>('/api/billing/settings'),
+  setSetting: (key: string, value: string) => postVoid('/api/billing/settings', { key, value }),
 }
+
+// Projects
+const projects = {
+  list: () => get<Project[]>('/api/projects'),
+  detail: (id: number) => get<ProjectDetail>(`/api/projects/${id}`),
+  save: (p: Project) => post<Project>('/api/projects', p),
+  update: (p: Project) => put<Project>(`/api/projects/${p.id}`, p),
+  remove: (id: number) => del(`/api/projects/${id}`),
+  saveParty: (projectId: number, p: SiteParty) => post<SiteParty>(`/api/projects/${projectId}/parties`, p),
+  saveTask: (projectId: number, t: ProjectTask) => post<ProjectTask>(`/api/projects/${projectId}/tasks`, t),
+  saveTxn: (projectId: number, t: ProjectTxn) => post<ProjectTxn>(`/api/projects/${projectId}/txns`, t),
+  attendance: (projectId: number, date: string) => get<AttendanceRecord[]>(`/api/projects/${projectId}/attendance?date=${date}`),
+  setAttendanceStatus: (projectId: number, d: { partyId: number; date: string; status: string }) => postVoid(`/api/projects/${projectId}/attendance/status`, d),
+  setAttendanceHours: (projectId: number, d: { partyId: number; date: string; hours: number }) => postVoid(`/api/projects/${projectId}/attendance/hours`, d),
+  materials: (projectId: number, kind?: string) => get<MaterialTxn[]>(`/api/projects/${projectId}/materials${kind ? `?kind=${encodeURIComponent(kind)}` : ''}`),
+  saveMaterial: (projectId: number, m: MaterialTxn) => post<MaterialTxn>(`/api/projects/${projectId}/materials`, m),
+  inventory: (projectId: number) => get<{ material: string; qty: number; unit: string }[]>(`/api/projects/${projectId}/inventory`),
+  logs: (projectId: number) => get<SiteLog[]>(`/api/projects/${projectId}/logs`),
+  saveLog: (projectId: number, l: SiteLog) => post<SiteLog>(`/api/projects/${projectId}/logs`, l),
+  mom: (projectId: number) => get<MeetingMinute[]>(`/api/projects/${projectId}/mom`),
+  saveMom: (projectId: number, m: MeetingMinute) => post<MeetingMinute>(`/api/projects/${projectId}/mom`, m),
+  design: (projectId: number) => get<DesignFile[]>(`/api/projects/${projectId}/design`),
+  saveDesign: (projectId: number, d: DesignFile) => post<DesignFile>(`/api/projects/${projectId}/design`, d),
+  folders: (projectId: number) => get<ProjectFolder[]>(`/api/projects/${projectId}/folders`),
+  addFolder: (projectId: number, name: string) => post<ProjectFolder>(`/api/projects/${projectId}/folders`, { name }),
+  files: (folderId: number) => get<ProjectFile[]>(`/api/projects/files/${folderId}`),
+  addFile: (projectId: number, f: ProjectFile) => post<ProjectFile>(`/api/projects/${projectId}/files`, f),
+}
+
+export const api = { get, send, dashboard, report, billing, projects }
