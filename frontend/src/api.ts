@@ -1,4 +1,8 @@
-const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
+// Dev: BASE = '' -> Vite proxies /api to the local backend.
+// Prod: default to the deployed Render API so no VITE_API_URL env var is required in Netlify.
+const BASE =
+  (import.meta.env.VITE_API_URL as string | undefined) ??
+  (import.meta.env.PROD ? 'https://assistant1-1-3dhx.onrender.com' : '')
 
 export interface ChatMessage {
   text: string
