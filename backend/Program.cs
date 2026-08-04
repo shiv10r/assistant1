@@ -12,11 +12,11 @@ builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BillingService>();
 builder.Services.AddSingleton<ProjectService>();
 
-// ---- CORS for the React frontend ----
+// ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>
 {
     o.AddPolicy("web", p => p
-        .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:5210")
+        .AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod());
 });

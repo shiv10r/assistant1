@@ -41,7 +41,7 @@ public class AssistantController : ControllerBase
                 var siteTotal = (await _db.GetBySiteAsync(e.Site)).Sum(x => x.Amount);
                 var dayTotal = (await _db.GetByDateAsync(DateTime.Today)).Sum(x => x.Amount);
                 var clientPart = string.IsNullOrEmpty(e.Client) ? "" : $" (Client: {e.Client})";
-                return User($"✅ Logged {ReportService.Money(e.Amount)} — {e.Category} @ {e.Site}{clientPart}. " +
+                return UserText($"✅ Logged {ReportService.Money(e.Amount)} — {e.Category} @ {e.Site}{clientPart}. " +
                             $"{e.Site} till date: {ReportService.Money(siteTotal)} · All sites today: {ReportService.Money(dayTotal)}");
             }
 
@@ -112,5 +112,5 @@ public class AssistantController : ControllerBase
     }
 
     private static ChatMessageDto Bot(string text) => new(text, false, DateTime.Now.ToString("HH:mm"));
-    private static ChatMessageDto User(string text) => new(text, true, DateTime.Now.ToString("HH:mm"));
+    private static ChatMessageDto UserText(string text) => new(text, true, DateTime.Now.ToString("HH:mm"));
 }
