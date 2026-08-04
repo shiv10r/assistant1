@@ -483,4 +483,10 @@ $RECYCLE.BIN/
 
 # LuxInfra local data
 LuxInfra.Web/data/
+backend/data/
 *.db3
+
+# Frontend build output
+frontend/dist/
+**/dist/
+node_modules/
