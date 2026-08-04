@@ -1,0 +1,291 @@
+@page "/"
+@rendermode InteractiveServer
+@using LuxInfra.Models
+@using LuxInfra.Services
+@inject DatabaseService Db
+@inject ReportService Reports
+@inject IJSRuntime JS
+
+<PageTitle>LuxInfra · Expense Assistant</PageTitle>
+
+<div class="shell">
+    <!-- ============ CHAT PANEL ============ -->
+    <section class="chat-panel">
+        <header class="chat-header">
+            <div class="logo-mark">
+                <svg viewBox="0 0 456 456" width="40" height="40">
+                    <defs>
+                        <linearGradient id="lux" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#7C4DFF"/><stop offset="0.6" stop-color="#00B8D9"/><stop offset="1" stop-color="#00E5C3"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="456" height="456" rx="100" fill="url(#lux)"/>
+                    <path d="M120 210 L228 120 L336 210" fill="none" stroke="#FFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M178 206 V330 H300" fill="none" stroke="#FFF" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="318" cy="228" r="17" fill="#0F0F1A"/>
+                </svg>
+            </div>
+            <div>
+                <div class="brand">Lux<span>Infra</span></div>
+                <div class="tagline">your expense bestie 🤝</div>
+            </div>
+            <div class="online">● online</div>
+        </header>
+
+        <div class="messages" id="messages">
+            @foreach (var m in _messages)
+            {
+                @if (m.IsReport)
+                {
+                    <div class="msg bot report-card">
+                        <div class="report-title">@m.ReportTitle</div>
+                        <table>
+                            <thead><tr><th>Site</th><th>Category</th><th class="num">Amount</th></tr></thead>
+                            <tbody>
+                                @foreach (var r in m.Rows)
+                                {
+                                    <tr><td>@r.Site</td><td class="cat">@r.Category</td><td class="num">@r.AmountLabel</td></tr>
+                                }
+                            </tbody>
+                            <tfoot><tr><td colspan="2">TOTAL</td><td class="num total">@m.TotalLabel</td></tr></tfoot>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="msg @(m.IsUser ? "user" : "bot")">
+                        <div class="text">@m.Text</div>
+                        <div class="time">@m.TimeLabel</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="chips">
+            <button @onclick='() => HandleAsync("show report")'>📒 Show report</button>
+            <button @onclick='() => HandleAsync("total")'>🧮 Totals</button>
+            <button @onclick='() => HandleAsync("help")'>💡 Help</button>
+        </div>
+
+        <div class="input-row">
+            <input @bind="_input" @bind:event="oninput" @onkeydown="OnKey"
+                   placeholder="site A paint exp = 5k ..." />
+            <button class="send" @onclick="SendAsync">➤</button>
+        </div>
+    </section>
+
+    <!-- ============ REPORT PANEL ============ -->
+    <section class="report-panel">
+        <div class="panel-head">
+            <div>
+                <h2>📑 Report</h2>
+                <div class="muted">@_report?.PeriodLabel</div>
+            </div>
+            <div class="total-badge">
+                <div class="amount">@(_report?.TotalLabel ?? "₹0")</div>
+                <div class="entries">@(_report?.Count ?? 0) entries</div>
+            </div>
+        </div>
+
+        <div class="periods">
+            @foreach (var p in new[] { ReportPeriod.Today, ReportPeriod.Week, ReportPeriod.Month, ReportPeriod.All })
+            {
+                <button class="@(_period == p ? "active" : "")" @onclick="() => SetPeriod(p)">@PeriodName(p)</button>
+            }
+        </div>
+
+        <div class="downloads">
+            <a class="dl excel" href="/export/xlsx?period=@_period" target="_blank">📊 Excel</a>
+            <a class="dl pdf" href="/export/pdf?period=@_period" target="_blank">📄 PDF</a>
+            <a class="dl png" href="/export/png?period=@_period" target="_blank">🖼️ PNG</a>
+        </div>
+
+        @if (_report is null || _report.Count == 0)
+        {
+            <div class="empty">🛋️ No expenses for this period — tell the assistant!</div>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="main-table">
+                    <thead><tr><th>Date</th><th>Site</th><th>Client</th><th>Category</th><th class="num">Amount</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in _report.Rows)
+                        {
+                            <tr>
+                                <td class="muted">@r.DateLabel</td>
+                                <td>@r.Site</td>
+                                <td class="muted">@r.Client</td>
+                                <td class="cat">@r.Category</td>
+                                <td class="num">@r.AmountLabel</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot><tr><td colspan="4">TOTAL</td><td class="num total">@_report.TotalLabel</td></tr></tfoot>
+                </table>
+
+                <h3>By category</h3>
+                <table class="main-table">
+                    <thead><tr><th>Category</th><th>Entries</th><th class="num">Total</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in _report.CategoryTotals)
+                        {
+                            <tr><td class="cat">@c.Category</td><td class="muted">@c.Count</td><td class="num">@c.TotalLabel</td></tr>
+                        }
+                    </tbody>
+                </table>
+
+                <h3>By site</h3>
+                <table class="main-table">
+                    <thead><tr><th>Site</th><th>Entries</th><th class="num">Total</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in _report.SiteTotals)
+                        {
+                            <tr><td>@s.Category</td><td class="muted">@s.Count</td><td class="num">@s.TotalLabel</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private readonly List<ChatMessage> _messages = new();
+    private string _input = "";
+    private ReportPeriod _period = ReportPeriod.Today;
+    private ReportData? _report;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _messages.Add(Bot(
+            "👋 Hey! I'm your LuxInfra assistant. Tell me expenses like \"site A paint exp = 5k\" " +
+            "or \"client Sharma site C labour 25k\". Say \"show report\" any time."));
+        await RefreshReport();
+    }
+
+    private static string PeriodName(ReportPeriod p) => p switch
+    {
+        ReportPeriod.Today => "Today",
+        ReportPeriod.Week => "7 days",
+        ReportPeriod.Month => "Month",
+        _ => "All time"
+    };
+
+    private async Task SetPeriod(ReportPeriod p)
+    {
+        _period = p;
+        await RefreshReport();
+    }
+
+    private async Task RefreshReport() => _report = await Reports.BuildReportAsync(_period);
+
+    private async Task OnKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SendAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        var text = _input?.Trim();
+        if (string.IsNullOrEmpty(text)) return;
+        _input = "";
+        _messages.Add(new ChatMessage { Text = text, IsUser = true });
+
+        foreach (var part in text.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            await HandleAsync(part);
+    }
+
+    private async Task HandleAsync(string text)
+    {
+        var result = ExpenseParser.Parse(text);
+
+        switch (result.Kind)
+        {
+            case ParseKind.Expense when result.Entry is not null:
+            {
+                var e = result.Entry;
+                await Db.AddAsync(e);
+                var siteTotal = (await Db.GetBySiteAsync(e.Site)).Sum(x => x.Amount);
+                var dayTotal = (await Db.GetByDateAsync(DateTime.Today)).Sum(x => x.Amount);
+                var clientPart = string.IsNullOrEmpty(e.Client) ? "" : $" (Client: {e.Client})";
+                _messages.Add(Bot(
+                    $"✅ Logged {ReportService.Money(e.Amount)} — {e.Category} @ {e.Site}{clientPart}. " +
+                    $"{e.Site} till date: {ReportService.Money(siteTotal)} · All sites today: {ReportService.Money(dayTotal)}"));
+                await RefreshReport();
+                break;
+            }
+
+            case ParseKind.Summary:
+            {
+                var data = await Reports.BuildReportAsync(ReportPeriod.Today);
+                if (data.Count == 0) { _messages.Add(Bot("📭 No expenses logged today yet.")); break; }
+                _messages.Add(new ChatMessage
+                {
+                    IsReport = true,
+                    ReportTitle = $"📒 Report · {DateTime.Today:dd MMM yyyy}",
+                    Rows = data.Rows,
+                    TotalLabel = data.TotalLabel
+                });
+                break;
+            }
+
+            case ParseKind.Total:
+            {
+                var all = await Db.GetAllAsync();
+                if (all.Count == 0) { _messages.Add(Bot("No expenses recorded yet. Start logging! ✍️")); break; }
+                var lines = all.GroupBy(x => x.Site).OrderBy(g => g.Key)
+                    .Select(g => $"{g.Key}: {ReportService.Money(g.Sum(x => x.Amount))}");
+                _messages.Add(Bot("🏗️ Totals till date — " + string.Join(" · ", lines) +
+                                  $" — Grand total: {ReportService.Money(all.Sum(x => x.Amount))}"));
+                break;
+            }
+
+            case ParseKind.SiteTotal when result.SiteQuery is not null:
+            {
+                var candidates = new[] { result.SiteQuery, "Site " + result.SiteQuery };
+                List<ExpenseEntry> entries = new();
+                var label = result.SiteQuery;
+                foreach (var c in candidates)
+                {
+                    entries = await Db.GetBySiteAsync(c);
+                    if (entries.Count > 0) { label = c; break; }
+                }
+                _messages.Add(Bot(entries.Count == 0
+                    ? $"🤔 No expenses found for \"{result.SiteQuery}\" yet."
+                    : $"📍 {label}: {ReportService.Money(entries.Sum(x => x.Amount))} till date across {entries.Count} entries."));
+                break;
+            }
+
+            case ParseKind.SendReport:
+                _messages.Add(Bot("📧 On the web app, use the Excel / PDF / PNG buttons on the right to download the report. Email auto-send lives in the Windows/mobile app."));
+                break;
+
+            case ParseKind.Undo:
+            {
+                var removed = await Db.DeleteLastAsync();
+                _messages.Add(Bot(removed is null
+                    ? "Nothing to undo."
+                    : $"🗑️ Removed: {removed.Category} {ReportService.Money(removed.Amount)} @ {removed.Site}"));
+                await RefreshReport();
+                break;
+            }
+
+            case ParseKind.Help:
+                _messages.Add(Bot(
+                    "✍️ Log: \"site A paint exp = 5k\" · \"site B tiles 100000\" · \"client Verma site D labour 25k\" " +
+                    "(5k = 5,000 · 1l = 1,00,000 · 1cr = 1,00,00,000). " +
+                    "📒 \"show report\" · 🧮 \"total\" / \"total site a\" · ↩️ \"undo\". Downloads are on the right 👉"));
+                break;
+
+            default:
+                _messages.Add(Bot("🤔 I didn't catch an amount there. Try:  site A paint exp = 5k"));
+                break;
+        }
+
+        StateHasChanged();
+        try { await JS.InvokeVoidAsync("scrollChat"); } catch { }
+    }
+
+    private static ChatMessage Bot(string text) => new() { Text = text, IsUser = false };
+}

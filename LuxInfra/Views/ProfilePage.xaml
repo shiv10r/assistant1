@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             xmlns:views="clr-namespace:LuxInfra.Views"
+             x:Class="LuxInfra.Views.ProfilePage"
+             x:Name="Page"
+             x:DataType="vm:ProfileViewModel"
+             Title="My Account"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ContentPage.Resources>
+        <views:InvertBoolConverter x:Key="InvertBool" />
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="StrokeShape">
+                <Setter.Value><RoundRectangle CornerRadius="16" /></Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="{DynamicResource LuxPrimarySoft}" />
+        </Style>
+        <Style x:Key="Chip" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface2}" />
+            <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="HeightRequest" Value="36" />
+            <Setter Property="Padding" Value="14,4" />
+        </Style>
+        <Style x:Key="RowLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14" MaximumWidthRequest="720">
+
+            <!-- ===== profile header ===== -->
+            <Border StrokeThickness="0" Padding="20" Background="{DynamicResource LuxGradient}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="20" /></Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                    <Grid>
+                        <Border WidthRequest="64" HeightRequest="64" BackgroundColor="#33FFFFFF" StrokeThickness="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="32" /></Border.StrokeShape>
+                            <Label Text="{Binding Profile.Initials}" FontSize="24" FontAttributes="Bold" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="👑" FontSize="22" HorizontalOptions="End" VerticalOptions="Start"
+                               Margin="0,-12,-6,0" IsVisible="{Binding Profile.IsGold}" />
+                    </Grid>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding Profile.Name}" FontSize="20" FontAttributes="Bold" TextColor="White" />
+                        <Label Text="{Binding Profile.Email}" FontSize="13" TextColor="{DynamicResource LuxOverlayText}" />
+                        <Border BackgroundColor="#33000000" StrokeThickness="0" Padding="10,3"
+                                HorizontalOptions="Start" IsVisible="{Binding Profile.IsGold}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                            <Label Text="⭐ GOLD MEMBER" FontSize="11" FontAttributes="Bold" TextColor="#FFD43B" />
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- ===== personal info ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="👤 Personal info" Style="{StaticResource SectionTitle}" />
+                    <Entry Text="{Binding Profile.Name}" Placeholder="Full name" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Profile.Phone}" Placeholder="Phone" Keyboard="Telephone" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Profile.Address}" Placeholder="Address / office location" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Food preference (site pantry orders)" Style="{StaticResource RowLabel}" FontSize="13" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                            <Button Text="🥗 Veg" Style="{StaticResource Chip}" Clicked="OnVegClicked" />
+                            <Button Text="🍗 Non-veg" Style="{StaticResource Chip}" Clicked="OnNonVegClicked" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Label Text="{Binding Profile.FoodPref, StringFormat='Current: {0} · your info never leaves this device 🔒'}"
+                           FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== appearance ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🎨 App appearance" Style="{StaticResource SectionTitle}" />
+                    <Label Text="Includes color-blind friendly modes (protan · deutan · tritan)" FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                    <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                        <Button Text="🌙 Dark" Style="{StaticResource Chip}" Margin="0,0,8,8" Command="{Binding SetThemeCommand}" CommandParameter="Dark">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding ThemeName}" Value="Dark"><Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Text="☀️ Light" Style="{StaticResource Chip}" Margin="0,0,8,8" Command="{Binding SetThemeCommand}" CommandParameter="Light">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding ThemeName}" Value="Light"><Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Text="🔵 Protan" Style="{StaticResource Chip}" Margin="0,0,8,8" Command="{Binding SetThemeCommand}" CommandParameter="Protan">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding ThemeName}" Value="Protan"><Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Text="🟡 Deutan" Style="{StaticResource Chip}" Margin="0,0,8,8" Command="{Binding SetThemeCommand}" CommandParameter="Deutan">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding ThemeName}" Value="Deutan"><Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Text="🔴 Tritan" Style="{StaticResource Chip}" Margin="0,0,8,8" Command="{Binding SetThemeCommand}" CommandParameter="Tritan">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding ThemeName}" Value="Tritan"><Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                    </FlexLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== membership ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="👑 Gold membership" Style="{StaticResource SectionTitle}" />
+                        <Switch Grid.Column="1" IsToggled="{Binding Profile.IsGold}" OnColor="{DynamicResource LuxAccent}" />
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding Profile.IsGold}">
+                        <!-- membership card -->
+                        <Border StrokeThickness="0" Padding="18" Background="{DynamicResource LuxGradient}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="LuxInfra GOLD" FontSize="15" FontAttributes="Bold" TextColor="#FFD43B" />
+                                    <Label Grid.Column="1" Text="👑" FontSize="22" />
+                                </Grid>
+                                <Label Grid.Row="1" Text="{Binding Profile.Name}" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                                <Label Grid.Row="2" Text="{Binding Profile.MemberSince, StringFormat='Member since {0} · all features unlocked'}"
+                                       FontSize="11" TextColor="{DynamicResource LuxOverlayText}" />
+                            </Grid>
+                        </Border>
+
+                        <!-- coupons -->
+                        <Label Text="🎟️ Your coupons" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                        <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Coupons}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:Coupon">
+                                    <Border BackgroundColor="{DynamicResource LuxSurface2}" StrokeThickness="0" Padding="12,8">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                            <Label Text="{Binding Code}" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource LuxAccent}" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding Description}" FontSize="12" TextColor="{DynamicResource LuxTextDim}" VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <Label Text="🔓 Hidden features unlocked: watermark-free exports · priority support · early access"
+                               FontSize="11" TextColor="{DynamicResource LuxAccent}" />
+                    </VerticalStackLayout>
+
+                    <Label Text="Go Gold to unlock the crown, member card, coupons and hidden features ✨"
+                           FontSize="12" TextColor="{DynamicResource LuxTextDim}" IsVisible="{Binding Profile.IsGold, Converter={StaticResource InvertBool}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== payment methods ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="💳 Payment methods" Style="{StaticResource SectionTitle}" />
+                        <Button Grid.Column="1" Text="＋ Add" Style="{StaticResource Chip}" Command="{Binding AddPaymentCommand}" />
+                    </Grid>
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Profile.PaymentMethods}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding .}" Style="{StaticResource RowLabel}" />
+                                    <Button Grid.Column="1" Text="✕" FontSize="12" BackgroundColor="Transparent" TextColor="{DynamicResource LuxPink}"
+                                            Command="{Binding BindingContext.RemovePaymentCommand, Source={x:Reference Page}, x:DataType={x:Type ContentPage}}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                        <BindableLayout.EmptyView>
+                            <Label Text="No payment methods yet — stored only on this device." FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                        </BindableLayout.EmptyView>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== your impact ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="💚 Your impact" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding Profile.DonationLabel, StringFormat='Donated so far: {0}'}" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Donate ₹100" Style="{StaticResource Chip}" Command="{Binding DonateCommand}" CommandParameter="100" />
+                        <Button Text="Donate ₹500" Style="{StaticResource Chip}" Command="{Binding DonateCommand}" CommandParameter="500" />
+                        <Button Text="🧾 Receipt" Style="{StaticResource Chip}" Command="{Binding DownloadReceiptCommand}" />
+                    </HorizontalStackLayout>
+                    <Label Text="Supports skill training for site workers. Receipts download as PDF." FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== feedback & safety ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="📣 Feedback &amp; safety" Style="{StaticResource SectionTitle}" />
+                    <Button Text="💬 Send feedback" Style="{StaticResource Chip}" HorizontalOptions="Fill" Command="{Binding SendFeedbackCommand}" />
+                    <Button Text="🚨 Report a safety emergency" Style="{StaticResource Chip}" HorizontalOptions="Fill"
+                            BackgroundColor="{DynamicResource LuxDangerSurface}" TextColor="White" Command="{Binding ReportEmergencyCommand}" />
+                    <Button Text="⭐ Rate the app" Style="{StaticResource Chip}" HorizontalOptions="Fill" Command="{Binding RateAppCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== about ===== -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="ℹ️ Help &amp; about" Style="{StaticResource SectionTitle}" />
+                    <Button Text="🛟 Help &amp; support" Style="{StaticResource Chip}" HorizontalOptions="Fill" Command="{Binding HelpSupportCommand}" />
+                    <Label Text="{Binding AppVersion}" FontSize="12" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" />
+                    <Button Text="🚪 Logout" HorizontalOptions="Fill" BackgroundColor="{DynamicResource LuxPink}" TextColor="White"
+                            CornerRadius="14" HeightRequest="44" Command="{Binding LogoutCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

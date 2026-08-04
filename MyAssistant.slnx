@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LuxInfra.Core/LuxInfra.Core.csproj" />
+  <Project Path="LuxInfra.Web/LuxInfra.Web.csproj" />
+  <Project Path="LuxInfra/LuxInfra.csproj" />
+</Solution>

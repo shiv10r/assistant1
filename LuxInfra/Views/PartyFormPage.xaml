@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.PartyFormPage"
+             x:DataType="vm:PartyFormViewModel"
+             Title="Add New Party"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12" MaximumWidthRequest="680">
+
+            <Label Text="Parties are people you do business with. Use them for invoices and to keep track of your payables &amp; receivables."
+                   FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Entry Text="{Binding Name}" Placeholder="Party Name *" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Phone}" Placeholder="Contact Number" Keyboard="Telephone" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Entry Text="{Binding OpeningBalance}" Placeholder="Opening Bal. ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <DatePicker Grid.Column="1" Date="{Binding AsOfDate}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="16">
+                        <RadioButton Content="To Receive" IsChecked="{Binding ToReceive}" TextColor="{DynamicResource LuxText}" />
+                        <RadioButton Content="To Pay" IsChecked="{Binding ToReceive, Converter={StaticResource InvertBool}}" TextColor="{DynamicResource LuxText}" />
+                    </HorizontalStackLayout>
+                    <Entry Text="{Binding CreditLimit}" Placeholder="Set Credit Limit 👑 (Gold)" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="GST Details" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                    <Picker Title="GST Type" ItemsSource="{Binding GstTypeOptions}" SelectedItem="{Binding GstType}"
+                            TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                    <Entry Text="{Binding Gstin}" Placeholder="GSTIN (required for registered)" IsVisible="{Binding GstinRequired}"
+                           PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding State}" Placeholder="State" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Addresses" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                    <Editor Text="{Binding BillingAddress}" Placeholder="Billing Address" HeightRequest="70"
+                            PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Email}" Placeholder="Email Address" Keyboard="Email" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Text="Save &amp; New" Command="{Binding SaveAndNewCommand}"
+                        BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}"
+                        CornerRadius="14" HeightRequest="46" />
+                <Button Grid.Column="1" Text="Save Party" Command="{Binding SaveCommand}"
+                        BackgroundColor="{DynamicResource LuxFab}" TextColor="White" FontAttributes="Bold"
+                        CornerRadius="14" HeightRequest="46" />
+            </Grid>
+
+            <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

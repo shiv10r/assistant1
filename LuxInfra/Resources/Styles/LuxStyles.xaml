@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Standard surface card: KPI tiles, section panels. -->
+    <Style x:Key="LuxCard" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="16" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Compact row card: list items (transactions, cash entries, cheques, parties). -->
+    <Style x:Key="LuxCardCompact" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="12" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Small rounded colored label badge: type tags, status pills. -->
+    <Style x:Key="LuxPillBadge" TargetType="Border">
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Padding" Value="8,1" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="8" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Base look for two-way toggle/segmented buttons; each usage adds its
+         own DataTrigger for the active-state color. -->
+    <Style x:Key="LuxSegmentButton" TargetType="Button">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="HeightRequest" Value="34" />
+        <Setter Property="Padding" Value="14,4" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface2}" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+    </Style>
+
+    <!-- Floating action button used at the bottom of list pages. -->
+    <Style x:Key="LuxFabButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxFab}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="HeightRequest" Value="46" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+    </Style>
+
+    <!-- Small rounded tab/filter button (design categories, material tabs). -->
+    <Style x:Key="LuxTabButton" TargetType="Button">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="HeightRequest" Value="30" />
+        <Setter Property="Padding" Value="12,2" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface2}" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+    </Style>
+
+    <!-- Project workspace stat tile: small metric card used across project sub-pages. -->
+    <Style x:Key="LuxStatCard" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="14" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="LuxStatLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxTextDim}" />
+    </Style>
+
+    <Style x:Key="LuxStatValue" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+    </Style>
+
+    <!-- Small circular "back" icon button used on routed sub-pages as a
+         fallback way to navigate up, independent of Shell's own chrome. -->
+    <Style x:Key="LuxBackButton" TargetType="Button">
+        <Setter Property="Text" Value="◀" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="WidthRequest" Value="36" />
+        <Setter Property="HeightRequest" Value="36" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface2}" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+    </Style>
+
+    <!-- Small circular "hamburger" icon button used on the same routed
+         sub-pages, as a fallback way to open the flyout, independent of
+         Shell's own chrome (see LuxBackButton). -->
+    <Style x:Key="LuxMenuButton" TargetType="Button">
+        <Setter Property="Text" Value="☰" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="WidthRequest" Value="36" />
+        <Setter Property="HeightRequest" Value="36" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface2}" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+    </Style>
+
+    <!-- Header row pairing the back button with a page title, for pages
+         that don't otherwise show their own in-page title bar. -->
+    <Style x:Key="LuxPageHeaderTitle" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ProjectWorkspacePage"
+             x:TypeArguments="vm:ProjectWorkspaceViewModel"
+             x:DataType="vm:ProjectWorkspaceViewModel"
+             Title="{Binding Project.Name}"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ContentPage.Resources>
+        <Style x:Key="DashCard" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{DynamicResource LuxSurface}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="HeightRequest" Value="120" />
+            <Setter Property="Shadow">
+                <Setter.Value>
+                    <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,4" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="StrokeShape"><Setter.Value><RoundRectangle CornerRadius="18" /></Setter.Value></Setter>
+        </Style>
+        <Style x:Key="DashIcon" TargetType="Label">
+            <Setter Property="FontSize" Value="32" />
+        </Style>
+        <Style x:Key="DashLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="10" BackgroundColor="{DynamicResource LuxSurface}" Padding="12,12,10,12">
+            <Button Style="{StaticResource LuxMenuButton}" Clicked="OnFlyoutMenuClicked" />
+            <Button Grid.Column="1" Style="{StaticResource LuxBackButton}" Clicked="OnBackClicked" />
+            <Label Grid.Column="2" Text="{Binding Project.Name}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource LuxText}"
+                   VerticalOptions="Center" LineBreakMode="TailTruncation" />
+            <Button Grid.Column="3" Text="ℹ️" FontSize="16" BackgroundColor="Transparent" Clicked="OnInfoClicked" />
+            <Button Grid.Column="4" Text="⋮" FontSize="18" BackgroundColor="Transparent" TextColor="{DynamicResource LuxText}" Clicked="OnMenuClicked" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16" Spacing="14">
+
+                <!-- 9 module cards: the primary content of this screen -->
+                <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenPartyCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="🤝" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Party" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenTransactionCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="💳" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Transaction" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenSiteCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="🏗️" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Site" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenTasksCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="✅" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Task" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenAttendanceCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="🗓️" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Attendance" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenMaterialCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="📦" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Material" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenMomCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="📝" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="MOM" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenDesignCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="🎨" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Design" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource DashCard}">
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenFilesCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="📁" Style="{StaticResource DashIcon}" HorizontalOptions="Center" />
+                            <Label Text="Files" Style="{StaticResource DashLabel}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                </Grid>
+
+                <!-- project info: secondary, compact strip below the primary cards -->
+                <Border BackgroundColor="{DynamicResource LuxSurface2}" StrokeThickness="0" Padding="12,10" Opacity="0.85">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                        <Label FontSize="11" TextColor="{DynamicResource LuxTextDim}" VerticalOptions="Center" LineBreakMode="TailTruncation">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding Project.Status}" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" />
+                                    <Span Text="  ·  " />
+                                    <Span Text="{Binding Project.Address}" />
+                                    <Span Text="  ·  " />
+                                    <Span Text="{Binding Project.ValueLabel}" FontAttributes="Bold" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Button Grid.Column="1" Text="＋ Add DPR" FontSize="10" CornerRadius="10" HeightRequest="28" Padding="10,0"
+                                BackgroundColor="Transparent" TextColor="{DynamicResource LuxAccent}"
+                                VerticalOptions="Center" Command="{Binding ToggleAddDprCommand}" />
+                    </Grid>
+                </Border>
+
+                <!-- inline DPR quick-add -->
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16" IsVisible="{Binding IsAddingDpr}">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Daily Progress Report" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                        <Entry Text="{Binding DprProgress}" Placeholder="Progress %" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Editor Text="{Binding DprNote}" Placeholder="What happened on site today?" HeightRequest="60" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Button Text="Save DPR" Command="{Binding SaveDprCommand}"
+                                Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="42" />
+                        <Label Text="{Binding DprStatus}" FontSize="12" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</local:LuxContentPage>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:models="clr-namespace:LuxInfra.Models;assembly=LuxInfra.Core"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ProjectSitePage"
+             x:TypeArguments="vm:ProjectSiteViewModel"
+             x:DataType="vm:ProjectSiteViewModel"
+             Title="Site"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10" Padding="16,12,16,4">
+            <Button Style="{StaticResource LuxMenuButton}" Clicked="OnFlyoutMenuClicked" />
+            <Button Grid.Column="1" Style="{StaticResource LuxBackButton}" Clicked="OnBackClicked" />
+            <Label Grid.Column="2" Text="Site" Style="{StaticResource LuxPageHeaderTitle}" />
+        </Grid>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16" Spacing="12">
+
+                <Label Text="{Binding LatestProgressLabel, StringFormat='Progress: {0}'}" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border Style="{StaticResource LuxStatCard}"><VerticalStackLayout Spacing="2"><Label Text="SITE STAFF" Style="{StaticResource LuxStatLabel}" /><Label Text="{Binding PresentCount, StringFormat='Present {0}'}" Style="{StaticResource LuxStatValue}" /></VerticalStackLayout></Border>
+                    <Border Grid.Column="1" Style="{StaticResource LuxStatCard}"><VerticalStackLayout Spacing="2"><Label Text="MATERIAL RECEIVED" Style="{StaticResource LuxStatLabel}" /><Label Text="{Binding MaterialReceivedLabel}" Style="{StaticResource LuxStatValue}" /></VerticalStackLayout></Border>
+                    <Border Grid.Column="2" Style="{StaticResource LuxStatCard}"><VerticalStackLayout Spacing="2"><Label Text="MATERIAL USED" Style="{StaticResource LuxStatLabel}" /><Label Text="{Binding MaterialUsedLabel}" Style="{StaticResource LuxStatValue}" /></VerticalStackLayout></Border>
+                </Grid>
+
+                <Label Text="Ongoing Tasks" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" Margin="0,6,0,0" />
+                <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding OngoingTasks}">
+                    <BindableLayout.EmptyView>
+                        <Label Text="No progress today" FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                    </BindableLayout.EmptyView>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:ProjectTask">
+                            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="10,8">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding Name}" FontSize="13" TextColor="{DynamicResource LuxText}" />
+                                    <Label Grid.Column="1" Text="{Binding ProgressLabel}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="DPR History" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" Margin="0,6,0,0" />
+                <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Logs}">
+                    <BindableLayout.EmptyView>
+                        <Label Text="No DPR logged yet." FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                    </BindableLayout.EmptyView>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:SiteLog">
+                            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="10,8">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <Label Text="{Binding DateLabel}" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                                    <Label Grid.Column="1" Text="{Binding ProgressLabel}" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" />
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Note}" FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16" IsVisible="{Binding IsAddingDpr}">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Entry Text="{Binding DprProgress}" Placeholder="Progress %" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Editor Text="{Binding DprNote}" Placeholder="What happened on site today?" HeightRequest="60" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Button Text="Save DPR" Command="{Binding SaveDprCommand}"
+                                Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="42" />
+                    </VerticalStackLayout>
+                </Border>
+                <Label Text="{Binding DprStatus}" FontSize="12" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="2" Text="Create DPR" Margin="16,10" BackgroundColor="{DynamicResource LuxPrimary}" TextColor="White" FontAttributes="Bold"
+                CornerRadius="12" HeightRequest="46" Command="{Binding ToggleAddDprCommand}" />
+    </Grid>
+</local:LuxContentPage>

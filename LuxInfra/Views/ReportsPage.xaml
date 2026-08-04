@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:models="clr-namespace:LuxInfra.Models;assembly=LuxInfra.Core"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ReportsPage"
+             x:TypeArguments="vm:ReportsViewModel"
+             x:DataType="vm:ReportsViewModel"
+             Title="Reports"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Padding="16" RowSpacing="12">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout>
+                <Label Text="📑 Reports" FontSize="24" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                <Label Text="{Binding PeriodLabel}" FontSize="13" TextColor="{DynamicResource LuxTextDim}" />
+            </VerticalStackLayout>
+            <Border Grid.Column="1" Background="{DynamicResource LuxGradient}" StrokeThickness="0" Padding="14,8" VerticalOptions="Center">
+                <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="0">
+                    <Label Text="{Binding TotalLabel}" FontSize="17" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                    <Label Text="{Binding CountLabel}" FontSize="10" TextColor="{DynamicResource LuxOverlayText}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Period selector -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="8">
+            <Button Text="Today" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetPeriodCommand}" CommandParameter="Today">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding SelectedPeriodName}" Value="Today">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="7 days" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetPeriodCommand}" CommandParameter="Week">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding SelectedPeriodName}" Value="Week">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="Month" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetPeriodCommand}" CommandParameter="Month">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding SelectedPeriodName}" Value="Month">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Text="All time" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetPeriodCommand}" CommandParameter="All">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding SelectedPeriodName}" Value="All">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+        </HorizontalStackLayout>
+
+        <!-- Export actions -->
+        <HorizontalStackLayout Grid.Row="2" Spacing="8">
+            <Button Text="📊 Excel" Style="{StaticResource LuxSegmentButton}" BackgroundColor="{DynamicResource LuxSuccessSurface}" TextColor="White" Command="{Binding ExportExcelCommand}" />
+            <Button Text="📄 PDF" Style="{StaticResource LuxSegmentButton}" BackgroundColor="#C0392B" TextColor="White" Command="{Binding ExportPdfCommand}" />
+            <Button Text="🖼️ PNG" Style="{StaticResource LuxSegmentButton}" BackgroundColor="#2C6BED" TextColor="White" Command="{Binding ExportPngCommand}" />
+            <Button Text="📧 Email" Style="{StaticResource LuxSegmentButton}" Command="{Binding EmailReportCommand}" />
+        </HorizontalStackLayout>
+
+        <Label Grid.Row="3" Text="{Binding Status}" FontSize="12" TextColor="{DynamicResource LuxAccent}" />
+
+        <!-- Table -->
+        <Border Grid.Row="4" BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="0">
+            <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- header row -->
+                <Grid Grid.Row="0" ColumnDefinitions="64,*,*,104" Padding="14,12" BackgroundColor="{DynamicResource LuxPrimary}">
+                    <Label Text="Date" FontAttributes="Bold" FontSize="13" TextColor="White" />
+                    <Label Grid.Column="1" Text="Site / Client" FontAttributes="Bold" FontSize="13" TextColor="White" />
+                    <Label Grid.Column="2" Text="Category" FontAttributes="Bold" FontSize="13" TextColor="White" />
+                    <Label Grid.Column="3" Text="Amount" FontAttributes="Bold" FontSize="13" TextColor="White" HorizontalOptions="End" />
+                </Grid>
+
+                <ScrollView Grid.Row="1">
+                    <VerticalStackLayout>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Rows}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:ReportRow">
+                                    <Grid ColumnDefinitions="64,*,*,104" Padding="14,9">
+                                        <Label Text="{Binding DateLabel}" FontSize="13" TextColor="{DynamicResource LuxTextDim}" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="0">
+                                            <Label Text="{Binding Site}" FontSize="14" TextColor="{DynamicResource LuxText}" />
+                                            <Label Text="{Binding Client}" FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" Text="{Binding Category}" FontSize="13" TextColor="{DynamicResource LuxPrimarySoft}" VerticalOptions="Center" />
+                                        <Label Grid.Column="3" Text="{Binding AmountLabel}" FontSize="14" TextColor="{DynamicResource LuxText}" HorizontalOptions="End" VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <!-- category summary -->
+                        <Label Text="BY CATEGORY" FontSize="11" FontAttributes="Bold" TextColor="{DynamicResource LuxTextDim}" Padding="14,14,14,4" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding CategoryTotals}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:CategoryTotal">
+                                    <Grid ColumnDefinitions="*,Auto,110" Padding="14,7">
+                                        <Label Text="{Binding Category}" FontSize="13" TextColor="{DynamicResource LuxAccent}" />
+                                        <Label Grid.Column="1" Text="{Binding CountLabel}" FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                                        <Label Grid.Column="2" Text="{Binding TotalLabel}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" HorizontalOptions="End" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <!-- total bar -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Padding="14,12" BackgroundColor="{DynamicResource LuxSurface2}">
+                    <Label Text="TOTAL" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource LuxText}" />
+                    <Label Grid.Column="1" Text="{Binding TotalLabel}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource LuxAccent}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</local:LuxContentPage>

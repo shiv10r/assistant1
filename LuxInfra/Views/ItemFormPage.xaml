@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ItemFormPage"
+             x:DataType="vm:ItemFormViewModel"
+             Title="Add New Item"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12" MaximumWidthRequest="680">
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Entry Text="{Binding Name}" Placeholder="Item Name *" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Picker Title="Type" ItemsSource="{Binding TypeOptions}" SelectedItem="{Binding Type}"
+                                TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                        <Picker Grid.Column="1" Title="Unit" ItemsSource="{Binding UnitOptions}" SelectedItem="{Binding Unit}"
+                                TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                    </Grid>
+                    <Entry Text="{Binding Category}" Placeholder="Category (e.g. Tiles, Paint)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Pricing &amp; tax" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Entry Text="{Binding SalePrice}" Placeholder="Sale Price ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Grid.Column="1" Text="{Binding PurchasePrice}" Placeholder="Purchase Price ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                    <Entry Text="{Binding WholesalePrice}" Placeholder="Wholesale Price ₹ 👑 (Gold)" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Picker Title="GST %" ItemsSource="{Binding TaxOptions}" SelectedItem="{Binding TaxRate}"
+                                TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                        <Entry Grid.Column="1" Text="{Binding HsnSac}" Placeholder="HSN/SAC Code" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Stock" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Entry Text="{Binding OpeningStock}" Placeholder="Opening Stock" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Grid.Column="1" Text="{Binding MinStock}" Placeholder="Min Stock Alert" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Text="Save &amp; New" Command="{Binding SaveAndNewCommand}"
+                        BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}"
+                        CornerRadius="14" HeightRequest="46" />
+                <Button Grid.Column="1" Text="Save Item" Command="{Binding SaveCommand}"
+                        BackgroundColor="{DynamicResource LuxFab}" TextColor="White" FontAttributes="Bold"
+                        CornerRadius="14" HeightRequest="46" />
+            </Grid>
+
+            <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

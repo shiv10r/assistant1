@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.BillingSettingsPage"
+             x:TypeArguments="vm:BillingSettingsViewModel"
+             x:DataType="vm:BillingSettingsViewModel"
+             Title="Billing Settings"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="10">
+
+        <SearchBar Grid.Row="0" Text="{Binding SearchText}" Placeholder="🔍 Search settings..."
+                   PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}"
+                   BackgroundColor="{DynamicResource LuxSurface}" />
+
+        <Label Grid.Row="1" Text="{Binding Status}" FontSize="12" TextColor="{DynamicResource LuxAccent}" />
+
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Spacing="12" MaximumWidthRequest="720">
+
+                <!-- firm & texts -->
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🏢 Firm &amp; templates" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                        <Entry Text="{Binding FirmName}" Placeholder="Firm name (prints on invoices)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Text="{Binding FirmState}" Placeholder="Firm state (for CGST/SGST vs IGST)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Entry Text="{Binding FirmPhone}" Placeholder="Firm phone" Keyboard="Telephone" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                            <Entry Grid.Column="1" Text="{Binding FirmGstin}" Placeholder="Firm GSTIN" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        </Grid>
+                        <Entry Text="{Binding FirmAddress}" Placeholder="Firm address (prints in header)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Text="{Binding FirmEmail}" Placeholder="Firm email (prints in header)" Keyboard="Email" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <Picker Title="Page size" ItemsSource="{Binding PageSizeOptions}" SelectedItem="{Binding PageSize}" TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" FontSize="13" />
+                            <Picker Grid.Column="1" Title="Orientation" ItemsSource="{Binding OrientationOptions}" SelectedItem="{Binding Orientation}" TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" FontSize="13" />
+                            <Picker Grid.Column="2" Title="Text size" ItemsSource="{Binding TextSizeOptions}" SelectedItem="{Binding TextSize}" TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" FontSize="13" />
+                        </Grid>
+                        <Entry Text="{Binding TermsText}" Placeholder="Terms &amp; Conditions text" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Text="{Binding SignatureText}" Placeholder="Signature text" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Text="{Binding SmsTemplate}" Placeholder="Message template ({PartyName},{Amount},{RefNo}...)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Button Text="💾 Save texts" Command="{Binding SaveTextsCommand}"
+                                Background="{DynamicResource LuxGradient}" TextColor="White" CornerRadius="12" HeightRequest="40" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- backup -->
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="💾 Backup &amp; restore" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <Button Text="📱 To file" Command="{Binding BackupToFileCommand}" BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                            <Button Grid.Column="1" Text="📧 To email" Command="{Binding BackupToEmailCommand}" BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                            <Button Grid.Column="2" Text="♻️ Restore" Command="{Binding RestoreBackupCommand}" BackgroundColor="{DynamicResource LuxDangerSurface}" TextColor="White" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- utilities -->
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🛠️ Utilities" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <Button Text="✅ Verify data" Command="{Binding VerifyDataCommand}" BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                            <Button Grid.Column="1" Text="📤 Export items" Command="{Binding ExportItemsCommand}" BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                            <Button Grid.Column="2" Text="📥 Import items" Command="{Binding ImportItemsCommand}" BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" FontSize="13" CornerRadius="12" HeightRequest="40" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- data-driven toggle sections -->
+                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding Sections}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingSection">
+                            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding Title}" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Rows}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SettingRow">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="6" Padding="0,4">
+                                                    <Button Text="ⓘ" FontSize="12" BackgroundColor="Transparent" TextColor="{DynamicResource LuxTextDim}"
+                                                            Padding="0" WidthRequest="26" HeightRequest="26"
+                                                            Command="{Binding ShowInfoCommand}" />
+                                                    <Label Grid.Column="1" Text="{Binding Label}" FontSize="14" TextColor="{DynamicResource LuxText}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                                    <Label Grid.Column="2" Text="👑" FontSize="13" VerticalOptions="Center" IsVisible="{Binding IsPremium}" />
+                                                    <Switch Grid.Column="3" IsToggled="{Binding Value}" OnColor="{DynamicResource LuxAccent}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="Toggles save instantly. 👑 rows need Gold membership (My Account)." FontSize="11"
+                       TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" Margin="0,0,0,24" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</local:LuxContentPage>

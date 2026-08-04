@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="LuxInfra.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:LuxInfra.Views"
+    xmlns:services="clr-namespace:LuxInfra.Services"
+    Title="LuxInfra"
+    FlyoutBehavior="Flyout"
+    FlyoutBackgroundColor="{DynamicResource LuxSurface}"
+    FlyoutWidth="290"
+    Shell.BackgroundColor="{DynamicResource LuxBg}"
+    Shell.ForegroundColor="{DynamicResource LuxText}"
+    Shell.TitleColor="{DynamicResource LuxText}"
+    Shell.TabBarBackgroundColor="{DynamicResource LuxSurface}"
+    Shell.TabBarTitleColor="{DynamicResource LuxAccent}"
+    Shell.TabBarUnselectedColor="{DynamicResource LuxTextDim}">
+
+    <!-- hamburger / back / forward navigation -->
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="6" Padding="0,2">
+            <Button x:Name="MenuBtn" Text="☰" FontSize="16" WidthRequest="40" HeightRequest="36"
+                    BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}"
+                    CornerRadius="10" Padding="0" BorderWidth="0"
+                    Clicked="OnMenuClicked" />
+            <Button x:Name="BackBtn" Grid.Column="1" Text="◀" FontSize="14" WidthRequest="40" HeightRequest="36"
+                    BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}"
+                    CornerRadius="10" Padding="0" BorderWidth="0"
+                    Opacity="0.35" Clicked="OnBackClicked" />
+            <Button x:Name="ForwardBtn" Grid.Column="2" Text="▶" FontSize="14" WidthRequest="40" HeightRequest="36"
+                    BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}"
+                    CornerRadius="10" Padding="0" BorderWidth="0"
+                    Opacity="0.35" Clicked="OnForwardClicked" />
+            <Label x:Name="TitleLabel" Grid.Column="3" Text="LuxInfra" FontSize="17" FontAttributes="Bold"
+                   TextColor="{DynamicResource LuxText}" VerticalOptions="Center" Margin="12,0,0,0" />
+        </Grid>
+    </Shell.TitleView>
+
+    <Shell.Resources>
+        <Style TargetType="Label" Class="FlyoutItemLabelStyle">
+            <Setter Property="TextColor" Value="{DynamicResource LuxText}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+        <Style TargetType="Grid" Class="FlyoutItemLayoutStyle">
+            <Setter Property="HeightRequest" Value="52" />
+            <Setter Property="Padding" Value="14,0" />
+        </Style>
+        <Style TargetType="Label" Class="FlyoutItemSubtitleLabelStyle">
+            <Setter Property="TextColor" Value="{DynamicResource LuxTextDim}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </Shell.Resources>
+
+    <!-- ===== flyout header: user card ===== -->
+    <Shell.FlyoutHeader>
+        <Grid x:DataType="services:ProfileService" Padding="16,20,16,16">
+            <Border StrokeThickness="0" Padding="16" Background="{DynamicResource LuxGradient}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Grid>
+                        <Border WidthRequest="52" HeightRequest="52" BackgroundColor="#33FFFFFF" StrokeThickness="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="26" /></Border.StrokeShape>
+                            <Label Text="{Binding Initials}" FontSize="20" FontAttributes="Bold" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="👑" FontSize="18" HorizontalOptions="End" VerticalOptions="Start"
+                               Margin="0,-10,-4,0" IsVisible="{Binding IsGold}" />
+                    </Grid>
+                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                        <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="White" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding Email}" FontSize="11" TextColor="{DynamicResource LuxOverlayText}" LineBreakMode="TailTruncation" />
+                        <Label Text="⭐ GOLD MEMBER" FontSize="10" FontAttributes="Bold" TextColor="#FFD43B" IsVisible="{Binding IsGold}" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- ===== My Assistant: the main workspace (tabs) ===== -->
+    <FlyoutItem Title="🤖 My Assistant" Route="assistant">
+        <ShellContent
+            Title="💬 Assistant"
+            ContentTemplate="{DataTemplate views:ChatPage}"
+            Route="ChatPage" />
+        <ShellContent
+            Title="📊 Dashboard"
+            ContentTemplate="{DataTemplate views:DashboardPage}"
+            Route="DashboardPage" />
+        <ShellContent
+            Title="📑 Reports"
+            ContentTemplate="{DataTemplate views:ReportsPage}"
+            Route="ReportsPage" />
+        <ShellContent
+            Title="⚙️ Settings"
+            ContentTemplate="{DataTemplate views:SettingsPage}"
+            Route="SettingsPage" />
+    </FlyoutItem>
+
+    <!-- ===== Vyapar-style billing ===== -->
+    <FlyoutItem Title="🧾 Billing" Route="billing">
+        <ShellContent
+            Title="🏠 Bills"
+            ContentTemplate="{DataTemplate views:BillingHomePage}"
+            Route="BillingHomePage" />
+        <ShellContent
+            Title="📦 Items"
+            ContentTemplate="{DataTemplate views:CatalogPage}"
+            Route="CatalogPage" />
+        <ShellContent
+            Title="💵 Cash &amp; Bank"
+            ContentTemplate="{DataTemplate views:CashBankPage}"
+            Route="CashBankPage" />
+        <ShellContent
+            Title="⚙️ Billing Settings"
+            ContentTemplate="{DataTemplate views:BillingSettingsPage}"
+            Route="BillingSettingsPage" />
+    </FlyoutItem>
+
+    <!-- ===== construction/interior-design project tracking ===== -->
+    <FlyoutItem Title="🏗️ Projects" Route="projects">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:ProjectsListPage}"
+            Route="ProjectsListPage" />
+    </FlyoutItem>
+
+    <!-- ===== plans & pricing ===== -->
+    <FlyoutItem Title="👑 Plans &amp; Pricing" Route="plans">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:PlansPage}"
+            Route="PlansPage" />
+    </FlyoutItem>
+
+    <!-- ===== user management ===== -->
+    <FlyoutItem Title="👤 My Account" Route="account">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="ProfilePage" />
+    </FlyoutItem>
+
+    <!-- quick actions in the sidebar -->
+    <MenuItem Text="💬 Send feedback" Clicked="OnFeedbackClicked" />
+    <MenuItem Text="🚨 Safety emergency" Clicked="OnEmergencyClicked" />
+    <MenuItem Text="🚪 Logout" Clicked="OnLogoutClicked" />
+
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="16,10" Spacing="2">
+            <Label Text="LuxInfra" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxTextDim}" />
+            <Label x:Name="VersionLabel" FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
+
+</Shell>

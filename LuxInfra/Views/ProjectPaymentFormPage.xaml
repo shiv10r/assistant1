@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ProjectPaymentFormPage"
+             x:DataType="vm:ProjectPaymentFormViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12" MaximumWidthRequest="680">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" VerticalOptions="Center" />
+                <DatePicker Grid.Column="1" Date="{Binding Date}" TextColor="{DynamicResource LuxText}" />
+            </Grid>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Entry Text="{Binding PartyName}" Placeholder="{Binding PartyLabel}" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Amount}" Placeholder="{Binding AmountLabel}" Keyboard="Numeric" FontSize="18" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding Description}" Placeholder="Description" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding ReferenceNumber}" Placeholder="Reference Number" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Picker Title="Payment Method" ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding PaymentMethod}"
+                            TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                    <Entry Text="{Binding CostCode}" Placeholder="Cost Code" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Save" Command="{Binding SaveCommand}"
+                    Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold"
+                    CornerRadius="14" HeightRequest="46" />
+
+            <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

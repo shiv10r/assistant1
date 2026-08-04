@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:models="clr-namespace:LuxInfra.Models;assembly=LuxInfra.Core"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ProjectPartyPage"
+             x:TypeArguments="vm:ProjectPartyViewModel"
+             x:DataType="vm:ProjectPartyViewModel"
+             Title="Party"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10" Padding="16,12,16,4">
+            <Button Style="{StaticResource LuxMenuButton}" Clicked="OnFlyoutMenuClicked" />
+            <Button Grid.Column="1" Style="{StaticResource LuxBackButton}" Clicked="OnBackClicked" />
+            <Label Grid.Column="2" Text="Party" Style="{StaticResource LuxPageHeaderTitle}" />
+        </Grid>
+        <ScrollView Grid.Row="1">
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Border Style="{StaticResource LuxStatCard}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="ADVANCE PAID" Style="{StaticResource LuxStatLabel}" />
+                        <Label Text="{Binding AdvancePaidLabel}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource LuxSuccess}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource LuxStatCard}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="PENDING TO PAY" Style="{StaticResource LuxStatLabel}" />
+                        <Label Text="{Binding PendingToPayLabel}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource LuxPink}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <SearchBar Placeholder="Search Party" Text="{Binding PartySearch}" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Active" FontSize="12" CornerRadius="14" HeightRequest="30" Padding="12,2"
+                        BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" Command="{Binding SetPartyActiveCommand}">
+                    <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding PartyShowActive}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                </Button>
+                <Button Text="Inactive" FontSize="12" CornerRadius="14" HeightRequest="30" Padding="12,2"
+                        BackgroundColor="{DynamicResource LuxSurface2}" TextColor="{DynamicResource LuxText}" Command="{Binding SetPartyInactiveCommand}">
+                    <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding PartyShowActive}" Value="False">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource LuxPrimary}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                </Button>
+                <Button Text="＋ Add Party" FontSize="12" BackgroundColor="Transparent" TextColor="{DynamicResource LuxAccent}"
+                        Command="{Binding ToggleAddPartyCommand}" HorizontalOptions="EndAndExpand" />
+            </HorizontalStackLayout>
+
+            <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding FilteredParties}">
+                <BindableLayout.EmptyView>
+                    <Label Text="Payment Balances of your Site Staff, Sub-contractors and Material suppliers will be listed here."
+                           FontSize="12" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" HorizontalTextAlignment="Center" Margin="0,20" />
+                </BindableLayout.EmptyView>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:SiteParty">
+                        <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="12,10">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="{Binding Name}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                                    <Label FontSize="11" TextColor="{DynamicResource LuxTextDim}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Role}" />
+                                                <Span Text="  " />
+                                                <Span Text="{Binding Phone}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding BalanceLabel}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAdvance}" Value="True"><Setter Property="TextColor" Value="{DynamicResource LuxSuccess}" /></DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAdvance}" Value="False"><Setter Property="TextColor" Value="{DynamicResource LuxPink}" /></DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16" IsVisible="{Binding IsAddingParty}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Entry Text="{Binding NewPartyName}" Placeholder="Name *" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Entry Text="{Binding NewPartyPhone}" Placeholder="Phone" Keyboard="Telephone" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Picker Title="Role" ItemsSource="{Binding PartyRoleOptions}" SelectedItem="{Binding NewPartyRole}"
+                            TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                    <Entry Text="{Binding NewPartyAmount}" Placeholder="Opening amount ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <HorizontalStackLayout Spacing="16">
+                        <RadioButton Content="Advance Paid" IsChecked="{Binding NewPartyIsAdvance}" TextColor="{DynamicResource LuxText}" />
+                        <RadioButton Content="Pending to Pay" IsChecked="{Binding NewPartyIsAdvance, Converter={StaticResource InvertBool}}" TextColor="{DynamicResource LuxText}" />
+                    </HorizontalStackLayout>
+                    <Button Text="Save Party" Command="{Binding SavePartyCommand}"
+                            Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="42" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding PartyStatus}" FontSize="12" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,20" />
+        </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</local:LuxContentPage>

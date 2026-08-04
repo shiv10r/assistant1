@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:models="clr-namespace:LuxInfra.Models;assembly=LuxInfra.Core"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.CashBankPage"
+             x:TypeArguments="vm:CashBankViewModel"
+             x:Name="Page"
+             x:DataType="vm:CashBankViewModel"
+             Title="Cash &amp; Bank"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12" MaximumWidthRequest="720">
+
+            <!-- cash in-hand -->
+            <Border Style="{StaticResource LuxCard}" Padding="18" BackgroundColor="{DynamicResource LuxSuccessSurface}">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="💵 Current Cash Balance" FontSize="13" TextColor="{DynamicResource LuxOverlayText}" />
+                    <Label Text="{Binding CashBalance}" FontSize="26" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- adjust cash -->
+            <Border Style="{StaticResource LuxCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Adjust Cash" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Add Cash" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetAddCommand}">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsAddCash}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource LuxSuccessSurface}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Text="Reduce Cash" Style="{StaticResource LuxSegmentButton}" Command="{Binding SetReduceCommand}">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsAddCash}" Value="False">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource LuxDangerSurface}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                    </HorizontalStackLayout>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Entry Text="{Binding AdjustAmount}" Placeholder="Enter Amount ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <DatePicker Grid.Column="1" Date="{Binding AdjustDate}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                    <Entry Text="{Binding AdjustDescription}" Placeholder="Enter Description (Optional)" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    <Button Text="{Binding AdjustCta}" Command="{Binding AdjustCashCommand}"
+                            Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="42" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- cash entries -->
+            <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding CashEntries}">
+                <BindableLayout.EmptyView>
+                    <Label Text="Hey! You have not added any cash transactions yet. Any transaction involving cash appears here. 🤲"
+                           FontSize="12" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" />
+                </BindableLayout.EmptyView>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:CashEntry">
+                        <Border Style="{StaticResource LuxCardCompact}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="{Binding Label}" FontSize="13" TextColor="{DynamicResource LuxText}" />
+                                    <Label FontSize="11" TextColor="{DynamicResource LuxTextDim}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding DateLabel}" />
+                                                <Span Text="  " />
+                                                <Span Text="{Binding Description}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding AmountLabel}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"
+                                       TextColor="{DynamicResource LuxText}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAdd}" Value="True"><Setter Property="TextColor" Value="{DynamicResource LuxSuccess}" /></DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAdd}" Value="False"><Setter Property="TextColor" Value="{DynamicResource LuxPink}" /></DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <!-- cheques -->
+            <Label Text="🧾 Cheques" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" Margin="0,8,0,0" />
+            <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Cheques}">
+                <BindableLayout.EmptyView>
+                    <Label Text="Hey! You have not added any cheques yet. Any payment involving cheque appears here. ✍️"
+                           FontSize="12" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" />
+                </BindableLayout.EmptyView>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:BizTxn">
+                        <Border Style="{StaticResource LuxCardCompact}">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="{Binding PartyName}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                                    <Label FontSize="11" TextColor="{DynamicResource LuxTextDim}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding TypeLabel}" />
+                                                <Span Text=" " />
+                                                <Span Text="{Binding RefLabel}" />
+                                                <Span Text=" · " />
+                                                <Span Text="{Binding DateLabel}" />
+                                                <Span Text=" · " />
+                                                <Span Text="{Binding ChequeStatus}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding TotalLabel}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" VerticalOptions="Center" />
+                                <Button Grid.Column="2" Text="✓ Clear" FontSize="11" CornerRadius="10" Padding="10,2" HeightRequest="30"
+                                        BackgroundColor="{DynamicResource LuxSuccessSurface}" TextColor="White"
+                                        Command="{Binding BindingContext.MarkClearedCommand, Source={x:Reference Page}, x:DataType={x:Type ContentPage}}"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <!-- banks -->
+            <Label Text="🏦 Bank Accounts" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" Margin="0,8,0,0" />
+            <Border Style="{StaticResource LuxCard}">
+                <VerticalStackLayout Spacing="8">
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Banks}">
+                        <BindableLayout.EmptyView>
+                            <Label Text="Add your bank &amp; record all your bank transactions. 🏦" FontSize="12" TextColor="{DynamicResource LuxTextDim}" />
+                        </BindableLayout.EmptyView>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:BankAccount">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Spacing="0">
+                                        <Label Text="{Binding Name}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                                        <Label Text="{Binding AccNo}" FontSize="11" TextColor="{DynamicResource LuxTextDim}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" Text="{Binding BalanceLabel}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" VerticalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <BoxView HeightRequest="1" Color="{DynamicResource LuxSurface2}" />
+                    <Grid ColumnDefinitions="*,*,90" ColumnSpacing="8">
+                        <Entry Text="{Binding BankName}" Placeholder="Bank name" FontSize="13" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Grid.Column="1" Text="{Binding BankAccNo}" Placeholder="Account no." FontSize="13" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Grid.Column="2" Text="{Binding BankOpening}" Placeholder="Opening ₹" FontSize="13" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                    </Grid>
+                    <Button Text="＋ Add Bank Account" Command="{Binding AddBankCommand}"
+                            BackgroundColor="{DynamicResource LuxFab}" TextColor="White" FontSize="13" CornerRadius="12" HeightRequest="38" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,0,0,24" />
+        </VerticalStackLayout>
+    </ScrollView>
+</local:LuxContentPage>

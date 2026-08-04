@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:LuxContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LuxInfra.Views"
+             xmlns:models="clr-namespace:LuxInfra.Models;assembly=LuxInfra.Core"
+             xmlns:vm="clr-namespace:LuxInfra.ViewModels"
+             x:Class="LuxInfra.Views.ProjectsListPage"
+             x:TypeArguments="vm:ProjectsListViewModel"
+             x:Name="Page"
+             x:DataType="vm:ProjectsListViewModel"
+             Title="Projects"
+             BackgroundColor="{DynamicResource LuxBg}">
+
+    <Grid RowDefinitions="*,Auto" Padding="16" RowSpacing="12">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="12" MaximumWidthRequest="720">
+
+                <!-- new project inline form -->
+                <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="16" IsVisible="{Binding IsAdding}">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="New Project" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" />
+                        <Entry Text="{Binding NewName}" Placeholder="Project Name *" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Entry Text="{Binding NewAddress}" Placeholder="Address" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Entry Text="{Binding NewValue}" Placeholder="Project Value ₹" Keyboard="Numeric" PlaceholderColor="{DynamicResource LuxTextDim}" TextColor="{DynamicResource LuxText}" />
+                            <Picker Grid.Column="1" Title="Status" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding NewStatus}"
+                                    TextColor="{DynamicResource LuxText}" TitleColor="{DynamicResource LuxTextDim}" />
+                        </Grid>
+                        <Button Text="Save Project" Command="{Binding SaveProjectCommand}"
+                                Background="{DynamicResource LuxGradient}" TextColor="White" FontAttributes="Bold" CornerRadius="12" HeightRequest="42" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- project cards -->
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Projects}">
+                    <BindableLayout.EmptyView>
+                        <VerticalStackLayout Spacing="6" Margin="0,40,0,0">
+                            <Label Text="🏗️" FontSize="34" HorizontalOptions="Center" />
+                            <Label Text="No projects yet." FontSize="14" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" />
+                            <Label Text="Create a project to track its Party, Transaction, Site, Task, Attendance, Material, MOM, Design and Files — all in one place."
+                                   FontSize="12" TextColor="{DynamicResource LuxTextDim}" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </BindableLayout.EmptyView>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Project">
+                            <Border BackgroundColor="{DynamicResource LuxSurface}" StrokeThickness="0" Padding="14">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="14" /></Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding BindingContext.OpenProjectCommand, Source={x:Reference Page}, x:DataType={x:Type ContentPage}}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource LuxText}" />
+                                    <Border Grid.Column="1" BackgroundColor="{DynamicResource LuxSurface2}" StrokeThickness="0" Padding="8,2" VerticalOptions="Start">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                                        <Label Text="{Binding Status}" FontSize="10" FontAttributes="Bold" TextColor="{DynamicResource LuxAccent}" />
+                                    </Border>
+                                    <Label Grid.Row="1" Text="{Binding Address}" FontSize="12" TextColor="{DynamicResource LuxTextDim}" LineBreakMode="TailTruncation" />
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding ValueLabel}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource LuxPrimarySoft}" HorizontalOptions="End" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="{Binding Status}" FontSize="13" TextColor="{DynamicResource LuxAccent}" HorizontalOptions="Center" Margin="0,4,0,20" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="1" Text="{Binding AddButtonLabel}" Command="{Binding ToggleAddCommand}"
+                Style="{StaticResource LuxFabButton}" />
+    </Grid>
+</local:LuxContentPage>
