@@ -1,6 +1,0 @@
-@LuxInfra.Api_HostAddress = http://localhost:5264
-
-GET {{LuxInfra.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
