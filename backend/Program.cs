@@ -1,3 +1,4 @@
+using LuxInfra.Api.Services;
 using LuxInfra.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,10 @@ builder.Services.AddSingleton(new DatabaseService(dbPath));
 builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BillingService>();
 builder.Services.AddSingleton<ProjectService>();
+
+// ---- Optional Turso (libSQL) cloud mirror — persists data across Render redeploys.
+// Enable by setting TURSO_URL + TURSO_TOKEN env vars (service no-ops when unset). ----
+builder.Services.AddHostedService<TursoSyncService>();
 
 // ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>
