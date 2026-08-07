@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { logout } from './api'
+import { applyTheme, getTheme } from './theme'
+import type { Theme } from './theme'
 import './Layout.css'
 
 type Nav = { label: string; to: string; end?: boolean }[]
@@ -25,6 +28,16 @@ const GROUPS: { title: string; items: Nav }[] = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false)
+  const [theme, setTheme] = useState<Theme>(getTheme())
+  function toggleTheme() {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    applyTheme(next)
+  }
+  function signOut() {
+    logout()
+    window.location.href = '/'
+  }
   return (
     <div className="app">
       <header className="topbar">
@@ -44,6 +57,10 @@ export default function Layout() {
         </div>
         <div className="brand">Lux<span>Infra</span></div>
         <div className="online">● online</div>
+        <button className="theme-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+        <button className="logout-btn" onClick={signOut} aria-label="Sign out">⏻</button>
       </header>
 
       <div className="body-row">

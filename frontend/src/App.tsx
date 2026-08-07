@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { isAuthed } from './api'
 import Layout from './Layout'
+import Login from './pages/Login'
 import Assistant from './pages/Assistant'
 import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
@@ -25,6 +28,10 @@ import ProjectDesign from './pages/projects/ProjectDesign'
 import ProjectFiles from './pages/projects/ProjectFiles'
 
 export default function App() {
+  const [authed, setAuthed] = useState(isAuthed())
+
+  if (!authed) return <Login onAuthed={() => setAuthed(true)} />
+
   return (
     <BrowserRouter>
       <Routes>

@@ -38,31 +38,57 @@ export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: 
 export interface CashData { balance: number; entries: CashEntry[] }
 
 // ---------------- core ----------------
+const TOKEN_KEY = 'lux_token'
+export function getToken(): string | null { return localStorage.getItem(TOKEN_KEY) }
+export function isAuthed(): boolean { return !!getToken() }
+export function logout(): void { localStorage.removeItem(TOKEN_KEY) }
+
+export async function login(username: string, password: string): Promise<void> {
+  const r = await fetch(BASE + '/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  if (!r.ok) throw new Error('Invalid username or password')
+  const data = await r.json()
+  localStorage.setItem(TOKEN_KEY, data.token)
+}
+
+function authHeaders(): Record<string, string> {
+  const t = getToken()
+  return t ? { Authorization: `Bearer ${t}` } : {}
+}
+
 async function get<T>(url: string): Promise<T> {
-  const r = await fetch(BASE + url)
+  const r = await fetch(BASE + url, { headers: authHeaders() })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   return r.json()
 }
 
 async function post<T>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
   return r.json()
 }
 
 async function postVoid(url: string, body: unknown): Promise<void> {
-  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
 }
 
 async function put<T>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(BASE + url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  const r = await fetch(BASE + url, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   return r.json()
 }
 
 async function del(url: string): Promise<void> {
-  const r = await fetch(BASE + url, { method: 'DELETE' })
+  const r = await fetch(BASE + url, { method: 'DELETE', headers: authHeaders() })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
 }
 
@@ -70,10 +96,7 @@ function today(): string { return new Date().toISOString().slice(0, 10) }
 export { today }
 
 // ---------------- Assistant ----------------
-async function send(text: string): Promise<string> {
-  const msgs = (await post<ChatMessage[]>('/api/assistant/send', { text }))
-  return msgs.map((m) => m.text).filter(Boolean).join('\n')
-}
+const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
 const dashboard = () => get<Dashboard>('/api/dashboard')
 const report = (period: string) => get<ReportData>(`/api/reports?period=${period}`)
 

@@ -5,23 +5,23 @@ import type { ChatMessage } from '../api'
 
 export default function Assistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { text: "👋 Hey! I'm your LuxInfra assistant. Tell me expenses like \"site A paint exp = 5k\" or \"client Sharma site C labour 25k\". Say \"show report\" any time.", isUser: false },
+    { text: "👋 Hey! I'm your LuxInfra assistant. Tell me expenses like \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". Say \"show report\" any time.", isUser: false },
   ])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
+
+  const append = (msgs: ChatMessage[]) => setMessages((m) => [...m, ...msgs])
 
   async function send(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
     if (!text || busy) return
     setInput('')
-    const userMsg = { text, isUser: true } as ChatMessage
-    setMessages((m) => [...m, userMsg])
+    setMessages((m) => [...m, { text, isUser: true }])
     setBusy(true)
     try {
-      const reply = await api.send(text)
-      setMessages((m) => [...m, { text: reply, isUser: false }])
+      append(await api.send(text))
     } catch (err) {
       setMessages((m) => [...m, { text: `⚠️ ${err}`, isUser: false }])
     } finally {
@@ -29,6 +29,10 @@ export default function Assistant() {
     }
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
+
+  const chip = (label: string, text: string) => (
+    <button onClick={() => api.send(text).then(append).catch(() => {})}>{label}</button>
+  )
 
   return (
     <div className="chat-panel">
@@ -46,13 +50,13 @@ export default function Assistant() {
             <div className="msg bot report-card" key={i}>
               <div className="report-title">{m.reportTitle}</div>
               <table>
-                <thead><tr><th>Site</th><th>Category</th><th className="num">Amount</th></tr></thead>
+                <thead><tr><th>Date</th><th>Site</th><th>Category</th><th className="num">Amount</th></tr></thead>
                 <tbody>
                   {m.rows?.map((r, j) => (
-                    <tr key={j}><td>{r.site}</td><td className="cat">{r.category}</td><td className="num">{r.amountLabel}</td></tr>
+                    <tr key={j}><td>{r.dateLabel}</td><td>{r.site}</td><td className="cat">{r.category}</td><td className="num">{r.amountLabel}</td></tr>
                   ))}
                 </tbody>
-                <tfoot><tr><td colSpan={2}>TOTAL</td><td className="num total">{m.totalLabel}</td></tr></tfoot>
+                <tfoot><tr><td colSpan={3}>TOTAL</td><td className="num total">{m.totalLabel}</td></tr></tfoot>
               </table>
             </div>
           ) : (
@@ -63,9 +67,9 @@ export default function Assistant() {
       </div>
 
       <div className="chips">
-        <button onClick={() => api.send('show report').then(r => setMessages(m => [...m, { text: r, isUser: false }]))}>📒 Show report</button>
-        <button onClick={() => api.send('total').then(r => setMessages(m => [...m, { text: r, isUser: false }]))}>🧮 Totals</button>
-        <button onClick={() => api.send('help').then(r => setMessages(m => [...m, { text: r, isUser: false }]))}>💡 Help</button>
+        {chip('📒 Show report', 'show report')}
+        {chip('🧮 Totals', 'total')}
+        {chip('💡 Help', 'help')}
       </div>
 
       <form className="input-row" onSubmit={send}>
