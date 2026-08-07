@@ -4,6 +4,11 @@ using LuxInfra.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// On Render (PORT env set) bind to all interfaces so Render can reach the app.
+// Locally PORT is unset, so the app keeps using launchSettings / --urls (localhost:5050).
+if (Environment.GetEnvironmentVariable("PORT") is { Length: > 0 } port)
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
