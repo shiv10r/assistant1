@@ -96,7 +96,15 @@ public class AssistantController : ControllerBase
                            "📒 \"show report\" · 🧮 \"total\" / \"total site a\" · ↩️ \"undo\".");
 
             default:
-                return Bot("🤔 I didn't catch an amount there. Try:  site A paint exp = 5k");
+            {
+                var data = await _reports.BuildReportAsync(ReportPeriod.Today);
+                var totals = data.Count == 0
+                    ? "No expenses yet today."
+                    : $"{ReportService.Money(data.Total)} logged today.";
+                return Bot($"🤔 I couldn't find an amount in \"{text}\". " +
+                           "Try \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". " +
+                           $"{totals}");
+            }
         }
     }
 
