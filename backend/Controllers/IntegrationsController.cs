@@ -28,17 +28,24 @@ public class IntegrationsController : ControllerBase
     // ---- Integration status (frontend shows configure hints) ----
 
     [HttpGet("integrations/status")]
-    public ActionResult Status() => Ok(new
+    public async Task<ActionResult> Status()
     {
-        email = _email.Configured ? "configured" : "not_configured",
-        emailProvider = _email.Configured ? _email.Provider : null,
-        razorpay = _razorpay.Configured ? "configured" : "not_configured",
-        razorpayKeyId = _razorpay.Configured ? _razorpay.KeyId : null,
-        drive = _drive.HasCredentials ? (_drive.Configured ? "configured" : "needs_connect") : "not_configured",
-        driveFolder = _drive.Configured ? _drive.FolderName : null,
-        vision = _vision.Configured ? "configured" : "not_configured",
-        visionModel = _vision.Configured ? _vision.Model : null,
-    });
+        var settings = await _billing.GetAllSettingsAsync();
+        var upiId = settings.GetValueOrDefault("payment.upi_id");
+        return Ok(new
+        {
+            email = _email.Configured ? "configured" : "not_configured",
+            emailProvider = _email.Configured ? _email.Provider : null,
+            razorpay = _razorpay.Configured ? "configured" : "not_configured",
+            razorpayKeyId = _razorpay.Configured ? _razorpay.KeyId : null,
+            upi = !string.IsNullOrWhiteSpace(upiId) ? "configured" : "not_configured",
+            upiId = string.IsNullOrWhiteSpace(upiId) ? null : upiId,
+            drive = _drive.HasCredentials ? (_drive.Configured ? "configured" : "needs_connect") : "not_configured",
+            driveFolder = _drive.Configured ? _drive.FolderName : null,
+            vision = _vision.Configured ? "configured" : "not_configured",
+            visionModel = _vision.Configured ? _vision.Model : null,
+        });
+    }
 
     // ---- Email invoice ----
 
@@ -207,6 +214,44 @@ public class IntegrationsController : ControllerBase
         return Ok(new { ok = true, progress, note, model = _vision.Model });
     }
 
+    // ---- UPI payments (free — works with PhonePe / GPay / Paytm) ----
+
+    /// <summary>Builds a UPI deep link + QR payload from the firm's saved UPI ID.</summary>
+    [HttpPost("payments/upi/link")]
+    public async Task<ActionResult> UpiLink([FromBody] UpiLinkDto dto)
+    {
+        if (dto.AmountInr <= 0) return BadRequest(new { error = "Amount must be positive" });
+
+        var settings = await _billing.GetAllSettingsAsync();
+        var upiId = string.IsNullOrWhiteSpace(dto.UpiId) ? settings.GetValueOrDefault("payment.upi_id") : dto.UpiId;
+        if (string.IsNullOrWhiteSpace(upiId))
+            return Ok(new { ok = false, code = "not_configured", message = "No UPI ID set — save one in Integrations (or set payment.upi_id in Billing Settings)." });
+
+        var payeeName = settings.GetValueOrDefault("general.firm_name", "LuxInfra");
+        var note = string.IsNullOrWhiteSpace(dto.Note) ? "LuxInfra payment" : dto.Note;
+        var amt = dto.AmountInr.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+        var payload = $"upi://pay?pa={Uri.EscapeDataString(upiId)}&pn={Uri.EscapeDataString(payeeName)}&am={amt}&cu=INR&tn={Uri.EscapeDataString(note)}";
+
+        return Ok(new
+        {
+            ok = true,
+            upiId,
+            payeeName,
+            amountInr = dto.AmountInr,
+            note,
+            upiUrl = payload,
+            qrData = payload,
+            providers = new
+            {
+                phonepe = "phonepe://pay?pa=" + Uri.EscapeDataString(upiId) + $"&pn={Uri.EscapeDataString(payeeName)}&am={amt}&cu=INR&tn={Uri.EscapeDataString(note)}",
+                gpay = "tez://upi/pay?pa=" + Uri.EscapeDataString(upiId) + $"&pn={Uri.EscapeDataString(payeeName)}&am={amt}&cu=INR&tn={Uri.EscapeDataString(note)}",
+                paytm = "paytmmp://pay?pa=" + Uri.EscapeDataString(upiId) + $"&pn={Uri.EscapeDataString(payeeName)}&am={amt}&cu=INR&tn={Uri.EscapeDataString(note)}",
+            },
+        });
+    }
+
     public record PaymentOrderDto(double AmountInr, string? Receipt);
+    public record UpiLinkDto(double AmountInr, string? UpiId, string? Note);
     public record VisionDto(string DataBase64);
 }

@@ -26,6 +26,7 @@ public class AuthController : ControllerBase
 
     public record LoginRequest(string? Username, string? Password);
     public record LoginResult(string Token, string Username, string Role);
+    public record RegisterRequest(string? Username, string? Password, string? Name);
 
     [HttpPost("login")]
     [AllowAnonymous]
@@ -55,6 +56,46 @@ public class AuthController : ControllerBase
         }
 
         return Unauthorized(new { error = "Invalid username or password" });
+    }
+
+    // ---- Self-registration (creates a supervisor account, auto-login) ----
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult> Register([FromBody] RegisterRequest req)
+    {
+        var username = req.Username?.Trim() ?? "";
+        var password = req.Password ?? "";
+
+        if (username.Length < 3)
+            return BadRequest(new { error = "Username must be at least 3 characters" });
+        if (password.Length < 6)
+            return BadRequest(new { error = "Password must be at least 6 characters" });
+
+        var existing = await _users.GetUserByUsernameAsync(username);
+        if (existing is not null)
+            return BadRequest(new { error = "Username already exists" });
+
+        var user = new AppUser
+        {
+            Username = username,
+            Role = Roles.Supervisor,
+            IsActive = true,
+            PasswordHash = HashPassword(password),
+        };
+        await _users.InsertUserAsync(user);
+        await _activity.LogAsync("Account registered", $"{username} (supervisor)");
+
+        var token = GenerateToken();
+        await _users.CreateSessionAsync(new UserSession
+        {
+            Token = token,
+            UserId = user.Id,
+            Username = user.Username,
+            Role = user.Role,
+            ExpiresAt = DateTime.UtcNow.AddDays(30),
+        });
+        return Ok(new LoginResult(token, user.Username, user.Role));
     }
 
     // ---- Staff user management (admin only) ----
