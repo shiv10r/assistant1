@@ -105,20 +105,34 @@ async function del(url: string): Promise<void> {
 function today(): string { return new Date().toISOString().slice(0, 10) }
 export { today }
 
-// Downloads a protected file (Excel/PDF/PNG) with the auth token and saves it.
-async function download(url: string): Promise<void> {
+// Fetches a protected blob with the auth token, returning blob + suggested filename.
+async function fetchBlob(url: string): Promise<{ blob: Blob; name: string }> {
   const r = await fetch(BASE + url, { headers: authHeaders() })
   if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   const blob = await r.blob()
   const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'luxinfra-download'
+  return { blob, name }
+}
+
+// Downloads a protected file (Excel/PDF/PNG/uploads) with the auth token and saves it.
+async function download(url: string): Promise<void> {
+  const { blob, name } = await fetchBlob(url)
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = name
   document.body.appendChild(a)
   a.click()
   a.remove()
-  URL.revokeObjectURL(a.href)
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000)
+}
+
+// Opens a protected file in a new tab (images render inline; others prompt save).
+async function openFile(url: string): Promise<void> {
+  const { blob } = await fetchBlob(url)
+  const objectUrl = URL.createObjectURL(blob)
+  window.open(objectUrl, '_blank', 'noopener')
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60000)
 }
 
 // ---------------- Assistant ----------------
@@ -196,6 +210,7 @@ export const api = {
   dashboard,
   report,
   download,
+  openFile,
   billing,
   projects,
   analytics: () => get<AnalyticsData>('/api/analytics'),
