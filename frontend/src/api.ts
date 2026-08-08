@@ -22,8 +22,8 @@ export interface CashEntry { id: number; kind: string; amount: number; date: str
 export interface BankAccount { id: number; name: string; accNo: string; ifsc: string; upiId: string; openingBalance: number; asOf: string }
 export type Settings = Record<string, string>
 
-export interface Project { id: number; name: string; address: string; value: number; status: string; createdAt: string }
-export interface SiteParty { id: number; projectId: number; name: string; phone: string; role: string; openingBalance: number; balanceType: string; currentBalance: number; isActive: boolean }
+export interface Project { id: number; name: string; address: string; value: number; status: string; createdAt: string; latitude?: number; longitude?: number }
+export interface SiteParty { id: number; projectId: number; name: string; phone: string; role: string; openingBalance: number; balanceType: string; currentBalance: number; dailyRate: number; isActive: boolean }
 export interface ProjectTask { id: number; projectId: number; name: string; status: string; members: string; location: string; durationDays: number; startDate: string; endDate: string; estQuantity: number; progressPercent: number; imagePath: string; link: string }
 export interface ProjectTxn { id: number; projectId: number; type: string; partyId: number; partyName: string; amount: number; description: string; referenceNumber: string; paymentMethod: string; costCode: string; date: string }
 export interface AttendanceRecord { id: number; projectId: number; partyId: number; partyName: string; date: string; status: string; hoursLogged: number }
@@ -49,9 +49,14 @@ export interface AnalyticsData {
 
 // ---------------- core ----------------
 const TOKEN_KEY = 'lux_token'
+const ROLE_KEY = 'lux_role'
+const USER_KEY = 'lux_user'
 export function getToken(): string | null { return localStorage.getItem(TOKEN_KEY) }
+export function getRole(): string { return localStorage.getItem(ROLE_KEY) || 'admin' }
+export function getUsername(): string { return localStorage.getItem(USER_KEY) || '' }
 export function isAuthed(): boolean { return !!getToken() }
-export function logout(): void { localStorage.removeItem(TOKEN_KEY) }
+export function isAdmin(): boolean { return getRole() === 'admin' }
+export function logout(): void { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(USER_KEY) }
 
 export async function login(username: string, password: string): Promise<void> {
   const r = await fetch(BASE + '/api/auth/login', {
@@ -62,6 +67,8 @@ export async function login(username: string, password: string): Promise<void> {
   if (!r.ok) throw new Error('Invalid username or password')
   const data = await r.json()
   localStorage.setItem(TOKEN_KEY, data.token)
+  localStorage.setItem(ROLE_KEY, data.role)
+  localStorage.setItem(USER_KEY, data.username)
 }
 
 function authHeaders(): Record<string, string> {
@@ -198,6 +205,36 @@ const projects = {
   removeUpload: (projectId: number, blobId: number) => del(`/api/projects/${projectId}/uploads/${blobId}`),
 }
 
+// ---------------- Integrations & new modules ----------------
+export interface AppUser { id: number; username: string; role: string; isActive: boolean; createdAt: string }
+export interface UserSessionInfo { token: string; username: string; role: string; createdAt: string; expiresAt: string }
+export interface PayrollRow { partyId: number; name: string; role: string; dailyRate: number; days: number; hours: number; totalHours: number; amount: number; amountLabel: string; currentBalance: number; netPayable: number; netPayableLabel: string }
+export interface PayrollResult { from: string; to: string; totalDays: number; totalAmount: number; totalAmountLabel: string; rows: PayrollRow[] }
+export interface IntegrationStatus { email: string; emailProvider?: string; razorpay: string; razorpayKeyId?: string; drive: string; driveFolder?: string; vision: string; visionModel?: string }
+export interface EinvoiceResult { ok: boolean; txn?: { id: number; refLabel: string; date: string }; payload?: unknown; error?: string }
+export interface VisionResult { ok: boolean; progress?: number; note?: string; model?: string; error?: string; code?: string; message?: string }
+
+const auth = {
+  users: () => get<AppUser[]>('/api/auth/users'),
+  saveUser: (u: Partial<AppUser> & { password?: string }) => post<AppUser>('/api/auth/users', u),
+  toggleUser: (id: number) => post<AppUser>(`/api/auth/users/${id}/toggle`, {}),
+  deleteUser: (id: number) => del(`/api/auth/users/${id}`),
+  sessions: () => get<UserSessionInfo[]>('/api/auth/sessions'),
+}
+
+const payroll = {
+  compute: (projectId: number, from: string, to: string) => get<PayrollResult>(`/api/projects/${projectId}/payroll?from=${from}&to=${to}`),
+}
+
+const integrations = {
+  status: () => get<IntegrationStatus>('/api/integrations/status'),
+  emailInvoice: (txnId: number) => post<{ ok: boolean; to?: string; fileName?: string; subject?: string; error?: string; code?: string; message?: string }>(`/api/txns/${txnId}/email`, {}),
+  einvoice: (txnId: number) => get<EinvoiceResult>(`/api/txns/${txnId}/einvoice`),
+  razorpayOrder: (amountInr: number, receipt?: string) => post<{ ok: boolean; orderId?: string; keyId?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/order', { amountInr, receipt }),
+  driveBackup: () => post<{ ok: boolean; error?: string; code?: string; message?: string }>('/api/backup/drive', {}),
+  visionProgress: (dataBase64: string) => post<VisionResult>('/api/vision/progress', { dataBase64 }),
+}
+
 export function uploadUrl(projectId: number, blobId: number): string {
   return `${BASE}/api/projects/${projectId}/uploads/${blobId}`
 }
@@ -213,6 +250,9 @@ export const api = {
   openFile,
   billing,
   projects,
+  auth,
+  payroll,
+  integrations,
   analytics: () => get<AnalyticsData>('/api/analytics'),
   backupStatus: () => get<BackupStatus>('/api/backup'),
   backupPush: () => post<BackupResult>('/api/backup/push', {}),

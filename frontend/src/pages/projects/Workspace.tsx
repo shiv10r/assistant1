@@ -28,6 +28,7 @@ const CARDS: { to: string; icon: React.ReactNode; label: string; desc: string }[
   { to: '/mom', icon: <FileText className="w-6 h-6" />, label: 'MOM', desc: 'Meeting minutes' },
   { to: '/design', icon: <Palette className="w-6 h-6" />, label: 'Design', desc: 'Drawings & designs' },
   { to: '/files', icon: <FolderOpen className="w-6 h-6" />, label: 'Files', desc: 'Folders & docs' },
+  { to: '/payroll', icon: <Wallet className="w-6 h-6" />, label: 'Payroll', desc: 'Salary computation' },
 ]
 
 export default function Workspace() {
@@ -40,21 +41,27 @@ export default function Workspace() {
   const [dprOpen, setDprOpen] = useState(false)
   const [pr, setPr] = useState('0')
   const [note, setNote] = useState('')
-  const [f, setF] = useState({ name: '', address: '', value: '', status: 'Ongoing' })
+  const [f, setF] = useState({ name: '', address: '', value: '', status: 'Ongoing', latitude: '', longitude: '' })
 
   const load = () => api.projects.detail(pid).then(setD).catch((e) => setErr(String(e)))
   useEffect(() => { load() }, [pid])
 
   const openEdit = () => {
     if (!d) return
-    setF({ name: d.project.name, address: d.project.address, value: String(d.project.value || ''), status: d.project.status })
+    setF({
+      name: d.project.name, address: d.project.address, value: String(d.project.value || ''), status: d.project.status,
+      latitude: d.project.latitude ? String(d.project.latitude) : '', longitude: d.project.longitude ? String(d.project.longitude) : '',
+    })
     setEditOpen(true)
   }
 
   const saveEdit = async () => {
     if (!d || !f.name.trim()) { setErr('Project name is required'); return }
     try {
-      await api.projects.update({ ...d.project, name: f.name.trim(), address: f.address, value: Number(f.value) || 0, status: f.status })
+      await api.projects.update({
+        ...d.project, name: f.name.trim(), address: f.address, value: Number(f.value) || 0, status: f.status,
+        latitude: Number(f.latitude) || 0, longitude: Number(f.longitude) || 0,
+      })
       setEditOpen(false)
       load()
     } catch (e) { setErr(String(e)) }
@@ -197,6 +204,16 @@ export default function Workspace() {
               <Select id="estatus" value={f.status} onValueChange={(v) => setF({ ...f, status: v })}>
                 {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </Select>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="elat">Latitude</Label>
+              <Input id="elat" placeholder="e.g. 19.0760" value={f.latitude} onChange={(e) => setF({ ...f, latitude: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="elng">Longitude</Label>
+              <Input id="elng" placeholder="e.g. 72.8777" value={f.longitude} onChange={(e) => setF({ ...f, longitude: e.target.value })} />
             </div>
           </div>
           {err && <div className={cn('p-3 rounded-lg text-sm border', 'bg-red-500/10 border-red-500/20 text-red-500')}>{err}</div>}

@@ -7,7 +7,7 @@ import { Badge, Empty, Modal, money, PageHead } from '../../ui'
 const ROLES = ['Site Staff', 'Sub-contractor', 'Material Supplier']
 
 function blank(pid: number): SiteParty {
-  return { id: 0, projectId: pid, name: '', phone: '', role: 'Site Staff', openingBalance: 0, balanceType: 'pending', currentBalance: 0, isActive: true }
+  return { id: 0, projectId: pid, name: '', phone: '', role: 'Site Staff', openingBalance: 0, balanceType: 'pending', currentBalance: 0, isActive: true, dailyRate: 0 }
 }
 
 export default function ProjectParty() {
@@ -48,12 +48,13 @@ export default function ProjectParty() {
       {parties.length === 0 ? <Empty>No parties yet.</Empty> : (
         <div className="card" style={{ padding: 8 }}>
           <table className="main-table">
-            <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th className="num">Balance</th><th>Type</th></tr></thead>
+            <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th className="num">Rate</th><th className="num">Balance</th><th>Type</th></tr></thead>
             <tbody>{parties.map((p) => (
               <tr key={p.id}>
                 <td className="cat">{p.name}</td>
                 <td className="muted">{p.role}</td>
                 <td className="muted">{p.phone || '—'}</td>
+                <td className="num muted">{p.dailyRate ? money(p.dailyRate) + '/day' : '—'}</td>
                 <td className="num" style={{ color: p.currentBalance >= 0 ? '#2E8B57' : '#E05C7A' }}>{money(Math.abs(p.currentBalance))}</td>
                 <td><Badge tone={p.currentBalance >= 0 ? 'green' : 'pink'}>{p.currentBalance >= 0 ? 'Advance' : 'Pending'}</Badge></td>
               </tr>
@@ -75,6 +76,7 @@ export default function ProjectParty() {
             </select>
           </div>
           <input type="number" min={0} value={f.openingBalance || ''} placeholder="Opening balance" onChange={(e) => set('openingBalance', Number(e.target.value))} />
+          <input type="number" min={0} step="0.01" value={f.dailyRate || ''} placeholder="Daily rate (₹, for payroll)" onChange={(e) => set('dailyRate', Number(e.target.value))} />
           {err && <div className="empty" style={{ color: '#E05C7A', padding: '8px 0' }}>{err}</div>}
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button className="btn" onClick={save}>Save</button>

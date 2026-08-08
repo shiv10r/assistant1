@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { logout } from './api'
+import { getRole, logout } from './api'
 import { applyTheme, getTheme } from './theme'
 import type { Theme } from './theme'
 import {
@@ -24,13 +24,18 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  Map,
+  PlugZap,
+  ScanBarcode,
+  Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import { usePlan } from './hooks/usePlan'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
-type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string }
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
 const GROUPS: NavGroup[] = [
@@ -52,6 +57,13 @@ const GROUPS: NavGroup[] = [
   ]},
   { title: 'Projects', items: [
     { label: 'All Projects', to: '/projects', icon: <Briefcase className="w-5 h-5" /> },
+    { label: 'Site Map', to: '/map', icon: <Map className="w-5 h-5" /> },
+  ]},
+  { title: 'Automation', items: [
+    { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
+    { label: 'AI Vision Progress', to: '/vision', icon: <Sparkles className="w-5 h-5" /> },
+    { label: 'Integrations', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
+    { label: 'Team & Roles', to: '/users', icon: <ShieldCheck className="w-5 h-5" />, adminOnly: true },
   ]},
   { title: 'Account', items: [
     { label: 'Plans & Billing', to: '/plans', icon: <CreditCard className="w-5 h-5" /> },
@@ -66,6 +78,7 @@ export default function Layout() {
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const { plan } = usePlan()
+  const isAdmin = getRole() === 'admin' || !getRole()
 
   function toggleTheme() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
@@ -130,7 +143,7 @@ export default function Layout() {
                 </button>
                 {!isCollapsed && (
                   <div className="nav-items">
-                    {g.items.map((it) => (
+                    {g.items.filter((it) => !it.adminOnly || isAdmin).map((it) => (
                       <NavLink
                         key={it.to}
                         to={it.to}
