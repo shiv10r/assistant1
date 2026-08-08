@@ -13,6 +13,7 @@ import Analytics from './pages/Analytics'
 import Backup from './pages/Backup'
 import Activity from './pages/Activity'
 import BillingHome from './pages/billing/BillingHome'
+import BillingParties from './pages/billing/BillingParties'
 import TxnForm from './pages/billing/TxnForm'
 import PartyForm from './pages/billing/PartyForm'
 import Catalog from './pages/billing/Catalog'
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
 
           <Route path="/billing" element={<BillingHome />} />
+          <Route path="/billing/parties" element={<BillingParties />} />
           <Route path="/billing/sale" element={<TxnForm />} />
           <Route path="/billing/party" element={<PartyForm />} />
           <Route path="/billing/items" element={<Catalog />} />

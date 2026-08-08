@@ -15,9 +15,9 @@ export const txnTypeLabel = (t: string) =>
   : t === 'PAYMENT_OUT' ? 'Payment-Out' : t === 'ESTIMATE' ? 'Estimate' : t === 'SALE_ORDER' ? 'Sale Order'
   : t === 'PURCHASE_ORDER' ? 'Purchase Order' : t === 'DELIVERY_CHALLAN' ? 'Delivery Challan' : t
 
-export default function BillingHome() {
+export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txns' | 'parties' }) {
   const [kpis, setKpis] = useState<BillingKpis | null>(null)
-  const [tab, setTab] = useState<'txns' | 'parties'>('txns')
+  const [tab, setTab] = useState<'txns' | 'parties'>(initialTab)
   const [txns, setTxns] = useState<BizTxn[]>([])
   const [parties, setParties] = useState<Party[]>([])
   const [items, setItems] = useState<CatalogItem[]>([])
