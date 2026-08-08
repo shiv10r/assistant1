@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using LuxInfra.Api.Services;
 using LuxInfra.Models;
 using LuxInfra.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +15,31 @@ public class AssistantController : ControllerBase
     private readonly IBillingService _billing;
     private readonly IProjectService _projects;
     private readonly IActivityService _activity;
+    private readonly ChatAiService _ai;
 
-    public AssistantController(DatabaseService db, ReportService reports, IBillingService billing, IProjectService projects, IActivityService activity)
-        => (_db, _reports, _billing, _projects, _activity) = (db, reports, billing, projects, activity);
+    public AssistantController(DatabaseService db, ReportService reports, IBillingService billing, IProjectService projects, IActivityService activity, ChatAiService ai)
+        => (_db, _reports, _billing, _projects, _activity, _ai) = (db, reports, billing, projects, activity, ai);
+
+    // ---- Open-source AI chat (DeepSeek via OpenRouter) ----
+
+    public record AiRequest(string Text, List<ChatTurn>? History);
+
+    [HttpGet("ai/status")]
+    public ActionResult AiStatus() => Ok(new
+    {
+        configured = _ai.Configured,
+        model = _ai.Model,
+    });
+
+    [HttpPost("ai")]
+    public async Task<ActionResult<AiReply>> Ai([FromBody] AiRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Text))
+            return Ok(AiReply.Failed(_ai.Model, "empty_message"));
+
+        var reply = await _ai.AskAsync(request.Text.Trim(), request.History ?? new List<ChatTurn>());
+        return Ok(reply);
+    }
 
     // Everything you can watch in the app: log / total / summary / undo / help,
     // plus pattern-based queries across Billing (parties, txns) and Projects.

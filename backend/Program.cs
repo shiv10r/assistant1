@@ -46,6 +46,9 @@ builder.Services.AddSingleton<IActivityService, ActivityService>();
 builder.Services.AddSingleton<TursoSyncService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<TursoSyncService>());
 
+// ---- Optional open-source AI chat (DeepSeek via OpenRouter) — enable with OPENROUTER_API_KEY. ----
+builder.Services.AddSingleton<ChatAiService>();
+
 // ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>
 {
