@@ -1,11 +1,33 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border);
+  --radius: 0.75rem;
+}
+
 :root {
   --bg: #0F0F1A;
   --surface: #1C1C2E;
   --surface2: #26263C;
+  --surface-hover: #26263C;
+  --surface-elevated: #2A2A3E;
   --primary: #7C4DFF;
   --primary-soft: #B39DFF;
   --accent: #00E5C3;
   --text: #F2F2F7;
+  --text-muted: #9A9AB0;
   --dim: #9A9AB0;
   --border: #33334D;
   --shadow: 0 8px 24px rgba(0,0,0,.35);
@@ -16,10 +38,13 @@
   --bg: #F4F5FB;
   --surface: #FFFFFF;
   --surface2: #EDEFF8;
+  --surface-hover: #EDEFF8;
+  --surface-elevated: #FFFFFF;
   --primary: #6D3BFF;
   --primary-soft: #4A3FBF;
   --accent: #0B8A75;
   --text: #1B1C2E;
+  --text-muted: #6A6C87;
   --dim: #6A6C87;
   --border: #D9DCEA;
   --shadow: 0 8px 22px rgba(60, 70, 120, .14);

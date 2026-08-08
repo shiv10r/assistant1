@@ -123,7 +123,7 @@ async function download(url: string): Promise<void> {
 // ---------------- Assistant ----------------
 const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
 const dashboard = () => get<Dashboard>('/api/dashboard')
-const report = (period: string) => get<ReportData>(`/api/reports?period=${period}`)
+const report = (period: string) => get<ReportData>(`/api/reports?period=${period.toLowerCase()}`)
 
 // ---------------- Billing ----------------
 const billing = {
@@ -139,6 +139,7 @@ const billing = {
   adjustCash: (e: CashEntry) => post<CashEntry>('/api/billing/cash', e),
   banks: () => get<BankAccount[]>('/api/billing/banks'),
   saveBank: (b: BankAccount) => post<BankAccount>('/api/billing/banks', b),
+  deleteBank: (id: number) => del(`/api/billing/banks/${id}`),
   cheques: () => get<BizTxn[]>('/api/billing/cheques'),
   clearCheque: (id: number) => postVoid(`/api/billing/cheques/${id}/cleared`, {}),
   settings: () => get<Settings>('/api/billing/settings'),

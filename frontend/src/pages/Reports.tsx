@@ -12,7 +12,7 @@ export default function Reports() {
 
   useEffect(() => { api.report(period).then(setData).catch(() => setData(null)) }, [period])
 
-  const q = period === 'Today' ? '' : `?period=${period}`
+  const q = period === 'Today' ? '' : `?period=${period.toLowerCase()}`
   const exportFile = (fmt: string) =>
     api.download(`/api/reports/export/${fmt}${q}`).catch((e) => setDlErr(String(e)))
 

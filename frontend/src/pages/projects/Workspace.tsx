@@ -1,13 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { ProjectDetail } from '../../api'
-import { Empty, money, PageHead } from '../../ui'
+import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Empty, money } from '../../components/ui'
+import {
+  ArrowLeft, Users, Wallet, Building2, ClipboardList, Clock3, Layers3, FileText, Palette, FolderOpen,
+  Plus, TrendingUp, TrendingDown, Target,
+} from 'lucide-react'
+import { cn } from '../../lib/utils'
 
-const CARDS: [string, string, string][] = [
-  ['/party', '👥', 'Party'], ['/txn', '💸', 'Transaction'], ['/site', '🏗️', 'Site'],
-  ['/tasks', '📋', 'Task'], ['/attendance', '⏱️', 'Attendance'], ['/material', '🧱', 'Material'],
-  ['/mom', '📝', 'MOM'], ['/design', '🎨', 'Design'], ['/files', '📁', 'Files'],
+const STATUSES = ['In Discussion', 'Not Started', 'Ongoing', 'On Hold', 'Completed']
+const STATUS_TONE: Record<string, 'default' | 'info' | 'warning' | 'danger' | 'success' | 'outline'> = {
+  'In Discussion': 'info',
+  'Not Started': 'outline',
+  Ongoing: 'default',
+  'On Hold': 'warning',
+  Completed: 'success',
+}
+
+const CARDS: { to: string; icon: React.ReactNode; label: string; desc: string }[] = [
+  { to: '/party', icon: <Users className="w-6 h-6" />, label: 'Party', desc: 'Site staff & vendors' },
+  { to: '/txn', icon: <Wallet className="w-6 h-6" />, label: 'Transaction', desc: 'Payments in & out' },
+  { to: '/site', icon: <Building2 className="w-6 h-6" />, label: 'Site', desc: 'Daily progress logs' },
+  { to: '/tasks', icon: <ClipboardList className="w-6 h-6" />, label: 'Task', desc: 'Task management' },
+  { to: '/attendance', icon: <Clock3 className="w-6 h-6" />, label: 'Attendance', desc: 'Daily attendance' },
+  { to: '/material', icon: <Layers3 className="w-6 h-6" />, label: 'Material', desc: 'Material & stock' },
+  { to: '/mom', icon: <FileText className="w-6 h-6" />, label: 'MOM', desc: 'Meeting minutes' },
+  { to: '/design', icon: <Palette className="w-6 h-6" />, label: 'Design', desc: 'Drawings & designs' },
+  { to: '/files', icon: <FolderOpen className="w-6 h-6" />, label: 'Files', desc: 'Folders & docs' },
 ]
 
 export default function Workspace() {
@@ -16,12 +36,29 @@ export default function Workspace() {
   const nav = useNavigate()
   const [d, setD] = useState<ProjectDetail | null>(null)
   const [err, setErr] = useState('')
+  const [editOpen, setEditOpen] = useState(false)
   const [dprOpen, setDprOpen] = useState(false)
   const [pr, setPr] = useState('0')
   const [note, setNote] = useState('')
+  const [f, setF] = useState({ name: '', address: '', value: '', status: 'Ongoing' })
 
   const load = () => api.projects.detail(pid).then(setD).catch((e) => setErr(String(e)))
   useEffect(() => { load() }, [pid])
+
+  const openEdit = () => {
+    if (!d) return
+    setF({ name: d.project.name, address: d.project.address, value: String(d.project.value || ''), status: d.project.status })
+    setEditOpen(true)
+  }
+
+  const saveEdit = async () => {
+    if (!d || !f.name.trim()) { setErr('Project name is required'); return }
+    try {
+      await api.projects.update({ ...d.project, name: f.name.trim(), address: f.address, value: Number(f.value) || 0, status: f.status })
+      setEditOpen(false)
+      load()
+    } catch (e) { setErr(String(e)) }
+  }
 
   const addDpr = async () => {
     try {
@@ -30,58 +67,165 @@ export default function Workspace() {
     } catch (e) { setErr(String(e)) }
   }
 
-  if (err) return <Empty>⚠️ {err}</Empty>
-  if (!d) return <Empty>Loading…</Empty>
+  const stats = useMemo(() => {
+    if (!d) return { value: 0, received: 0, spent: 0, taskPct: 0, parties: 0, tasks: 0 }
+    const received = d.txns.filter((t) => t.type === 'PAYMENT_IN').reduce((s, t) => s + t.amount, 0)
+    const spent = d.txns.filter((t) => t.type === 'PAYMENT_OUT').reduce((s, t) => s + t.amount, 0)
+      + d.materials.reduce((s, m) => s + m.amount, 0)
+    const taskPct = d.tasks.length
+      ? Math.round(d.tasks.reduce((s, t) => s + t.progressPercent, 0) / d.tasks.length)
+      : 0
+    return { value: d.project.value, received, spent, taskPct, parties: d.parties.length, tasks: d.tasks.length }
+  }, [d])
+
+  if (err) return <Empty title="Something went wrong" description={err} />
+  if (!d) return <Empty title="Loading…" description="Please wait" />
+
   const p = d.project
 
   return (
     <>
-      <PageHead icon="🏗️" title={p.name} sub={p.status}
-        right={<button className="btn ghost" onClick={() => nav('/projects')}>← Back</button>} />
-
-      <div className="card" style={{ background: 'var(--grad)', color: '#fff' }}>
-        <div style={{ fontSize: 15, fontWeight: 700 }}>{p.name}</div>
-        <div className="muted" style={{ color: 'rgba(255,255,255,.9)' }}>{p.status} · {p.address || 'No address'}</div>
-        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 8 }}>{money(p.value)}</div>
+      <div className="page-head">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => nav('/projects')} aria-label="Back">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1>{p.name}</h1>
+              <Badge variant={STATUS_TONE[p.status] || 'outline'} size="sm">{p.status}</Badge>
+            </div>
+            <div className="muted">{p.address || 'No address'}</div>
+          </div>
+        </div>
+        <Button variant="outline" onClick={openEdit}>Edit Project</Button>
       </div>
 
-      <div className="grid3" style={{ marginBottom: 16 }}>
-        {CARDS.map(([to, icon, label]) => (
-          <Link key={to} to={`/projects/${pid}${to}`} className="grid-card">
-            <div className="gc-icon">{icon}</div><div className="gc-label">{label}</div>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Kpi label="Contract Value" value={money(p.value)} icon={<Target className="w-5 h-5" />} tone="violet" />
+        <Kpi label="Received" value={money(stats.received)} icon={<TrendingDown className="w-5 h-5 rotate-180" />} tone="emerald" />
+        <Kpi label="Spent" value={money(stats.spent)} icon={<TrendingUp className="w-5 h-5" />} tone="amber" />
+        <Kpi label="Task Progress" value={`${stats.taskPct}%`} icon={<ClipboardList className="w-5 h-5" />} tone="cyan" />
+      </div>
+
+      {/* Module grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
+        {CARDS.map((c) => (
+          <Link
+            key={c.to}
+            to={`/projects/${pid}${c.to}`}
+            className="group bg-surface border border-border rounded-xl p-5 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all"
+          >
+            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+              {c.icon}
+            </div>
+            <div className="font-medium text-text">{c.label}</div>
+            <div className="text-xs text-muted mt-0.5">{c.desc}</div>
           </Link>
         ))}
       </div>
 
-      <div className="chip" style={{ marginBottom: 12 }}>
-        <button className="btn ghost" onClick={() => setDprOpen((o) => !o)}>＋ Add DPR</button>
-      </div>
-
-      {dprOpen && (
-        <div className="card">
-          <h2>＋ Add DPR</h2>
-          <div className="form-row">
-            <input type="number" min={0} max={100} value={pr} placeholder="Progress %" onChange={(e) => setPr(e.target.value)} />
-            <input value={note} placeholder="Note" onChange={(e) => setNote(e.target.value)} />
+      {/* DPR */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold m-0">Daily Progress Reports</h2>
+            <Button size="sm" variant="outline" onClick={() => setDprOpen((o) => !o)}>
+              <Plus className="w-4 h-4" /> Add DPR
+            </Button>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn" onClick={addDpr}>Save DPR</button>
-            <button className="btn ghost" onClick={() => setDprOpen(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
 
-      {d.logs.length > 0 && (
-        <div className="card">
-          <h2>📅 Daily Progress Reports</h2>
-          <table className="main-table">
-            <thead><tr><th>Date</th><th>Progress</th><th>Note</th></tr></thead>
-            <tbody>{d.logs.map((l) => (
-              <tr key={l.id}><td className="muted">{l.date.slice(8, 10)}/{l.date.slice(5, 7)}/{l.date.slice(2, 4)}</td><td style={{ color: 'var(--accent)' }}>{l.progressPercent}%</td><td className="muted">{l.note || '—'}</td></tr>
-            ))}</tbody>
-          </table>
-        </div>
-      )}
+          {dprOpen && (
+            <div className="grid gap-3 sm:grid-cols-[160px_1fr_auto] items-end mb-4 p-4 bg-surface2/50 rounded-xl border border-border">
+              <div>
+                <Label>Progress %</Label>
+                <Input type="number" min={0} max={100} value={pr} onChange={(e) => setPr(e.target.value)} placeholder="0" />
+              </div>
+              <div>
+                <Label>Note</Label>
+                <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What happened today?" />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={addDpr}>Save</Button>
+                <Button variant="ghost" onClick={() => setDprOpen(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          {d.logs.length === 0 ? (
+            <p className="text-sm text-muted py-4 text-center">No daily progress reports yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {[...d.logs].reverse().map((l) => (
+                <div key={l.id} className="flex items-center gap-4 p-3 rounded-lg bg-surface2/50 border border-border">
+                  <span className="text-xs text-muted w-20">{l.date.slice(8, 10)}/{l.date.slice(5, 7)}/{l.date.slice(2, 4)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 rounded-full bg-surface overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-violet-600 to-cyan-500" style={{ width: `${Math.min(100, l.progressPercent)}%` }} />
+                      </div>
+                      <span className="text-xs font-semibold text-primary w-10 text-right">{l.progressPercent}%</span>
+                    </div>
+                    {l.note && <p className="text-xs text-muted mt-1">{l.note}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Edit Project Modal */}
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit Project" size="md">
+        <form onSubmit={(e) => { e.preventDefault(); saveEdit() }} className="space-y-5">
+          <div>
+            <Label htmlFor="ename" required>Project Name</Label>
+            <Input id="ename" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          </div>
+          <div>
+            <Label htmlFor="eaddr">Address / Site</Label>
+            <Textarea id="eaddr" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} rows={2} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="evalue">Contract Value (₹)</Label>
+              <Input id="evalue" type="number" min="0" value={f.value} onChange={(e) => setF({ ...f, value: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="estatus">Status</Label>
+              <Select id="estatus" value={f.status} onValueChange={(v) => setF({ ...f, status: v })}>
+                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </Select>
+            </div>
+          </div>
+          {err && <div className={cn('p-3 rounded-lg text-sm border', 'bg-red-500/10 border-red-500/20 text-red-500')}>{err}</div>}
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit">Save Changes</Button>
+          </div>
+        </form>
+      </Modal>
     </>
+  )
+}
+
+function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone: 'violet' | 'cyan' | 'amber' | 'emerald' }) {
+  const tones = {
+    violet: 'bg-violet-500/10 text-violet-500',
+    cyan: 'bg-cyan-500/10 text-cyan-500',
+    amber: 'bg-amber-500/10 text-amber-500',
+    emerald: 'bg-emerald-500/10 text-emerald-500',
+  }
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted">{label}</p>
+          <p className="text-xl font-bold text-text mt-1">{value}</p>
+        </div>
+        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', tones[tone])}>{icon}</div>
+      </CardContent>
+    </Card>
   )
 }
