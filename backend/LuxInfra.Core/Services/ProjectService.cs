@@ -1,86 +1,33 @@
 using LuxInfra.Models;
-using SQLite;
+using LuxInfra.Repositories;
 
 namespace LuxInfra.Services;
 
 /// <summary>
 /// Backs the "Projects" module (construction/interior-design job tracking: parties,
 /// tasks and payments per project) — separate from the general billing ledger.
+/// Business logic lives here; all persistence is delegated to <see cref="IProjectRepository"/>.
 /// </summary>
-public class ProjectService
+public class ProjectService : IProjectService
 {
-    private readonly DatabaseService _db;
-    private bool _initialized;
+    private readonly IProjectRepository _repo;
 
-    public ProjectService(DatabaseService db) => _db = db;
-
-    private async Task<SQLiteAsyncConnection> Conn()
-    {
-        var conn = await _db.GetConnectionAsync();
-        if (!_initialized)
-        {
-            await conn.CreateTableAsync<Project>();
-            await conn.CreateTableAsync<SiteParty>();
-            await conn.CreateTableAsync<ProjectTask>();
-            await conn.CreateTableAsync<ProjectTxn>();
-            await conn.CreateTableAsync<AttendanceRecord>();
-            await conn.CreateTableAsync<MaterialTxn>();
-            await conn.CreateTableAsync<SiteLog>();
-            await conn.CreateTableAsync<MeetingMinute>();
-            await conn.CreateTableAsync<DesignFile>();
-            await conn.CreateTableAsync<ProjectFolder>();
-            await conn.CreateTableAsync<ProjectFile>();
-            await conn.CreateTableAsync<FileBlob>();
-            _initialized = true;
-        }
-        return conn;
-    }
+    public ProjectService(IProjectRepository repo) => _repo = repo;
 
     // ---------- projects ----------
 
-    public async Task<List<Project>> GetProjectsAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<Project>().OrderByDescending(p => p.Id).ToListAsync();
-    }
+    public Task<List<Project>> GetProjectsAsync() => _repo.GetProjectsAsync();
 
-    public async Task<Project?> GetProjectAsync(int id)
-    {
-        var conn = await Conn();
-        return await conn.FindAsync<Project>(id);
-    }
+    public Task<Project?> GetProjectAsync(int id) => _repo.GetProjectAsync(id);
 
-    public async Task SaveProjectAsync(Project p)
-    {
-        var conn = await Conn();
-        if (p.Id == 0) await conn.InsertAsync(p);
-        else await conn.UpdateAsync(p);
-    }
+    public Task SaveProjectAsync(Project p)
+        => p.Id == 0 ? _repo.InsertProjectAsync(p) : _repo.UpdateProjectAsync(p);
 
-    public async Task DeleteProjectAsync(int id)
-    {
-        var conn = await Conn();
-        await conn.Table<Project>().DeleteAsync(p => p.Id == id);
-        await conn.Table<SiteParty>().DeleteAsync(p => p.ProjectId == id);
-        await conn.Table<ProjectTask>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<ProjectTxn>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<AttendanceRecord>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<MaterialTxn>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<SiteLog>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<MeetingMinute>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<DesignFile>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<ProjectFolder>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<ProjectFile>().DeleteAsync(t => t.ProjectId == id);
-        await conn.Table<FileBlob>().DeleteAsync(t => t.ProjectId == id);
-    }
+    public Task DeleteProjectAsync(int id) => _repo.DeleteProjectDataAsync(id);
 
     // ---------- parties ----------
 
-    public async Task<List<SiteParty>> GetPartiesAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<SiteParty>().Where(p => p.ProjectId == projectId).OrderBy(p => p.Name).ToListAsync();
-    }
+    public Task<List<SiteParty>> GetPartiesAsync(int projectId) => _repo.GetPartiesAsync(projectId);
 
     public async Task<SiteParty?> FindPartyByNameAsync(int projectId, string name)
     {
@@ -90,69 +37,45 @@ public class ProjectService
 
     public async Task SavePartyAsync(SiteParty p)
     {
-        var conn = await Conn();
         if (p.Id == 0)
         {
             p.CurrentBalance = p.BalanceType == "advance" ? p.OpeningBalance : -p.OpeningBalance;
-            await conn.InsertAsync(p);
+            await _repo.InsertPartyAsync(p);
         }
-        else await conn.UpdateAsync(p);
+        else await _repo.UpdatePartyAsync(p);
     }
 
     // ---------- tasks ----------
 
-    public async Task<List<ProjectTask>> GetTasksAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<ProjectTask>().Where(t => t.ProjectId == projectId).OrderBy(t => t.StartDate).ToListAsync();
-    }
+    public Task<List<ProjectTask>> GetTasksAsync(int projectId) => _repo.GetTasksAsync(projectId);
 
-    public async Task SaveTaskAsync(ProjectTask t)
-    {
-        var conn = await Conn();
-        if (t.Id == 0) await conn.InsertAsync(t);
-        else await conn.UpdateAsync(t);
-    }
+    public Task SaveTaskAsync(ProjectTask t)
+        => t.Id == 0 ? _repo.InsertTaskAsync(t) : _repo.UpdateTaskAsync(t);
 
     // ---------- transactions ----------
 
-    public async Task<List<ProjectTxn>> GetTxnsAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<ProjectTxn>().Where(t => t.ProjectId == projectId).OrderByDescending(t => t.Id).ToListAsync();
-    }
+    public Task<List<ProjectTxn>> GetTxnsAsync(int projectId) => _repo.GetTxnsAsync(projectId);
 
     /// <summary>Records the payment and reflects it on the party's advance/pending balance.</summary>
     public async Task SaveTxnAsync(ProjectTxn txn, SiteParty party)
     {
-        var conn = await Conn();
-        await conn.InsertAsync(txn);
-
+        await _repo.InsertTxnAsync(txn);
         party.CurrentBalance += txn.Type == ProjectTxnTypes.PaymentOut ? txn.Amount : -txn.Amount;
-        await conn.UpdateAsync(party);
+        await _repo.UpdatePartyAsync(party);
     }
 
     // ---------- attendance ----------
 
-    public async Task<List<AttendanceRecord>> GetAttendanceForDateAsync(int projectId, DateTime date)
-    {
-        var conn = await Conn();
-        var day = date.Date;
-        return await conn.Table<AttendanceRecord>()
-            .Where(a => a.ProjectId == projectId && a.Date == day).ToListAsync();
-    }
+    public Task<List<AttendanceRecord>> GetAttendanceForDateAsync(int projectId, DateTime date)
+        => _repo.GetAttendanceForDateAsync(projectId, date);
 
     /// <summary>Upserts today's (or the given date's) attendance row for a party.</summary>
     public async Task SetAttendanceStatusAsync(int projectId, SiteParty party, DateTime date, string status)
     {
-        var conn = await Conn();
         var day = date.Date;
-        var existing = (await conn.Table<AttendanceRecord>()
-            .Where(a => a.ProjectId == projectId && a.PartyId == party.Id && a.Date == day).ToListAsync())
-            .FirstOrDefault();
-
+        var existing = await _repo.GetAttendanceAsync(projectId, party.Id, day);
         if (existing is null)
-            await conn.InsertAsync(new AttendanceRecord
+            await _repo.InsertAttendanceAsync(new AttendanceRecord
             {
                 ProjectId = projectId,
                 PartyId = party.Id,
@@ -163,20 +86,16 @@ public class ProjectService
         else
         {
             existing.Status = status;
-            await conn.UpdateAsync(existing);
+            await _repo.UpdateAttendanceAsync(existing);
         }
     }
 
     public async Task SetAttendanceHoursAsync(int projectId, SiteParty party, DateTime date, double hours)
     {
-        var conn = await Conn();
         var day = date.Date;
-        var existing = (await conn.Table<AttendanceRecord>()
-            .Where(a => a.ProjectId == projectId && a.PartyId == party.Id && a.Date == day).ToListAsync())
-            .FirstOrDefault();
-
+        var existing = await _repo.GetAttendanceAsync(projectId, party.Id, day);
         if (existing is null)
-            await conn.InsertAsync(new AttendanceRecord
+            await _repo.InsertAttendanceAsync(new AttendanceRecord
             {
                 ProjectId = projectId,
                 PartyId = party.Id,
@@ -188,7 +107,7 @@ public class ProjectService
         else
         {
             existing.HoursLogged = hours;
-            await conn.UpdateAsync(existing);
+            await _repo.UpdateAttendanceAsync(existing);
         }
     }
 
@@ -196,16 +115,11 @@ public class ProjectService
 
     public async Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId, string? kind = null)
     {
-        var conn = await Conn();
-        var all = await conn.Table<MaterialTxn>().Where(m => m.ProjectId == projectId).OrderByDescending(m => m.Id).ToListAsync();
+        var all = await _repo.GetMaterialTxnsAsync(projectId);
         return kind is null ? all : all.Where(m => m.Kind == kind).ToList();
     }
 
-    public async Task SaveMaterialTxnAsync(MaterialTxn m)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(m);
-    }
+    public Task SaveMaterialTxnAsync(MaterialTxn m) => _repo.InsertMaterialTxnAsync(m);
 
     /// <summary>Current stock per material = Received − Delivered, across all recorded transactions.</summary>
     public async Task<List<(string Material, double Qty, string Unit)>> GetInventoryAsync(int projectId)
@@ -224,99 +138,41 @@ public class ProjectService
 
     // ---------- site logs (DPR) ----------
 
-    public async Task<List<SiteLog>> GetSiteLogsAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<SiteLog>().Where(s => s.ProjectId == projectId).OrderByDescending(s => s.Id).ToListAsync();
-    }
+    public Task<List<SiteLog>> GetSiteLogsAsync(int projectId) => _repo.GetSiteLogsAsync(projectId);
 
-    public async Task SaveSiteLogAsync(SiteLog log)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(log);
-    }
+    public Task SaveSiteLogAsync(SiteLog log) => _repo.InsertSiteLogAsync(log);
 
     // ---------- MOM ----------
 
-    public async Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<MeetingMinute>().Where(m => m.ProjectId == projectId).OrderByDescending(m => m.Id).ToListAsync();
-    }
+    public Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId) => _repo.GetMeetingMinutesAsync(projectId);
 
-    public async Task SaveMeetingMinuteAsync(MeetingMinute m)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(m);
-    }
+    public Task SaveMeetingMinuteAsync(MeetingMinute m) => _repo.InsertMeetingMinuteAsync(m);
 
     // ---------- design ----------
 
-    public async Task<List<DesignFile>> GetDesignFilesAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<DesignFile>().Where(d => d.ProjectId == projectId).OrderByDescending(d => d.Id).ToListAsync();
-    }
+    public Task<List<DesignFile>> GetDesignFilesAsync(int projectId) => _repo.GetDesignFilesAsync(projectId);
 
-    public async Task SaveDesignFileAsync(DesignFile d)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(d);
-    }
+    public Task SaveDesignFileAsync(DesignFile d) => _repo.InsertDesignFileAsync(d);
 
     // ---------- files ----------
 
-    public async Task<List<ProjectFolder>> GetFoldersAsync(int projectId)
-    {
-        var conn = await Conn();
-        return await conn.Table<ProjectFolder>().Where(f => f.ProjectId == projectId).OrderBy(f => f.Name).ToListAsync();
-    }
+    public Task<List<ProjectFolder>> GetFoldersAsync(int projectId) => _repo.GetFoldersAsync(projectId);
 
-    public async Task<ProjectFolder> AddFolderAsync(int projectId, string name)
-    {
-        var conn = await Conn();
-        var folder = new ProjectFolder { ProjectId = projectId, Name = name };
-        await conn.InsertAsync(folder);
-        return folder;
-    }
+    public Task<ProjectFolder> AddFolderAsync(int projectId, string name) => _repo.InsertFolderAsync(projectId, name);
 
-    public async Task<List<ProjectFile>> GetFilesAsync(int folderId)
-    {
-        var conn = await Conn();
-        return await conn.Table<ProjectFile>().Where(f => f.FolderId == folderId).OrderByDescending(f => f.Id).ToListAsync();
-    }
+    public Task<List<ProjectFile>> GetFilesAsync(int folderId) => _repo.GetFilesAsync(folderId);
 
-    public async Task AddFileAsync(int projectId, int folderId, string fileName, string filePath)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(new ProjectFile { ProjectId = projectId, FolderId = folderId, FileName = fileName, FilePath = filePath });
-    }
+    public Task AddFileAsync(int projectId, int folderId, string fileName, string filePath)
+        => _repo.InsertFileAsync(projectId, folderId, fileName, filePath);
 
     // ---------- uploads (2D/3D models & files) ----------
 
-    public async Task<List<FileBlob>> GetUploadsAsync(int projectId, string? category = null)
-    {
-        var conn = await Conn();
-        var all = await conn.Table<FileBlob>().Where(b => b.ProjectId == projectId).OrderByDescending(b => b.Id).ToListAsync();
-        return category is null ? all : all.Where(b => b.Category == category).ToList();
-    }
+    public Task<List<FileBlob>> GetUploadsAsync(int projectId, string? category = null)
+        => _repo.GetUploadsAsync(projectId, category);
 
-    public async Task<FileBlob?> GetUploadAsync(int id)
-    {
-        var conn = await Conn();
-        return await conn.FindAsync<FileBlob>(id);
-    }
+    public Task<FileBlob?> GetUploadAsync(int id) => _repo.GetBlobAsync(id);
 
-    public async Task<FileBlob> SaveUploadAsync(FileBlob blob)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(blob);
-        return blob;
-    }
+    public Task<FileBlob> SaveUploadAsync(FileBlob blob) => _repo.InsertBlobAsync(blob);
 
-    public async Task DeleteUploadAsync(int id)
-    {
-        var conn = await Conn();
-        await conn.Table<FileBlob>().DeleteAsync(b => b.Id == id);
-    }
+    public Task DeleteUploadAsync(int id) => _repo.DeleteBlobAsync(id);
 }

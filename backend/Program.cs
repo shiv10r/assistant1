@@ -1,5 +1,6 @@
 using LuxInfra.Api.Auth;
 using LuxInfra.Api.Services;
+using LuxInfra.Repositories;
 using LuxInfra.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,10 +29,17 @@ builder.Services.AddSingleton(_ =>
 // ---- Local SQLite storage (single file, no DB server) ----
 var dbPath = Path.Combine(builder.Environment.ContentRootPath, "data", "luxinfra.db3");
 builder.Services.AddSingleton(new DatabaseService(dbPath));
+
+// Repository layer (data access) — services above it delegate persistence here.
+builder.Services.AddSingleton<IBillingRepository, BillingRepository>();
+builder.Services.AddSingleton<IProjectRepository, ProjectRepository>();
+builder.Services.AddSingleton<IActivityRepository, ActivityRepository>();
+
+// Business layer — controllers depend on these interfaces only.
 builder.Services.AddSingleton<ReportService>();
-builder.Services.AddSingleton<BillingService>();
-builder.Services.AddSingleton<ProjectService>();
-builder.Services.AddSingleton<ActivityService>();
+builder.Services.AddSingleton<IBillingService, BillingService>();
+builder.Services.AddSingleton<IProjectService, ProjectService>();
+builder.Services.AddSingleton<IActivityService, ActivityService>();
 
 // ---- Optional Turso (libSQL) cloud mirror — persists data across Render redeploys.
 // Enable by setting TURSO_URL + TURSO_TOKEN env vars (service no-ops when unset). ----

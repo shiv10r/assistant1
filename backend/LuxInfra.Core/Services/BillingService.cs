@@ -1,16 +1,17 @@
 using LuxInfra.Models;
-using SQLite;
+using LuxInfra.Repositories;
 
 namespace LuxInfra.Services;
 
-public class BillingService
+/// <summary>
+/// Business layer for the billing ledger. Business rules (balances, reference numbering,
+/// stock/ledger effects) live here; persistence is delegated to <see cref="IBillingRepository"/>.
+/// </summary>
+public class BillingService : IBillingService
 {
-    private readonly DatabaseService _db;
-    private bool _initialized;
+    private readonly IBillingRepository _repo;
 
-    public BillingService(DatabaseService db) => _db = db;
-
-    // ---------- setup ----------
+    public BillingService(IBillingRepository repo) => _repo = repo;
 
     /// <summary>Default settings mirroring the Vyapar spec (§3). Seeded once, then user-owned.</summary>
     public static readonly Dictionary<string, string> Defaults = new()
@@ -133,124 +134,63 @@ public class BillingService
         ["sms.auto.CANCELLED"] = "1",
     };
 
-    private async Task<SQLiteAsyncConnection> Conn()
-    {
-        var conn = await _db.GetConnectionAsync();
-        if (!_initialized)
-        {
-            await conn.CreateTableAsync<Party>();
-            await conn.CreateTableAsync<CatalogItem>();
-            await conn.CreateTableAsync<BizTxn>();
-            await conn.CreateTableAsync<BizTxnItem>();
-            await conn.CreateTableAsync<AppSetting>();
-            await conn.CreateTableAsync<CashEntry>();
-            await conn.CreateTableAsync<BankAccount>();
-
-            // seed defaults only for keys that don't exist yet
-            var existing = (await conn.Table<AppSetting>().ToListAsync()).Select(s => s.Key).ToHashSet();
-            foreach (var (key, value) in Defaults)
-                if (!existing.Contains(key))
-                    await conn.InsertAsync(new AppSetting { Key = key, Value = value });
-
-            _initialized = true;
-        }
-        return conn;
-    }
-
     // ---------- settings ----------
 
-    public async Task<string> GetSettingAsync(string key)
-    {
-        var conn = await Conn();
-        var row = await conn.FindAsync<AppSetting>(key);
-        return row?.Value ?? (Defaults.TryGetValue(key, out var d) ? d : "");
-    }
+    public Task<string> GetSettingAsync(string key) => _repo.GetSettingAsync(key);
 
     public async Task<bool> IsOnAsync(string key) => await GetSettingAsync(key) == "1";
 
-    public async Task SetSettingAsync(string key, string value)
-    {
-        var conn = await Conn();
-        await conn.InsertOrReplaceAsync(new AppSetting { Key = key, Value = value });
-    }
+    public Task SetSettingAsync(string key, string value) => _repo.SetSettingAsync(key, value);
 
-    public async Task<Dictionary<string, string>> GetAllSettingsAsync()
-    {
-        var conn = await Conn();
-        var rows = await conn.Table<AppSetting>().ToListAsync();
-        var dict = new Dictionary<string, string>(Defaults);
-        foreach (var r in rows) dict[r.Key] = r.Value;
-        return dict;
-    }
+    public Task<Dictionary<string, string>> GetAllSettingsAsync() => _repo.GetAllSettingsAsync();
 
     // ---------- parties ----------
 
     public async Task SavePartyAsync(Party p)
     {
-        var conn = await Conn();
         if (p.Id == 0)
         {
             p.CurrentBalance = p.BalanceType == "receive" ? p.OpeningBalance : -p.OpeningBalance;
-            await conn.InsertAsync(p);
+            await _repo.InsertPartyAsync(p);
         }
-        else
-            await conn.UpdateAsync(p);
+        else await _repo.UpdatePartyAsync(p);
     }
 
-    public async Task<List<Party>> GetPartiesAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<Party>().OrderBy(p => p.Name).ToListAsync();
-    }
+    public Task<List<Party>> GetPartiesAsync() => _repo.GetPartiesAsync();
 
-    public async Task<Party?> GetPartyAsync(int id)
-    {
-        var conn = await Conn();
-        return await conn.FindAsync<Party>(id);
-    }
+    public Task<Party?> GetPartyAsync(int id) => _repo.GetPartyAsync(id);
 
     // ---------- items ----------
 
-    public async Task SaveItemAsync(CatalogItem item)
+    public Task SaveItemAsync(CatalogItem item)
     {
-        var conn = await Conn();
-        if (item.Id == 0) await conn.InsertAsync(item);
-        else await conn.UpdateAsync(item);
+        if (item.Id != 0 && string.IsNullOrWhiteSpace(item.Name))
+            return _repo.DeleteItemAsync(item.Id);
+        return item.Id == 0 ? _repo.InsertItemAsync(item) : _repo.UpdateItemAsync(item);
     }
 
-    public async Task<List<CatalogItem>> GetItemsAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<CatalogItem>().OrderBy(i => i.Name).ToListAsync();
-    }
+    public Task<List<CatalogItem>> GetItemsAsync() => _repo.GetItemsAsync();
 
     // ---------- transactions ----------
 
-    public async Task<int> NextRefNoAsync(string type)
-    {
-        var conn = await Conn();
-        var last = await conn.Table<BizTxn>().Where(t => t.Type == type)
-            .OrderByDescending(t => t.RefNo).FirstOrDefaultAsync();
-        return (last?.RefNo ?? 0) + 1;
-    }
+    public Task<int> NextRefNoAsync(string type) => _repo.NextRefNoAsync(type);
 
     public async Task SaveTxnAsync(BizTxn txn, List<BizTxnItem> lines)
     {
-        var conn = await Conn();
         if (txn.RefNo == 0) txn.RefNo = await NextRefNoAsync(txn.Type);
         txn.Balance = txn.Total - txn.Received;
-        await conn.InsertAsync(txn);
+        await _repo.InsertTxnAsync(txn);
 
         foreach (var line in lines)
         {
             line.TxnId = txn.Id;
-            await conn.InsertAsync(line);
+            await _repo.InsertLineAsync(line);
         }
 
         // ledger effect on party balance
         if (TxnTypes.IsLedger(txn.Type) && txn.PartyId > 0)
         {
-            var party = await conn.FindAsync<Party>(txn.PartyId);
+            var party = await _repo.GetPartyAsync(txn.PartyId);
             if (party is not null)
             {
                 party.CurrentBalance += txn.Type switch
@@ -263,7 +203,7 @@ public class BillingService
                     TxnTypes.PaymentOut => txn.Total,
                     _ => 0
                 };
-                await conn.UpdateAsync(party);
+                await _repo.UpdatePartyAsync(party);
             }
         }
 
@@ -274,112 +214,74 @@ public class BillingService
             var sign = txn.Type is TxnTypes.Sale or TxnTypes.PurchaseReturn ? -1 : 1;
             foreach (var line in lines.Where(l => l.ItemId > 0))
             {
-                var item = await conn.FindAsync<CatalogItem>(line.ItemId);
+                var item = await _repo.GetItemAsync(line.ItemId);
                 if (item is not null && item.Type != "Service")
                 {
                     item.StockQty += sign * (line.Qty + line.FreeQty);
-                    await conn.UpdateAsync(item);
+                    await _repo.UpdateItemAsync(item);
                 }
             }
         }
     }
 
-    public async Task<List<BizTxn>> GetTxnsAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<BizTxn>().OrderByDescending(t => t.Id).ToListAsync();
-    }
+    public Task<List<BizTxn>> GetTxnsAsync() => _repo.GetTxnsAsync();
 
-    public async Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId)
-    {
-        var conn = await Conn();
-        return await conn.Table<BizTxnItem>().Where(l => l.TxnId == txnId).ToListAsync();
-    }
+    public Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId) => _repo.GetTxnLinesAsync(txnId);
 
     // ---------- dashboard KPIs ----------
 
     public async Task<(double youllGet, double youllGive, double monthSale)> GetKpisAsync()
     {
-        var conn = await Conn();
-        var parties = await conn.Table<Party>().ToListAsync();
+        var parties = await _repo.GetPartiesAsync();
         var get = parties.Where(p => p.CurrentBalance > 0).Sum(p => p.CurrentBalance);
         var give = -parties.Where(p => p.CurrentBalance < 0).Sum(p => p.CurrentBalance);
 
         var start = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-        var txns = await conn.Table<BizTxn>()
-            .Where(t => t.Type == TxnTypes.Sale && t.Date >= start).ToListAsync();
-        return (get, give, txns.Sum(t => t.Total));
+        var monthTxns = await _repo.GetMonthSalesAsync(start);
+        return (get, give, monthTxns.Sum(t => t.Total));
     }
 
     // ---------- cash & bank ----------
 
-    public async Task AdjustCashAsync(CashEntry entry)
-    {
-        var conn = await Conn();
-        await conn.InsertAsync(entry);
-    }
+    public Task AdjustCashAsync(CashEntry entry) => _repo.InsertCashEntryAsync(entry);
 
-    public async Task<List<CashEntry>> GetCashEntriesAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<CashEntry>().OrderByDescending(e => e.Id).ToListAsync();
-    }
+    public Task<List<CashEntry>> GetCashEntriesAsync() => _repo.GetCashEntriesAsync();
 
     /// <summary>Cash In-Hand = cash received on ledger txns − cash paid out ± manual adjustments.</summary>
     public async Task<double> GetCashBalanceAsync()
     {
-        var conn = await Conn();
-        var txns = await conn.Table<BizTxn>().Where(t => t.PaymentMode == "Cash").ToListAsync();
+        var txns = await _repo.GetCashTxnsAsync();
         var inflow = txns.Where(t => t.Type is TxnTypes.Sale or TxnTypes.PaymentIn).Sum(t => t.Received);
         var outflow = txns.Where(t => t.Type is TxnTypes.Purchase or TxnTypes.PaymentOut).Sum(t => t.Received);
-        var adjustments = await conn.Table<CashEntry>().ToListAsync();
+        var adjustments = await _repo.GetCashEntriesAsync();
         var adj = adjustments.Sum(a => a.Kind == "add" ? a.Amount : -a.Amount);
         return inflow - outflow + adj;
     }
 
-    public async Task<List<BizTxn>> GetChequesAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<BizTxn>().Where(t => t.PaymentMode == "Cheque")
-            .OrderByDescending(t => t.Id).ToListAsync();
-    }
+    public Task<List<BizTxn>> GetChequesAsync() => _repo.GetChequesAsync();
 
     public async Task SetChequeStatusAsync(int txnId, string status)
     {
-        var conn = await Conn();
-        var txn = await conn.FindAsync<BizTxn>(txnId);
+        var txn = await _repo.GetTxnAsync(txnId);
         if (txn is null) return;
         txn.ChequeStatus = status;
-        await conn.UpdateAsync(txn);
+        await _repo.UpdateTxnAsync(txn);
     }
 
-    public async Task SaveBankAccountAsync(BankAccount account)
-    {
-        var conn = await Conn();
-        if (account.Id == 0) await conn.InsertAsync(account);
-        else await conn.UpdateAsync(account);
-    }
+    public Task SaveBankAccountAsync(BankAccount account)
+        => account.Id == 0 ? _repo.InsertBankAccountAsync(account) : _repo.UpdateBankAccountAsync(account);
 
-    public async Task<List<BankAccount>> GetBankAccountsAsync()
-    {
-        var conn = await Conn();
-        return await conn.Table<BankAccount>().ToListAsync();
-    }
+    public Task<List<BankAccount>> GetBankAccountsAsync() => _repo.GetBankAccountsAsync();
 
-    public async Task DeleteBankAccountAsync(int id)
-    {
-        var conn = await Conn();
-        await conn.DeleteAsync<BankAccount>(id);
-    }
+    public Task DeleteBankAccountAsync(int id) => _repo.DeleteBankAccountAsync(id);
 
     // ---------- utilities ----------
 
     /// <summary>Recomputes every party balance from opening + ledger txns and fixes drift.</summary>
     public async Task<string> VerifyDataAsync()
     {
-        var conn = await Conn();
-        var parties = await conn.Table<Party>().ToListAsync();
-        var txns = await conn.Table<BizTxn>().ToListAsync();
+        var parties = await _repo.GetPartiesAsync();
+        var txns = await _repo.GetTxnsAsync();
         var fixedCount = 0;
 
         foreach (var p in parties)
@@ -401,14 +303,14 @@ public class BillingService
             if (Math.Abs(expected - p.CurrentBalance) > 0.005)
             {
                 p.CurrentBalance = expected;
-                await conn.UpdateAsync(p);
+                await _repo.UpdatePartyAsync(p);
                 fixedCount++;
             }
         }
 
         var orphanLines = 0;
         var txnIds = txns.Select(t => t.Id).ToHashSet();
-        foreach (var line in await conn.Table<BizTxnItem>().ToListAsync())
+        foreach (var line in await _repo.GetAllLinesAsync())
             if (!txnIds.Contains(line.TxnId)) orphanLines++;
 
         return $"Checked {parties.Count} parties and {txns.Count} transactions. " +

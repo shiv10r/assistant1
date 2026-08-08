@@ -11,11 +11,11 @@ public class AssistantController : ControllerBase
 {
     private readonly DatabaseService _db;
     private readonly ReportService _reports;
-    private readonly BillingService _billing;
-    private readonly ProjectService _projects;
-    private readonly ActivityService _activity;
+    private readonly IBillingService _billing;
+    private readonly IProjectService _projects;
+    private readonly IActivityService _activity;
 
-    public AssistantController(DatabaseService db, ReportService reports, BillingService billing, ProjectService projects, ActivityService activity)
+    public AssistantController(DatabaseService db, ReportService reports, IBillingService billing, IProjectService projects, IActivityService activity)
         => (_db, _reports, _billing, _projects, _activity) = (db, reports, billing, projects, activity);
 
     // Everything you can watch in the app: log / total / summary / undo / help,
