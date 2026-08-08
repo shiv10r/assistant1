@@ -69,6 +69,9 @@ public class ProjectService : IProjectService
     public Task<List<AttendanceRecord>> GetAttendanceForDateAsync(int projectId, DateTime date)
         => _repo.GetAttendanceForDateAsync(projectId, date);
 
+    public Task<List<AttendanceRecord>> GetAttendanceInRangeAsync(int projectId, DateTime from, DateTime to)
+        => _repo.GetAttendanceInRangeAsync(projectId, from, to);
+
     /// <summary>Upserts today's (or the given date's) attendance row for a party.</summary>
     public async Task SetAttendanceStatusAsync(int projectId, SiteParty party, DateTime date, string status)
     {

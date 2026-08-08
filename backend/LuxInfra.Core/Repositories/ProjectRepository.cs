@@ -140,6 +140,16 @@ public class ProjectRepository : IProjectRepository
             .Where(a => a.ProjectId == projectId && a.Date == day).ToListAsync();
     }
 
+    public async Task<List<AttendanceRecord>> GetAttendanceInRangeAsync(int projectId, DateTime from, DateTime to)
+    {
+        var conn = await Conn();
+        var start = from.Date;
+        var end = to.Date.AddDays(1);
+        return await conn.Table<AttendanceRecord>()
+            .Where(a => a.ProjectId == projectId && a.Date >= start && a.Date < end)
+            .ToListAsync();
+    }
+
     public async Task<AttendanceRecord?> GetAttendanceAsync(int projectId, int partyId, DateTime date)
     {
         var conn = await Conn();

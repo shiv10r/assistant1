@@ -21,6 +21,7 @@ public interface IProjectService
     Task SaveTxnAsync(ProjectTxn txn, SiteParty party);
 
     Task<List<AttendanceRecord>> GetAttendanceForDateAsync(int projectId, DateTime date);
+    Task<List<AttendanceRecord>> GetAttendanceInRangeAsync(int projectId, DateTime from, DateTime to);
     Task SetAttendanceStatusAsync(int projectId, SiteParty party, DateTime date, string status);
     Task SetAttendanceHoursAsync(int projectId, SiteParty party, DateTime date, double hours);
 

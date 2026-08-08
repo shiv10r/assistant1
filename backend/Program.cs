@@ -34,6 +34,7 @@ builder.Services.AddSingleton(new DatabaseService(dbPath));
 builder.Services.AddSingleton<IBillingRepository, BillingRepository>();
 builder.Services.AddSingleton<IProjectRepository, ProjectRepository>();
 builder.Services.AddSingleton<IActivityRepository, ActivityRepository>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
 
 // Business layer — controllers depend on these interfaces only.
 builder.Services.AddSingleton<ReportService>();
@@ -48,6 +49,12 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<TursoSyncService>(
 
 // ---- Optional open-source AI chat (DeepSeek via OpenRouter) — enable with OPENROUTER_API_KEY. ----
 builder.Services.AddSingleton<ChatAiService>();
+
+// ---- Optional integrations (email / payments / drive / AI vision) — all no-op when unconfigured. ----
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddSingleton<RazorpayService>();
+builder.Services.AddSingleton<DriveBackupService>();
+builder.Services.AddSingleton<VisionAiService>();
 
 // ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>

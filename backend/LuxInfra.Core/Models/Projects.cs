@@ -12,8 +12,12 @@ public class Project
     public double Value { get; set; }
     public string Status { get; set; } = ProjectStatuses.Ongoing;
     public DateTime CreatedAt { get; set; } = DateTime.Today;
+    /// <summary>Optional map coordinates for the site map view (e.g. 28.6139, 77.2090).</summary>
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
 
     [Ignore] public string ValueLabel => Services.ReportService.Money(Value);
+    [Ignore] public bool HasCoordinates => Latitude != 0 || Longitude != 0;
 }
 
 public static class ProjectStatuses
@@ -40,6 +44,8 @@ public class SiteParty
     public string BalanceType { get; set; } = "pending";     // advance | pending
     /// <summary>+ve → advance paid to them, −ve → pending amount we owe them.</summary>
     public double CurrentBalance { get; set; }
+    /// <summary>Daily wage for payroll-from-attendance (₹ / day).</summary>
+    public double DailyRate { get; set; }
     public bool IsActive { get; set; } = true;
 
     [Ignore] public string BalanceLabel => Services.ReportService.Money(Math.Abs(CurrentBalance));

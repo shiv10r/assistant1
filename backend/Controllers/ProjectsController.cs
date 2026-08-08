@@ -114,6 +114,56 @@ public class ProjectsController : ControllerBase
     public async Task<List<AttendanceRecord>> Attendance(int id, [FromQuery] DateTime date)
         => await _projects.GetAttendanceForDateAsync(id, date);
 
+    // ---- Payroll (wages from attendance × daily rate) ----
+    [HttpGet("{id:int}/payroll")]
+    public async Task<ActionResult> Payroll(int id, [FromQuery] DateTime from, [FromQuery] DateTime to)
+    {
+        var fromDay = from == default ? DateTime.Today.AddDays(-30) : from;
+        var toDay = to == default ? DateTime.Today : to;
+        if (toDay < fromDay) return BadRequest("'to' must be >= 'from'");
+
+        var parties = await _projects.GetPartiesAsync(id);
+        var records = await _projects.GetAttendanceInRangeAsync(id, fromDay, toDay);
+
+        var rows = parties
+            .Where(p => p.DailyRate > 0)
+            .Select(p =>
+            {
+                var present = records.Where(r => r.PartyId == p.Id && r.Status == AttendanceStatuses.Present).ToList();
+                var days = present.Count;
+                var hours = present.Sum(r => r.HoursLogged);
+                var amount = days * p.DailyRate;
+                var totalHours = records.Where(r => r.PartyId == p.Id).Sum(r => r.HoursLogged);
+                return new
+                {
+                    partyId = p.Id,
+                    name = p.Name,
+                    role = p.Role,
+                    dailyRate = p.DailyRate,
+                    days = days,
+                    hours = Math.Round(hours, 1),
+                    totalHours = Math.Round(totalHours, 1),
+                    amount = Math.Round(amount, 2),
+                    amountLabel = ReportService.Money(amount),
+                    currentBalance = p.CurrentBalance,
+                    netPayable = Math.Round(amount - p.CurrentBalance, 2),
+                    netPayableLabel = ReportService.Money(Math.Abs(amount - p.CurrentBalance)),
+                };
+            })
+            .OrderByDescending(r => r.amount)
+            .ToList();
+
+        return Ok(new
+        {
+            from = fromDay.ToString("yyyy-MM-dd"),
+            to = toDay.ToString("yyyy-MM-dd"),
+            totalDays = rows.Sum(r => r.days),
+            totalAmount = Math.Round(rows.Sum(r => r.amount), 2),
+            totalAmountLabel = ReportService.Money(rows.Sum(r => r.amount)),
+            rows
+        });
+    }
+
     [HttpPost("{id:int}/attendance/status")]
     public async Task<ActionResult> SetAttendanceStatus(int id, [FromBody] AttendanceDto dto)
     {

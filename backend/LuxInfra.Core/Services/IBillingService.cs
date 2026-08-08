@@ -20,6 +20,7 @@ public interface IBillingService
     Task<int> NextRefNoAsync(string type);
     Task SaveTxnAsync(BizTxn txn, List<BizTxnItem> lines);
     Task<List<BizTxn>> GetTxnsAsync();
+    Task<BizTxn?> GetTxnAsync(int id);
     Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId);
 
     Task<(double youllGet, double youllGive, double monthSale)> GetKpisAsync();
