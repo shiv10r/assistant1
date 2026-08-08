@@ -34,7 +34,7 @@ public class IntegrationsController : ControllerBase
         emailProvider = _email.Configured ? _email.Provider : null,
         razorpay = _razorpay.Configured ? "configured" : "not_configured",
         razorpayKeyId = _razorpay.Configured ? _razorpay.KeyId : null,
-        drive = _drive.Configured ? "configured" : "not_configured",
+        drive = _drive.HasCredentials ? (_drive.Configured ? "configured" : "needs_connect") : "not_configured",
         driveFolder = _drive.Configured ? _drive.FolderName : null,
         vision = _vision.Configured ? "configured" : "not_configured",
         visionModel = _vision.Configured ? _vision.Model : null,
@@ -108,11 +108,89 @@ public class IntegrationsController : ControllerBase
 
     // ---- Google Drive backup ----
 
+    /// <summary>Consent URL for connecting the user's Google Drive.</summary>
+    [HttpGet("integrations/drive/auth-url")]
+    public async Task<ActionResult> DriveAuthUrl()
+    {
+        if (!_drive.HasCredentials)
+            return Ok(new { ok = false, code = "not_configured", message = "Add GOOGLE_DRIVE_CLIENT_ID + GOOGLE_DRIVE_CLIENT_SECRET on the server and redeploy, then try again." });
+
+        var redirect = $"{Request.Scheme}://{Request.Host}/api/integrations/drive/callback";
+        var state = Guid.NewGuid().ToString("N");
+        var url = _drive.BuildAuthUrl(redirect, state);
+        return Ok(new { ok = true, url, redirect, state });
+    }
+
+    /// <summary>OAuth callback — Google redirects here after consent (public).</summary>
+    [HttpGet("integrations/drive/callback")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    public async Task<ActionResult> DriveCallback([FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
+    {
+        var redirect = $"{Request.Scheme}://{Request.Host}/api/integrations/drive/callback";
+
+        if (!string.IsNullOrWhiteSpace(error))
+            return Html($"Google Drive connection failed: {error}");
+
+        if (string.IsNullOrWhiteSpace(code))
+            return Html("Google Drive connection failed: no authorization code returned.");
+
+        var err = await _drive.ExchangeCodeAsync(code, redirect);
+        if (err is not null)
+            return Html($"Google Drive connection failed: {err}");
+
+        return Html("Google Drive connected successfully. You can close this tab and click 'Run backup' in the app.");
+    }
+
+    /// <summary>Back up the database to the connected Google Drive.</summary>
     [HttpPost("backup/drive")]
     public async Task<ActionResult> BackupToDrive()
     {
-        return BadRequest(new { ok = false, code = "not_configured", message = "Google Drive backup is not enabled yet — add GOOGLE_DRIVE_ACCESS_TOKEN on the server and redeploy." });
+        var (ok, message) = await _drive.BackupToDriveAsync();
+        return ok ? Ok(new { ok, message }) : BadRequest(new { ok, message });
     }
+
+    [HttpGet("integrations/drive/status")]
+    public async Task<ActionResult> DriveStatus()
+    {
+        var email = _drive.Configured ? await _drive.AccountEmailAsync() : null;
+        return Ok(new
+        {
+            configured = _drive.Configured,
+            hasCredentials = _drive.HasCredentials,
+            folder = _drive.Configured ? _drive.FolderName : null,
+            email,
+        });
+    }
+
+    [HttpPost("integrations/drive/disconnect")]
+    public ActionResult DriveDisconnect()
+    {
+        _drive.Disconnect();
+        return Ok(new { ok = true });
+    }
+
+    private static ActionResult Html(string message) => new ContentResult
+    {
+        ContentType = "text/html",
+        StatusCode = 200,
+        Content = DriveHtml.Replace("{MESSAGE}", System.Net.WebUtility.HtmlEncode(message)),
+    };
+
+    private const string DriveHtml = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><meta charset="utf-8"><title>LuxInfra · Drive</title>
+        <style>
+          body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f5f6fa; }
+          .box { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 32px; max-width: 420px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,.06); }
+          h2 { margin: 0 0 10px; color: #111827; }
+          p { color: #6b7280; font-size: 15px; line-height: 1.5; }
+          a { display: inline-block; margin-top: 14px; color: #4F6BED; font-weight: 600; text-decoration: none; }
+        </style></head>
+        <body><div class="box"><h2>LuxInfra · Google Drive</h2><p>{MESSAGE}</p>
+        <a href="/integrations">Back to Integrations →</a>
+        </div></body></html>
+        """;
 
     // ---- AI vision (photo → site progress) ----
 
