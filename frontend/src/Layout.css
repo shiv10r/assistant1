@@ -74,6 +74,14 @@
   background: rgba(0,0,0,.5); z-index: 40;
 }
 
+/* Desktop collapse: hamburger hides/shows the sidebar entirely */
+@media (min-width: 901px) {
+  .sidebar.collapsed {
+    width: 0; min-width: 0; flex-basis: 0; padding: 0;
+    border-right: none; overflow: hidden; opacity: 0; visibility: hidden;
+  }
+}
+
 @media (max-width: 900px) {
   .sidebar {
     position: fixed; left: 0; top: 58px; bottom: 0;

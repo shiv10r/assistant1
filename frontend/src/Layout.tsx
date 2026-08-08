@@ -73,12 +73,36 @@ const GROUPS: NavGroup[] = [
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
+const SIDEBAR_KEY = 'lux_sidebar_open'
+
+function defaultSidebarOpen(): boolean {
+  const saved = localStorage.getItem(SIDEBAR_KEY)
+  if (saved !== null) return saved === '1'
+  return window.innerWidth > 900
+}
+
 export default function Layout() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultSidebarOpen)
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const { plan } = usePlan()
   const isAdmin = getRole() === 'admin' || !getRole()
+
+  function toggleSidebar() {
+    setOpen(prev => {
+      const next = !prev
+      localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0')
+      return next
+    })
+  }
+
+  function isMobile() {
+    return typeof window !== 'undefined' && window.innerWidth <= 900
+  }
+
+  function navClicked() {
+    if (isMobile()) setOpen(false)
+  }
 
   function toggleTheme() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
@@ -101,7 +125,7 @@ export default function Layout() {
   return (
     <div className="app">
       <header className="topbar">
-        <button className="hamburger" onClick={() => setOpen(o => !o)} aria-label="Menu">
+        <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
           <Menu className="w-6 h-6" />
         </button>
         <div className="logo-mark">
@@ -128,7 +152,7 @@ export default function Layout() {
       </header>
 
       <div className="body-row">
-        <nav className={cn('sidebar', open && 'open')}>
+        <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
           {GROUPS.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)
             return (
@@ -154,7 +178,7 @@ export default function Layout() {
                             ? 'bg-primary/10 text-primary border-l-2 border-primary'
                             : 'text-text/80 hover:bg-surface hover:text-text'
                         )}
-                        onClick={() => setOpen(false)}
+                        onClick={navClicked}
                       >
                         <span className="flex-shrink-0">{it.icon}</span>
                         <span className="truncate">{it.label}</span>
@@ -174,7 +198,7 @@ export default function Layout() {
             </NavLink>
           </div>
         </nav>
-        {open && <div className="backdrop" onClick={() => setOpen(false)} />}
+        {open && isMobile() && <div className="backdrop" onClick={() => setOpen(false)} />}
 
         <main className="content"><Outlet /></main>
       </div>

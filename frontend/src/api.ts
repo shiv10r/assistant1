@@ -47,6 +47,33 @@ export interface AnalyticsData {
   expenseByMonth: { period: string; total: number }[]
 }
 
+export interface ReportKpis {
+  period: string
+  report: {
+    total: number; totalLabel: string; count: number
+    avgPerDay: number; avgPerDayLabel: string
+    topCategory: string | null; topCategoryLabel: string
+    topSite: string | null; topSiteLabel: string
+    biggestEntry: { site: string; category: string; client: string; label: string; date: string } | null
+    categoryCount: number; siteCount: number
+  }
+  app: {
+    expenseCount: number; expenseTotalLabel: string
+    projectCount: number; ongoingProjects: number; completedProjects: number
+    partyCount: number; itemCount: number; txnCount: number
+    saleTotalLabel: string; receivableLabel: string
+    userCount: number; sessionCount: number; activityCount: number; lastActivity: string
+  }
+}
+
+export interface UpiLinkResult {
+  ok: boolean
+  upiId?: string; payeeName?: string; amountInr?: number; note?: string
+  upiUrl?: string; qrData?: string
+  providers?: { phonepe: string; gpay: string; paytm: string }
+  error?: string; code?: string; message?: string
+}
+
 // ---------------- core ----------------
 const TOKEN_KEY = 'lux_token'
 const ROLE_KEY = 'lux_role'
@@ -58,6 +85,12 @@ export function isAuthed(): boolean { return !!getToken() }
 export function isAdmin(): boolean { return getRole() === 'admin' }
 export function logout(): void { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(USER_KEY) }
 
+async function finishLogin(data: { token: string; username: string; role: string }) {
+  localStorage.setItem(TOKEN_KEY, data.token)
+  localStorage.setItem(ROLE_KEY, data.role)
+  localStorage.setItem(USER_KEY, data.username)
+}
+
 export async function login(username: string, password: string): Promise<void> {
   const r = await fetch(BASE + '/api/auth/login', {
     method: 'POST',
@@ -66,9 +99,18 @@ export async function login(username: string, password: string): Promise<void> {
   })
   if (!r.ok) throw new Error('Invalid username or password')
   const data = await r.json()
-  localStorage.setItem(TOKEN_KEY, data.token)
-  localStorage.setItem(ROLE_KEY, data.role)
-  localStorage.setItem(USER_KEY, data.username)
+  finishLogin(data)
+}
+
+export async function register(username: string, password: string): Promise<void> {
+  const r = await fetch(BASE + '/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data?.error || 'Could not create account')
+  finishLogin(data)
 }
 
 function authHeaders(): Record<string, string> {
@@ -152,6 +194,7 @@ const aiStatus = () => get<AiStatus>('/api/assistant/ai/status')
 const aiChat = (text: string, history: AiChatTurn[]) => post<AiReply>('/api/assistant/ai', { text, history })
 const dashboard = () => get<Dashboard>('/api/dashboard')
 const report = (period: string) => get<ReportData>(`/api/reports?period=${period.toLowerCase()}`)
+const reportKpis = (period: string) => get<ReportKpis>(`/api/reports/kpis?period=${period.toLowerCase()}`)
 
 // ---------------- Billing ----------------
 const billing = {
@@ -210,7 +253,7 @@ export interface AppUser { id: number; username: string; role: string; isActive:
 export interface UserSessionInfo { token: string; username: string; role: string; createdAt: string; expiresAt: string }
 export interface PayrollRow { partyId: number; name: string; role: string; dailyRate: number; days: number; hours: number; totalHours: number; amount: number; amountLabel: string; currentBalance: number; netPayable: number; netPayableLabel: string }
 export interface PayrollResult { from: string; to: string; totalDays: number; totalAmount: number; totalAmountLabel: string; rows: PayrollRow[] }
-export interface IntegrationStatus { email: string; emailProvider?: string; razorpay: string; razorpayKeyId?: string; drive: string; driveFolder?: string; vision: string; visionModel?: string }
+export interface IntegrationStatus { email: string; emailProvider?: string; razorpay: string; razorpayKeyId?: string; upi: string; upiId?: string; drive: string; driveFolder?: string; vision: string; visionModel?: string }
 export interface EinvoiceResult { ok: boolean; txn?: { id: number; refLabel: string; date: string }; payload?: unknown; error?: string }
 export interface VisionResult { ok: boolean; progress?: number; note?: string; model?: string; error?: string; code?: string; message?: string }
 
@@ -228,6 +271,7 @@ const payroll = {
 
 const integrations = {
   status: () => get<IntegrationStatus>('/api/integrations/status'),
+  upiLink: (amountInr: number, note?: string) => post<UpiLinkResult>('/api/payments/upi/link', { amountInr, note }),
   emailInvoice: (txnId: number) => post<{ ok: boolean; to?: string; fileName?: string; subject?: string; error?: string; code?: string; message?: string }>(`/api/txns/${txnId}/email`, {}),
   einvoice: (txnId: number) => get<EinvoiceResult>(`/api/txns/${txnId}/einvoice`),
   razorpayOrder: (amountInr: number, receipt?: string) => post<{ ok: boolean; orderId?: string; keyId?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/order', { amountInr, receipt }),
@@ -257,6 +301,7 @@ export const api = {
   payroll,
   integrations,
   analytics: () => get<AnalyticsData>('/api/analytics'),
+  reportKpis,
   backupStatus: () => get<BackupStatus>('/api/backup'),
   backupPush: () => post<BackupResult>('/api/backup/push', {}),
   backupPull: () => post<BackupResult>('/api/backup/pull', {}),

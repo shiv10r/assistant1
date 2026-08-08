@@ -4,8 +4,9 @@ import { api } from '../api'
 import type { IntegrationStatus, BizTxn } from '../api'
 import { Card, CardContent, Badge, Button, Label, Input, Select, money } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Mail, CreditCard, HardDrive, Sparkles, RefreshCw, ExternalLink, CheckCircle2, XCircle } from 'lucide-react'
+import { Mail, HardDrive, Sparkles, RefreshCw, ExternalLink, CheckCircle2, XCircle, QrCode, Copy, Smartphone } from 'lucide-react'
 import { cn } from '../lib/utils'
+import type { UpiLinkResult } from '../api'
 
 function StatusPill({ ok }: { ok: boolean }) {
   return ok
@@ -18,7 +19,6 @@ export default function Integrations() {
   const [status, setStatus] = useState<IntegrationStatus | null>(null)
   const [txns, setTxns] = useState<BizTxn[]>([])
   const [txnId, setTxnId] = useState('')
-  const [amount, setAmount] = useState('')
   const [busy, setBusy] = useState('')
   const [driveBusy, setDriveBusy] = useState(false)
   const [einvoice, setEinvoice] = useState<any>(null)
@@ -49,15 +49,43 @@ export default function Integrations() {
     } catch (e) { toast({ title: 'Could not generate e-invoice', description: String(e), variant: 'error' }) } finally { setBusy('') }
   }
 
-  const createOrder = async () => {
-    const amt = Number(amount)
-    if (!amt || amt <= 0) { toast({ title: 'Enter a valid amount (₹)', variant: 'error' }); return }
-    setBusy('razorpay')
+  // ---- UPI (free, works with PhonePe / GPay / Paytm) ----
+  const [upiId, setUpiId] = useState('')
+  const [upiAmount, setUpiAmount] = useState('')
+  const [upiNote, setUpiNote] = useState('')
+  const [upiResult, setUpiResult] = useState<UpiLinkResult | null>(null)
+  const [upiBusy, setUpiBusy] = useState('')
+
+  useEffect(() => {
+    if (status?.upiId) setUpiId(status.upiId)
+  }, [status?.upiId])
+
+  const saveUpiId = async () => {
+    const id = upiId.trim()
+    if (!id || !id.includes('@')) { toast({ title: 'Enter a valid UPI ID', description: 'e.g. yourname@okhdfcbank', variant: 'error' }); return }
+    setUpiBusy('upi-save')
     try {
-      const r = await api.integrations.razorpayOrder(amt)
-      if (r.ok) toast({ title: 'Payment order created', description: `Order ${r.orderId} · key ${r.keyId}` })
-      else toast({ title: r.code === 'not_configured' ? 'Razorpay not configured' : 'Could not create order', description: r.message || r.error || 'Unknown error', variant: 'error' })
-    } catch (e) { toast({ title: 'Could not create order', description: String(e), variant: 'error' }) } finally { setBusy('') }
+      await api.billing.setSetting('payment.upi_id', id)
+      loadStatus()
+      toast({ title: 'UPI ID saved', description: 'Customers can now pay you by UPI / PhonePe / GPay' })
+    } catch (e) { toast({ title: 'Could not save UPI ID', description: String(e), variant: 'error' }) } finally { setUpiBusy('') }
+  }
+
+  const generateUpi = async () => {
+    const amt = Number(upiAmount)
+    if (!amt || amt <= 0) { toast({ title: 'Enter a valid amount (₹)', variant: 'error' }); return }
+    setUpiBusy('upi-link')
+    try {
+      const r = await api.integrations.upiLink(amt, upiNote.trim() || undefined)
+      if (r.ok) { setUpiResult(r) }
+      else toast({ title: r.code === 'not_configured' ? 'No UPI ID set' : 'Could not create UPI link', description: r.message || r.error || 'Unknown error', variant: 'error' })
+    } catch (e) { toast({ title: 'Could not create UPI link', description: String(e), variant: 'error' }) } finally { setUpiBusy('') }
+  }
+
+  const copyUpi = async () => {
+    if (!upiResult?.upiUrl) return
+    try { await navigator.clipboard.writeText(upiResult.upiUrl); toast({ title: 'UPI link copied', description: 'Paste it in WhatsApp, SMS or email' }) }
+    catch { toast({ title: 'Could not copy', variant: 'error' }) }
   }
 
   const runDriveBackup = async () => {
@@ -97,12 +125,12 @@ export default function Integrations() {
       hint: status?.email === 'configured' ? `Provider: ${status.emailProvider}` : 'Add RESEND_API_KEY (or SENDGRID_API_KEY) and redeploy.',
     },
     {
-      key: 'razorpay' as const,
-      title: 'Razorpay Payments',
-      desc: 'Create payment orders to collect money from customers.',
-      icon: <CreditCard className="w-6 h-6" />,
-      ok: status?.razorpay === 'configured',
-      hint: status?.razorpay === 'configured' ? `Key ID: ${status.razorpayKeyId}` : 'Add RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET and redeploy.',
+      key: 'upi' as const,
+      title: 'UPI Payments',
+      desc: 'Collect money via PhonePe, GPay & Paytm — 100% free.',
+      icon: <Smartphone className="w-6 h-6" />,
+      ok: status?.upi === 'configured',
+      hint: status?.upi === 'configured' ? `Paying to: ${status.upiId}` : 'Enter your UPI ID below — no account, no KYC needed.',
     },
     {
       key: 'drive' as const,
@@ -180,14 +208,61 @@ export default function Integrations() {
           <Card>
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-primary" />
-                <h2 className="text-base font-semibold text-text m-0">Create a Razorpay order</h2>
+                <Smartphone className="w-4 h-4 text-primary" />
+                <h2 className="text-base font-semibold text-text m-0">Collect a UPI payment</h2>
+              </div>
+
+              <div className="p-4 rounded-xl bg-surface2/60 border border-border space-y-3">
+                <div>
+                  <Label htmlFor="upiid">Your UPI ID (where money is received)</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input id="upiid" type="text" value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="yourname@okhdfcbank" className="flex-1" />
+                    <Button variant="outline" onClick={saveUpiId} disabled={upiBusy === 'upi-save'}>{upiBusy === 'upi-save' ? 'Saving…' : 'Save'}</Button>
+                  </div>
+                  <p className="text-xs text-muted mt-1.5">Free forever — PhonePe, GPay, Paytm & every UPI app. Find your UPI ID in your bank's UPI app.</p>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="uamt">Amount (₹)</Label>
+                <Input id="uamt" type="number" min="0" step="0.01" value={upiAmount} onChange={(e) => setUpiAmount(e.target.value)} placeholder="0.00" className="mt-1" />
               </div>
               <div>
-                <Label htmlFor="amt">Amount (₹)</Label>
-                <Input id="amt" type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1" />
+                <Label htmlFor="unote">Note (optional)</Label>
+                <Input id="unote" type="text" value={upiNote} onChange={(e) => setUpiNote(e.target.value)} placeholder="e.g. Invoice #5 — Dining table" className="mt-1" />
               </div>
-              <Button onClick={createOrder} disabled={busy === 'razorpay'}>{busy === 'razorpay' ? 'Creating…' : 'Create payment order'}</Button>
+              <Button onClick={generateUpi} disabled={upiBusy === 'upi-link'}>
+                <QrCode className="w-4 h-4" /> {upiBusy === 'upi-link' ? 'Generating…' : 'Generate UPI link & QR'}
+              </Button>
+
+              {upiResult?.ok && upiResult.upiUrl && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiResult.qrData ?? '')}`}
+                      alt="UPI QR code"
+                      width={110}
+                      height={110}
+                      className="rounded-lg bg-white p-1.5 flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-text">Pay {money(upiResult.amountInr ?? 0)} to <span className="text-primary">{upiResult.upiId}</span></p>
+                      <p className="text-sm text-muted mt-1 break-all">{upiResult.note}</p>
+                      <p className="text-xs text-muted mt-2">Scan with any UPI app, or tap a wallet below:</p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <a href={upiResult.upiUrl} className="text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 rounded-lg px-3 py-1.5 hover:bg-emerald-500/20">UPI app</a>
+                        <a href={upiResult.providers?.phonepe} className="text-xs font-semibold bg-violet-500/10 text-violet-500 border border-violet-500/30 rounded-lg px-3 py-1.5 hover:bg-violet-500/20">PhonePe</a>
+                        <a href={upiResult.providers?.gpay} className="text-xs font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/30 rounded-lg px-3 py-1.5 hover:bg-blue-500/20">GPay</a>
+                        <a href={upiResult.providers?.paytm} className="text-xs font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/30 rounded-lg px-3 py-1.5 hover:bg-sky-500/20">Paytm</a>
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={copyUpi} className="w-full">
+                    <Copy className="w-4 h-4" /> Copy UPI link (send via WhatsApp)
+                  </Button>
+                  <p className="text-[11px] text-muted">Once paid, record the receipt in Billing → Transactions to update the party balance.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
