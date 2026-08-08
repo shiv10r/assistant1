@@ -20,7 +20,7 @@ builder.Services.AddSingleton(_ =>
     return new AuthOptions
     {
         Username = c["AUTH_USER"] ?? "admin",
-        Password = c["AUTH_PASS"] ?? "admin123",
+        Password = c["AUTH_PASS"] ?? "LuxInfra@2026",
         Token = c["API_TOKEN"] ?? "lux-admin-token-2024",
     };
 });
@@ -31,10 +31,12 @@ builder.Services.AddSingleton(new DatabaseService(dbPath));
 builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BillingService>();
 builder.Services.AddSingleton<ProjectService>();
+builder.Services.AddSingleton<ActivityService>();
 
 // ---- Optional Turso (libSQL) cloud mirror — persists data across Render redeploys.
 // Enable by setting TURSO_URL + TURSO_TOKEN env vars (service no-ops when unset). ----
-builder.Services.AddHostedService<TursoSyncService>();
+builder.Services.AddSingleton<TursoSyncService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TursoSyncService>());
 
 // ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>
