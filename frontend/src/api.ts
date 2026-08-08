@@ -231,7 +231,10 @@ const integrations = {
   emailInvoice: (txnId: number) => post<{ ok: boolean; to?: string; fileName?: string; subject?: string; error?: string; code?: string; message?: string }>(`/api/txns/${txnId}/email`, {}),
   einvoice: (txnId: number) => get<EinvoiceResult>(`/api/txns/${txnId}/einvoice`),
   razorpayOrder: (amountInr: number, receipt?: string) => post<{ ok: boolean; orderId?: string; keyId?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/order', { amountInr, receipt }),
-  driveBackup: () => post<{ ok: boolean; error?: string; code?: string; message?: string }>('/api/backup/drive', {}),
+  driveBackup: () => post<{ ok: boolean; message?: string; error?: string; code?: string }>('/api/backup/drive', {}),
+  driveAuthUrl: () => get<{ ok: boolean; url?: string; redirect?: string; state?: string; code?: string; message?: string }>('/api/integrations/drive/auth-url'),
+  driveStatus: () => get<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string }>('/api/integrations/drive/status'),
+  driveDisconnect: () => post<{ ok: boolean }>('/api/integrations/drive/disconnect', {}),
   visionProgress: (dataBase64: string) => post<VisionResult>('/api/vision/progress', { dataBase64 }),
 }
 

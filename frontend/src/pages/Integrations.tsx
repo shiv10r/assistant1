@@ -64,9 +64,27 @@ export default function Integrations() {
     setDriveBusy(true)
     try {
       const r = await api.integrations.driveBackup()
-      if (r.ok) toast({ title: 'Backup complete' })
+      if (r.ok) toast({ title: 'Backup complete', description: r.message })
       else toast({ title: 'Drive backup unavailable', description: r.message || r.error || 'Unknown error', variant: 'error' })
     } catch (e) { toast({ title: 'Drive backup failed', description: String(e), variant: 'error' }) } finally { setDriveBusy(false) }
+  }
+
+  const connectDrive = async () => {
+    setBusy('drive-connect')
+    try {
+      const r = await api.integrations.driveAuthUrl()
+      if (r.ok && r.url) window.open(r.url, '_blank', 'noopener')
+      else toast({ title: r.code === 'not_configured' ? 'Drive not configured' : 'Could not start Drive setup', description: r.message || 'Unknown error', variant: 'error' })
+    } catch (e) { toast({ title: 'Could not start Drive setup', description: String(e), variant: 'error' }) } finally { setBusy('') }
+  }
+
+  const disconnectDrive = async () => {
+    if (!confirm('Disconnect Google Drive? Backups will stop until you reconnect.')) return
+    try {
+      await api.integrations.driveDisconnect()
+      loadStatus()
+      toast({ title: 'Google Drive disconnected' })
+    } catch (e) { toast({ title: 'Could not disconnect', description: String(e), variant: 'error' }) }
   }
 
   const cards = [
@@ -92,7 +110,7 @@ export default function Integrations() {
       desc: 'Back up the whole database to Google Drive.',
       icon: <HardDrive className="w-6 h-6" />,
       ok: status?.drive === 'configured',
-      hint: status?.drive === 'configured' ? `Folder: ${status.driveFolder}` : 'Add GOOGLE_DRIVE_ACCESS_TOKEN and redeploy.',
+      hint: status?.drive === 'configured' ? `Folder: ${status.driveFolder}` : (status?.drive === 'needs_connect' ? 'Credentials found — connect your Google account below.' : 'Add GOOGLE_DRIVE_CLIENT_ID + GOOGLE_DRIVE_CLIENT_SECRET and redeploy.'),
     },
     {
       key: 'vision' as const,
@@ -181,12 +199,28 @@ export default function Integrations() {
             <HardDrive className="w-5 h-5 text-muted" />
             <div>
               <div className="font-medium text-text">Back up database to Google Drive</div>
-              <div className="text-sm text-muted">Full database snapshot uploaded to your Drive folder.</div>
+              <div className="text-sm text-muted">
+                {status?.drive === 'configured'
+                  ? `Connected — snapshots land in the "${status.driveFolder}" folder on Drive.`
+                  : 'Full database snapshot uploaded to a folder on your Drive.'}
+              </div>
             </div>
           </div>
-          <Button variant="outline" onClick={runDriveBackup} disabled={driveBusy}>
-            <HardDrive className="w-4 h-4" /> {driveBusy ? 'Backing up…' : 'Run backup'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {status?.drive !== 'configured' && status?.drive === 'needs_connect' && (
+              <Button variant="outline" onClick={connectDrive} disabled={busy === 'drive-connect'}>
+                <HardDrive className="w-4 h-4" /> {busy === 'drive-connect' ? 'Opening…' : 'Connect Google Drive'}
+              </Button>
+            )}
+            <Button variant="outline" onClick={runDriveBackup} disabled={driveBusy || status?.drive !== 'configured'} title={status?.drive !== 'configured' ? 'Connect Google Drive first' : undefined}>
+              <HardDrive className="w-4 h-4" /> {driveBusy ? 'Backing up…' : 'Run backup'}
+            </Button>
+            {status?.drive === 'configured' && (
+              <Button variant="ghost" className="text-red-500 hover:bg-red-500/10" onClick={disconnectDrive}>
+                Disconnect
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -195,6 +229,7 @@ export default function Integrations() {
           <CardContent className="p-5">
             <h2 className="text-base font-semibold text-text mb-2">Where do I add these keys?</h2>
             <p className="text-sm text-muted mb-4">On Render: open your backend service → <b>Environment</b> → add the variables shown above, save, then deploy. On local dev, add them to <code className="text-xs bg-surface2 px-1.5 py-0.5 rounded">backend/.env</code> or your shell before running the API. No keys? Every feature stays hidden behind a friendly notice — nothing breaks.</p>
+            <p className="text-sm text-muted mb-4">Google Drive is the one exception: after adding <code className="text-xs bg-surface2 px-1.5 py-0.5 rounded">GOOGLE_DRIVE_CLIENT_ID</code> + <code className="text-xs bg-surface2 px-1.5 py-0.5 rounded">GOOGLE_DRIVE_CLIENT_SECRET</code>, click <b>Connect Google Drive</b> once to authorise your account — no access token is ever needed in env vars.</p>
             <Link to="/txn" className="text-sm text-primary hover:underline font-medium">Open transactions →</Link>
           </CardContent>
         </Card>
