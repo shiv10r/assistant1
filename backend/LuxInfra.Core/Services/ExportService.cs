@@ -143,6 +143,28 @@ public static class ExportService
         return items;
     }
 
+    // ---------- CSV ----------
+    public static byte[] BuildCsv(ReportData data)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("Date,Site,Client,Category,Amount");
+        foreach (var row in data.Rows)
+            sb.AppendLine($"{Csv(row.DateLabel)},{Csv(row.Site)},{Csv(row.Client)},{Csv(row.Category)},{row.Amount.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}");
+        sb.AppendLine($",,,TOTAL,{data.Total.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}");
+        return EncodingUtf8Bom(sb.ToString());
+    }
+
+    private static string Csv(string value)
+    {
+        value ??= "";
+        return value.Contains(',') || value.Contains('"') || value.Contains('\n')
+            ? "\"" + value.Replace("\"", "\"\"") + "\""
+            : value;
+    }
+
+    private static byte[] EncodingUtf8Bom(string text)
+        => new System.Text.UTF8Encoding(true).GetBytes(text);
+
     // ---------- PDF ----------
     public static byte[] BuildPdf(ReportData data) => BuildDocument(data).GeneratePdf();
 
