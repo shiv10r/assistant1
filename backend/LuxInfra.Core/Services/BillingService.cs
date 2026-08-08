@@ -223,11 +223,13 @@ public class BillingService : IBillingService
             }
         }
     }
+    public Task<List<BizTxn>> GetTxnsAsync() => 
+_repo.GetTxnsAsync();
 
-    public Task<List<BizTxn>> GetTxnsAsync() => _repo.GetTxnsAsync();
+    public Task<BizTxn?> GetTxnAsync(int id) => _repo.GetTxnAsync(id);
 
-    public Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId) => _repo.GetTxnLinesAsync(txnId);
-
+    public Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId) 
+=> _repo.GetTxnLinesAsync(txnId);
     // ---------- dashboard KPIs ----------
 
     public async Task<(double youllGet, double youllGive, double monthSale)> GetKpisAsync()

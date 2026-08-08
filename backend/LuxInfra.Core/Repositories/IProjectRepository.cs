@@ -23,6 +23,7 @@ public interface IProjectRepository
     Task<List<ProjectTxn>> GetTxnsAsync(int projectId);
 
     Task<List<AttendanceRecord>> GetAttendanceForDateAsync(int projectId, DateTime date);
+    Task<List<AttendanceRecord>> GetAttendanceInRangeAsync(int projectId, DateTime from, DateTime to);
     Task<AttendanceRecord?> GetAttendanceAsync(int projectId, int partyId, DateTime date);
     Task InsertAttendanceAsync(AttendanceRecord r);
     Task UpdateAttendanceAsync(AttendanceRecord r);
