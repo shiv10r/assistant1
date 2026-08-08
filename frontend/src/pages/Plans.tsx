@@ -1,7 +1,6 @@
 import { PageHead } from '../ui'
 import { Card, CardContent, Badge, Button } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
-import { Check, Crown } from 'lucide-react'
 
 const PLANS = [
   { key: 'free', name: 'Starter', price: 0, period: 'forever', blurb: 'For single-site freelancers', features: ['1 active project', 'Unlimited expenses', 'Assistant chat', 'Excel / PDF / PNG reports'] },
@@ -36,7 +35,7 @@ export default function Plans() {
               <CardContent className="p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-text">{p.name}</span>
-                  {current && <Badge variant="success" size="sm"><Crown className="w-3 h-3" /> Current</Badge>}
+                  {current && <Badge variant="success" size="sm">Current</Badge>}
                 </div>
                 <p className="text-sm text-muted">{p.blurb}</p>
                 <div className="flex items-baseline gap-1">
@@ -46,7 +45,7 @@ export default function Plans() {
                 <ul className="space-y-2 flex-1">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-text">
-                      <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
                       {f}
                     </li>
                   ))}

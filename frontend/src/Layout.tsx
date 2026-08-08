@@ -26,6 +26,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
+import { usePlan } from './hooks/usePlan'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
@@ -58,10 +59,13 @@ const GROUPS: NavGroup[] = [
   ]},
 ]
 
+const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
+
 export default function Layout() {
   const [open, setOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const { plan } = usePlan()
 
   function toggleTheme() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
@@ -150,6 +154,13 @@ export default function Layout() {
             )
           })}
         </nav>
+        <div className="sidebar-plan">
+          <NavLink to="/plans" className="sidebar-plan-link">
+            <span className="sidebar-plan-dot" />
+            <span>{PLAN_LABEL[plan] ?? 'Free'} plan</span>
+            <span className="sidebar-plan-cta">Upgrade</span>
+          </NavLink>
+        </div>
         {open && <div className="backdrop" onClick={() => setOpen(false)} />}
 
         <main className="content"><Outlet /></main>
