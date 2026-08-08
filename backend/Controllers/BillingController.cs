@@ -105,6 +105,14 @@ public class BillingController : ControllerBase
         return Ok(account);
     }
 
+    [HttpDelete("banks/{id:int}")]
+    public async Task<ActionResult> DeleteBank(int id)
+    {
+        await _billing.DeleteBankAccountAsync(id);
+        await _activity.LogAsync("Bank account removed", $"#{id}");
+        return Ok();
+    }
+
     // ---- Cheques ----
     [HttpGet("cheques")]
     public async Task<List<BizTxn>> Cheques() => await _billing.GetChequesAsync();
