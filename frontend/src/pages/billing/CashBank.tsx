@@ -94,7 +94,7 @@ export default function CashBank() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <Kpi label="Cash In Hand" value={money(balance)} icon={<Wallet className="w-5 h-5" />} tone="emerald" />
-        <Kpi label="Bank Balance" value={money(totalBank)} icon={<Landmark className="w-5 h-5" />} tone="violet" />
+        <Kpi label="Bank Balance" value={money(totalBank)} icon={<Landmark className="w-5 h-5" />} tone="indigo" />
         <Kpi label="Bank Accounts" value={String(banks.length)} icon={<PiggyBank className="w-5 h-5" />} tone="cyan" />
       </div>
 
@@ -271,9 +271,9 @@ export default function CashBank() {
   )
 }
 
-function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone: 'violet' | 'cyan' | 'amber' | 'emerald' }) {
+function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone: 'indigo' | 'cyan' | 'amber' | 'emerald' }) {
   const tones = {
-    violet: 'bg-violet-500/10 text-violet-500',
+    indigo: 'bg-indigo-500/10 text-indigo-500',
     cyan: 'bg-cyan-500/10 text-cyan-500',
     amber: 'bg-amber-500/10 text-amber-500',
     emerald: 'bg-emerald-500/10 text-emerald-500',

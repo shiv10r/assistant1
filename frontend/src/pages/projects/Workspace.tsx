@@ -103,7 +103,7 @@ export default function Workspace() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Kpi label="Contract Value" value={money(p.value)} icon={<Target className="w-5 h-5" />} tone="violet" />
+        <Kpi label="Contract Value" value={money(p.value)} icon={<Target className="w-5 h-5" />} tone="indigo" />
         <Kpi label="Received" value={money(stats.received)} icon={<TrendingDown className="w-5 h-5 rotate-180" />} tone="emerald" />
         <Kpi label="Spent" value={money(stats.spent)} icon={<TrendingUp className="w-5 h-5" />} tone="amber" />
         <Kpi label="Task Progress" value={`${stats.taskPct}%`} icon={<ClipboardList className="w-5 h-5" />} tone="cyan" />
@@ -163,7 +163,7 @@ export default function Workspace() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <div className="h-2 flex-1 rounded-full bg-surface overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-violet-600 to-cyan-500" style={{ width: `${Math.min(100, l.progressPercent)}%` }} />
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500" style={{ width: `${Math.min(100, l.progressPercent)}%` }} />
                       </div>
                       <span className="text-xs font-semibold text-primary w-10 text-right">{l.progressPercent}%</span>
                     </div>
@@ -210,9 +210,9 @@ export default function Workspace() {
   )
 }
 
-function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone: 'violet' | 'cyan' | 'amber' | 'emerald' }) {
+function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone: 'indigo' | 'cyan' | 'amber' | 'emerald' }) {
   const tones = {
-    violet: 'bg-violet-500/10 text-violet-500',
+    indigo: 'bg-indigo-500/10 text-indigo-500',
     cyan: 'bg-cyan-500/10 text-cyan-500',
     amber: 'bg-amber-500/10 text-amber-500',
     emerald: 'bg-emerald-500/10 text-emerald-500',

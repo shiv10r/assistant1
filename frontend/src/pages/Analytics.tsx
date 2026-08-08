@@ -58,7 +58,7 @@ export default function Analytics() {
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <Kpi label="You'll Get" value={money(data.billing.youllGet)} tone="emerald" icon={<TrendingUp className="w-5 h-5" />} />
         <Kpi label="You'll Give" value={money(data.billing.youllGive)} tone="red" icon={<TrendingDown className="w-5 h-5" />} />
-        <Kpi label="This Month's Sales" value={money(data.billing.monthSale)} tone="violet" icon={<Wallet className="w-5 h-5" />} />
+        <Kpi label="This Month's Sales" value={money(data.billing.monthSale)} tone="indigo" icon={<Wallet className="w-5 h-5" />} />
       </div>
 
       {/* Project progress & budget */}
@@ -154,11 +154,11 @@ function Chart({ data, max, color }: { data: { period: string; total: number }[]
   )
 }
 
-function Kpi({ label, value, tone, icon }: { label: string; value: string; tone: 'emerald' | 'red' | 'violet'; icon: React.ReactNode }) {
+function Kpi({ label, value, tone, icon }: { label: string; value: string; tone: 'emerald' | 'red' | 'indigo'; icon: React.ReactNode }) {
   const tones = {
     emerald: 'bg-emerald-500/10 text-emerald-500',
     red: 'bg-red-500/10 text-red-500',
-    violet: 'bg-violet-500/10 text-violet-500',
+    indigo: 'bg-indigo-500/10 text-indigo-500',
   }
   return (
     <Card>
