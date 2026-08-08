@@ -36,6 +36,15 @@ export interface ProjectFile { id: number; projectId: number; folderId: number; 
 
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
+export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string }
+export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
+export interface BackupResult { ok: boolean; message: string }
+export interface AnalyticsData {
+  billing: { youllGet: number; youllGive: number; monthSale: number }
+  projects: { name: string; status: string; value: number; spent: number; received: number; taskPct: number; budgetPct: number; pctLabel: string; valueLabel: string; spentLabel: string; receivedLabel: string }[]
+  salesByMonth: { period: string; total: number }[]
+  expenseByMonth: { period: string; total: number }[]
+}
 
 // ---------------- core ----------------
 const TOKEN_KEY = 'lux_token'
@@ -95,6 +104,22 @@ async function del(url: string): Promise<void> {
 function today(): string { return new Date().toISOString().slice(0, 10) }
 export { today }
 
+// Downloads a protected file (Excel/PDF/PNG) with the auth token and saves it.
+async function download(url: string): Promise<void> {
+  const r = await fetch(BASE + url, { headers: authHeaders() })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (!r.ok) throw new Error(`API error ${r.status}`)
+  const blob = await r.blob()
+  const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'luxinfra-download'
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(a.href)
+}
+
 // ---------------- Assistant ----------------
 const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
 const dashboard = () => get<Dashboard>('/api/dashboard')
@@ -148,4 +173,17 @@ const projects = {
   addFile: (projectId: number, f: ProjectFile) => post<ProjectFile>(`/api/projects/${projectId}/files`, f),
 }
 
-export const api = { get, send, dashboard, report, billing, projects }
+export const api = {
+  get,
+  send,
+  dashboard,
+  report,
+  download,
+  billing,
+  projects,
+  analytics: () => get<AnalyticsData>('/api/analytics'),
+  backupStatus: () => get<BackupStatus>('/api/backup'),
+  backupPush: () => post<BackupResult>('/api/backup/push', {}),
+  backupPull: () => post<BackupResult>('/api/backup/pull', {}),
+  activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
+}

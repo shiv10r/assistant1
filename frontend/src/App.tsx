@@ -9,6 +9,9 @@ import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Plans from './pages/Plans'
 import Account from './pages/Account'
+import Analytics from './pages/Analytics'
+import Backup from './pages/Backup'
+import Activity from './pages/Activity'
 import BillingHome from './pages/billing/BillingHome'
 import TxnForm from './pages/billing/TxnForm'
 import PartyForm from './pages/billing/PartyForm'
@@ -39,6 +42,9 @@ export default function App() {
           <Route path="/" element={<Assistant />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/backup" element={<Backup />} />
+          <Route path="/activity" element={<Activity />} />
           <Route path="/settings" element={<Settings />} />
 
           <Route path="/billing" element={<BillingHome />} />
