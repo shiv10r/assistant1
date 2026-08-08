@@ -69,7 +69,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
         <p className="login-hint">
-          Default: <code>admin</code> / <code>123admin</code>
+          Default: <code>admin</code> / <code>admin123</code>
         </p>
       </form>
     </div>
