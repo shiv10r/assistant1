@@ -74,6 +74,25 @@ export interface UpiLinkResult {
   error?: string; code?: string; message?: string
 }
 
+// ---- Business modules ----
+export interface SiteContract { id: number; projectId: number; partyName: string; title: string; amount: number; startDate: string; endDate: string; terms: string; escalationClause: string; status: string }
+export interface ContractMilestone { id: number; projectId: number; contractId: number; title: string; amount: number; percentage: number; dueDate: string; status: string; isPaid: boolean }
+export interface VendorPrice { id: number; vendor: string; item: string; price: number; unit: string; date: string; notes: string }
+export interface EquipmentLog { id: number; projectId: number; equipment: string; purpose: string; rentalCost: number; fuelCost: number; date: string; notes: string }
+export interface FuelLog { id: number; vehicle: string; date: string; litres: number; cost: number; kms: number; notes: string }
+export interface Snag { id: number; projectId: number; title: string; severity: string; status: string; assignee: string; dueDate: string; notes: string; createdAt: string }
+export interface ContractorRating { id: number; name: string; quality: number; punctuality: number; cost: number; notes: string; date: string; average: number }
+
+// ---- Insights ----
+export interface PlRow { id: number; name: string; status: string; value: number; valueLabel: string; received: number; receivedLabel: string; spent: number; spentLabel: string; profit: number; profitLabel: string; marginPct: number }
+export interface Gstr1Data { period: string; periodLabel: string; summary: { invoiceCount: number; taxableTotal: number; taxableLabel: string; taxTotal: number; taxLabel: string; cgst: string; sgst: string; igst: string }; hsnRows: { hsn: string; rateLabel: string; count: number; taxable: number; taxableLabel: string; tax: number; taxLabel: string }[] }
+export interface CreditRow { id: number; party: string; refLabel: string; balance: number; balanceLabel: string; due: string; daysOverdue: number; bucket: string }
+export interface ForecastData { cashNow: number; cashNowLabel: string; buckets: { window: string; inflow: string; outflow: string; net: number; netLabel: string }[] }
+export interface StockRow { id: number; name: string; unit: string; category: string; stock: number; stockLabel: string; rate: number; value: number; lowStock: boolean; dead: boolean; minStock: number }
+export interface LabourRow { id: number; name: string; workers: number; presentDays: number; wages: number; wagesLabel: string; avgPerWorker: number }
+export interface DelayedRow { id: number; party: string; refLabel: string; balance: number; balanceLabel: string; daysOverdue: number; interest: number; interestLabel: string }
+export interface AdvanceRow { id: number; name: string; status: string; advance: number; advanceLabel: string; spent: number; spentLabel: string; remaining: number; remainingLabel: string }
+
 // ---------------- core ----------------
 const TOKEN_KEY = 'lux_token'
 const ROLE_KEY = 'lux_role'
@@ -286,6 +305,48 @@ export function uploadUrl(projectId: number, blobId: number): string {
   return `${BASE}/api/projects/${projectId}/uploads/${blobId}`
 }
 
+const modules = {
+  videoSession: (projectId?: number) => get<{ room: string; url: string; provider: string }>(`/api/modules/video-session${projectId ? `?projectId=${projectId}` : ''}`),
+  contracts: () => get<SiteContract[]>('/api/modules/contracts'),
+  saveContract: (c: Partial<SiteContract>) => post<SiteContract>('/api/modules/contracts', c),
+  deleteContract: (id: number) => del(`/api/modules/contracts/${id}`),
+  milestones: (projectId?: number) => get<ContractMilestone[]>(`/api/modules/milestones${projectId ? `?projectId=${projectId}` : ''}`),
+  saveMilestone: (m: Partial<ContractMilestone>) => post<ContractMilestone>('/api/modules/milestones', m),
+  markMilestonePaid: (id: number) => post<ContractMilestone>(`/api/modules/milestones/${id}/paid`, {}),
+  deleteMilestone: (id: number) => del(`/api/modules/milestones/${id}`),
+  vendorPrices: () => get<VendorPrice[]>('/api/modules/vendorprices'),
+  saveVendorPrice: (v: Partial<VendorPrice>) => post<VendorPrice>('/api/modules/vendorprices', v),
+  deleteVendorPrice: (id: number) => del(`/api/modules/vendorprices/${id}`),
+  equipment: (projectId?: number) => get<EquipmentLog[]>(`/api/modules/equipment${projectId ? `?projectId=${projectId}` : ''}`),
+  saveEquipment: (e: Partial<EquipmentLog>) => post<EquipmentLog>('/api/modules/equipment', e),
+  deleteEquipment: (id: number) => del(`/api/modules/equipment/${id}`),
+  fuel: () => get<FuelLog[]>('/api/modules/fuel'),
+  saveFuel: (f: Partial<FuelLog>) => post<FuelLog>('/api/modules/fuel', f),
+  deleteFuel: (id: number) => del(`/api/modules/fuel/${id}`),
+  snags: (projectId?: number) => get<Snag[]>(`/api/modules/snags${projectId ? `?projectId=${projectId}` : ''}`),
+  saveSnag: (s: Partial<Snag>) => post<Snag>('/api/modules/snags', s),
+  setSnagStatus: (id: number) => post<Snag>(`/api/modules/snags/${id}/status`, {}),
+  deleteSnag: (id: number) => del(`/api/modules/snags/${id}`),
+  ratings: () => get<ContractorRating[]>('/api/modules/ratings'),
+  saveRating: (r: Partial<ContractorRating>) => post<ContractorRating>('/api/modules/ratings', r),
+  deleteRating: (id: number) => del(`/api/modules/ratings/${id}`),
+}
+
+const insights = {
+  pl: () => get<{ rows: PlRow[]; totals: { valueLabel: string; receivedLabel: string; spentLabel: string; profitLabel: string } }>('/api/insights/pl'),
+  gstr1: (period = 'Month') => get<Gstr1Data>(`/api/insights/gstr1?period=${period}`),
+  credit: () => get<{ receivableLabel: string; payableLabel: string; netReceivableLabel: string; overdueTotalLabel: string; buckets: { bucket: string; total: string; count: number }[]; overdue: CreditRow[]; parties: { id: number; name: string; phone: string; balanceLabel: string; direction: string }[] }>('/api/insights/credit'),
+  forecast: () => get<ForecastData>('/api/insights/forecast'),
+  stock: () => get<{ totalValueLabel: string; lowStockCount: number; deadStockCount: number; rows: StockRow[] }>('/api/insights/stock'),
+  labour: (projectId?: number, days = 30) => get<{ days: number; totalWorkers: number; totalPresent: number; totalPresentLabel: string; totalWagesLabel: string; rows: LabourRow[] }>(`/api/insights/labour${projectId ? `?projectId=${projectId}` : ''}&days=${days}`),
+  delayed: (rate = 12) => get<{ rate: number; totalInterestLabel: string; rows: DelayedRow[] }>(`/api/insights/delayed?rate=${rate}`),
+  advances: () => get<{ totalAdvanceLabel: string; totalSpentLabel: string; netAdvanceLabel: string; rows: AdvanceRow[] }>('/api/insights/advances'),
+  digest: () => get<{ text: string }>('/api/insights/digest'),
+  health: () => get<{ ok: boolean; configured: boolean; model: string; text: string }>('/api/insights/health'),
+  sendReminders: () => post<{ ok: boolean; sent: number; total: number; code?: string; message?: string; errors?: string[] }>('/api/insights/reminders/send', {}),
+  backupEmail: () => post<{ ok: boolean; code?: string; message?: string; error?: string; to?: string }>('/api/insights/backup-email', {}),
+}
+
 export const api = {
   get,
   send,
@@ -300,6 +361,8 @@ export const api = {
   auth,
   payroll,
   integrations,
+  modules,
+  insights,
   analytics: () => get<AnalyticsData>('/api/analytics'),
   reportKpis,
   backupStatus: () => get<BackupStatus>('/api/backup'),
