@@ -30,6 +30,7 @@ public class ProjectService
             await conn.CreateTableAsync<DesignFile>();
             await conn.CreateTableAsync<ProjectFolder>();
             await conn.CreateTableAsync<ProjectFile>();
+            await conn.CreateTableAsync<FileBlob>();
             _initialized = true;
         }
         return conn;
@@ -70,6 +71,7 @@ public class ProjectService
         await conn.Table<DesignFile>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<ProjectFolder>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<ProjectFile>().DeleteAsync(t => t.ProjectId == id);
+        await conn.Table<FileBlob>().DeleteAsync(t => t.ProjectId == id);
     }
 
     // ---------- parties ----------
@@ -288,5 +290,33 @@ public class ProjectService
     {
         var conn = await Conn();
         await conn.InsertAsync(new ProjectFile { ProjectId = projectId, FolderId = folderId, FileName = fileName, FilePath = filePath });
+    }
+
+    // ---------- uploads (2D/3D models & files) ----------
+
+    public async Task<List<FileBlob>> GetUploadsAsync(int projectId, string? category = null)
+    {
+        var conn = await Conn();
+        var all = await conn.Table<FileBlob>().Where(b => b.ProjectId == projectId).OrderByDescending(b => b.Id).ToListAsync();
+        return category is null ? all : all.Where(b => b.Category == category).ToList();
+    }
+
+    public async Task<FileBlob?> GetUploadAsync(int id)
+    {
+        var conn = await Conn();
+        return await conn.FindAsync<FileBlob>(id);
+    }
+
+    public async Task<FileBlob> SaveUploadAsync(FileBlob blob)
+    {
+        var conn = await Conn();
+        await conn.InsertAsync(blob);
+        return blob;
+    }
+
+    public async Task DeleteUploadAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.Table<FileBlob>().DeleteAsync(b => b.Id == id);
     }
 }

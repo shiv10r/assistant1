@@ -244,3 +244,24 @@ public class ProjectFile
     public string FilePath { get; set; } = "";
     public DateTime UploadedAt { get; set; } = DateTime.Today;
 }
+
+/// <summary>Stores the actual bytes of an uploaded 2D/3D model or any project file.</summary>
+[Table("file_blobs")]
+public class FileBlob
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public int ProjectId { get; set; }
+    public string Category { get; set; } = DesignCategories.Layout2D;
+    public string Name { get; set; } = "";
+    public string ContentType { get; set; } = "application/octet-stream";
+    public long Size { get; set; }
+    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+
+    [Ignore] public string SizeLabel => Size switch
+    {
+        < 1024 => $"{Size} B",
+        < 1024 * 1024 => $"{Size / 1024.0:0.#} KB",
+        _ => $"{Size / (1024.0 * 1024.0):0.##} MB"
+    };
+}

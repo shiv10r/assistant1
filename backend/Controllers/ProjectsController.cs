@@ -201,6 +201,65 @@ public class ProjectsController : ControllerBase
         return Ok(file);
     }
 
+    // ---- Uploads (2D/3D models & files) ----
+
+    [HttpGet("{id:int}/uploads")]
+    public async Task<List<object>> Uploads(int id, [FromQuery] string? category = null)
+    {
+        var blobs = await _projects.GetUploadsAsync(id, category);
+        return blobs.Select(b => (object)new
+        {
+            id = b.Id,
+            projectId = b.ProjectId,
+            category = b.Category,
+            name = b.Name,
+            contentType = b.ContentType,
+            size = b.Size,
+            sizeLabel = b.SizeLabel,
+            uploadedAt = b.UploadedAt
+        }).ToList();
+    }
+
+    [HttpPost("{id:int}/uploads")]
+    public async Task<ActionResult> Upload(int id, [FromBody] UploadDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name)) return BadRequest("File name required");
+        byte[] bytes;
+        try { bytes = Convert.FromBase64String(dto.DataBase64 ?? ""); }
+        catch { return BadRequest("Invalid file data"); }
+        if (bytes.Length == 0) return BadRequest("Empty file");
+
+        var blob = await _projects.SaveUploadAsync(new FileBlob
+        {
+            ProjectId = id,
+            Category = string.IsNullOrWhiteSpace(dto.Category) ? DesignCategories.Layout2D : dto.Category,
+            Name = dto.Name.Trim(),
+            ContentType = string.IsNullOrWhiteSpace(dto.ContentType) ? "application/octet-stream" : dto.ContentType,
+            Size = bytes.Length,
+            Data = bytes
+        });
+        await _activity.LogAsync("File uploaded", $"{blob.Name} → {blob.Category}");
+        return Ok(new { blob.Id, blob.ProjectId, blob.Category, blob.Name, blob.ContentType, blob.Size, blob.SizeLabel, blob.UploadedAt });
+    }
+
+    [HttpGet("{id:int}/uploads/{blobId:int}")]
+    public async Task<ActionResult> Download(int id, int blobId)
+    {
+        var blob = await _projects.GetUploadAsync(blobId);
+        if (blob is null || blob.ProjectId != id) return NotFound();
+        return File(blob.Data, blob.ContentType, blob.Name);
+    }
+
+    [HttpDelete("{id:int}/uploads/{blobId:int}")]
+    public async Task<ActionResult> DeleteUpload(int id, int blobId)
+    {
+        var blob = await _projects.GetUploadAsync(blobId);
+        if (blob is null || blob.ProjectId != id) return NotFound();
+        await _projects.DeleteUploadAsync(blobId);
+        await _activity.LogAsync("File deleted", blob.Name);
+        return Ok();
+    }
+
     private async Task<SiteParty> FindParty(int projectId, int partyId)
     {
         var party = (await _projects.GetPartiesAsync(projectId)).FirstOrDefault(x => x.Id == partyId);
@@ -208,4 +267,5 @@ public class ProjectsController : ControllerBase
     }
 
     public record AttendanceDto(int PartyId, DateTime Date, string? Status, double Hours);
+    public record UploadDto(string Category, string Name, string ContentType, long Size, string DataBase64);
 }
