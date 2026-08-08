@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import type { CatalogItem, Settings } from '../../api'
 import { Card, CardContent, Badge, Input, Textarea, Select, Label, Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money, num } from '../../components/ui'
+import { useToast } from '../../components/ui/Toast'
 import { Plus, Search, Package, Trash2, Edit, Barcode } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -14,6 +15,7 @@ function blank(): CatalogItem {
 }
 
 export default function Catalog() {
+  const { toast } = useToast()
   const [items, setItems] = useState<CatalogItem[]>([])
   const [settings, setSettings] = useState<Settings>({})
   const [err, setErr] = useState('')
@@ -68,7 +70,8 @@ export default function Catalog() {
       setOpen(false)
       setEditing(null)
       load()
-    } catch (e) { setErr(String(e)) }
+      toast({ title: editing.id ? 'Item updated' : 'Item created', description: editing.name })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not save item', description: String(e), variant: 'error' }) }
     finally { setSaving(false) }
   }
 
@@ -77,7 +80,8 @@ export default function Catalog() {
     try {
       await api.billing.saveItem({ ...items.find(i => i.id === id)!, id, name: '' })
       load()
-    } catch (e) { setErr(String(e)) }
+      toast({ title: 'Item deleted', variant: 'error' })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not delete item', description: String(e), variant: 'error' }) }
   }
 
   return (

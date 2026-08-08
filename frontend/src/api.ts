@@ -33,6 +33,7 @@ export interface MeetingMinute { id: number; projectId: number; title: string; d
 export interface DesignFile { id: number; projectId: number; category: string; name: string; imagePath: string; note: string; date: string }
 export interface ProjectFolder { id: number; projectId: number; name: string; createdAt: string }
 export interface ProjectFile { id: number; projectId: number; folderId: number; fileName: string; filePath: string; uploadedAt: string }
+export interface FileBlobMeta { id: number; projectId: number; category: string; name: string; contentType: string; size: number; sizeLabel: string; uploadedAt: string }
 
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
@@ -172,6 +173,13 @@ const projects = {
   addFolder: (projectId: number, name: string) => post<ProjectFolder>(`/api/projects/${projectId}/folders`, { name }),
   files: (folderId: number) => get<ProjectFile[]>(`/api/projects/files/${folderId}`),
   addFile: (projectId: number, f: ProjectFile) => post<ProjectFile>(`/api/projects/${projectId}/files`, f),
+  uploads: (projectId: number, category?: string) => get<FileBlobMeta[]>(`/api/projects/${projectId}/uploads${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+  upload: (projectId: number, b: { category: string; name: string; contentType: string; dataBase64: string }) => post<FileBlobMeta>(`/api/projects/${projectId}/uploads`, b),
+  removeUpload: (projectId: number, blobId: number) => del(`/api/projects/${projectId}/uploads/${blobId}`),
+}
+
+export function uploadUrl(projectId: number, blobId: number): string {
+  return `${BASE}/api/projects/${projectId}/uploads/${blobId}`
 }
 
 export const api = {

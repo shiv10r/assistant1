@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Settings } from '../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../components/ui'
+import { useToast } from '../components/ui/Toast'
 import { Building2, Phone, MapPin, Banknote, BadgeIndianRupee, Save, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -38,6 +39,7 @@ function Field({ label, value, onChange, placeholder, type, list }: {
 }
 
 export default function Account() {
+  const { toast } = useToast()
   const [s, setS] = useState<Settings>({})
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
@@ -58,9 +60,11 @@ export default function Account() {
     try {
       for (const k of keys) await api.billing.setSetting(k, s[k] || '')
       setMsg({ ok: true, text: 'Firm profile saved successfully.' })
+      toast({ title: 'Firm profile saved' })
       setTimeout(() => setMsg(null), 3000)
     } catch (e) {
       setMsg({ ok: false, text: String(e) })
+      toast({ title: 'Could not save profile', description: String(e), variant: 'error' })
     }
     finally { setSaving(false) }
   }

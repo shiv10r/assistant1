@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import type { BankAccount, CashEntry } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Label, Modal, Empty, money, todayISO, fmtDate } from '../../components/ui'
+import { useToast } from '../../components/ui/Toast'
 import { Banknote, Landmark, Plus, Minus, Pencil, Trash2, Wallet, PiggyBank, CreditCard, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -10,6 +11,7 @@ function blankBank(): BankAccount {
 }
 
 export default function CashBank() {
+  const { toast } = useToast()
   const [balance, setBalance] = useState(0)
   const [entries, setEntries] = useState<CashEntry[]>([])
   const [banks, setBanks] = useState<BankAccount[]>([])
@@ -38,7 +40,8 @@ export default function CashBank() {
       setErr('')
       setCashOpen(false); setCAmt(''); setCDesc('')
       load()
-    } catch (e) { setErr(String(e)) }
+      toast({ title: ck === 'add' ? 'Cash added' : 'Cash reduced', description: money(amt) })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not save entry', description: String(e), variant: 'error' }) }
   }
 
   const openAddBank = () => { setBankForm(blankBank()); setErr(''); setBankOpen(true) }
@@ -59,7 +62,8 @@ export default function CashBank() {
       setErr('')
       setBankOpen(false)
       load()
-    } catch (e) { setErr(String(e)) }
+      toast({ title: bankForm.id ? 'Bank account updated' : 'Bank account added', description: bankForm.name })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not save bank account', description: String(e), variant: 'error' }) }
     finally { setSavingBank(false) }
   }
 
@@ -68,7 +72,8 @@ export default function CashBank() {
     try {
       await api.billing.deleteBank(b.id)
       load()
-    } catch (e) { setErr(String(e)) }
+      toast({ title: 'Bank account deleted', description: b.name, variant: 'error' })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not delete bank account', description: String(e), variant: 'error' }) }
   }
 
   return (
