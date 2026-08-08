@@ -3,6 +3,7 @@ import { api } from '../../api'
 import type { CatalogItem, Settings } from '../../api'
 import { Card, CardContent, Badge, Input, Textarea, Select, Label, Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money, num } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
+import BarcodeScanner from '../../components/BarcodeScanner'
 import { Plus, Search, Package, Trash2, Edit, Barcode } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -25,6 +26,8 @@ export default function Catalog() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'Product' | 'Service'>('all')
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all')
   const [saving, setSaving] = useState(false)
+  const [scanOpen, setScanOpen] = useState(false)
+  const [editingViaScan, setEditingViaScan] = useState(false)
 
   const gstOn = settings['gst.enabled'] !== '0'
   const unitsOn = settings['item.units'] !== '0'
@@ -84,6 +87,21 @@ export default function Catalog() {
     } catch (e) { setErr(String(e)); toast({ title: 'Could not delete item', description: String(e), variant: 'error' }) }
   }
 
+  const onScan = (value: string) => {
+    const found = items.find((i) => i.barcode === value)
+    if (found) {
+      setEditing({ ...found })
+      setEditingViaScan(true)
+      setOpen(true)
+      toast({ title: 'Found item', description: found.name })
+    } else {
+      setEditing({ ...blank(), barcode: value })
+      setEditingViaScan(false)
+      setOpen(true)
+      toast({ title: 'New code', description: `Opening a new item with barcode ${value}` })
+    }
+  }
+
   return (
     <>
       <div className="page-head">
@@ -91,7 +109,12 @@ export default function Catalog() {
           <h1>Items & Catalog</h1>
           <div className="muted">Manage your product and service master data</div>
         </div>
-        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Item</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setScanOpen(true)}>
+            <Barcode className="w-4 h-4" /> Scan
+          </Button>
+          <Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Item</Button>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -200,7 +223,7 @@ export default function Catalog() {
       </Card>
 
       {/* Edit/Create Modal */}
-      <Modal open={open} onClose={() => { setOpen(false); setEditing(null); setErr('') }} title={editing?.id ? 'Edit Item' : 'Add New Item'} size="xl">
+      <Modal open={open} onClose={() => { setOpen(false); setEditing(null); setErr('') }} title={editingViaScan ? 'Edit Item (scanned)' : (editing?.id ? 'Edit Item' : 'Add New Item')} size="xl">
         <form onSubmit={(e) => { e.preventDefault(); save() }} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
@@ -312,6 +335,8 @@ export default function Catalog() {
           </div>
         </form>
       </Modal>
+
+      <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onResult={onScan} />
     </>
   )
 }

@@ -30,6 +30,11 @@ import ProjectMaterial from './pages/projects/ProjectMaterial'
 import ProjectMom from './pages/projects/ProjectMom'
 import ProjectDesign from './pages/projects/ProjectDesign'
 import ProjectFiles from './pages/projects/ProjectFiles'
+import ProjectPayroll from './pages/projects/ProjectPayroll'
+import ProjectsMap from './pages/ProjectsMap'
+import Users from './pages/Users'
+import VisionProgress from './pages/VisionProgress'
+import Integrations from './pages/Integrations'
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
@@ -67,6 +72,11 @@ export default function App() {
           <Route path="/projects/:id/mom" element={<ProjectMom />} />
           <Route path="/projects/:id/design" element={<ProjectDesign />} />
           <Route path="/projects/:id/files" element={<ProjectFiles />} />
+          <Route path="/projects/:id/payroll" element={<ProjectPayroll />} />
+          <Route path="/map" element={<ProjectsMap />} />
+          <Route path="/vision" element={<VisionProgress />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/users" element={<Users />} />
 
           <Route path="/plans" element={<Plans />} />
           <Route path="/account" element={<Account />} />
