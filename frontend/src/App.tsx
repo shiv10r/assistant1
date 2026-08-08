@@ -35,6 +35,9 @@ import ProjectsMap from './pages/ProjectsMap'
 import Users from './pages/Users'
 import VisionProgress from './pages/VisionProgress'
 import Integrations from './pages/Integrations'
+import Insights from './pages/Insights'
+import Modules from './pages/Modules'
+import VideoCall from './pages/VideoCall'
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
@@ -76,6 +79,9 @@ export default function App() {
           <Route path="/map" element={<ProjectsMap />} />
           <Route path="/vision" element={<VisionProgress />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/insights" element={<Insights />} />
+          <Route path="/modules" element={<Modules />} />
+          <Route path="/video" element={<VideoCall />} />
           <Route path="/users" element={<Users />} />
 
           <Route path="/plans" element={<Plans />} />

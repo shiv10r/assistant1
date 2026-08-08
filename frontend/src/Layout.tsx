@@ -29,6 +29,9 @@ import {
   ScanBarcode,
   Sparkles,
   ShieldCheck,
+  ChartSpline,
+  Boxes,
+  Video,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import { usePlan } from './hooks/usePlan'
@@ -58,6 +61,11 @@ const GROUPS: NavGroup[] = [
   { title: 'Projects', items: [
     { label: 'All Projects', to: '/projects', icon: <Briefcase className="w-5 h-5" /> },
     { label: 'Site Map', to: '/map', icon: <Map className="w-5 h-5" /> },
+  ]},
+  { title: 'Business', items: [
+    { label: 'Modules', to: '/modules', icon: <Boxes className="w-5 h-5" /> },
+    { label: 'Insights', to: '/insights', icon: <ChartSpline className="w-5 h-5" /> },
+    { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
   ]},
   { title: 'Automation', items: [
     { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
