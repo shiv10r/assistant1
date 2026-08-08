@@ -156,9 +156,9 @@ export default function Layout() {
         </nav>
         <div className="sidebar-plan">
           <NavLink to="/plans" className="sidebar-plan-link">
-            <span className="sidebar-plan-dot" />
-            <span>{PLAN_LABEL[plan] ?? 'Free'} plan</span>
-            <span className="sidebar-plan-cta">Upgrade</span>
+            <span className={`sidebar-plan-dot ${plan === 'free' ? '' : 'is-pro'}`} />
+            <span className="sidebar-plan-name">{PLAN_LABEL[plan] ?? 'Free'}</span>
+            <span className="sidebar-plan-cta">{plan === 'free' ? 'Upgrade' : 'Manage'}</span>
           </NavLink>
         </div>
         {open && <div className="backdrop" onClick={() => setOpen(false)} />}
