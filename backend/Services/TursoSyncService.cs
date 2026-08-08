@@ -43,6 +43,57 @@ public sealed class TursoSyncService : BackgroundService
         }
     }
 
+    public bool Enabled => _enabled;
+    public string BaseUrl => _baseUrl;
+
+    /// <summary>Manual push used by the Backup endpoint ("sync now to cloud").</summary>
+    public async Task<(bool Ok, string Message)> PushNowAsync(CancellationToken ct = default)
+    {
+        if (!_enabled) return (false, "Cloud sync is not configured (set TURSO_URL / TURSO_TOKEN).");
+        try
+        {
+            var ok = await PushSnapshotAsync(ct);
+            return ok
+                ? (true, "Pushed local data to the cloud.")
+                : (false, "Push failed — see server logs.");
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Manual pull used by the Backup endpoint ("restore from cloud").</summary>
+    public async Task<(bool Ok, string Message)> PullNowAsync(CancellationToken ct = default)
+    {
+        if (!_enabled) return (false, "Cloud sync is not configured (set TURSO_URL / TURSO_TOKEN).");
+        try
+        {
+            await PullSnapshotAsync(ct);
+            return (true, "Restored data from the cloud.");
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<object> StatusAsync()
+    {
+        var localRows = 0;
+        using (var conn = OpenConn())
+        {
+            foreach (var t in GetTables(conn))
+                localRows += (int)conn.ExecuteScalar<long>($"SELECT COUNT(*) FROM \"{t}\"");
+        }
+        return new
+        {
+            enabled = _enabled,
+            url = _enabled ? _baseUrl : null,
+            localRows
+        };
+    }
+
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         if (!_enabled)

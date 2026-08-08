@@ -9,8 +9,13 @@ namespace LuxInfra.Api.Controllers;
 public class ProjectsController : ControllerBase
 {
     private readonly ProjectService _projects;
+    private readonly ActivityService _activity;
 
-    public ProjectsController(ProjectService projects) => _projects = projects;
+    public ProjectsController(ProjectService projects, ActivityService activity)
+    {
+        _projects = projects;
+        _activity = activity;
+    }
 
     // ---- Projects ----
     [HttpGet]
@@ -41,6 +46,7 @@ public class ProjectsController : ControllerBase
     public async Task<ActionResult> Save([FromBody] Project p)
     {
         await _projects.SaveProjectAsync(p);
+        await _activity.LogAsync(p.Id == 0 ? "Project created" : "Project updated", p.Name);
         return Ok(p);
     }
 
@@ -56,6 +62,7 @@ public class ProjectsController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         await _projects.DeleteProjectAsync(id);
+        await _activity.LogAsync("Project deleted", $"#{id}");
         return Ok();
     }
 
@@ -68,6 +75,7 @@ public class ProjectsController : ControllerBase
     {
         p.ProjectId = id;
         await _projects.SavePartyAsync(p);
+        await _activity.LogAsync(p.Id == 0 ? "Site party added" : "Site party updated", p.Name);
         return Ok(p);
     }
 
@@ -80,6 +88,7 @@ public class ProjectsController : ControllerBase
     {
         t.ProjectId = id;
         await _projects.SaveTaskAsync(t);
+        await _activity.LogAsync(t.Id == 0 ? "Task created" : "Task updated", t.Name);
         return Ok(t);
     }
 
@@ -95,6 +104,8 @@ public class ProjectsController : ControllerBase
         var p = party.FirstOrDefault(x => x.Id == txn.PartyId);
         if (p is null) return BadRequest("Party not found");
         await _projects.SaveTxnAsync(txn, p);
+        await _activity.LogAsync($"Project payment {ProjectTxnTypes.Display(txn.Type)}",
+            $"{txn.PartyName} — {ReportService.Money(txn.Amount)}");
         return Ok(txn);
     }
 

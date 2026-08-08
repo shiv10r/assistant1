@@ -9,8 +9,13 @@ namespace LuxInfra.Api.Controllers;
 public class BillingController : ControllerBase
 {
     private readonly BillingService _billing;
+    private readonly ActivityService _activity;
 
-    public BillingController(BillingService billing) => _billing = billing;
+    public BillingController(BillingService billing, ActivityService activity)
+    {
+        _billing = billing;
+        _activity = activity;
+    }
 
     // ---- KPIs ----
     [HttpGet("kpis")]
@@ -35,6 +40,8 @@ public class BillingController : ControllerBase
     public async Task<ActionResult> SaveParty([FromBody] Party p)
     {
         await _billing.SavePartyAsync(p);
+        await _activity.LogAsync(p.Id == 0 ? "Party added" : "Party updated",
+            $"{p.Name} — {ReportService.Money(Math.Abs(p.CurrentBalance))}");
         return Ok(p);
     }
 
@@ -46,6 +53,7 @@ public class BillingController : ControllerBase
     public async Task<ActionResult> SaveItem([FromBody] CatalogItem item)
     {
         await _billing.SaveItemAsync(item);
+        await _activity.LogAsync(item.Id == 0 ? "Item added" : "Item updated", item.Name);
         return Ok(item);
     }
 
@@ -65,6 +73,8 @@ public class BillingController : ControllerBase
         var saved = dto.Txn;
         if (saved.RefNo == 0) saved.RefNo = await _billing.NextRefNoAsync(saved.Type);
         await _billing.SaveTxnAsync(saved, dto.Lines ?? new List<BizTxnItem>());
+        await _activity.LogAsync($"{TxnTypes.Display(saved.Type)} {saved.RefLabel} saved",
+            $"{(string.IsNullOrEmpty(saved.PartyName) ? "Walk-in" : saved.PartyName)} — {ReportService.Money(saved.Total)}");
         return Ok(saved);
     }
 
@@ -80,6 +90,7 @@ public class BillingController : ControllerBase
     public async Task<ActionResult> AdjustCash([FromBody] CashEntry entry)
     {
         await _billing.AdjustCashAsync(entry);
+        await _activity.LogAsync("Cash adjusted", $"{entry.Label} {ReportService.Money(entry.Amount)}");
         return Ok(entry);
     }
 
@@ -90,6 +101,7 @@ public class BillingController : ControllerBase
     public async Task<ActionResult> SaveBank([FromBody] BankAccount account)
     {
         await _billing.SaveBankAccountAsync(account);
+        await _activity.LogAsync(account.Id == 0 ? "Bank account added" : "Bank account updated", account.Name);
         return Ok(account);
     }
 
