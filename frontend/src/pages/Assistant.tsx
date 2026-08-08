@@ -1,15 +1,28 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
-import type { ChatMessage } from '../api'
+import type { ChatMessage, AiChatTurn } from '../api'
+
+type Mode = 'app' | 'ai'
 
 export default function Assistant() {
+  const [mode, setMode] = useState<Mode>('app')
+  const [aiModel, setAiModel] = useState<string | null>(null)
+  const [aiConfigured, setAiConfigured] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     { text: "👋 Hey! I'm your LuxInfra assistant. Tell me expenses like \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". Say \"show report\" any time.", isUser: false },
   ])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
+  const historyRef = useRef<AiChatTurn[]>([])
+
+  useEffect(() => {
+    api.aiStatus().then((s) => {
+      setAiModel(s.model)
+      setAiConfigured(s.configured)
+    }).catch(() => {})
+  }, [])
 
   const append = (msgs: ChatMessage[]) => setMessages((m) => [...m, ...msgs])
 
@@ -21,7 +34,15 @@ export default function Assistant() {
     setMessages((m) => [...m, { text, isUser: true }])
     setBusy(true)
     try {
-      append(await api.send(text))
+      if (mode === 'ai') {
+        const history = historyRef.current
+        historyRef.current = [...history, { role: 'user', content: text }]
+        const reply = await api.aiChat(text, history)
+        historyRef.current = [...historyRef.current, { role: 'assistant', content: reply.text }]
+        append([{ text: reply.text, isUser: false }])
+      } else {
+        append(await api.send(text))
+      }
     } catch (err) {
       setMessages((m) => [...m, { text: `⚠️ ${err}`, isUser: false }])
     } finally {
@@ -30,17 +51,33 @@ export default function Assistant() {
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
 
-  const chip = (label: string, text: string) => (
-    <button onClick={() => api.send(text).then(append).catch(() => {})}>{label}</button>
-  )
+  function switchMode(next: Mode) {
+    setMode(next)
+    historyRef.current = []
+    if (next === 'ai') {
+      setMessages([{ text: aiConfigured
+        ? `🧠 DeepSeek AI mode is on. Ask me anything — business or general — and I'll answer in the same language you write.`
+        : "⚠️ AI chat isn't enabled yet — set the OPENROUTER_API_KEY env var on the server.", isUser: false }])
+    } else {
+      setMessages([{ text: "👋 Back in LuxInfra mode. Tell me expenses like \"site A paint exp = 5k\" or \"spent 5000 on cement\".", isUser: false }])
+    }
+  }
+
+  const appChips = ['📒 Show report', '🧮 Totals', '💡 Help']
+  const aiChips = ['💡 Summarise my day', '📊 How do I track labour costs?', '🇮🇳 Answer in Hinglish']
 
   return (
     <div className="chat-panel">
       <header className="chat-header">
         <div>
           <div className="brand">Lux<span>Infra</span></div>
-          <div className="tagline">your expense bestie 🤝</div>
+          <div className="tagline">{mode === 'ai' ? 'deepseek AI assistant' : 'your expense bestie 🤝'}</div>
         </div>
+        <div className="ai-mode-switch">
+          <button className={mode === 'app' ? 'active' : ''} onClick={() => switchMode('app')}>App</button>
+          <button className={mode === 'ai' ? 'active' : ''} onClick={() => switchMode('ai')}>AI</button>
+        </div>
+        {mode === 'ai' && aiModel && <span className="ai-model-tag">{aiModel}</span>}
         <div className="online">● online</div>
       </header>
 
@@ -67,16 +104,17 @@ export default function Assistant() {
       </div>
 
       <div className="chips">
-        {chip('📒 Show report', 'show report')}
-        {chip('🧮 Totals', 'total')}
-        {chip('💡 Help', 'help')}
+        {(mode === 'app' ? appChips : aiChips).map((label, i) => {
+          const text = label.split(' ').slice(1).join(' ')
+          return <button key={i} onClick={() => { setInput(text); if (mode === 'app') api.send(text).then(append).catch(() => {}) }}>{label}</button>
+        })}
       </div>
 
       <form className="input-row" onSubmit={send}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="site A paint exp = 5k ..."
+          placeholder={mode === 'ai' ? 'Ask DeepSeek anything...' : 'site A paint exp = 5k ...'}
         />
         <button className="send" type="submit">{busy ? '…' : '➤'}</button>
       </form>

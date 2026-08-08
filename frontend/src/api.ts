@@ -122,7 +122,13 @@ async function download(url: string): Promise<void> {
 }
 
 // ---------------- Assistant ----------------
+export interface AiChatTurn { role: 'user' | 'assistant' | 'system'; content: string }
+export interface AiReply { ok: boolean; configured: boolean; model: string; text: string; tokens: number; error?: string | null }
+export interface AiStatus { configured: boolean; model: string }
+
 const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
+const aiStatus = () => get<AiStatus>('/api/assistant/ai/status')
+const aiChat = (text: string, history: AiChatTurn[]) => post<AiReply>('/api/assistant/ai', { text, history })
 const dashboard = () => get<Dashboard>('/api/dashboard')
 const report = (period: string) => get<ReportData>(`/api/reports?period=${period.toLowerCase()}`)
 
@@ -185,6 +191,8 @@ export function uploadUrl(projectId: number, blobId: number): string {
 export const api = {
   get,
   send,
+  aiStatus,
+  aiChat,
   dashboard,
   report,
   download,

@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react'
+import AiWidget from './components/AiWidget'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
@@ -153,6 +154,7 @@ export default function Layout() {
 
         <main className="content"><Outlet /></main>
       </div>
+      <AiWidget />
     </div>
   )
 }
