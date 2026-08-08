@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { login } from '../api'
-import { btnStyle, inputStyle } from '../ui'
 
 export default function Login({ onAuthed }: { onAuthed: () => void }) {
   const [username, setUsername] = useState('admin')
@@ -38,34 +37,40 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
             <circle cx="318" cy="228" r="17" fill="#0F0F1A" />
           </svg>
         </div>
-        <h1>LuxInfra</h1>
-        <p className="muted">Sign in to continue</p>
+        <h1 className="login-title">Lux<span>Infra</span></h1>
+        <p className="login-sub">Sign in to manage your business, projects & expenses</p>
 
-        <label className="f-label">Username</label>
-        <input
-          className="login-input"
-          style={inputStyle}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
-        />
-        <label className="f-label">Password</label>
-        <input
-          className="login-input"
-          style={inputStyle}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          placeholder="••••••••"
-        />
+        <div className="login-field">
+          <label htmlFor="login-username">Username</label>
+          <input
+            id="login-username"
+            className="login-input"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+          />
+        </div>
+        <div className="login-field">
+          <label htmlFor="login-password">Password</label>
+          <input
+            id="login-password"
+            className="login-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            placeholder="••••••••"
+          />
+        </div>
 
         {err && <div className="login-err">{err}</div>}
 
-        <button style={btnStyle} disabled={busy}>
+        <button className="login-btn" type="submit" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="muted login-hint">Default: admin / LuxInfra@2026</p>
+        <p className="login-hint">
+          Default: <code>admin</code> / <code>123admin</code>
+        </p>
       </form>
     </div>
   )
