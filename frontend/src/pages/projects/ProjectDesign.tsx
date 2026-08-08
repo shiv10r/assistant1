@@ -5,7 +5,7 @@ import type { DesignFile, FileBlobMeta } from '../../api'
 import { Empty, Modal, fmtDate, todayISO, PageHead } from '../../ui'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
-import { Upload, Download, Trash2, FileUp, Image as ImageIcon, Box, Loader2 } from 'lucide-react'
+import { Upload, Download, Trash2, FileUp, Image as ImageIcon, Box, Loader2, Eye } from 'lucide-react'
 
 const CATS = ['2D Layout', '3D Layout', 'Production Files']
 
@@ -87,6 +87,8 @@ export default function ProjectDesign() {
 
   const download = (u: FileBlobMeta) => api.download(`/api/projects/${pid}/uploads/${u.id}`).catch((e) => toast({ title: 'Download failed', description: String(e), variant: 'error' }))
 
+  const openFile = (u: FileBlobMeta) => api.openFile(`/api/projects/${pid}/uploads/${u.id}`).catch((e) => toast({ title: 'Could not open file', description: String(e), variant: 'error' }))
+
   return (
     <>
       <PageHead icon="🎨" title="Design Files" sub="Upload 2D layouts, 3D models & production files" right={<button className="btn" onClick={() => nav(`/projects/${pid}`)}>← Back</button>} />
@@ -136,7 +138,13 @@ export default function ProjectDesign() {
                       <div className="flex items-center gap-2.5">
                         <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">{TYPE_ICON(u.name)}</span>
                         <div className="min-w-0">
-                          <p className="font-medium text-text truncate">{u.name}</p>
+                          <button
+                            onClick={() => openFile(u)}
+                            className="font-medium text-text truncate text-left hover:text-primary hover:underline focus:outline-none"
+                            title="Open file"
+                          >
+                            {u.name}
+                          </button>
                           <Badge variant="outline" size="sm" className="mt-0.5">{u.category}</Badge>
                         </div>
                       </div>
@@ -145,6 +153,9 @@ export default function ProjectDesign() {
                     <TableCell className="hidden md:table-cell text-muted">{fmtDate(u.uploadedAt)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openFile(u)} aria-label="Open" title="Open">
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => download(u)} aria-label="Download" title="Download">
                           <Download className="w-4 h-4" />
                         </Button>
