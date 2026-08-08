@@ -6,9 +6,10 @@ using System.Text.Json.Nodes;
 namespace LuxInfra.Api.Services;
 
 /// <summary>
-/// Open-source AI chat backend (OpenRouter, defaults to DeepSeek's free model).
+/// Open-source AI chat backend (OpenRouter free models, auto-router by default).
 /// Enabled only when OPENROUTER_API_KEY is set. Non-streaming chat completions
-/// with a system prompt grounded in the LuxInfra app domain.
+/// with a system prompt grounded in the LuxInfra app domain. Pin a specific model
+/// with AI_MODEL (e.g. "deepseek/deepseek-chat" for a paid DeepSeek variant).
 /// </summary>
 public sealed class ChatAiService
 {
@@ -20,7 +21,7 @@ public sealed class ChatAiService
     public ChatAiService(IConfiguration cfg)
     {
         _apiKey = cfg["OPENROUTER_API_KEY"] ?? "";
-        _model = cfg["AI_MODEL"] ?? "deepseek/deepseek-chat-v3-1:free";
+        _model = cfg["AI_MODEL"] ?? "openrouter/free";
         _enabled = !string.IsNullOrWhiteSpace(_apiKey);
         _http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
     }
@@ -111,7 +112,7 @@ public sealed record AiReply(bool Ok, bool Configured, string Model, string Text
 {
     public static AiReply Success(string model, string text, int tokens) => new(true, true, model, text, tokens, null);
     public static AiReply NotConfigured(string model) => new(false, false, model,
-        "⚠️ AI chat is not enabled yet. Set the OPENROUTER_API_KEY env var on the server to switch on the open-source DeepSeek model.", 0, "not_configured");
+        "⚠️ AI chat is not enabled yet. Add a free OPENROUTER_API_KEY env var on the server (openrouter.ai/keys) and redeploy to switch it on.", 0, "not_configured");
     public static AiReply Failed(string model, string error) => new(false, true, model,
         $"⚠️ The AI service hit an error: {error}", 0, error);
 }
