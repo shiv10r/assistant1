@@ -83,6 +83,85 @@ export interface FuelLog { id: number; vehicle: string; date: string; litres: nu
 export interface Snag { id: number; projectId: number; title: string; severity: string; status: string; assignee: string; dueDate: string; notes: string; createdAt: string }
 export interface ContractorRating { id: number; name: string; quality: number; punctuality: number; cost: number; notes: string; date: string; average: number }
 
+// ---- Interior Design: worker time tracking ----
+export interface TimeEntry { id: number; projectId: number; roomId?: string; partyId: number; workerName: string; workerPhone: string; date: string; hours: number; notes: string; loggedAt: string }
+export interface TimeSummary { days: number; totalManHours: number; totalManHoursLabel: string; totalWagesLabel: string; rows: { date: string; dateLabel: string; worker: string; hours: number; hoursLabel: string }[] }
+
+// ---- Interior Design: rooms ----
+export interface Room { id: number; projectId: number; name: string; description?: string; areaSqFt?: number; dimensions?: string; status: string; createdAt: string }
+
+// ---- Interior Design: mood board ----
+export interface MoodBoardItem { id: number; projectId: number; roomId?: string; title: string; category?: string; imageUrl?: string; vendorName?: string; price: number; unit?: string; quantity?: number; notes?: string; sortOrder: number; createdAt: string }
+
+// ---- Interior Design: vendor catalogue ----
+export interface VendorCatalogueItem { id: number; name: string; category?: string; description?: string; price: number; unit?: string; leadTimeDays?: number; vendorName?: string; vendorPhone?: string; thumbnailUrl?: string; modelUrl?: string; modelFormat?: string; dimensionsL?: number; dimensionsW?: number; dimensionsH?: number; specJson?: string; isActive: boolean }
+
+// ---- Interior Design: 3D room scenes ----
+export interface RoomScene { id: number; projectId: number; name: string; roomRef?: string; sceneJson?: string; version: number; createdAt: string; updatedAt?: string }
+
+// ---- Interior Design: design revisions + comments ----
+export interface DesignRevision { id: number; projectId: number; title: string; description?: string; fileUrl?: string; version: number; status: string; createdAt: string }
+export interface DesignComment { id: number; revisionId: number; projectId: number; positionX?: number; positionY?: number; pinColor?: string; author: string; authorRole?: string; text: string; parentCommentId?: number; status: string; createdAt: string; resolvedAt?: string }
+
+// ---- Interior Design: safety / quality checklists ----
+export interface ChecklistTemplate { id: number; name: string; category?: string; itemsJson?: string; createdAt: string }
+export interface ChecklistItem { id: number; templateId: number; text: string; sortOrder: number }
+export interface InspectionRecord { id: number; projectId: number; roomId?: string; templateId: number; templateName: string; date: string; inspectorName: string; notes?: string; isPassed: boolean; createdAt: string; answersJson?: string; photosJson?: string }
+export interface NcrRecord { id: number; projectId: number; inspectionId: number; title: string; description?: string; severity: string; status: string; assignedTo?: string; dueDate?: string; closedAt?: string; createdAt: string }
+
+// ---- Interior Design: subcontractor work orders ----
+export interface SubcontractorWorkOrder { id: number; projectId: number; partyId: number; contractorName: string; title: string; description?: string; category?: string; agreedRate: number; unit: string; quantity: number; billedQuantity?: number; status: string; startDate: string; endDate?: string; measurementJson?: string; fileUrl?: string; createdAt: string }
+
+// ---- Interior Design: QR inventory ----
+export interface QrInventoryItem { id: number; projectId: number; name: string; category?: string; unit?: string; qtyOnHand: number; minStock?: number; location?: string; supplierName?: string; unitPrice?: number; barcode?: string; createdAt: string }
+export interface QrInventoryScan { id: number; itemId: number; projectId: number; itemName: string; action: string; quantity: number; note?: string; scannedBy?: string; scannedAt: string }
+
+// ---- Interior Design: AI cost prediction ----
+export interface AiCostPrediction { id: number; projectId: number; roomId?: string; model: string; predictedCost: number; confidenceLow?: number; confidenceHigh?: number; actualCost?: number; featureJson?: string; predictedAt: string; actualisedAt?: string }
+
+// ---- Interior Design: AI daily summary ----
+export interface AiDailySummary { id: number; projectId: number; forDate: string; summary?: string; highlightsJson?: string; risksJson?: string; suggestionsJson?: string; generatedAt: string; isConfigured: boolean }
+
+// ---- Interior Design: lighting layout ----
+export interface LightingLayout { id: number; projectId: number; roomId?: string; name: string; type?: string; wattage?: number; voltage?: number; quantity?: number; x?: number; y?: number; circuit?: string; notes?: string }
+
+// ---- Interior Design: finish library ----
+export interface FinishSwatch { id: number; name: string; category?: string; manufacturer?: string; colorCode?: string; thumbnailUrl?: string; specJson?: string; price?: number; unit?: string; createdAt: string }
+
+// ---- Interior Design: quotations ----
+export interface QuotationRoom { id: number; projectId: number; roomName: string; description?: string; amount?: number; imageUrl?: string; sortOrder: number; isOptional: boolean }
+
+// ---- Interior Design: designer payouts ----
+export interface DesignerPayout { id: number; projectId: number; designerId: number; designerName: string; roomId?: string; stage: string; grossAmount: number; retentionAmount?: number; netAmount?: number; status: string; paidAt?: string; createdAt: string }
+
+// ---- Interior Design: client portal ----
+export interface ClientProject { id: number; projectId: number; projectName: string; clientName: string; clientEmail?: string; clientPhone?: string; accessToken?: string; expiresAt?: string; isActive: boolean; createdAt: string }
+export interface ClientSelection { id: number; projectId: number; roomId?: string; category: string; itemName: string; imageUrl?: string; price?: number; notes?: string; approvalStatus?: string; createdAt: string; approvedAt?: string }
+
+// ---- Interior Design: room-wise BOQ ----
+export interface RoomBoqItem { id: number; projectId: number; roomName: string; itemName: string; category?: string; quantity: number; unit: string; rate: number; notes?: string; vendorName?: string; actualCost?: number; createdAt: string }
+
+// ---- Interior Design: installation tasks (Gantt) ----
+export interface InstallationTask { id: number; projectId: number; roomId?: string; trade: string; title: string; description?: string; status: string; durationDays: number; startDate?: string; endDate?: string; predecessorId?: number; assignedTo?: string; createdAt: string }
+
+// ---- Interior Design: room procurement ----
+export interface RoomProcurementOrder { id: number; projectId: number; roomId?: string; vendorName: string; vendorPhone?: string; expectedDel?: string; status: string; itemsJson?: string; totalAmount?: number; createdAt: string; poNumber?: string }
+
+// ---- Interior Design: project timeline ----
+export interface ProjectTimelineStage { id: number; projectId: number; stage: string; title: string; description?: string; progressPct: number; startDate: string; endDate?: string; isActive: boolean }
+
+// ---- Interior Design: AR measurements ----
+export interface ArMeasurement { id: number; projectId: number; roomId?: string; scanJson?: string; areaSqFt?: number; perimeter?: number; volume?: number; notes?: string; capturedAt: string; modelUrl?: string }
+
+// ---- Interior Design: resource allocation ----
+export interface ResourceAllocation { id: number; projectId: number; type: string; name: string; designation?: string; capacity: number; allocated: number; unit?: string; isActive: boolean; createdAt: string }
+
+// ---- Interior Design: change orders ----
+export interface ChangeOrder { id: number; projectId: number; title: string; description?: string; amount: number; status: string; requestedBy?: string; submittedAt?: string; approvedBy?: string; approvedAt?: string; linkedTxnId?: number; createdAt: string; updatedAt: string }
+
+// ---- Interior Design: equipment maintenance ----
+export interface EquipmentMaintenance { id: number; equipmentLogId?: number; equipmentName: string; maintType: string; description?: string; cost: number; vendor?: string; scheduledDate: string; completedDate?: string; status: string; notes?: string }
+
 // ---- Insights ----
 export interface PlRow { id: number; name: string; status: string; value: number; valueLabel: string; received: number; receivedLabel: string; spent: number; spentLabel: string; profit: number; profitLabel: string; marginPct: number }
 export interface Gstr1Data { period: string; periodLabel: string; summary: { invoiceCount: number; taxableTotal: number; taxableLabel: string; taxTotal: number; taxLabel: string; cgst: string; sgst: string; igst: string }; hsnRows: { hsn: string; rateLabel: string; count: number; taxable: number; taxableLabel: string; tax: number; taxLabel: string }[] }
@@ -330,6 +409,105 @@ const modules = {
   ratings: () => get<ContractorRating[]>('/api/modules/ratings'),
   saveRating: (r: Partial<ContractorRating>) => post<ContractorRating>('/api/modules/ratings', r),
   deleteRating: (id: number) => del(`/api/modules/ratings/${id}`),
+
+  // ---- Interior design ----
+  timeEntries: (projectId?: number) => get<TimeEntry[]>(`/api/interior/time-entries${projectId ? `?projectId=${projectId}` : ''}`),
+  saveTimeEntry: (e: Partial<TimeEntry>) => post<TimeEntry>('/api/interior/time-entries', e),
+  deleteTimeEntry: (id: number) => del(`/api/interior/time-entries/${id}`),
+  timeSummary: (projectId?: number, days = 30) => get<TimeSummary>(`/api/interior/time-entries/summary${projectId ? `?projectId=${projectId}` : ''}&days=${days}`),
+
+  rooms: (projectId?: number) => get<Room[]>(`/api/interior/rooms${projectId ? `?projectId=${projectId}` : ''}`),
+  saveRoom: (r: Partial<Room>) => post<Room>('/api/interior/rooms', r),
+  deleteRoom: (id: number) => del(`/api/interior/rooms/${id}`),
+
+  moodBoard: (projectId?: number) => get<MoodBoardItem[]>(`/api/interior/moodboard${projectId ? `?projectId=${projectId}` : ''}`),
+  saveMoodItem: (i: Partial<MoodBoardItem>) => post<MoodBoardItem>('/api/interior/moodboard', i),
+  deleteMoodItem: (id: number) => del(`/api/interior/moodboard/${id}`),
+
+  catalogue: () => get<VendorCatalogueItem[]>('/api/interior/catalogue'),
+  saveCatalogueItem: (i: Partial<VendorCatalogueItem>) => post<VendorCatalogueItem>('/api/interior/catalogue', i),
+  deleteCatalogueItem: (id: number) => del(`/api/interior/catalogue/${id}`),
+
+  scenes: (projectId?: number) => get<RoomScene[]>(`/api/interior/scenes${projectId ? `?projectId=${projectId}` : ''}`),
+  saveScene: (s: Partial<RoomScene>) => post<RoomScene>('/api/interior/scenes', s),
+  deleteScene: (id: number) => del(`/api/interior/scenes/${id}`),
+
+  revisions: (projectId?: number) => get<DesignRevision[]>(`/api/interior/revisions${projectId ? `?projectId=${projectId}` : ''}`),
+  saveRevision: (r: Partial<DesignRevision>) => post<DesignRevision>('/api/interior/revisions', r),
+  deleteRevision: (id: number) => del(`/api/interior/revisions/${id}`),
+  comments: (revisionId: number) => get<DesignComment[]>(`/api/interior/revisions/${revisionId}/comments`),
+  addComment: (revisionId: number, c: Partial<DesignComment>) => post<DesignComment>(`/api/interior/revisions/${revisionId}/comments`, c),
+
+  checklistTemplates: () => get<ChecklistTemplate[]>('/api/interior/checklists/templates'),
+  saveTemplate: (t: Partial<ChecklistTemplate>) => post<ChecklistTemplate>('/api/interior/checklists/templates', t),
+  inspections: (projectId?: number) => get<InspectionRecord[]>(`/api/interior/checklists/inspections${projectId ? `?projectId=${projectId}` : ''}`),
+  saveInspection: (i: Partial<InspectionRecord>) => post<InspectionRecord>('/api/interior/checklists/inspections', i),
+  ncrs: (projectId?: number) => get<NcrRecord[]>(`/api/interior/checklists/ncrs${projectId ? `?projectId=${projectId}` : ''}`),
+  saveNcr: (n: Partial<NcrRecord>) => post<NcrRecord>('/api/interior/checklists/ncrs', n),
+
+  workOrders: (projectId?: number) => get<SubcontractorWorkOrder[]>(`/api/interior/subcontractors/orders${projectId ? `?projectId=${projectId}` : ''}`),
+  saveWorkOrder: (w: Partial<SubcontractorWorkOrder>) => post<SubcontractorWorkOrder>('/api/interior/subcontractors/orders', w),
+  deleteWorkOrder: (id: number) => del(`/api/interior/subcontractors/orders/${id}`),
+
+  qrItems: (projectId?: number) => get<QrInventoryItem[]>(`/api/interior/inventory/items${projectId ? `?projectId=${projectId}` : ''}`),
+  saveQrItem: (i: Partial<QrInventoryItem>) => post<QrInventoryItem>('/api/interior/inventory/items', i),
+  deleteQrItem: (id: number) => del(`/api/interior/inventory/items/${id}`),
+  qrScans: (itemId: number) => get<QrInventoryScan[]>(`/api/interior/inventory/items/${itemId}/scans`),
+  addQrScan: (itemId: number, s: Partial<QrInventoryScan>) => post<QrInventoryScan>(`/api/interior/inventory/items/${itemId}/scans`, s),
+
+  costPrediction: (projectId?: number) => get<AiCostPrediction[]>(`/api/interior/ai/cost-prediction${projectId ? `?projectId=${projectId}` : ''}`),
+  saveCostPrediction: (p: Partial<AiCostPrediction>) => post<AiCostPrediction>('/api/interior/ai/cost-prediction', p),
+  dailySummary: (projectId: number, forDate?: string) => get<AiDailySummary>(`/api/interior/ai/daily-summary?projectId=${projectId}${forDate ? `&forDate=${forDate}` : ''}`),
+
+  lighting: (projectId?: number) => get<LightingLayout[]>(`/api/interior/lighting${projectId ? `?projectId=${projectId}` : ''}`),
+  saveLighting: (l: Partial<LightingLayout>) => post<LightingLayout>('/api/interior/lighting', l),
+
+  finishes: () => get<FinishSwatch[]>('/api/interior/finishes'),
+  saveFinish: (f: Partial<FinishSwatch>) => post<FinishSwatch>('/api/interior/finishes', f),
+  deleteFinish: (id: number) => del(`/api/interior/finishes/${id}`),
+
+  quotationRooms: (projectId?: number) => get<QuotationRoom[]>(`/api/interior/quotations${projectId ? `?projectId=${projectId}` : ''}`),
+  saveQuotationRoom: (q: Partial<QuotationRoom>) => post<QuotationRoom>('/api/interior/quotations', q),
+
+  payouts: (projectId?: number) => get<DesignerPayout[]>(`/api/interior/payouts${projectId ? `?projectId=${projectId}` : ''}`),
+  savePayout: (p: Partial<DesignerPayout>) => post<DesignerPayout>('/api/interior/payouts', p),
+
+  clientProjects: () => get<ClientProject[]>('/api/interior/client-projects'),
+  saveClientProject: (c: Partial<ClientProject>) => post<ClientProject>('/api/interior/client-projects', c),
+  clientSelections: (projectId?: number) => get<ClientSelection[]>(`/api/interior/client-selections${projectId ? `?projectId=${projectId}` : ''}`),
+  saveClientSelection: (s: Partial<ClientSelection>) => post<ClientSelection>('/api/interior/client-selections', s),
+
+  boqItems: (projectId?: number) => get<RoomBoqItem[]>(`/api/interior/boq${projectId ? `?projectId=${projectId}` : ''}`),
+  saveBoqItem: (b: Partial<RoomBoqItem>) => post<RoomBoqItem>('/api/interior/boq', b),
+
+  installTasks: (projectId?: number) => get<InstallationTask[]>(`/api/interior/install-tasks${projectId ? `?projectId=${projectId}` : ''}`),
+  saveInstallTask: (t: Partial<InstallationTask>) => post<InstallationTask>('/api/interior/install-tasks', t),
+
+  procurementOrders: (projectId?: number) => get<RoomProcurementOrder[]>(`/api/interior/procurement${projectId ? `?projectId=${projectId}` : ''}`),
+  saveProcurementOrder: (o: Partial<RoomProcurementOrder>) => post<RoomProcurementOrder>('/api/interior/procurement', o),
+
+  timelineStages: (projectId?: number) => get<ProjectTimelineStage[]>(`/api/interior/timeline${projectId ? `?projectId=${projectId}` : ''}`),
+  saveTimelineStage: (s: Partial<ProjectTimelineStage>) => post<ProjectTimelineStage>('/api/interior/timeline', s),
+
+  gantt: (projectId: number) => get<{ stages: ProjectTimelineStage[]; tasks: InstallationTask[] }>(`/api/interior/gantt?projectId=${projectId}`),
+
+  resources: (projectId?: number) => get<ResourceAllocation[]>(`/api/interior/resources${projectId ? `?projectId=${projectId}` : ''}`),
+  saveResource: (r: Partial<ResourceAllocation>) => post<ResourceAllocation>('/api/interior/resources', r),
+  allocateResource: (id: number, hours: number) => post<ResourceAllocation>(`/api/interior/resources/${id}/allocate`, { hours }),
+  deleteResource: (id: number) => del(`/api/interior/resources/${id}`),
+
+  changeOrders: (projectId?: number) => get<ChangeOrder[]>(`/api/interior/change-orders${projectId ? `?projectId=${projectId}` : ''}`),
+  saveChangeOrder: (c: Partial<ChangeOrder>) => post<ChangeOrder>('/api/interior/change-orders', c),
+  changeOrderStatus: (id: number, status: string) => post<ChangeOrder>(`/api/interior/change-orders/${id}/${status}`, {}),
+  deleteChangeOrder: (id: number) => del(`/api/interior/change-orders/${id}`),
+
+  equipmentMaintenance: () => get<EquipmentMaintenance[]>('/api/interior/equipment-maintenance'),
+  saveEquipmentMaintenance: (m: Partial<EquipmentMaintenance>) => post<EquipmentMaintenance>('/api/interior/equipment-maintenance', m),
+  completeMaintenance: (id: number) => post(`/api/interior/equipment-maintenance/${id}/complete`, {}),
+  deleteMaintenance: (id: number) => del(`/api/interior/equipment-maintenance/${id}`),
+
+  arMeasurements: (projectId?: number) => get<ArMeasurement[]>(`/api/interior/ar-measurements${projectId ? `?projectId=${projectId}` : ''}`),
+  saveArMeasurement: (m: Partial<ArMeasurement>) => post<ArMeasurement>('/api/interior/ar-measurements', m),
 }
 
 const insights = {
