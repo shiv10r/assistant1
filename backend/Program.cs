@@ -13,7 +13,7 @@ if (Environment.GetEnvironmentVariable("PORT") is { Length: > 0 } port)
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// ---- Token auth. Default login admin/admin123; override via AUTH_USER/AUTH_PASS.
+// ---- Token auth. Default login admin/123admin; override via AUTH_USER/AUTH_PASS.
 // All /api endpoints (except /api/auth/login) require "Authorization: Bearer <API_TOKEN>". ----
 builder.Services.AddSingleton(_ =>
 {
@@ -21,7 +21,7 @@ builder.Services.AddSingleton(_ =>
     return new AuthOptions
     {
         Username = c["AUTH_USER"] ?? "admin",
-        Password = c["AUTH_PASS"] ?? "LuxInfra@2026",
+        Password = c["AUTH_PASS"] ?? "123admin",
         Token = c["API_TOKEN"] ?? "lux-admin-token-2024",
     };
 });
