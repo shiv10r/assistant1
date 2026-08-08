@@ -98,7 +98,7 @@ export default function Activity() {
 
 const getActionIcon = (action: string) => {
   if (action.includes('Expense')) return <TrendingUp className="w-4 h-4 text-emerald-500" />
-  if (action.includes('Party') || action.includes('Item')) return <Users className="w-4 h-4 text-violet-500" />
+  if (action.includes('Party') || action.includes('Item')) return <Users className="w-4 h-4 text-indigo-500" />
   if (action.includes('Transaction') || action.includes('Cash') || action.includes('Bank')) return <DollarSign className="w-4 h-4 text-amber-500" />
   if (action.includes('Project') || action.includes('Task') || action.includes('Material') || action.includes('Site') || action.includes('Meeting') || action.includes('Design')) return <Briefcase className="w-4 h-4 text-cyan-500" />
   return <ActivityIcon className="w-4 h-4 text-muted" />
@@ -130,7 +130,7 @@ const getActionIcon = (action: string) => {
         <StatCard label="Total Actions" value={stats.total} icon={<ActivityIcon className="w-5 h-5" />} trend="+12%" trendUp />
         <StatCard label="Billing" value={stats.billing} icon={<DollarSign className="w-5 h-5" />} color="amber" />
         <StatCard label="Projects" value={stats.projects} icon={<Briefcase className="w-5 h-5" />} color="cyan" />
-        <StatCard label="Assistant" value={stats.assistant} icon={<MessageSquare className="w-5 h-5" />} color="violet" />
+        <StatCard label="Assistant" value={stats.assistant} icon={<MessageSquare className="w-5 h-5" />} color="indigo" />
         <StatCard label="Today" value={stats.today} icon={<Clock className="w-5 h-5" />} color="emerald" />
       </div>
 
@@ -203,11 +203,11 @@ const getActionIcon = (action: string) => {
   )
 }
 
-function StatCard({ label, value, icon, color = 'violet', trend, trendUp }: {
+function StatCard({ label, value, icon, color = 'indigo', trend, trendUp }: {
   label: string; value: number; icon: React.ReactNode; color?: string; trend?: string; trendUp?: boolean
 }) {
   const colors = {
-    violet: 'bg-violet-500/10 text-violet-500',
+    indigo: 'bg-indigo-500/10 text-indigo-500',
     amber: 'bg-amber-500/10 text-amber-500',
     cyan: 'bg-cyan-500/10 text-cyan-500',
     emerald: 'bg-emerald-500/10 text-emerald-500',
@@ -225,7 +225,7 @@ function StatCard({ label, value, icon, color = 'violet', trend, trendUp }: {
               </span>
             )}
           </div>
-          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', colors[color as keyof typeof colors] || colors.violet)}>
+          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', colors[color as keyof typeof colors] || colors.indigo)}>
             {icon}
           </div>
         </div>

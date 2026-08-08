@@ -21,6 +21,7 @@
 .brand { font-size: 1.25rem; font-weight: 700; }
 .brand span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .online { margin-left: auto; color: var(--accent); font-size: 0.75rem; font-weight: 600; }
+.online::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 0.4rem; }
 
 /* Body */
 .body-row { display: flex; flex: 1 1 auto; min-height: 0; }
@@ -54,7 +55,7 @@
 }
 .nav-item svg { color: var(--text-muted); transition: color 0.15s; }
 .nav-item:hover svg { color: var(--primary); }
-.nav-item.active { background: rgba(124, 77, 255, 0.12); color: var(--primary); }
+.nav-item.active { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
 .nav-item.active svg { color: var(--primary); }
 
 .sidebar-plan { padding: 0.75rem 1rem; border-top: 1px solid var(--border); margin-top: auto; flex: 0 0 auto; }
