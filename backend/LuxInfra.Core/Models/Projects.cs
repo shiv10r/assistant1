@@ -18,12 +18,13 @@ public class Project
 
 public static class ProjectStatuses
 {
-    public const string Ongoing = "Ongoing";
-    public const string Completed = "Completed";
+    public const string InDiscussion = "In Discussion";
     public const string NotStarted = "Not Started";
+    public const string Ongoing = "Ongoing";
     public const string OnHold = "On Hold";
+    public const string Completed = "Completed";
 
-    public static readonly string[] All = { Ongoing, Completed, NotStarted, OnHold };
+    public static readonly string[] All = { InDiscussion, NotStarted, Ongoing, OnHold, Completed };
 }
 
 /// <summary>Site staff, sub-contractors or material suppliers scoped to one project.</summary>

@@ -366,6 +366,12 @@ public class BillingService
         return await conn.Table<BankAccount>().ToListAsync();
     }
 
+    public async Task DeleteBankAccountAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.DeleteAsync<BankAccount>(id);
+    }
+
     // ---------- utilities ----------
 
     /// <summary>Recomputes every party balance from opening + ledger txns and fixes drift.</summary>
