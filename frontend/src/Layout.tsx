@@ -3,58 +3,65 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { logout } from './api'
 import { applyTheme, getTheme } from './theme'
 import type { Theme } from './theme'
+import {
+  LayoutDashboard,
+  FileText,
+  BarChart3,
+  Database,
+  Activity,
+  Settings,
+  ReceiptText,
+  Package,
+  Banknote,
+  Users,
+  Briefcase,
+  MessageSquare,
+  CreditCard,
+  User,
+  Menu,
+  Sun,
+  Moon,
+  LogOut,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react'
+import { cn, Button } from './components/ui'
 import './Layout.css'
 
-function Icon({ name }: { name: string }) {
-  const paths: Record<string, string> = {
-    assistant: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
-    dashboard: 'M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z',
-    reports: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8',
-    analytics: 'M3 3v18h18 M7 14l4-4 4 3 5-6',
-    backup: 'M12 3v12 M8 11l4 4 4-4 M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2',
-    activity: 'M12 8v4l3 3 M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9z',
-    settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
-    billing: 'M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M3 11h18 M7 15h4',
-    box: 'M21 8l-9-5-9 5v8l9 5 9-5z M3 8l9 5 9-5 M12 13v8',
-    cash: 'M21 12V7H5a2 2 0 0 1 0-4h14v4 M3 5v14a2 2 0 0 0 2 2h16v-5 M18 12a2 2 0 0 0 0 4h4v-4z',
-    projects: 'M3 21h18 M5 21V7l7-4 7 4v14 M9 9h1 M9 13h1 M9 17h1 M14 9h1 M14 13h1 M14 17h1',
-    plans: 'M12 15c2 0 4 1.5 4 4H8c0-2.5 2-4 4-4z M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
-    account: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-  }
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" className="nav-icon" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={paths[name] ?? paths.assistant} />
-    </svg>
-  )
-}
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string }
+type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
-type Nav = { label: string; to: string; icon: string; end?: boolean }[]
-const GROUPS: { title: string; items: Nav }[] = [
-  { title: 'My Assistant', items: [
-    { label: 'Assistant', to: '/', icon: 'assistant', end: true },
-    { label: 'Dashboard', to: '/dashboard', icon: 'dashboard' },
-    { label: 'Reports', to: '/reports', icon: 'reports' },
-    { label: 'Analytics', to: '/analytics', icon: 'analytics' },
-    { label: 'Backup & Sync', to: '/backup', icon: 'backup' },
-    { label: 'Activity', to: '/activity', icon: 'activity' },
-    { label: 'Settings', to: '/settings', icon: 'settings' },
-  ] },
+const GROUPS: NavGroup[] = [
+  { title: 'Assistant', items: [
+    { label: 'Chat', to: '/', icon: <MessageSquare className="w-5 h-5" />, end: true },
+    { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { label: 'Reports', to: '/reports', icon: <FileText className="w-5 h-5" /> },
+    { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" /> },
+    { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },
+    { label: 'Activity', to: '/activity', icon: <Activity className="w-5 h-5" /> },
+    { label: 'Settings', to: '/settings', icon: <Settings className="w-5 h-5" /> },
+  ]},
   { title: 'Billing', items: [
-    { label: 'Billing', to: '/billing', icon: 'billing' },
-    { label: 'Items', to: '/billing/items', icon: 'box' },
-    { label: 'Cash & Bank', to: '/billing/cashbank', icon: 'cash' },
-    { label: 'Billing Settings', to: '/billing/settings', icon: 'settings' },
-  ] },
-  { title: 'Projects', items: [{ label: 'Projects', to: '/projects', icon: 'projects' }] },
+    { label: 'Transactions', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
+    { label: 'Items & Catalog', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
+    { label: 'Parties', to: '/billing/parties', icon: <Users className="w-5 h-5" /> },
+    { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
+    { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
+  ]},
+  { title: 'Projects', items: [
+    { label: 'All Projects', to: '/projects', icon: <Briefcase className="w-5 h-5" /> },
+  ]},
   { title: 'Account', items: [
-    { label: 'Plans & Pricing', to: '/plans', icon: 'plans' },
-    { label: 'My Account', to: '/account', icon: 'account' },
-  ] },
+    { label: 'Plans & Billing', to: '/plans', icon: <CreditCard className="w-5 h-5" /> },
+    { label: 'My Profile', to: '/account', icon: <User className="w-5 h-5" /> },
+  ]},
 ]
 
 export default function Layout() {
   const [open, setOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>(getTheme())
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+
   function toggleTheme() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     setTheme(next)
@@ -64,10 +71,21 @@ export default function Layout() {
     logout()
     window.location.href = '/'
   }
+  function toggleGroup(title: string) {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(title)) next.delete(title)
+      else next.add(title)
+      return next
+    })
+  }
+
   return (
     <div className="app">
       <header className="topbar">
-        <button className="hamburger" onClick={() => setOpen((o) => !o)} aria-label="Menu">☰</button>
+        <button className="hamburger" onClick={() => setOpen(o => !o)} aria-label="Menu">
+          <Menu className="w-6 h-6" />
+        </button>
         <div className="logo-mark">
           <svg viewBox="0 0 456 456" width="32" height="32">
             <defs>
@@ -82,32 +100,54 @@ export default function Layout() {
           </svg>
         </div>
         <div className="brand">Lux<span>Infra</span></div>
-        <div className="online">● online</div>
-        <button className="theme-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
-          {theme === 'dark' ? '☀️' : '🌙'}
-        </button>
-        <button className="logout-btn" onClick={signOut} aria-label="Sign out">⏻</button>
+        <div className="online">● Online</div>
+        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </Button>
+        <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+          <LogOut className="w-5 h-5" />
+        </Button>
       </header>
 
       <div className="body-row">
-        <nav className={`sidebar ${open ? 'open' : ''}`}>
-          {GROUPS.map((g) => (
-            <div className="nav-group" key={g.title}>
-              <div className="group-label">{g.title}</div>
-              {g.items.map((it) => (
-                <NavLink
-                  key={it.to}
-                  to={it.to}
-                  end={it.end}
-                  className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
-                  onClick={() => setOpen(false)}
+        <nav className={cn('sidebar', open && 'open')}>
+          {GROUPS.map((g) => {
+            const isCollapsed = collapsedGroups.has(g.title)
+            return (
+              <div className="nav-group" key={g.title}>
+                <button
+                  className="group-header"
+                  onClick={() => toggleGroup(g.title)}
+                  aria-expanded={!isCollapsed}
                 >
-                  <Icon name={it.icon} />
-                  <span>{it.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
+                  <span>{g.title}</span>
+                  {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {!isCollapsed && (
+                  <div className="nav-items">
+                    {g.items.map((it) => (
+                      <NavLink
+                        key={it.to}
+                        to={it.to}
+                        end={it.end}
+                        className={({ isActive }) => cn(
+                          'nav-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                            : 'text-text/80 hover:bg-surface hover:text-text'
+                        )}
+                        onClick={() => setOpen(false)}
+                      >
+                        <span className="flex-shrink-0">{it.icon}</span>
+                        <span className="truncate">{it.label}</span>
+                        {it.badge && <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{it.badge}</span>}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </nav>
         {open && <div className="backdrop" onClick={() => setOpen(false)} />}
 

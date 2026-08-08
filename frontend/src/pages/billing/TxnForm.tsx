@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BizTxnItem, CatalogItem, Party, Settings } from '../../api'
-import { PageHead, Empty, money, todayISO } from '../../ui'
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Textarea, Select, Label, Modal, money, todayISO } from '../../components/ui'
+import { Plus, Trash2, Eye, Save, X, ReceiptText, User, Wallet, FileText } from 'lucide-react'
+import { cn } from '../../lib/utils'
 
 const MODES = ['Cash', 'Cheque', 'Bank Transfer', 'UPI', 'Card']
 const TAX_RATES = [0, 0.25, 3, 5, 12, 18, 28]
@@ -113,126 +115,256 @@ export default function TxnForm() {
     } catch (e) { setErr(String(e)) }
   }
 
-  if (err) return <Empty>⚠️ {err}</Empty>
+  if (err) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-red-500">⚠️ {err}</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <>
-      <PageHead icon="🧾" title={`New ${txnType(type)}`} sub="Create a bill / invoice / payment" />
-      <div className="card">
-        <div className="form-row">
-          <select value={type} onChange={(e) => setType(e.target.value)}>
-            {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
-          </select>
-          <select value={partyId} onChange={(e) => selectParty(Number(e.target.value))}>
-            <option value={0}>{isPayment ? 'Select party' : 'Cash'}</option>
-            {parties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <div className="page-head">
+        <div>
+          <h1>New {txnType(type)}</h1>
+          <div className="muted">Create a bill, invoice, estimate or payment</div>
         </div>
-        {!isPayment && <div className="form-row">
-          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-          <select value={mode} onChange={(e) => setMode(e.target.value)}>{MODES.map((m) => <option key={m}>{m}</option>)}</select>
-          {stateOn && <input type="text" placeholder="State of supply" value={stateOfSupply} onChange={(e) => setStateOfSupply(e.target.value)} />}
-        </div>}
+        <Button variant="outline" onClick={() => nav('/billing')}><X className="w-4 h-4" /> Cancel</Button>
+      </div>
 
-        <h2 style={{ marginTop: 18 }}>Line items</h2>
-        <div className="toolbar">
-          <select onChange={(e) => { const it = items.find((x) => x.id === Number(e.target.value)); if (it) addLine(it) }} defaultValue="">
-            <option value="" disabled>＋ Add item…</option>
-            {items.map((it) => <option key={it.id} value={it.id}>{it.name} — {money(it.salePrice)}</option>)}
-          </select>
-          <button className="btn ghost" onClick={() => addLine()}>＋ Free text line</button>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ReceiptText className="w-5 h-5 text-primary" /> Document Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <Label>Type</Label>
+                  <Select value={type} onValueChange={setType}>
+                    {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
+                  </Select>
+                </div>
+                <div>
+                  <Label>Party / Customer</Label>
+                  <Select value={partyId} onValueChange={(v) => selectParty(Number(v))}>
+                    <option value={0}>{isPayment ? 'Select party' : 'Cash / walk-in'}</option>
+                    {parties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </Select>
+                </div>
+                <div>
+                  <Label>Date</Label>
+                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </div>
+              </div>
+              {!isPayment && (
+                <div className="grid gap-4 md:grid-cols-3 mt-4">
+                  <div>
+                    <Label>Due Date</Label>
+                    <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>Payment Mode</Label>
+                    <Select value={mode} onValueChange={setMode}>
+                      {MODES.map((m) => <option key={m}>{m}</option>)}
+                    </Select>
+                  </div>
+                  {stateOn && (
+                    <div>
+                      <Label>State of Supply</Label>
+                      <Input value={stateOfSupply} placeholder="e.g. Karnataka" onChange={(e) => setStateOfSupply(e.target.value)} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Line items */}
+          <Card>
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> Line Items</CardTitle>
+              <div className="flex items-center gap-2">
+                <Select className="w-52" value="" onValueChange={(v) => { const it = items.find((x) => x.id === Number(v)); if (it) addLine(it) }}>
+                  <option value="" disabled>Add item…</option>
+                  {items.map((it) => <option key={it.id} value={it.id}>{it.name} — {money(it.salePrice)}</option>)}
+                </Select>
+                <Button type="button" variant="outline" onClick={() => addLine()}><Plus className="w-4 h-4" /> Free text</Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {lines.length === 0 ? (
+                <p className="text-sm text-muted text-center py-8">No line items yet — add items from your catalog.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left font-medium text-muted px-4 py-3">Item</th>
+                        <th className="w-20 text-center font-medium text-muted px-2 py-3">Qty</th>
+                        <th className="w-28 text-right font-medium text-muted px-2 py-3">Rate</th>
+                        {hsnOn && <th className="w-28 hidden md:table-cell text-left font-medium text-muted px-2 py-3">HSN/SAC</th>}
+                        {gstOn && !txnTaxOn && itemTaxOn && <th className="w-24 text-center font-medium text-muted px-2 py-3">GST %</th>}
+                        <th className="w-12 px-2 py-3" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lines.map((l, i) => (
+                        <tr key={i} className="border-b border-border last:border-0">
+                          <td className="px-4 py-2">
+                            <Input value={l.itemName} placeholder="Item name" onChange={(e) => patchLine(i, { itemName: e.target.value })} />
+                          </td>
+                          <td className="px-2 py-2 w-20">
+                            <Input type="number" min={0} value={l.qty} onChange={(e) => patchLine(i, { qty: Number(e.target.value) })} className="text-center" />
+                          </td>
+                          <td className="px-2 py-2 w-28">
+                            <Input type="number" min={0} value={l.rate} onChange={(e) => patchLine(i, { rate: Number(e.target.value) })} className="text-right" />
+                          </td>
+                          {hsnOn && (
+                            <td className="px-2 py-2 hidden md:table-cell">
+                              <Input value={l.hsnSac} placeholder="HSN" onChange={(e) => patchLine(i, { hsnSac: e.target.value })} />
+                            </td>
+                          )}
+                          {gstOn && !txnTaxOn && itemTaxOn && (
+                            <td className="px-2 py-2 w-24">
+                              <Input type="number" min={0} step="0.01" value={l.taxRate} onChange={(e) => patchLine(i, { taxRate: Number(e.target.value) })} className="text-center" />
+                            </td>
+                          )}
+                          <td className="px-2 py-2 text-center">
+                            <Button variant="ghost" size="icon" onClick={() => delLine(i)} aria-label="Remove" className="text-red-500 hover:bg-red-500/10">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-primary" /> Notes & Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {!isPayment ? (
+                  <>
+                    <div>
+                      <Label>Discount (₹)</Label>
+                      <Input type="number" min={0} value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" />
+                    </div>
+                    <div>
+                      <Label>Amount Received</Label>
+                      <Input type="number" min={0} value={received} onChange={(e) => setReceived(e.target.value)} placeholder="0" />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <Label>Payment Amount</Label>
+                    <Input type="number" min={0} value={received} onChange={(e) => setReceived(e.target.value)} placeholder="0" />
+                  </div>
+                )}
+              </div>
+              <div className="mt-4">
+                <Label>Description / Note</Label>
+                <Textarea value={description} placeholder="Reference, note or memo…" rows={2} onChange={(e) => setDescription(e.target.value)} />
+              </div>
+              {gstOn && txnTaxOn && !isPayment && (
+                <div className="mt-4">
+                  <Label>GST (whole transaction)</Label>
+                  <Select value={txnTax} onValueChange={(v) => setTxnTax(Number(v))}>
+                    {TAX_RATES.map((t) => <option key={t} value={t}>{t}% GST</option>)}
+                  </Select>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {lines.map((l, i) => (
-          <div className="form-row" key={i} style={{ alignItems: 'flex-end' }}>
-            <input value={l.itemName} placeholder="Item name" onChange={(e) => patchLine(i, { itemName: e.target.value })} />
-            <input type="number" min={0} value={l.qty} placeholder="Qty" onChange={(e) => patchLine(i, { qty: Number(e.target.value) })} />
-            <input type="number" min={0} value={l.rate} placeholder="Rate" onChange={(e) => patchLine(i, { rate: Number(e.target.value) })} />
-            {hsnOn && <input value={l.hsnSac} placeholder="HSN/SAC" onChange={(e) => patchLine(i, { hsnSac: e.target.value })} />}
-            {gstOn && !txnTaxOn && itemTaxOn && <input type="number" min={0} step="0.01" value={l.taxRate} placeholder="GST %" onChange={(e) => patchLine(i, { taxRate: Number(e.target.value) })} />}
-            <button className="del-btn" onClick={() => delLine(i)}>✕</button>
-          </div>
-        ))}
-
-        {!isPayment && <div className="form-row" style={{ marginTop: 16 }}>
-          <input type="number" min={0} value={discount} placeholder="Discount ₹" onChange={(e) => setDiscount(e.target.value)} />
-          <input type="number" min={0} value={received} placeholder="Amount received" onChange={(e) => setReceived(e.target.value)} />
-        </div>}
-        {isPayment && <div className="form-row" style={{ marginTop: 16 }}>
-          <input type="number" min={0} value={received} placeholder="Payment amount" onChange={(e) => setReceived(e.target.value)} />
-        </div>}
-
-        {gstOn && txnTaxOn && !isPayment && (
-          <div className="form-row" style={{ marginTop: 16 }}>
-            <select value={txnTax} onChange={(e) => setTxnTax(Number(e.target.value))}>
-              {TAX_RATES.map((t) => <option key={t} value={t}>{t}% GST (whole transaction)</option>)}
-            </select>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-          <input style={{ flex: 1 }} type="text" value={description} placeholder="Description / note" onChange={(e) => setDescription(e.target.value)} />
-        </div>
-
-        <table className="main-table" style={{ marginTop: 18 }}>
-          <tbody>
-            <tr><td>Subtotal</td><td className="num">{money(totals.subtotal)}</td></tr>
-            <tr><td>Tax (GST)</td><td className="num">{money(totals.tax)}</td></tr>
-            {isNonTaxable && <tr><td>Bill of supply (non-taxable)</td><td className="num muted">—</td></tr>}
-            <tr><td>Discount</td><td className="num">−{money(Number(discount) || 0)}</td></tr>
-            {roundOn && <tr><td>Round off</td><td className="num">{money(totals.roundOff)}</td></tr>}
-            <tr><td><b>Total</b></td><td className="num total"><b>{money(totals.total)}</b></td></tr>
-            <tr><td>Received</td><td className="num">{money(totals.received)}</td></tr>
-            <tr><td>Balance</td><td className="num">{money(totals.balance)}</td></tr>
-          </tbody>
-        </table>
-
-        {termsOn && !isPayment && (
-          <div className="muted" style={{ marginTop: 10, fontSize: 12 }}>{termsText}</div>
-        )}
-
-        <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
-          <button className="btn" onClick={save}>💾 Save {txnType(type)}</button>
-          {settings['txn.invoice_preview'] !== '0' && (
-            <button className="btn ghost" onClick={() => setShowPreview(true)}>👁 Preview invoice</button>
-          )}
-          <button className="btn ghost" onClick={() => nav('/billing')}>Cancel</button>
+        {/* Summary */}
+        <div className="space-y-6">
+          <Card className="lg:sticky lg:top-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Wallet className="w-5 h-5 text-primary" /> Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2.5 text-sm">
+                <div className="flex justify-between text-muted"><span>Subtotal</span><span className="text-text">{money(totals.subtotal)}</span></div>
+                <div className="flex justify-between text-muted"><span>Tax (GST)</span><span className="text-text">{money(totals.tax)}</span></div>
+                {isNonTaxable && <div className="flex justify-between text-muted"><span>Bill of supply (non-taxable)</span><Badge variant="info" size="sm">Non-taxable</Badge></div>}
+                <div className="flex justify-between text-muted"><span>Discount</span><span className="text-text">−{money(Number(discount) || 0)}</span></div>
+                {roundOn && <div className="flex justify-between text-muted"><span>Round off</span><span className="text-text">{money(totals.roundOff)}</span></div>}
+                <div className="border-t border-border pt-3 flex justify-between text-base font-bold"><span>Total</span><span className="text-primary">{money(totals.total)}</span></div>
+                <div className="flex justify-between text-muted"><span>Received</span><span className="text-text">{money(totals.received)}</span></div>
+                <div className="flex justify-between text-muted"><span>Balance</span><span className={cn('font-semibold', totals.balance > 0 ? 'text-amber-500' : 'text-emerald-500')}>{money(totals.balance)}</span></div>
+              </div>
+              {termsOn && !isPayment && (
+                <p className="text-xs text-muted mt-4 border-t border-border pt-3">{termsText}</p>
+              )}
+              <div className="flex flex-col gap-2 mt-5">
+                <Button onClick={save}><Save className="w-4 h-4" /> Save {txnType(type)}</Button>
+                {settings['txn.invoice_preview'] !== '0' && (
+                  <Button variant="outline" onClick={() => setShowPreview(true)}><Eye className="w-4 h-4" /> Preview invoice</Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {showPreview && (
-        <div className="modal-backdrop" onClick={() => setShowPreview(false)}>
-          <div className="modal" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head"><h2>Invoice preview</h2><button className="modal-x" onClick={() => setShowPreview(false)}>✕</button></div>
-            <div className="modal-body">
-              <div className="preview-invoice">
-                <div className="preview-head">
-                  <div className="brand">Lux<span>Infra</span></div>
-                  <div className="muted" style={{ fontSize: 12 }}>{settings['general.firm_name'] || 'LuxInfra'}{settings['general.firm_gstin'] ? ` · GSTIN ${settings['general.firm_gstin']}` : ''}</div>
-                  <div className="muted" style={{ fontSize: 12 }}>{settings['general.firm_address']}</div>
-                </div>
-                <div className="preview-meta">
-                  <span>{txnType(type)} · #{type === 'ESTIMATE' ? 'EST' : type === 'DELIVERY_CHALLAN' ? 'DC' : 'INV'}—</span>
-                  <span>Date {date}</span>
-                </div>
-                <table>
-                  <thead><tr><th>Item</th><th className="num">Qty</th><th className="num">Rate</th><th className="num">Amount</th></tr></thead>
-                  <tbody>
-                    {lines.filter((l) => l.itemName).map((l, i) => (
-                      <tr key={i}><td>{l.itemName}</td><td className="num">{l.qty}</td><td className="num">{money(l.rate)}</td><td className="num">{money(l.qty * l.rate)}</td></tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr><td colSpan={3}>Total</td><td className="num total">{money(totals.total)}</td></tr>
-                  </tfoot>
-                </table>
-                {termsOn && <div className="muted" style={{ fontSize: 11, marginTop: 10 }}>{termsText}</div>}
-              </div>
+      {/* Preview */}
+      <Modal open={showPreview} onClose={() => setShowPreview(false)} title="Invoice preview" size="lg">
+        <div className="border border-border rounded-xl p-6 bg-surface">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="brand" style={{ fontSize: 20 }}>Lux<span>Infra</span></div>
+              <div className="text-xs text-muted mt-1">{settings['general.firm_name'] || 'LuxInfra'}{settings['general.firm_gstin'] ? ` · GSTIN ${settings['general.firm_gstin']}` : ''}</div>
+              <div className="text-xs text-muted">{settings['general.firm_address']}</div>
+            </div>
+            <div className="text-right">
+              <p className="font-semibold text-text">{txnType(type)}</p>
+              <p className="text-xs text-muted">#{type === 'ESTIMATE' ? 'EST' : type === 'DELIVERY_CHALLAN' ? 'DC' : 'INV'}—</p>
+              <p className="text-xs text-muted">Date {date}</p>
             </div>
           </div>
+          <table className="w-full text-sm mt-6">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left font-medium text-muted py-2">Item</th>
+                <th className="text-right font-medium text-muted py-2">Qty</th>
+                <th className="text-right font-medium text-muted py-2">Rate</th>
+                <th className="text-right font-medium text-muted py-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.filter((l) => l.itemName).map((l, i) => (
+                <tr key={i} className="border-b border-border">
+                  <td className="py-2">{l.itemName}</td>
+                  <td className="text-right py-2">{l.qty}</td>
+                  <td className="text-right py-2">{money(l.rate)}</td>
+                  <td className="text-right py-2">{money(l.qty * l.rate)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={3} className="text-right font-semibold py-3">Total</td>
+                <td className="text-right font-bold text-primary py-3">{money(totals.total)}</td>
+              </tr>
+            </tfoot>
+          </table>
+          {termsOn && <p className="text-xs text-muted mt-4">{termsText}</p>}
         </div>
-      )}
+      </Modal>
     </>
   )
 }

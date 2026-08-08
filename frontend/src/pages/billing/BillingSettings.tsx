@@ -1,91 +1,245 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import type { Settings } from '../../api'
-import { PageHead } from '../../ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Input, Textarea, Label, Switch, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { cn } from '../../lib/utils'
 
-const FIRM = [
-  ['general.firm_name', 'Firm name'],
-  ['general.firm_state', 'Firm state'],
-  ['general.firm_phone', 'Firm phone'],
-  ['general.firm_gstin', 'Firm GSTIN'],
-  ['general.firm_email', 'Firm email'],
-  ['general.firm_address', 'Firm address'],
+interface Preference {
+  key: string
+  label: string
+  desc: string
+  type: 'toggle' | 'textarea'
+  dependsOn?: string
+}
+
+interface PreferenceGroup {
+  title: string
+  description: string
+  icon: string
+  settings: Preference[]
+}
+
+const FIRM_FIELDS = [
+  { key: 'general.firm_name', label: 'Firm Name', placeholder: 'LuxInfra', required: true },
+  { key: 'general.firm_gstin', label: 'GSTIN', placeholder: '29AAACL1234A1Z5', pattern: '[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}' },
+  { key: 'general.firm_phone', label: 'Phone', placeholder: '+91 98765 43210', type: 'tel' },
+  { key: 'general.firm_email', label: 'Email', placeholder: 'billing@luxinfra.com', type: 'email' },
+  { key: 'general.firm_state', label: 'State', placeholder: 'Karnataka' },
+  { key: 'general.firm_address', label: 'Address', placeholder: '123 Business Park, Bangalore', multiline: true },
 ]
-const TOGGLES: [string, string][] = [
-  ['gst.enabled', 'Enable GST'],
-  ['gst.state_of_supply', 'State of supply field'],
-  ['gst.hsn', 'HSN / SAC code'],
-  ['item.stock_maintenance', 'Stock / inventory maintenance'],
-  ['item.units', 'Item units'],
-  ['item.category', 'Item category'],
-  ['txn.round_off', 'Round off totals'],
-  ['txn.txn_wise_tax', 'Tax per transaction'],
-  ['txn.item_wise_tax', 'Tax per item'],
-  ['txn.cash_sale_default', 'Cash sale default'],
-  ['txn.invoice_number', 'Invoice number'],
-  ['txn.enable.estimate', 'Estimates & quotations'],
-  ['txn.enable.delivery_challan', 'Delivery challans'],
-  ['txn.invoice_preview', 'Invoice preview'],
-  ['txn.terms_enabled', 'Invoice terms'],
-  ['print.bill_of_supply_non_tax', 'Bill of supply for tax-free sales'],
-]
-const TEXT: [string, string][] = [
-  ['txn.terms_text', 'Invoice terms & conditions'],
-  ['print.signature_text', 'Signature label'],
-]
+
+const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
+  gst: {
+    title: 'GST & Tax',
+    description: 'Configure GST behavior for invoices and transactions',
+    icon: '📋',
+    settings: [
+      { key: 'gst.enabled', label: 'Enable GST', desc: 'Show GST fields on invoices and calculate tax automatically', type: 'toggle' },
+      { key: 'gst.state_of_supply', label: 'State of Supply', desc: 'Add state of supply field for inter-state transactions', type: 'toggle', dependsOn: 'gst.enabled' },
+      { key: 'gst.hsn', label: 'HSN/SAC Codes', desc: 'Show HSN/SAC field on items and invoice lines', type: 'toggle', dependsOn: 'gst.enabled' },
+      { key: 'gst.reverse_charge', label: 'Reverse Charge', desc: 'Enable reverse charge mechanism for applicable transactions', type: 'toggle', dependsOn: 'gst.enabled' },
+      { key: 'gst.tcs', label: 'TCS (Tax Collected at Source)', desc: 'Enable TCS on eligible sales', type: 'toggle', dependsOn: 'gst.enabled' },
+      { key: 'gst.tds', label: 'TDS (Tax Deducted at Source)', desc: 'Enable TDS deduction on purchases', type: 'toggle', dependsOn: 'gst.enabled' },
+    ]
+  },
+  invoicing: {
+    title: 'Invoicing',
+    description: 'Control invoice behavior, numbering, and document types',
+    icon: '🧾',
+    settings: [
+      { key: 'txn.invoice_number', label: 'Auto Invoice Number', desc: 'Automatically generate sequential invoice numbers', type: 'toggle' },
+      { key: 'txn.cash_sale_default', label: 'Cash Sale Default', desc: 'Default new transactions to cash sale (no party required)', type: 'toggle' },
+      { key: 'txn.round_off', label: 'Round Off Totals', desc: 'Round invoice totals to nearest rupee', type: 'toggle' },
+      { key: 'txn.txn_wise_tax', label: 'Transaction-wise Tax', desc: 'Single tax rate for entire transaction vs per-item', type: 'toggle' },
+      { key: 'txn.item_wise_tax', label: 'Item-wise Tax', desc: 'Allow different tax rates per line item', type: 'toggle' },
+      { key: 'txn.terms_enabled', label: 'Invoice Terms', desc: 'Show terms & conditions on invoices', type: 'toggle' },
+      { key: 'txn.terms_text', label: 'Default Terms Text', desc: 'Standard terms to include on all invoices', type: 'textarea', dependsOn: 'txn.terms_enabled' },
+      { key: 'txn.enable.estimate', label: 'Enable Estimates', desc: 'Allow creating estimates/quotations', type: 'toggle' },
+      { key: 'txn.enable.delivery_challan', label: 'Enable Delivery Challans', desc: 'Allow creating delivery challans', type: 'toggle' },
+      { key: 'txn.enable.proforma', label: 'Enable Proforma Invoices', desc: 'Allow creating proforma invoices', type: 'toggle' },
+      { key: 'txn.invoice_preview', label: 'Invoice Preview', desc: 'Show preview button before saving invoices', type: 'toggle' },
+    ]
+  },
+  items: {
+    title: 'Items & Inventory',
+    description: 'Configure item master data fields and inventory tracking',
+    icon: '📦',
+    settings: [
+      { key: 'item.stock_maintenance', label: 'Stock Maintenance', desc: 'Track stock quantities and enable inventory features', type: 'toggle' },
+      { key: 'item.units', label: 'Item Units', desc: 'Enable unit of measure (Pcs, Kg, Mtr, etc.)', type: 'toggle' },
+      { key: 'item.category', label: 'Item Categories', desc: 'Enable categorization of items', type: 'toggle' },
+      { key: 'item.type', label: 'Item Types', desc: 'Distinguish between Products and Services', type: 'toggle' },
+      { key: 'item.wholesale_price', label: 'Wholesale Price', desc: 'Add wholesale price field to items', type: 'toggle' },
+      { key: 'item.barcode', label: 'Barcode/QR Code', desc: 'Enable barcode scanning for items', type: 'toggle' },
+      { key: 'item.min_stock', label: 'Min Stock Alerts', desc: 'Show low stock warnings', type: 'toggle', dependsOn: 'item.stock_maintenance' },
+      { key: 'item.mrp', label: 'MRP Field', desc: 'Add Maximum Retail Price field', type: 'toggle' },
+    ]
+  },
+  printing: {
+    title: 'Print & Export',
+    description: 'Customize invoice appearance and export options',
+    icon: '🖨️',
+    settings: [
+      { key: 'print.bill_of_supply_non_tax', label: 'Bill of Supply', desc: 'Show "Bill of Supply" for non-taxable invoices', type: 'toggle' },
+      { key: 'print.amount_grouping', label: 'Indian Number Grouping', desc: 'Format amounts as 1,00,000 instead of 100,000', type: 'toggle' },
+      { key: 'print.amount_words', label: 'Amount in Words', desc: 'Print amount in words on invoices', type: 'toggle' },
+      { key: 'print.you_saved', label: 'You Saved', desc: 'Show savings amount on invoices', type: 'toggle' },
+      { key: 'print.signature', label: 'Signature', desc: 'Include signature line on invoices', type: 'toggle' },
+      { key: 'print.signature_text', label: 'Signature Label', desc: 'Custom text for signature line', type: 'textarea', dependsOn: 'print.signature' },
+      { key: 'print.payment_mode', label: 'Payment Mode', desc: 'Show payment mode on invoices', type: 'toggle' },
+      { key: 'print.page_numbers', label: 'Page Numbers', desc: 'Add page numbers to multi-page invoices', type: 'toggle' },
+    ]
+  },
+}
 
 export default function BillingSettings() {
   const [s, setS] = useState<Settings>({})
-  const load = () => api.billing.settings().then(setS).catch(() => {})
-  useEffect(() => { load() }, [])
+  const [activeTab, setActiveTab] = useState<'firm' | 'gst' | 'invoicing' | 'items' | 'printing'>('firm')
+  const [saving, setSaving] = useState<string | null>(null)
 
-  const set = (k: string, v: string) => setS((p) => ({ ...p, [k]: v }))
-  const onChange = (k: string, v: string) => { set(k, v); api.billing.setSetting(k, v).catch(() => {}) }
-  const toggle = (k: string) => onChange(k, s[k] === '1' ? '0' : '1')
+  useEffect(() => {
+    api.billing.settings().then(setS).catch(() => {})
+  }, [])
+
+  const onChange = async (k: string, v: string) => {
+    setS(prev => ({ ...prev, [k]: v }))
+    setSaving(k)
+    try {
+      await api.billing.setSetting(k, v)
+    } catch {
+      setS(prev => ({ ...prev, [k]: s[k] }))
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const isEnabled = (k: string) => s[k] === '1'
+  const shouldShow = (dep?: string) => !dep || isEnabled(dep)
 
   return (
     <>
-      <PageHead icon="⚙️" title="Billing Settings" sub="Firm details, taxes, print & item preferences" />
-
-      <div className="card">
-        <h2>🏢 Firm & templates</h2>
-        <div className="form-row">
-          {FIRM.slice(0, 3).map(([k, label]) => (
-            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span className="f-label">{label}</span>
-              <input value={s[k] || ''} onChange={(e) => onChange(k, e.target.value)} />
-            </label>
-          ))}
-        </div>
-        <div className="form-row">
-          {FIRM.slice(3).map(([k, label]) => (
-            <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span className="f-label">{label}</span>
-              <input value={s[k] || ''} onChange={(e) => onChange(k, e.target.value)} />
-            </label>
-          ))}
+      <div className="page-head">
+        <div>
+          <h1>Billing Settings</h1>
+          <div className="muted">Configure firm details, taxes, invoicing, and inventory preferences</div>
         </div>
       </div>
 
-      <div className="card">
-        <h2>🎛️ Preferences</h2>
-        {TOGGLES.map(([k, label]) => (
-          <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', cursor: 'pointer' }}>
-            <input type="checkbox" checked={s[k] === '1'} onChange={() => toggle(k)} style={{ width: 18, height: 18 }} />
-            <span>{label}</span>
-          </label>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
+        <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsTrigger value="firm">Firm Details</TabsTrigger>
+          <TabsTrigger value="gst">GST & Tax</TabsTrigger>
+          <TabsTrigger value="invoicing">Invoicing</TabsTrigger>
+          <TabsTrigger value="items">Items & Inventory</TabsTrigger>
+          <TabsTrigger value="printing">Print & Export</TabsTrigger>
+        </TabsList>
 
-      <div className="card">
-        <h2>📝 Template text</h2>
-        {TEXT.map(([k, label]) => (
-          <label key={k} style={{ display: 'block', marginBottom: 12 }}>
-            <span className="f-label">{label}</span>
-            <textarea value={s[k] || ''} onChange={(e) => onChange(k, e.target.value)} />
-          </label>
+        <TabsContent value="firm">
+          <Card>
+            <CardHeader>
+              <CardTitle>Firm Details</CardTitle>
+              <CardDescription>These details appear on all invoices, reports, and documents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {FIRM_FIELDS.map((field) => (
+                  <div key={field.key} className={cn(field.multiline && 'md:col-span-2')}>
+                    <Label htmlFor={field.key}>{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+                    {field.multiline ? (
+                      <Textarea
+                        id={field.key}
+                        value={s[field.key] || ''}
+                        onChange={(e) => onChange(field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        rows={3}
+                      />
+                    ) : (
+                      <Input
+                        id={field.key}
+                        type={field.type || 'text'}
+                        value={s[field.key] || ''}
+                        onChange={(e) => onChange(field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        pattern={field.pattern}
+                        required={field.required}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {(['gst', 'invoicing', 'items', 'printing'] as const).map((tab) => (
+          <TabsContent key={tab} value={tab}>
+            <Card>
+              <CardHeader>
+                <CardTitle>{PREFERENCE_GROUPS[tab].title}</CardTitle>
+                <CardDescription>{PREFERENCE_GROUPS[tab].description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {PREFERENCE_GROUPS[tab].settings
+                  .filter(setting => shouldShow(setting.dependsOn))
+                  .map((setting) => (
+                    <PreferenceRow
+                      key={setting.key}
+                      setting={setting}
+                      value={s[setting.key] || ''}
+                      onChange={onChange}
+                      isEnabled={isEnabled(setting.key)}
+                      saving={saving === setting.key}
+                    />
+                  ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
         ))}
-      </div>
+      </Tabs>
     </>
+  )
+}
+
+function PreferenceRow({ setting, value, onChange, isEnabled, saving }: {
+  setting: Preference
+  value: string
+  onChange: (k: string, v: string) => void
+  isEnabled: boolean
+  saving: boolean
+}) {
+  const labelByKey = Object.fromEntries(Object.values(PREFERENCE_GROUPS).flatMap(g => g.settings.map(s => [s.key, s.label])))
+  return (
+    <div className={cn('flex items-start gap-4 p-4 bg-surface/50 rounded-xl border border-border transition-colors', !isEnabled && 'opacity-50')}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          <h4 className="font-medium text-text">{setting.label}</h4>
+          {setting.dependsOn && (
+            <Badge variant="outline" size="sm" className="text-xs">
+              Requires: {labelByKey[setting.dependsOn]}
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm text-muted mt-0.5">{setting.desc}</p>
+      </div>
+      <div className="flex items-center gap-3 flex-shrink-0">
+        {setting.type === 'toggle' && (
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={(checked) => onChange(setting.key, checked ? '1' : '0')}
+            disabled={saving}
+            aria-label={setting.label}
+          />
+        )}
+        {setting.type === 'textarea' && isEnabled && (
+          <Textarea
+            value={value}
+            onChange={(e) => onChange(setting.key, e.target.value)}
+            placeholder={`Enter ${setting.label.toLowerCase()}`}
+            rows={2}
+            className="w-64"
+          />
+        )}
+      </div>
+    </div>
   )
 }
