@@ -7,9 +7,9 @@ namespace LuxInfra.Api.Controllers;
 [Route("api/activity")]
 public class ActivityController : ControllerBase
 {
-    private readonly ActivityService _activity;
+    private readonly IActivityService _activity;
 
-    public ActivityController(ActivityService activity) => _activity = activity;
+    public ActivityController(IActivityService activity) => _activity = activity;
 
     [HttpGet]
     public async Task<List<ActivityLogItemDto>> Recent([FromQuery] int count = 100)

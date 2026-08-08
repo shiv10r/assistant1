@@ -8,10 +8,10 @@ namespace LuxInfra.Api.Controllers;
 [Route("api/projects")]
 public class ProjectsController : ControllerBase
 {
-    private readonly ProjectService _projects;
-    private readonly ActivityService _activity;
+    private readonly IProjectService _projects;
+    private readonly IActivityService _activity;
 
-    public ProjectsController(ProjectService projects, ActivityService activity)
+    public ProjectsController(IProjectService projects, IActivityService activity)
     {
         _projects = projects;
         _activity = activity;

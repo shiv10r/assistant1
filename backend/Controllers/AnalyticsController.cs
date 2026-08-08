@@ -9,10 +9,10 @@ namespace LuxInfra.Api.Controllers;
 public class AnalyticsController : ControllerBase
 {
     private readonly DatabaseService _db;
-    private readonly BillingService _billing;
-    private readonly ProjectService _projects;
+    private readonly IBillingService _billing;
+    private readonly IProjectService _projects;
 
-    public AnalyticsController(DatabaseService db, BillingService billing, ProjectService projects)
+    public AnalyticsController(DatabaseService db, IBillingService billing, IProjectService projects)
         => (_db, _billing, _projects) = (db, billing, projects);
 
     [HttpGet]

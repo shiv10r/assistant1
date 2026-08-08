@@ -8,10 +8,10 @@ namespace LuxInfra.Api.Controllers;
 [Route("api/billing")]
 public class BillingController : ControllerBase
 {
-    private readonly BillingService _billing;
-    private readonly ActivityService _activity;
+    private readonly IBillingService _billing;
+    private readonly IActivityService _activity;
 
-    public BillingController(BillingService billing, ActivityService activity)
+    public BillingController(IBillingService billing, IActivityService activity)
     {
         _billing = billing;
         _activity = activity;
