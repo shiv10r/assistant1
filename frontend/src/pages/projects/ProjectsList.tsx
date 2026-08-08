@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../../api'
 import type { Project } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money } from '../../components/ui'
+import { useToast } from '../../components/ui/Toast'
 import { Plus, Search, FolderKanban, Trash2, ArrowRight, Calendar } from 'lucide-react'
 import { cn, fmtDate } from '../../lib/utils'
 
@@ -17,6 +18,7 @@ const STATUS_TONE: Record<string, 'default' | 'info' | 'warning' | 'danger' | 's
 }
 
 export default function ProjectsList() {
+  const { toast } = useToast()
   const [projects, setProjects] = useState<Project[]>([])
   const [err, setErr] = useState('')
   const [open, setOpen] = useState(false)
@@ -43,14 +45,18 @@ export default function ProjectsList() {
         id: 0, name: f.name.trim(), address: f.address, value: Number(f.value) || 0, status: f.status,
         createdAt: new Date().toISOString().slice(0, 10),
       })
+      toast({ title: 'Project created', description: p.name })
       nav(`/projects/${p.id}`)
-    } catch (e) { setErr(String(e)) }
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not create project', description: String(e), variant: 'error' }) }
   }
 
   const remove = async (p: Project) => {
     if (!confirm(`Delete project "${p.name}" and all its data?`)) return
-    await api.projects.remove(p.id)
-    load()
+    try {
+      await api.projects.remove(p.id)
+      load()
+      toast({ title: 'Project deleted', description: p.name, variant: 'error' })
+    } catch (e) { setErr(String(e)); toast({ title: 'Could not delete project', description: String(e), variant: 'error' }) }
   }
 
   const counts = useMemo(() => {

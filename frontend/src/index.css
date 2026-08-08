@@ -161,6 +161,12 @@ textarea { resize: vertical; min-height: 64px; }
 .grid-card .gc-icon { font-size: 26px; }
 .grid-card .gc-label { margin-top: 8px; font-size: 13px; font-weight: 600; }
 
+.toast-pop { animation: toast-pop .2s ease-out; }
+@keyframes toast-pop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .del-btn { background: #C0392B; color: #fff; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
 .row-btn { background: var(--surface2); color: var(--text); border: none; border-radius: 10px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }

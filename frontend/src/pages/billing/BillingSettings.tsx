@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import type { Settings } from '../../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Input, Textarea, Label, Switch, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/utils'
 
 interface Preference {
@@ -92,7 +93,10 @@ const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
   },
 }
 
+const labelByKey = Object.fromEntries(Object.values(PREFERENCE_GROUPS).flatMap(g => g.settings.map(s => [s.key, s.label])))
+
 export default function BillingSettings() {
+  const { toast } = useToast()
   const [s, setS] = useState<Settings>({})
   const [activeTab, setActiveTab] = useState<'firm' | 'gst' | 'invoicing' | 'items' | 'printing'>('firm')
   const [saving, setSaving] = useState<string | null>(null)
@@ -101,13 +105,15 @@ export default function BillingSettings() {
     api.billing.settings().then(setS).catch(() => {})
   }, [])
 
-  const onChange = async (k: string, v: string) => {
+  const onChange = async (k: string, v: string, notify = false) => {
     setS(prev => ({ ...prev, [k]: v }))
     setSaving(k)
     try {
       await api.billing.setSetting(k, v)
+      if (notify) toast({ title: 'Setting saved', description: labelByKey[k] || k })
     } catch {
       setS(prev => ({ ...prev, [k]: s[k] }))
+      toast({ title: 'Could not save setting', description: labelByKey[k] || k, variant: 'error' })
     } finally {
       setSaving(null)
     }
@@ -203,11 +209,10 @@ export default function BillingSettings() {
 function PreferenceRow({ setting, value, onChange, isEnabled, saving }: {
   setting: Preference
   value: string
-  onChange: (k: string, v: string) => void
+  onChange: (k: string, v: string, notify?: boolean) => void
   isEnabled: boolean
   saving: boolean
 }) {
-  const labelByKey = Object.fromEntries(Object.values(PREFERENCE_GROUPS).flatMap(g => g.settings.map(s => [s.key, s.label])))
   return (
     <div className={cn('flex items-start gap-4 p-4 bg-surface/50 rounded-xl border border-border transition-colors', !isEnabled && 'opacity-50')}>
       <div className="flex-1 min-w-0">
@@ -225,7 +230,7 @@ function PreferenceRow({ setting, value, onChange, isEnabled, saving }: {
         {setting.type === 'toggle' && (
           <Switch
             checked={isEnabled}
-            onCheckedChange={(checked) => onChange(setting.key, checked ? '1' : '0')}
+            onCheckedChange={(checked) => onChange(setting.key, checked ? '1' : '0', true)}
             disabled={saving}
             aria-label={setting.label}
           />
