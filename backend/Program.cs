@@ -35,6 +35,7 @@ builder.Services.AddSingleton<IBillingRepository, BillingRepository>();
 builder.Services.AddSingleton<IProjectRepository, ProjectRepository>();
 builder.Services.AddSingleton<IActivityRepository, ActivityRepository>();
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IModuleRepository, ModuleRepository>();
 
 // Business layer — controllers depend on these interfaces only.
 builder.Services.AddSingleton<ReportService>();
