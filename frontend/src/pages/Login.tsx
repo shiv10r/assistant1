@@ -65,7 +65,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
         <button style={btnStyle} disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="muted login-hint">Default: admin / admin123</p>
+        <p className="muted login-hint">Default: admin / LuxInfra@2026</p>
       </form>
     </div>
   )

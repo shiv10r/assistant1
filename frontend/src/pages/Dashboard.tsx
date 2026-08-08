@@ -16,7 +16,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="page-head"><div><h1>📊 Dashboard</h1><div className="muted">Your interiors business at a glance</div></div></div>
+      <div className="page-head"><div><h1>Dashboard</h1><div className="muted">Your interiors business at a glance</div></div></div>
 
       {data.isEmpty ? (
         <div className="empty card">🛋️ No expenses yet — tell the assistant on the <Link to="/">Assistant</Link> page, e.g. "site A paint exp = 5k".</div>
@@ -30,7 +30,7 @@ export default function Dashboard() {
           </div>
 
           <div className="card">
-            <h2>🏗️ By Site</h2>
+            <h2>By Site</h2>
             <table className="main-table">
               <thead><tr><th>Site</th><th>Entries</th><th className="num">Total</th></tr></thead>
               <tbody>

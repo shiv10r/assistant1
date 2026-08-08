@@ -7,7 +7,7 @@
   --accent: #00E5C3;
   --text: #F2F2F7;
   --dim: #9A9AB0;
-  --border: var(--border);
+  --border: #33334D;
   --shadow: 0 8px 24px rgba(0,0,0,.35);
   --grad: linear-gradient(135deg, #7C4DFF 0%, #00B8D9 60%, #00E5C3 100%);
 }

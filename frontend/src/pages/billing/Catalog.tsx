@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
-import type { CatalogItem } from '../../api'
+import type { CatalogItem, Settings } from '../../api'
 import { Empty, Modal, money, num, PageHead } from '../../ui'
 
-const UNITS = ['Pcs', 'Kg', 'Gm', 'Ltr', 'Mtr', 'Sqft', 'Box', 'Bag', 'Dozen', 'Hour', 'Day']
-const TAXES = [0, 0.25, 3, 5, 12, 18, 28]
+const UNITS = ['Pcs', 'Kg', 'Gm', 'Ltr', 'Mtr', 'Sqft', 'Box', 'Bag', 'Dozen', 'Hour', 'Day', 'Set', 'Pair', 'Piece']
+const TAXES = [0, 0.25, 1.5, 3, 5, 12, 18, 28]
+const ITEM_TYPES = ['Product', 'Service']
 
 function blank(): CatalogItem {
   return { id: 0, name: '', type: 'Product', salePrice: 0, purchasePrice: 0, wholesalePrice: 0, unit: 'Pcs', category: '', hsnSac: '', taxRate: 18, stockQty: 0, minStock: 0, barcode: '', description: '' }
@@ -12,13 +13,24 @@ function blank(): CatalogItem {
 
 export default function Catalog() {
   const [items, setItems] = useState<CatalogItem[]>([])
+  const [settings, setSettings] = useState<Settings>({})
   const [err, setErr] = useState('')
   const [open, setOpen] = useState(false)
   const [f, setF] = useState<CatalogItem>(blank())
   const set = (k: keyof CatalogItem, v: unknown) => setF((p) => ({ ...p, [k]: v }))
 
-  const load = () => { api.billing.items().then(setItems).catch(() => setItems([])) }
+  const gstOn = settings['gst.enabled'] !== '0'
+  const unitsOn = settings['item.units'] !== '0'
+  const categoryOn = settings['item.category'] !== '0'
+  const stockOn = settings['item.stock_maintenance'] !== '0'
+
+  const load = () => {
+    api.billing.items().then(setItems).catch(() => setItems([]))
+    api.billing.settings().then(setSettings).catch(() => setSettings({}))
+  }
   useEffect(() => { load() }, [])
+
+  const categories = Array.from(new Set([...items.map((i) => i.category), f.category].filter(Boolean)))
 
   const save = async () => {
     try {
@@ -39,8 +51,8 @@ export default function Catalog() {
             <thead><tr><th>Item</th><th>Type</th><th>Unit</th><th>GST %</th><th className="num">Sale ₹</th><th className="num">Stock</th></tr></thead>
             <tbody>
               {items.map((it) => (
-                <tr key={it.id} style={{ cursor: 'pointer' }} onClick={() => { setF(it); setErr(''); setOpen(true) }}>
-                  <td className="cat">{it.name}</td>
+                <tr key={it.id} style={{ cursor: 'pointer' }} onClick={() => { setF({ ...it }); setErr(''); setOpen(true) }}>
+                  <td className="cat">{it.name}{it.barcode && <span className="muted" style={{ display: 'block', fontSize: 11 }}>#{it.barcode}</span>}</td>
                   <td className="muted">{it.type}</td>
                   <td className="muted">{it.unit}</td>
                   <td className="muted">{it.taxRate}%</td>
@@ -58,23 +70,47 @@ export default function Catalog() {
           <div className="form-row">
             <input value={f.name} placeholder="Item name *" onChange={(e) => set('name', e.target.value)} />
             <select value={f.type} onChange={(e) => set('type', e.target.value)}>
-              <option>Product</option><option>Service</option>
+              {ITEM_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
+
           <div className="form-row">
-            <select value={f.unit} onChange={(e) => set('unit', e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select>
-            <select value={f.taxRate} onChange={(e) => set('taxRate', Number(e.target.value))}>{TAXES.map((t) => <option key={t} value={t}>{t}%</option>)}</select>
-            <input value={f.category} placeholder="Category" onChange={(e) => set('category', e.target.value)} />
+            {unitsOn && (
+              <select value={f.unit} onChange={(e) => set('unit', e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</select>
+            )}
+            {gstOn && (
+              <select value={f.taxRate} onChange={(e) => set('taxRate', Number(e.target.value))}>{TAXES.map((t) => <option key={t} value={t}>{t}%</option>)}</select>
+            )}
+            {categoryOn && (
+              <>
+                <input list="cat-options" value={f.category} placeholder="Category" onChange={(e) => set('category', e.target.value)} />
+                <datalist id="cat-options">{categories.map((c) => <option key={c} value={c} />)}</datalist>
+              </>
+            )}
           </div>
+
           <div className="form-row">
             <input type="number" min={0} value={f.salePrice || ''} placeholder="Sale price" onChange={(e) => set('salePrice', Number(e.target.value))} />
             {f.type !== 'Service' && <input type="number" min={0} value={f.purchasePrice || ''} placeholder="Purchase price" onChange={(e) => set('purchasePrice', Number(e.target.value))} />}
-            <input value={f.hsnSac} placeholder="HSN/SAC" onChange={(e) => set('hsnSac', e.target.value)} />
+            {f.type !== 'Service' && <input type="number" min={0} value={f.wholesalePrice || ''} placeholder="Wholesale price" onChange={(e) => set('wholesalePrice', Number(e.target.value))} />}
           </div>
-          {f.type !== 'Service' && <div className="form-row">
-            <input type="number" min={0} value={f.stockQty || ''} placeholder="Stock qty" onChange={(e) => set('stockQty', Number(e.target.value))} />
-            <input type="number" min={0} value={f.minStock || ''} placeholder="Min stock" onChange={(e) => set('minStock', Number(e.target.value))} />
-          </div>}
+
+          <div className="form-row">
+            {gstOn && <input value={f.hsnSac} placeholder="HSN / SAC code" onChange={(e) => set('hsnSac', e.target.value)} />}
+            <input value={f.barcode} placeholder="Barcode (scan / type)" onChange={(e) => set('barcode', e.target.value)} />
+          </div>
+
+          {f.type !== 'Service' && stockOn && (
+            <div className="form-row">
+              <input type="number" min={0} value={f.stockQty || ''} placeholder="Opening stock qty" onChange={(e) => set('stockQty', Number(e.target.value))} />
+              <input type="number" min={0} value={f.minStock || ''} placeholder="Min stock alert" onChange={(e) => set('minStock', Number(e.target.value))} />
+            </div>
+          )}
+
+          <div className="form-row">
+            <textarea value={f.description} placeholder="Description / notes" onChange={(e) => set('description', e.target.value)} />
+          </div>
+
           {err && <div className="empty" style={{ color: '#E05C7A', padding: '8px 0' }}>{err}</div>}
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
             <button className="btn" onClick={save}>💾 Save</button>

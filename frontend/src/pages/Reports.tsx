@@ -8,13 +8,20 @@ type P = typeof PERIODS[number]
 export default function Reports() {
   const [period, setPeriod] = useState<P>('Today')
   const [data, setData] = useState<ReportData | null>(null)
+  const [dlErr, setDlErr] = useState('')
 
   useEffect(() => { api.report(period).then(setData).catch(() => setData(null)) }, [period])
+
+  const q = period === 'Today' ? '' : `?period=${period}`
+  const exportFile = (fmt: string) =>
+    api.download(`/api/reports/export/${fmt}${q}`).catch((e) => setDlErr(String(e)))
+
+  const maxCat = Math.max(1, ...(data?.categoryTotals.map((c) => c.total) ?? [0]))
 
   return (
     <>
       <div className="page-head">
-        <div><h1>📑 Reports</h1><div className="muted">{data?.periodLabel}</div></div>
+        <div><h1>Reports</h1><div className="muted">{data?.periodLabel}</div></div>
         <div className="total-badge">
           <div className="amount">{data?.totalLabel ?? '₹0'}</div>
           <div className="entries">{data?.count ?? 0} entries</div>
@@ -28,13 +35,14 @@ export default function Reports() {
           ))}
         </div>
         <div className="downloads">
-          <a className="dl excel" href={apiUrl('xlsx')} target="_blank" rel="noreferrer">📊 Excel</a>
-          <a className="dl pdf" href={apiUrl('pdf')} target="_blank" rel="noreferrer">📄 PDF</a>
-          <a className="dl png" href={apiUrl('png')} target="_blank" rel="noreferrer">🖼️ PNG</a>
+          <a className="dl excel" onClick={(e) => { e.preventDefault(); exportFile('xlsx') }} href="#">Excel</a>
+          <a className="dl pdf" onClick={(e) => { e.preventDefault(); exportFile('pdf') }} href="#">PDF</a>
+          <a className="dl png" onClick={(e) => { e.preventDefault(); exportFile('png') }} href="#">PNG</a>
         </div>
+        {dlErr && <div className="backup-msg err" style={{ marginTop: 10 }}>{dlErr}</div>}
 
         {!data || data.count === 0 ? (
-          <div className="empty">🛋️ No expenses for this period — tell the assistant!</div>
+          <div className="empty">No expenses for this period — tell the assistant!</div>
         ) : (
           <div className="table-wrap">
             <table className="main-table">
@@ -51,6 +59,16 @@ export default function Reports() {
             </table>
 
             <h3>By category</h3>
+            <div className="cat-bars">
+              {data.categoryTotals.map((c) => (
+                <div className="cat-bar-row" key={c.category}>
+                  <div className="cat-bar-label">{c.category}<span className="muted"> · {c.count}</span></div>
+                  <div className="cat-bar-track"><div className="cat-bar-fill" style={{ width: `${(c.total / maxCat) * 100}%` }} /></div>
+                  <div className="cat-bar-value">{c.totalLabel}</div>
+                </div>
+              ))}
+            </div>
+
             <table className="main-table">
               <thead><tr><th>Category</th><th>Entries</th><th className="num">Total</th></tr></thead>
               <tbody>
@@ -74,9 +92,4 @@ export default function Reports() {
       </div>
     </>
   )
-}
-
-function apiUrl(format: string) {
-  const p = { Today: '', Week: '?period=Week', Month: '?period=Month', All: '?period=All' }
-  return `/api/reports/export/${format}${p['Today']}`
 }
