@@ -97,7 +97,7 @@ export interface MoodBoardItem { id: number; projectId: number; roomId?: string;
 export interface VendorCatalogueItem { id: number; name: string; category?: string; description?: string; price: number; unit?: string; leadTimeDays?: number; vendorName?: string; vendorPhone?: string; thumbnailUrl?: string; modelUrl?: string; modelFormat?: string; dimensionsL?: number; dimensionsW?: number; dimensionsH?: number; specJson?: string; isActive: boolean }
 
 // ---- Interior Design: 3D room scenes ----
-export interface RoomScene { id: number; projectId: number; name: string; roomRef?: string; sceneJson?: string; version: number; createdAt: string; updatedAt?: string }
+export interface RoomScene { id: number; projectId: number; name: string; roomRef?: string; sceneJson?: string; version: number; createdAt: string; updatedAt?: string; versionLabel: string }
 
 // ---- Interior Design: design revisions + comments ----
 export interface DesignRevision { id: number; projectId: number; title: string; description?: string; fileUrl?: string; version: number; status: string; createdAt: string }
@@ -110,36 +110,36 @@ export interface InspectionRecord { id: number; projectId: number; roomId?: stri
 export interface NcrRecord { id: number; projectId: number; inspectionId: number; title: string; description?: string; severity: string; status: string; assignedTo?: string; dueDate?: string; closedAt?: string; createdAt: string }
 
 // ---- Interior Design: subcontractor work orders ----
-export interface SubcontractorWorkOrder { id: number; projectId: number; partyId: number; contractorName: string; title: string; description?: string; category?: string; agreedRate: number; unit: string; quantity: number; billedQuantity?: number; status: string; startDate: string; endDate?: string; measurementJson?: string; fileUrl?: string; createdAt: string }
+export interface SubcontractorWorkOrder { id: number; projectId: number; partyId: number; contractorName: string; title: string; description?: string; category?: string; agreedRate: number; unit: string; quantity: number; billedQuantity?: number; status: string; startDate: string; endDate?: string; measurementJson?: string; fileUrl?: string; createdAt: string; agreedRateLabel: string; valueLabel: string; progressPct: number }
 
 // ---- Interior Design: QR inventory ----
 export interface QrInventoryItem { id: number; projectId: number; name: string; category?: string; unit?: string; qtyOnHand: number; minStock?: number; location?: string; supplierName?: string; unitPrice?: number; barcode?: string; createdAt: string }
 export interface QrInventoryScan { id: number; itemId: number; projectId: number; itemName: string; action: string; quantity: number; note?: string; scannedBy?: string; scannedAt: string }
 
 // ---- Interior Design: AI cost prediction ----
-export interface AiCostPrediction { id: number; projectId: number; roomId?: string; model: string; predictedCost: number; confidenceLow?: number; confidenceHigh?: number; actualCost?: number; featureJson?: string; predictedAt: string; actualisedAt?: string }
+export interface AiCostPrediction { id: number; projectId: number; roomId?: string; model: string; predictedCost: number; confidenceLow?: number; confidenceHigh?: number; actualCost?: number; featureJson?: string; predictedAt: string; actualisedAt?: string; predictedLabel: string; confidenceLabel: string; residualLabel: string }
 
 // ---- Interior Design: AI daily summary ----
 export interface AiDailySummary { id: number; projectId: number; forDate: string; summary?: string; highlightsJson?: string; risksJson?: string; suggestionsJson?: string; generatedAt: string; isConfigured: boolean }
 
 // ---- Interior Design: lighting layout ----
-export interface LightingLayout { id: number; projectId: number; roomId?: string; name: string; type?: string; wattage?: number; voltage?: number; quantity?: number; x?: number; y?: number; circuit?: string; notes?: string }
+export interface LightingLayout { id: number; projectId: number; roomId?: string; name: string; type?: string; wattage?: number; voltage?: number; quantity?: number; x?: number; y?: number; circuit?: string; notes?: string; wattageLabel: string }
 
 // ---- Interior Design: finish library ----
-export interface FinishSwatch { id: number; name: string; category?: string; manufacturer?: string; colorCode?: string; thumbnailUrl?: string; specJson?: string; price?: number; unit?: string; createdAt: string }
+export interface FinishSwatch { id: number; name: string; category?: string; manufacturer?: string; colorCode?: string; thumbnailUrl?: string; specJson?: string; price?: number; unit?: string; createdAt: string; priceLabel: string }
 
 // ---- Interior Design: quotations ----
 export interface QuotationRoom { id: number; projectId: number; roomName: string; description?: string; amount?: number; imageUrl?: string; sortOrder: number; isOptional: boolean }
 
 // ---- Interior Design: designer payouts ----
-export interface DesignerPayout { id: number; projectId: number; designerId: number; designerName: string; roomId?: string; stage: string; grossAmount: number; retentionAmount?: number; netAmount?: number; status: string; paidAt?: string; createdAt: string }
+export interface DesignerPayout { id: number; projectId: number; designerId: number; designerName: string; roomId?: string; stage: string; grossAmount: number; retentionAmount?: number; netAmount?: number; status: string; paidAt?: string; createdAt: string; netLabel: string }
 
 // ---- Interior Design: client portal ----
 export interface ClientProject { id: number; projectId: number; projectName: string; clientName: string; clientEmail?: string; clientPhone?: string; accessToken?: string; expiresAt?: string; isActive: boolean; createdAt: string }
 export interface ClientSelection { id: number; projectId: number; roomId?: string; category: string; itemName: string; imageUrl?: string; price?: number; notes?: string; approvalStatus?: string; createdAt: string; approvedAt?: string }
 
 // ---- Interior Design: room-wise BOQ ----
-export interface RoomBoqItem { id: number; projectId: number; roomName: string; itemName: string; category?: string; quantity: number; unit: string; rate: number; notes?: string; vendorName?: string; actualCost?: number; createdAt: string }
+export interface RoomBoqItem { id: number; projectId: number; roomName: string; itemName: string; category?: string; quantity: number; unit: string; rate: number; notes?: string; vendorName?: string; actualCost?: number; createdAt: string; totalLabel: string }
 
 // ---- Interior Design: installation tasks (Gantt) ----
 export interface InstallationTask { id: number; projectId: number; roomId?: string; trade: string; title: string; description?: string; status: string; durationDays: number; startDate?: string; endDate?: string; predecessorId?: number; assignedTo?: string; createdAt: string }
@@ -148,7 +148,7 @@ export interface InstallationTask { id: number; projectId: number; roomId?: stri
 export interface RoomProcurementOrder { id: number; projectId: number; roomId?: string; vendorName: string; vendorPhone?: string; expectedDel?: string; status: string; itemsJson?: string; totalAmount?: number; createdAt: string; poNumber?: string }
 
 // ---- Interior Design: project timeline ----
-export interface ProjectTimelineStage { id: number; projectId: number; stage: string; title: string; description?: string; progressPct: number; startDate: string; endDate?: string; isActive: boolean }
+export interface ProjectTimelineStage { id: number; projectId: number; stage: string; title: string; description?: string; progressPct: number; startDate: string; endDate?: string; isActive: boolean; pctLabel: string }
 
 // ---- Interior Design: AR measurements ----
 export interface ArMeasurement { id: number; projectId: number; roomId?: string; scanJson?: string; areaSqFt?: number; perimeter?: number; volume?: number; notes?: string; capturedAt: string; modelUrl?: string }
@@ -286,10 +286,19 @@ async function openFile(url: string): Promise<void> {
 export interface AiChatTurn { role: 'user' | 'assistant' | 'system'; content: string }
 export interface AiReply { ok: boolean; configured: boolean; model: string; text: string; tokens: number; error?: string | null }
 export interface AiStatus { configured: boolean; model: string }
+export interface AssistantSearch {
+  projects: { id: number; name: string; address?: string; status?: string; type: string }[]
+  expenses: { id: number; site: string; category: string; client: string; amount: number; date: string; type: string }[]
+  parties: { id: number; name: string; phone?: string; currentBalance: number; type: string }[]
+  txns: { id: number; refLabel: string; partyName: string; type: string; total: number; date: string }[]
+  rooms: { id: number; name: string; areaSqFt?: number; type: string }[]
+  items: { id: number; name: string; category: string; salePrice: number; type: string }[]
+}
 
 const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
 const aiStatus = () => get<AiStatus>('/api/assistant/ai/status')
 const aiChat = (text: string, history: AiChatTurn[]) => post<AiReply>('/api/assistant/ai', { text, history })
+const search = (q: string, projectId?: number) => get<AssistantSearch>(`/api/assistant/search?q=${encodeURIComponent(q)}${projectId ? `&projectId=${projectId}` : ''}`)
 const dashboard = () => get<Dashboard>('/api/dashboard')
 const report = (period: string) => get<ReportData>(`/api/reports?period=${period.toLowerCase()}`)
 const reportKpis = (period: string) => get<ReportKpis>(`/api/reports/kpis?period=${period.toLowerCase()}`)
@@ -530,6 +539,7 @@ export const api = {
   send,
   aiStatus,
   aiChat,
+  search,
   dashboard,
   report,
   download,
@@ -543,6 +553,7 @@ export const api = {
   insights,
   analytics: () => get<AnalyticsData>('/api/analytics'),
   reportKpis,
+  scheduleEmail: (email: string, period?: string, periodLabel?: string) => post<{ ok: boolean; to?: string; fileName?: string; code?: string; message?: string; error?: string }>('/api/reports/schedule-email', { email, period, periodLabel }),
   backupStatus: () => get<BackupStatus>('/api/backup'),
   backupPush: () => post<BackupResult>('/api/backup/push', {}),
   backupPull: () => post<BackupResult>('/api/backup/pull', {}),

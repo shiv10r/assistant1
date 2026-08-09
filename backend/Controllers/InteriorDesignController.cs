@@ -565,8 +565,8 @@ public class InteriorDesignController : ControllerBase
         if (c is null) return NotFound();
         c.Status = status;
         c.UpdatedAt = DateTime.UtcNow;
-        if (status == ChangeOrderStatus.Submitted && c.SubmittedAt is null) c.SubmittedAt = DateTime.UtcNow;
-        if (status == ChangeOrderStatus.Approved) { c.ApprovedAt = DateTime.UtcNow; }
+        if (status == "Submitted" && c.SubmittedAt is null) c.SubmittedAt = DateTime.UtcNow;
+        if (status == "Approved") { c.ApprovedAt = DateTime.UtcNow; }
         await _mods.SaveAsync(c);
         return Ok(c);
     }

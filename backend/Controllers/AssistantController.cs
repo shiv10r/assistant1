@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using LuxInfra.Api.Services;
 using LuxInfra.Models;
+using LuxInfra.Repositories;
 using LuxInfra.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,9 +17,10 @@ public class AssistantController : ControllerBase
     private readonly IProjectService _projects;
     private readonly IActivityService _activity;
     private readonly ChatAiService _ai;
+    private readonly IModuleRepository _mods;
 
-    public AssistantController(DatabaseService db, ReportService reports, IBillingService billing, IProjectService projects, IActivityService activity, ChatAiService ai)
-        => (_db, _reports, _billing, _projects, _activity, _ai) = (db, reports, billing, projects, activity, ai);
+    public AssistantController(DatabaseService db, ReportService reports, IBillingService billing, IProjectService projects, IActivityService activity, ChatAiService ai, IModuleRepository mods)
+        => (_db, _reports, _billing, _projects, _activity, _ai, _mods) = (db, reports, billing, projects, activity, ai, mods);
 
     // ---- Open-source AI chat (DeepSeek via OpenRouter) ----
 
@@ -331,4 +333,65 @@ public class AssistantController : ControllerBase
 
     private static ChatMessageDto Bot(string text) => new(text, false, DateTime.Now.ToString("HH:mm"));
     private static ChatMessageDto UserText(string text) => new(text, true, DateTime.Now.ToString("HH:mm"));
+
+    /// <summary>Global search across projects, expenses, parties, transactions, and interior design items.</summary>
+    [HttpGet("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, [FromQuery] int? projectId = null)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return Ok(new { projects = new object[0], expenses = new object[0], parties = new object[0], txns = new object[0], rooms = new object[0], items = new object[0] });
+
+        var query = q.Trim().ToLowerInvariant();
+
+        // Projects
+        var projects = await _projects.GetProjectsAsync();
+        var projectResults = projects
+            .Where(p => projectId is null || p.Id == projectId)
+            .Where(p => p.Name.ToLowerInvariant().Contains(query) || (p.Address?.ToLowerInvariant().Contains(query) == true))
+            .Select(p => new { p.Id, p.Name, p.Address, p.Status, type = "project" })
+            .Take(10)
+            .ToList();
+
+        // Expenses
+        var expenses = await _reports.GetEntriesAsync(ReportPeriod.All);
+        var expenseResults = expenses
+            .Where(e => e.Site.ToLowerInvariant().Contains(query) || e.Category.ToLowerInvariant().Contains(query) || e.Client.ToLowerInvariant().Contains(query))
+            .Select(e => new { e.Id, e.Site, e.Category, e.Client, e.Amount, e.Date, type = "expense" })
+            .Take(10)
+            .ToList();
+
+        // Parties
+        var parties = await _billing.GetPartiesAsync();
+        var partyResults = parties
+            .Where(p => p.Name.ToLowerInvariant().Contains(query) || (p.Phone?.ToLowerInvariant().Contains(query) == true))
+            .Select(p => new { p.Id, p.Name, p.Phone, p.CurrentBalance, type = "party" })
+            .Take(10)
+            .ToList();
+
+        // Transactions
+        var txns = await _billing.GetTxnsAsync();
+        var txnResults = txns
+            .Where(t => t.RefLabel.ToLowerInvariant().Contains(query) || t.PartyName.ToLowerInvariant().Contains(query))
+            .Select(t => new { t.Id, t.RefLabel, t.PartyName, t.Type, t.Total, t.Date, type = "txn" })
+            .Take(10)
+            .ToList();
+
+        // Rooms
+        var rooms = await _mods.AllFilteredAsync<Room>(projectId);
+        var roomResults = rooms
+            .Where(r => r.Name.ToLowerInvariant().Contains(query))
+            .Select(r => new { r.Id, r.Name, r.AreaSqFt, type = "room" })
+            .Take(10)
+            .ToList();
+
+        // Catalogue items
+        var items = await _billing.GetItemsAsync();
+        var itemResults = items
+            .Where(i => i.Name.ToLowerInvariant().Contains(query) || i.Category.ToLowerInvariant().Contains(query))
+            .Select(i => new { i.Id, i.Name, i.Category, i.SalePrice, type = "item" })
+            .Take(10)
+            .ToList();
+
+        return Ok(new { projects = projectResults, expenses = expenseResults, parties = partyResults, txns = txnResults, rooms = roomResults, items = itemResults });
+    }
 }

@@ -46,6 +46,24 @@ public sealed class EmailService
         }
     }
 
+    /// <summary>Send an HTML email with a PDF attachment to one recipient. Returns null on success or an error string.</summary>
+    public async Task<string?> SendHtmlAsync(string to, string subject, string htmlBody, string fileName, byte[] pdfBytes)
+    {
+        if (!_enabled) return "not_configured";
+        if (string.IsNullOrWhiteSpace(to)) return "Recipient email missing.";
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_resendKey))
+                return await SendHtmlViaResendAsync(to, subject, htmlBody, fileName, pdfBytes);
+            return await SendHtmlViaSendGridAsync(to, subject, htmlBody, fileName, pdfBytes);
+        }
+        catch (Exception ex)
+        {
+            return $"Email failed: {ex.Message}";
+        }
+    }
+
     private async Task<string?> SendViaResendAsync(string to, string subject, string message, string fileName, byte[] pdfBytes)
     {
         var base64 = Convert.ToBase64String(pdfBytes);
@@ -91,6 +109,71 @@ public sealed class EmailService
                 }
             },
             ["content"] = new JsonArray { new JsonObject { ["type"] = "text/plain", ["value"] = message } },
+            ["attachments"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["content"] = Convert.ToBase64String(pdfBytes),
+                    ["filename"] = fileName,
+                    ["type"] = "application/pdf",
+                }
+            }
+        };
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, "https://api.sendgrid.com/v3/mail/send");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _sendgridKey);
+        req.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
+
+        using var resp = await _http.SendAsync(req);
+        var body = await resp.Content.ReadAsStringAsync();
+        return resp.IsSuccessStatusCode ? null : $"SendGrid HTTP {resp.StatusCode}: {body[..Math.Min(200, body.Length)]}";
+    }
+
+    private async Task<string?> SendHtmlViaResendAsync(string to, string subject, string htmlBody, string fileName, byte[] pdfBytes)
+    {
+        var base64 = Convert.ToBase64String(pdfBytes);
+        var payload = new JsonObject
+        {
+            ["from"] = _from,
+            ["to"] = new JsonArray { to },
+            ["subject"] = subject,
+            ["html"] = htmlBody,
+            ["attachments"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["filename"] = fileName,
+                    ["content"] = base64,
+                }
+            }
+        };
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _resendKey);
+        req.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
+
+        using var resp = await _http.SendAsync(req);
+        var body = await resp.Content.ReadAsStringAsync();
+        return resp.IsSuccessStatusCode ? null : $"Resend HTTP {resp.StatusCode}: {body[..Math.Min(200, body.Length)]}";
+    }
+
+    private async Task<string?> SendHtmlViaSendGridAsync(string to, string subject, string htmlBody, string fileName, byte[] pdfBytes)
+    {
+        var from = _from.Contains('<')
+            ? new { email = _from.Split('<')[1].Trim('>'), name = _from.Split('<')[0].Trim() }
+            : new { email = _from, name = "LuxInfra" };
+        var payload = new JsonObject
+        {
+            ["from"] = JsonSerializer.SerializeToNode(from),
+            ["personalizations"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["to"] = new JsonArray { new JsonObject { ["email"] = to } },
+                    ["subject"] = subject,
+                }
+            },
+            ["content"] = new JsonArray { new JsonObject { ["type"] = "text/html", ["value"] = htmlBody } },
             ["attachments"] = new JsonArray
             {
                 new JsonObject

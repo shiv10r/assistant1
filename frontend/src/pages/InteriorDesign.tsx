@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type {
-  TimeEntry, TimeSummary, Room, MoodBoardItem, VendorCatalogueItem, RoomScene,
+  TimeEntry, Room, MoodBoardItem, VendorCatalogueItem, RoomScene,
   DesignRevision, ChecklistTemplate, InspectionRecord, NcrRecord,
   SubcontractorWorkOrder, QrInventoryItem, AiCostPrediction, AiDailySummary,
   LightingLayout, FinishSwatch, QuotationRoom, DesignerPayout, ClientProject,
-  RoomBoqItem, InstallationTask, RoomProcurementOrder, ProjectTimelineStage, ArMeasurement,
+  RoomBoqItem, InstallationTask, RoomProcurementOrder, ProjectTimelineStage,
 } from '../api'
-import { Card, CardContent, Button, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Input, Label, Textarea, Select } from '../components/ui'
+import { Card, CardContent, Button, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Input, Textarea, Select } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { cn } from '../lib/utils'
 import {
   Clock, LayoutGrid, Palette, Package, Box, FileImage, ClipboardCheck,
   Users, ScanLine, Brain, FileText, Lightbulb, Receipt, Wallet,
-  UserPlus, FileBox, Gantt, ShoppingCart, Search, Plus, Trash2,
+  UserPlus, FileBox, ChartGantt, ShoppingCart, Plus, Trash2,
   Save, Download, RefreshCw, Camera,
 } from 'lucide-react'
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'model-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { src?: string; alt?: string; ar?: boolean }
+    }
+  }
+}
 
 type TabId = 'time' | 'rooms' | 'moodboard' | 'catalogue' | 'scenes' | 'revisions' | 'quality' | 'subcontractor'
   | 'inventory' | 'ai-cost' | 'ai-summary' | 'lighting' | 'finishes' | 'quotes' | 'payouts'
@@ -39,7 +46,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string }[] 
   { id: 'payouts', label: 'Designer Payout', icon: <Wallet className="w-4 h-4" />, desc: 'Commission per stage/room.' },
   { id: 'client', label: 'Client Portal', icon: <UserPlus className="w-4 h-4" />, desc: 'Client project shares + selections.' },
   { id: 'boq', label: 'Room BOQ', icon: <FileBox className="w-4 h-4" />, desc: 'Per-room bill of quantities + PDF.' },
-  { id: 'install', label: 'Install Gantt', icon: <Gantt className="w-4 h-4" />, desc: 'Trade scheduling with dependencies.' },
+  { id: 'install', label: 'Install Gantt', icon: <ChartGantt className="w-4 h-4" />, desc: 'Trade scheduling with dependencies.' },
   { id: 'procurement', label: 'Procurement', icon: <ShoppingCart className="w-4 h-4" />, desc: 'POs grouped by room + delivery.' },
   { id: 'timeline', label: 'Project Timeline', icon: <FileImage className="w-4 h-4" />, desc: 'Design -> procurement -> install -> handoff.' },
   { id: 'ar', label: 'AR Measure', icon: <ScanLine className="w-4 h-4" />, desc: 'LiDAR room scan -> plan + measurements.' },
@@ -152,14 +159,14 @@ function RoomsPage() {
             {['Not Started', 'In Progress', 'Completed', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add room</Button>
-        </{>}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No rooms" /> : rows.map((r) => (
         <RowItem key={r.id} right={<>
-          <Badge>{r.areaSqFt ? `${r.areaSqFt:0}` : '—'}</Badge>
+          <Badge>{r.areaSqFt ? `${r.areaSqFt.toFixed(0)}` : '—'}</Badge>
           <Button variant="ghost" size="sm" onClick={() => api.modules.deleteRoom(r.id).then(() => setRows(prev => prev.filter(x => x.id !== r.id))).catch((e) => toast({ title: String(e), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
-        </{>} }>
+        </> }>
             <p className="font-semibold">{r.name}</p>
-            <p className="text-xs text-text/50">{r.areaSqFt ? `${r.areaSqFt:0.##} sqft · ` : ''}{r.dimensions || '—'} · <Badge variant={r.status === 'completed' ? 'success' : 'default'}>{r.status}</Badge></p>
+            <p className="text-xs text-text/50">{r.areaSqFt ? `${r.areaSqFt.toFixed(2)} sqft · ` : ''}{r.dimensions || '—'} · <Badge variant={r.status === 'completed' ? 'success' : 'default'}>{r.status}</Badge></p>
           </RowItem>
       ))}
       </Section>
@@ -193,7 +200,7 @@ function MoodBoard() {
           <Input placeholder="Vendor" value={f.vendorName} onChange={(e) => setF({ ...f, vendorName: e.target.value })} />
           <Textarea rows={2} placeholder="Notes" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Pin item</Button>
-        </{>}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No items yet" /> : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {rows.map((i) => (
@@ -206,12 +213,13 @@ function MoodBoard() {
               <CardContent className="p-3">
                 <p className="font-semibold text-sm truncate">{i.title}</p>
                 <p className="text-xs text-text/50">{i.category || 'Design Item'}</p>
-                {i.price ? <p className="text-xs font-semibold mt-1">₹{i.price:0,0}</p> : null}
+                {i.price ? <p className="text-xs font-semibold mt-1">₹{i.price.toLocaleString('en-IN')}</p> : null}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+      </Section>
     </div>
   )
 }
@@ -240,7 +248,7 @@ function Catalogue() {
           <option value="glb">GLB (model-viewer)</option><option value="usdz">USDZ (iOS AR)</option>
         </Select>
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
-      </{>}></Section>
+      </>}>
       {rows.length === 0 ? <Empty title="No catalogue items" /> : rows.map((i) => (
         <RowItem key={i.id} right={<>
           {i.modelUrl && i.modelFormat === 'glb' && (
@@ -248,9 +256,9 @@ function Catalogue() {
           )}
           {i.modelUrl && i.modelFormat === 'usdz' && <Badge>USDZ</Badge>}
           <Button variant="ghost" size="sm" onClick={() => api.modules.deleteCatalogueItem(i.id).then(() => setRows(prev => prev.filter(x => x.id !== i.id))).catch((e) => toast({ title: String(e), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
-        </{>} }>
+        </> }>
           <p className="font-semibold">{i.name}</p>
-          <p className="text-xs text-text/50">{i.category || '—'} · {i.price ? `₹${i.price:0,0}` : '—'} {i.modelUrl ? '· 3D' : ''}</p>
+          <p className="text-xs text-text/50">{i.category || '—'} · {i.price ? `₹${i.price.toLocaleString('en-IN')}` : '—'} {i.modelUrl ? '· 3D' : ''}</p>
         </RowItem>
       ))}
     </Section>
@@ -322,16 +330,17 @@ function RevisionsPage() {
           <Input placeholder="Revision title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
           <Input placeholder="File / render URL" value={f.fileUrl} onChange={(e) => setF({ ...f, fileUrl: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save revision</Button>
-        </{>}></Section>
+        </>}>
       {revisions.length === 0 ? <Empty title="No revisions" /> : revisions.map((r) => (
         <RowItem key={r.id} right={<>
           <Badge variant={r.status === 'Approved' ? 'success' : r.status === 'In Review' ? 'warning' : r.status === 'Rejected' ? 'danger' : 'default'}>{r.status}</Badge>
           <Badge variant="outline">v{r.version}</Badge>
-        </{>} }>
+        </> }>
           <p className="font-semibold">{r.title}</p>
           <p className="text-xs text-text/50">{r.createdAt.slice(0, 10)}</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
@@ -362,7 +371,7 @@ function QualityPage() {
     <div className="space-y-4">
       <ProjectPicker projectId={pid} setProjectId={setPid} />
       <Tabs value={tab} onValueChange={(v) => setTab(v as never)}>
-        <TabsList><TabsTrigger value="inspections">Inspections</TabsTrigger><TabsTrigger value="ncrs">NCRs</TabsTrigger><TabsTrigger value="templates">Templates</TabsList>
+        <TabsList><TabsTrigger value="inspections">Inspections</TabsTrigger><TabsTrigger value="ncrs">NCRs</TabsTrigger><TabsTrigger value="templates">Templates</TabsTrigger></TabsList>
         <TabsContent value="inspections">
           <Section subtitle="Run a checklist on site with photo evidence." form={<>
             <Input placeholder="Template name" value={f.templateName} onChange={(e) => setF({ ...f, templateName: e.target.value })} />
@@ -382,7 +391,7 @@ function QualityPage() {
               api.modules.saveInspection({ projectId: Number(pid), templateName: f.templateName, inspectorName: f.inspector, notes: f.notes, isPassed: f.isPassed, photosJson: f.photos.length > 0 ? JSON.stringify(f.photos) : undefined })
                 .then((i) => { setInspections(prev => [i, ...prev]); setF({ templateName: '', inspector: '', notes: '', isPassed: true, photos: [] }); toast({ title: 'Inspection saved' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Save</Button>
-          </{>}></Section>
+          </>}>
           {inspections.length === 0 ? <Empty title="No inspections" /> : inspections.map((i) => (
             <Card key={i.id}>
               <CardContent className="p-4 space-y-2">
@@ -393,7 +402,7 @@ function QualityPage() {
               </CardContent>
             </Card>
           ))}
-        </TabsContent>
+          </Section>
         </TabsContent>
         <TabsContent value="ncrs">
           <Section subtitle="Non-conformance report." form={<>
@@ -402,13 +411,14 @@ function QualityPage() {
               api.modules.saveNcr({ projectId: Number(pid), title: 'New NCR', severity: 'Medium' })
                 .then((n) => { setNcrs(prev => [n, ...prev]); toast({ title: 'NCR raised' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Add NCR</Button>
-          </{>}></Section>
+          </>}>
           {ncrs.length === 0 ? <Empty title="No NCRs" /> : ncrs.map((n) => (
             <RowItem key={n.id} right={<Badge variant={n.status === 'Closed' ? 'success' : 'warning'}>{n.status}</Badge>}>
               <p className="font-semibold">{n.title}</p>
               <p className="text-xs text-text/50">{n.severity} · {n.createdAt.slice(0, 10)}</p>
             </RowItem>
           ))}
+          </Section>
         </TabsContent>
         <TabsContent value="templates">
           <Section subtitle="Reusable checklist items (one per line)." form={<>
@@ -419,10 +429,11 @@ function QualityPage() {
               api.modules.saveTemplate({ name: f.templateName, itemsJson: JSON.stringify(f.inspector.split('\n').map((l: string) => l.trim()).filter(Boolean)) })
                 .then((t) => { templates.setRows(prev => [t, ...prev]); toast({ title: 'Template saved' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Save template</Button>
-          </{>}></Section>
+          </>}>
           {templates.rows.length === 0 ? <Empty title="No templates" /> : templates.rows.map((t) => (
             <RowItem key={t.id}>{t.name}<span className="block text-xs text-text/50">{t.category || '—'}</span></RowItem>
           ))}
+          </Section>
         </TabsContent>
       </Tabs>
     </div>
@@ -453,16 +464,17 @@ function Subcontractor() {
           <Input type="number" placeholder="Agreed rate (₹)" value={f.agreedRate} onChange={(e) => setF({ ...f, agreedRate: e.target.value })} />
           <Input type="number" placeholder="Quantity" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save work order</Button>
-        </{>}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No work orders" /> : rows.map((w) => (
         <RowItem key={w.id} right={<>
           <Badge variant={w.status === 'Completed' ? 'success' : w.status === 'Ongoing' ? 'warning' : 'default'}>{w.status}</Badge>
           <Button variant="ghost" size="sm" onClick={() => api.modules.deleteWorkOrder(w.id).then(() => setRows(prev => prev.filter(x => x.id !== w.id))).catch((e) => toast({ title: String(e), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
-        </{>} }>
+        </> }>
           <p className="font-semibold">{w.contractorName} — {w.title}</p>
-          <p className="text-xs text-text/50">{w.agreedRate:0,0}/unit · {w.quantity} · {Math.round(w.progressPct)}% billed</p>
+          <p className="text-xs text-text/50">{w.agreedRate.toLocaleString('en-IN')}/unit · {w.quantity} · {Math.round(w.progressPct)}% billed</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
@@ -497,13 +509,14 @@ function QrInventory() {
           <Input type="number" placeholder="Qty on hand" value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value })} />
           <Input placeholder="Barcode / QR text" value={f.barcode} onChange={(e) => setF({ ...f, barcode: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add item</Button>
-        </{|}></Section>
+        </>}>
         <Card><CardContent className="p-4">
           <h3 className="font-semibold mb-2">Record a scan</h3>
           <Input type="number" placeholder="Item ID" value={scanItem} onChange={(e) => setScanItem(e.target.value)} />
           <Input type="number" placeholder="Qty (OUT)" value={scanQty} onChange={(e) => setScanQty(e.target.value)} />
           <Button className="w-full mt-1" onClick={scan}><ScanLine className="w-4 h-4" /> Scan out</Button>
         </CardContent></Card>
+        </Section>
       </div>
       <div>
         <p className="text-xs font-medium mb-2">Stock ({items.length})</p>
@@ -597,13 +610,14 @@ function Lighting() {
         <Input type="number" placeholder="Wattage" value={f.wattage} onChange={(e) => setF({ ...f, wattage: e.target.value })} />
         <Input type="number" placeholder="Quantity" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add fixture</Button>
-      </{|}></Section>
+      </>}>
       {rows.length === 0 ? <Empty title="No fixtures" /> : rows.map((l) => (
         <RowItem key={l.id} right={<Badge>{l.wattageLabel}</Badge>}>
           <p className="font-semibold">{l.name}</p>
           <p className="text-xs text-text/50">{l.type || '—'} · qty {l.quantity || 1}</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
@@ -629,13 +643,14 @@ function Finishes() {
       <Input placeholder="Manufacturer" value={f.manufacturer} onChange={(e) => setF({ ...f, manufacturer: e.target.value })} />
       <Input type="number" placeholder="Price (₹)" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />
       <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
-    </{|}></Section>
+    </>}>
     {rows.length === 0 ? <Empty title="No finishes" /> : rows.map((s) => (
       <RowItem key={s.id} right={<Badge style={{ backgroundColor: s.colorCode || undefined }}>{s.category || '—'}</Badge>}>
         <p className="font-semibold">{s.name}</p>
         <p className="text-xs text-text/50">{s.manufacturer || '—'} · {s.priceLabel}</p>
       </RowItem>
     ))}
+    </Section>
   )
 }
 
@@ -662,7 +677,7 @@ function Quotations() {
           <Input placeholder="Room (Living, Kitchen, Master…)" value={f.roomName} onChange={(e) => setF({ ...f, roomName: e.target.value })} />
           <Input type="number" placeholder="Amount (₹)" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add room</Button>
-        </{|}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No rooms" /> : (
         <div className="space-y-2">
           {rows.map((r) => (
@@ -678,6 +693,7 @@ function Quotations() {
             <Download className="w-4 h-4" /> Download quotation PDF</Button>
         </div>
       )}
+      </Section>
     </div>
   )
 }
@@ -703,13 +719,14 @@ function Payouts() {
         <Input placeholder="Designer / contractor" value={f.designerName} onChange={(e) => setF({ ...f, designerName: e.target.value })} />
         <Input type="number" placeholder="Gross amount (₹)" value={f.grossAmount} onChange={(e) => setF({ ...f, grossAmount: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
-      </{|}></Section>
+      </>}>
       {rows.length === 0 ? <Empty title="No payouts" /> : rows.map((p) => (
         <RowItem key={p.id} right={<Badge variant={p.status === 'Paid' ? 'success' : 'default'}>{p.status}</Badge>}>
           <p className="font-semibold">{p.designerName}</p>
           <p className="text-xs text-text/50">{p.netLabel} · {p.stage}</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
@@ -733,13 +750,14 @@ function ClientPortal() {
       <Input placeholder="Client name" value={f.clientName} onChange={(e) => setF({ ...f, clientName: e.target.value })} />
       <Input placeholder="Client email" value={f.clientEmail} onChange={(e) => setF({ ...f, clientEmail: e.target.value })} />
       <Button className="w-full mt-1" onClick={save}><UserPlus className="w-4 h-4" /> Create share link</Button>
-    </{|}></Section>
+    </>}>
     {rows.length === 0 ? <Empty title="No client shares yet" /> : rows.map((c) => (
       <RowItem key={c.id} right={<Badge>{c.accessToken?.slice(0, 8)}…</Badge>}>
         <p className="font-semibold">{c.clientName}</p>
         <p className="text-xs text-text/50">{c.projectName} · {c.clientEmail}</p>
       </RowItem>
     ))}
+    </Section>
   )
 }
 
@@ -768,13 +786,13 @@ function Boq() {
           <Input type="number" placeholder="Qty" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} />
           <Input type="number" placeholder="Rate (₹)" value={f.rate} onChange={(e) => setF({ ...f, rate: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add line</Button>
-        </{|}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No BOQ lines" /> : (
         <div className="space-y-2">
           {rows.map((r) => (
             <RowItem key={r.id} right={<Badge>{r.totalLabel}</Badge>}>
               <p className="font-semibold">{r.roomName} — {r.itemName}</p>
-              <p className="text-xs text-text/50">{r.quantity:0.##} {r.unit} @ ₹{r.rate:0,0}/unit</p>
+              <p className="text-xs text-text/50">{r.quantity.toFixed(2)} {r.unit} @ ₹{r.rate.toLocaleString('en-IN')}/unit</p>
             </RowItem>
           ))}
           <div className="flex justify-between p-3 bg-surface rounded-lg font-semibold">
@@ -784,6 +802,7 @@ function Boq() {
             <Download className="w-4 h-4" /> Download BOQ PDF</Button>
         </div>
       )}
+      </Section>
     </div>
   )
 }
@@ -852,13 +871,14 @@ function Procurement() {
         <Input placeholder="Vendor" value={f.vendorName} onChange={(e) => setF({ ...f, vendorName: e.target.value })} />
         <Input placeholder="PO number" value={f.poNumber} onChange={(e) => setF({ ...f, poNumber: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save PO</Button>
-      </{|}></Section>
+      </>}>
       {rows.length === 0 ? <Empty title="No POs" /> : rows.map((o) => (
         <RowItem key={o.id} right={<Badge variant={o.status === 'Received' ? 'success' : o.status === 'Ordered' ? 'warning' : 'default'}>{o.status}</Badge>}>
           <p className="font-semibold">{o.vendorName}</p>
           <p className="text-xs text-text/50">{o.poNumber || '—'} · {o.createdAt.slice(0, 10)}</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
@@ -887,13 +907,14 @@ function Timeline() {
           </Select>
           <Input placeholder="Stage title / progress note" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add stage</Button>
-        </{|}></Section>
+        </>}>
       {rows.length === 0 ? <Empty title="No stages" /> : rows.map((s) => (
         <RowItem key={s.id} right={<Badge>{s.pctLabel}</Badge>}>
           <p className="font-semibold">{s.stage}: {s.title}</p>
           <p className="text-xs text-text/50">{s.startDate?.slice(0, 10) || '—'}</p>
         </RowItem>
       ))}
+      </Section>
     </div>
   )
 }
