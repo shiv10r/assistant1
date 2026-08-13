@@ -16,13 +16,15 @@ These rules must be followed for every change in this repository.
   - Full-stack / combined → `luxinfra`
 - After merging work, keep `main` up to date via the respective branch.
 
-## Workflow
+## Workflow (PR-based)
 
 1. Confirm the working branch matches the type of change (see above).
 2. Make the change, verify builds/tests pass.
 3. Commit locally on the respective branch.
 4. Push to `origin` on the same respective branch.
-5. Ensure `main` receives the change and is up to date.
+5. Open a Pull Request from the working branch into `main` (or `luxinfra` for full-stack changes).
+6. Enable **auto-merge** on the PR so it merges automatically once checks pass.
+7. After merge, ensure `main`/`luxinfra` is up to date and continue.
 
 ## Never
 
