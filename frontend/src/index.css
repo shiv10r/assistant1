@@ -54,6 +54,130 @@
   --ring: rgba(79,107,237,.25);
 }
 
+/* ---------- Weather app mode ----------
+   Subtle tint of the LuxInfra tokens driven by the site weather.
+   Keeps the base dark/light surfaces and component structure intact. */
+:root[data-theme='dark'][data-weather='sunny'] {
+  --bg: #151208;
+  --surface: #1C1910;
+  --surface2: #242015;
+  --surface-hover: #2A2518;
+  --primary: #F0A93A;
+  --primary-soft: #F5C96E;
+  --accent: #10B981;
+  --grad: linear-gradient(135deg, #F0A93A 0%, #E0772F 100%);
+  --ring: rgba(240,169,58,.35);
+}
+
+:root[data-theme='light'][data-weather='sunny'] {
+  --bg: #FFFDF4;
+  --surface: #FFFFFF;
+  --surface2: #F8F4E9;
+  --surface-hover: #F1EAD9;
+  --primary: #C77F16;
+  --primary-soft: #B06A0E;
+  --accent: #0E9F6E;
+  --grad: linear-gradient(135deg, #E8963B 0%, #C76A14 100%);
+  --ring: rgba(199,127,22,.25);
+}
+
+:root[data-theme='dark'][data-weather='cloudy'] {
+  --primary: #7E93B8;
+  --primary-soft: #A3B4D1;
+  --grad: linear-gradient(135deg, #6E84A8 0%, #55688C 100%);
+  --ring: rgba(126,147,184,.35);
+}
+
+:root[data-theme='light'][data-weather='cloudy'] {
+  --bg: #F4F6FA;
+  --primary: #5B6E92;
+  --primary-soft: #4A5C7E;
+  --grad: linear-gradient(135deg, #6E84A8 0%, #55688C 100%);
+  --ring: rgba(91,110,146,.25);
+}
+
+:root[data-theme='dark'][data-weather='rain'] {
+  --bg: #0C1218;
+  --surface: #141C24;
+  --surface2: #1A2530;
+  --surface-hover: #202C38;
+  --primary: #4A8FD1;
+  --primary-soft: #7FB2E6;
+  --accent: #38BDF8;
+  --grad: linear-gradient(135deg, #3B82C4 0%, #28508C 100%);
+  --ring: rgba(74,143,209,.35);
+}
+
+:root[data-theme='light'][data-weather='rain'] {
+  --bg: #F2F6FB;
+  --primary: #2E6FAE;
+  --primary-soft: #1F5588;
+  --accent: #0E9F6E;
+  --grad: linear-gradient(135deg, #3B82C4 0%, #28508C 100%);
+  --ring: rgba(46,111,174,.25);
+}
+
+:root[data-theme='dark'][data-weather='storm'] {
+  --bg: #0B0E15;
+  --surface: #131722;
+  --surface2: #1B212F;
+  --surface-hover: #22293A;
+  --primary: #8B7FD9;
+  --primary-soft: #B3AAEA;
+  --accent: #A78BFA;
+  --grad: linear-gradient(135deg, #7A6ACF 0%, #4C46A8 100%);
+  --ring: rgba(139,127,217,.35);
+}
+
+:root[data-theme='light'][data-weather='storm'] {
+  --bg: #F3F2FA;
+  --primary: #6B5BBF;
+  --primary-soft: #57479F;
+  --accent: #7C6AD8;
+  --grad: linear-gradient(135deg, #7A6ACF 0%, #4C46A8 100%);
+  --ring: rgba(107,91,191,.25);
+}
+
+:root[data-theme='dark'][data-weather='snow'] {
+  --primary: #9FC3E8;
+  --primary-soft: #C2DCF2;
+  --accent: #38BDF8;
+  --grad: linear-gradient(135deg, #6FA8D9 0%, #4F7FB0 100%);
+  --ring: rgba(159,195,232,.35);
+}
+
+:root[data-theme='light'][data-weather='snow'] {
+  --bg: #F7FAFD;
+  --primary: #4A80B8;
+  --primary-soft: #3A6797;
+  --accent: #0E9F6E;
+  --grad: linear-gradient(135deg, #6FA8D9 0%, #4F7FB0 100%);
+  --ring: rgba(74,128,184,.25);
+}
+
+:root[data-theme='dark'][data-weather='night'] {
+  --bg: #0A0D14;
+  --surface: #11151F;
+  --surface2: #181D2A;
+  --surface-hover: #1E2434;
+  --primary: #5A7BD6;
+  --primary-soft: #8FA3F0;
+  --accent: #38BDF8;
+  --grad: linear-gradient(135deg, #3D5FC4 0%, #6E4FED 100%);
+  --ring: rgba(90,123,214,.35);
+}
+
+:root[data-theme='light'][data-weather='night'] {
+  --bg: #EFF1F7;
+  --surface: #FFFFFF;
+  --surface-hover: #E8EBF3;
+  --primary: #3D5FC4;
+  --primary-soft: #2E4A9E;
+  --accent: #0E9F6E;
+  --grad: linear-gradient(135deg, #3D5FC4 0%, #6E4FED 100%);
+  --ring: rgba(61,95,196,.25);
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root { margin: 0; height: 100%; }

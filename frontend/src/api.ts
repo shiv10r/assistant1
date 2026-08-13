@@ -348,7 +348,7 @@ const projects = {
   requests: (projectId: number) => get<AttendanceRequest[]>(`/api/projects/${projectId}/attendance/requests`),
   submitRequest: (projectId: number, d: { partyId: number; kind: string; dateFrom: string; dateTo: string; reason: string }) => post<AttendanceRequest>(`/api/projects/${projectId}/attendance/requests`, d),
   decideRequest: (projectId: number, requestId: number, status: string, decidedBy?: string) => post<AttendanceRequest>(`/api/projects/${projectId}/attendance/requests/${requestId}/decide`, { status, decidedBy }),
-  sos: (projectId: number, d: { partyId: number; latitude?: number; longitude?: number; accuracy?: number; note?: string }) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos`, d),
+  sos: (projectId: number, d: { partyId: number; latitude?: number; longitude?: number; accuracy?: number; note?: string; recipients?: string[] }) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos`, d),
   emergencies: (projectId: number) => get<EmergencyAlert[]>(`/api/projects/${projectId}/attendance/emergencies`),
   resolveSos: (projectId: number, alertId: number) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos/${alertId}/resolve`, {}),
   materials: (projectId: number, kind?: string) => get<MaterialTxn[]>(`/api/projects/${projectId}/materials${kind ? `?kind=${encodeURIComponent(kind)}` : ''}`),
@@ -375,6 +375,7 @@ export interface UserSessionInfo { token: string; username: string; role: string
 export interface PayrollRow { partyId: number; name: string; role: string; dailyRate: number; days: number; hours: number; totalHours: number; amount: number; amountLabel: string; currentBalance: number; netPayable: number; netPayableLabel: string }
 export interface PayrollResult { from: string; to: string; totalDays: number; totalAmount: number; totalAmountLabel: string; rows: PayrollRow[] }
 export interface IntegrationStatus { email: string; emailProvider?: string; razorpay: string; razorpayKeyId?: string; upi: string; upiId?: string; drive: string; driveFolder?: string; vision: string; visionModel?: string }
+export interface ProjectWeather { temperature: number; feelsLike: number; humidity: number; windSpeed: number; rainProbability: number; precipitation: number; weatherCode: number; isDay: boolean; condition: string; updatedAt: string }
 export interface EinvoiceResult { ok: boolean; txn?: { id: number; refLabel: string; date: string }; payload?: unknown; error?: string }
 export interface VisionResult { ok: boolean; progress?: number; note?: string; model?: string; error?: string; code?: string; message?: string }
 
@@ -401,6 +402,7 @@ const integrations = {
   driveStatus: () => get<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string }>('/api/integrations/drive/status'),
   driveDisconnect: () => post<{ ok: boolean }>('/api/integrations/drive/disconnect', {}),
   visionProgress: (dataBase64: string) => post<VisionResult>('/api/vision/progress', { dataBase64 }),
+  weather: (latitude: number, longitude: number) => get<{ ok: boolean; weather?: ProjectWeather; message?: string }>(`/api/weather?latitude=${latitude}&longitude=${longitude}`),
 }
 
 export function uploadUrl(projectId: number, blobId: number): string {
@@ -593,5 +595,6 @@ export const api = {
   pushRegister: (token: string, platform = 'web') => post<{ ok: boolean; message: string }>('/api/push/register', { token, platform }),
   pushDevices: () => get<{ id: number; token: string; platform: string; username: string; createdAt: string }[]>('/api/push/devices'),
   pushTest: (title?: string, body?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/test', { title, body }),
+  pushNotify: (recipients: string[], title: string, body: string, url?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/notify', { recipients, title, body, url }),
   activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
 }

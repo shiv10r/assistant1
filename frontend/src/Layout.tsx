@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { getRole, logout } from './api'
-import { applyTheme, getTheme } from './theme'
+import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
+import { useWeather } from './hooks/useWeather'
+import { conditionMeta } from './lib/weather'
 import {
   LayoutDashboard,
   FileText,
@@ -32,6 +34,7 @@ import {
   ChartSpline,
   Boxes,
   Video,
+  CloudSun,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import { usePlan } from './hooks/usePlan'
@@ -93,8 +96,23 @@ export default function Layout() {
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [weatherOn, setWeatherOn] = useState(isWeatherMode())
   const { plan } = usePlan()
   const isAdmin = getRole() === 'admin' || !getRole()
+  const weather = useWeather()
+
+  function toggleWeatherMode() {
+    const next = !weatherOn
+    setWeatherOn(next)
+    setWeatherMode(next)
+    if (next) {
+      weather.setMode(true)
+      weather.enable()
+    } else {
+      applyTheme(theme)
+      weather.setMode(false)
+    }
+  }
 
   function toggleSidebar() {
     setOpen(prev => {
@@ -151,6 +169,18 @@ export default function Layout() {
         </div>
         <div className="brand">Lux<span>Infra</span></div>
         <div className="online">● Online</div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleWeatherMode}
+          aria-label="Toggle weather app mode"
+          title={weatherOn ? 'Weather mode on — theme follows site weather' : 'Switch to weather app mode — theme follows site weather'}
+          className={weatherOn ? '!text-amber-400 !border !border-amber-400/40 rounded-lg' : ''}
+        >
+          {weatherOn && weather.weather
+            ? <span className="text-base leading-none">{conditionMeta(weather.weather.weatherCode, weather.weather.isDay).icon}</span>
+            : <CloudSun className="w-5 h-5" />}
+        </Button>
         <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>

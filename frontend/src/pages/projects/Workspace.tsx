@@ -4,6 +4,7 @@ import { api } from '../../api'
 import type { ProjectDetail } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Empty, money } from '../../components/ui'
 import LocationPicker from '../../components/LocationPicker'
+import WeatherCard from '../../components/WeatherCard'
 import {
   ArrowLeft, Users, Wallet, Building2, ClipboardList, Clock3, Layers3, FileText, Palette, FolderOpen,
   Plus, TrendingUp, TrendingDown, Target, MapPin,
@@ -121,6 +122,18 @@ export default function Workspace() {
         <Kpi label="Spent" value={money(stats.spent)} icon={<TrendingUp className="w-5 h-5" />} tone="amber" />
         <Kpi label="Task Progress" value={`${stats.taskPct}%`} icon={<ClipboardList className="w-5 h-5" />} tone="cyan" />
       </div>
+
+      {/* Site weather */}
+      {(p.latitude || p.longitude) && (
+        <div className="mb-6">
+          <WeatherCard
+            latitude={p.latitude || undefined}
+            longitude={p.longitude || undefined}
+            siteName={p.name}
+            className="max-w-md"
+          />
+        </div>
+      )}
 
       {/* Module grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">

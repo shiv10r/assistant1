@@ -5,6 +5,9 @@ import type { Project } from '../api'
 import { Card, CardContent, Badge, Empty, money, Button, Modal } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
 import LocationPicker from '../components/LocationPicker'
+import RecipientPicker from '../components/RecipientPicker'
+import type { ProjectWeather } from '../api'
+import { conditionMeta } from '../lib/weather'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Navigation, Car, LocateFixed, Search, Route, Crosshair, Radio, Sparkles, ExternalLink, Share2 } from 'lucide-react'
@@ -132,6 +135,8 @@ export default function ProjectsMap() {
   const [locModal, setLocModal] = useState<Project | null>(null)
   const [locBusy, setLocBusy] = useState(false)
   const [locF, setLocF] = useState({ latitude: '', longitude: '', address: '' })
+  const [sharePicker, setSharePicker] = useState(false)
+  const [mapWeather, setMapWeather] = useState<Record<number, ProjectWeather>>({})
 
   // ---- init map (always, so route preview + tagging work even with zero coords) ----
   useEffect(() => {
@@ -187,6 +192,20 @@ export default function ProjectsMap() {
   const untagged = projects.filter((p) => !taggedIds.has(p.id))
   const approxCount = tagged.filter((t) => t.approx).length
 
+  // ---- prefetch weather per project site (backend caches; cheap) ----
+  useEffect(() => {
+    const withCoords = tagged.filter((t) => t.p.latitude && t.p.longitude)
+    if (!withCoords.length) return
+    let cancelled = false
+    withCoords.forEach(async ({ p }) => {
+      try {
+        const r = await api.integrations.weather(p.latitude!, p.longitude!)
+        if (!cancelled && r.ok && r.weather) setMapWeather((prev) => ({ ...prev, [p.id]: r.weather! }))
+      } catch { /* ignore */ }
+    })
+    return () => { cancelled = true }
+  }, [tagged])
+
   // ---- user marker layer: live dot + accuracy circle + guide lines to sites ----
   useEffect(() => {
     const map = mapRef.current
@@ -233,6 +252,10 @@ export default function ProjectsMap() {
           `<div class="pop-addr">${p.address || 'No address'}</div>
           <div class="pop-val">${money(p.value)} · <span class="pop-status">${p.status}</span></div>` +
           (userLoc ? `<div class="pop-dist">📍 ${distLabel(haversineKm(userLoc.lat, userLoc.lng, lat, lng))} from you</div>` : '') +
+          (mapWeather[p.id]
+            ? (() => { const m = conditionMeta(mapWeather[p.id].weatherCode, mapWeather[p.id].isDay)
+                return `<div class="pop-dist pop-weather">${m.icon} ${Math.round(mapWeather[p.id].temperature)}°C ${m.label} · rain ${Math.round(mapWeather[p.id].rainProbability)}%</div>` })()
+            : '') +
           `<div class="pop-actions">
             <button data-project="${p.id}" class="pop-open">Open project →</button>
             ${userLoc
@@ -253,7 +276,7 @@ export default function ProjectsMap() {
       fittedRef.current = true
     }
     return () => { layer.remove() }
-  }, [tagged, nav, userLoc])
+  }, [tagged, nav, userLoc, mapWeather])
 
   // ---- open popup for the selected project (sidebar click) ----
   useEffect(() => {
@@ -410,11 +433,23 @@ export default function ProjectsMap() {
 
   const shareLive = () => {
     if (!userLoc) { toast({ title: 'Start tracking first', description: 'Turn on Live tracking, then share.', variant: 'error' }); return }
+    setSharePicker(true)
+  }
+
+  const sendLiveShare = async (recipients: string[]) => {
+    if (!userLoc) return
     const url = `https://www.google.com/maps?q=${userLoc.lat},${userLoc.lng}`
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url).then(() => toast({ title: 'Live location copied', description: 'Paste it anywhere to share your current spot.', variant: 'success' })).catch(() => window.open(url, '_blank'))
-    } else {
-      window.open(url, '_blank')
+    try {
+      const r = await api.pushNotify(recipients, '📍 Live location shared', `My current spot: ${userLoc.lat.toFixed(6)}, ${userLoc.lng.toFixed(6)}`, url)
+      if (!r.enabled) {
+        toast({ title: 'Push not enabled on server', description: 'Copied the live location link instead.', variant: 'error' })
+        navigator.clipboard?.writeText(url).catch(() => {})
+      } else {
+        toast({ title: 'Live location shared', description: `${r.sent} device${r.sent === 1 ? '' : 's'} notified.`, variant: 'success' })
+      }
+    } catch {
+      toast({ title: 'Could not notify', description: 'Copied the live location link instead.', variant: 'error' })
+      navigator.clipboard?.writeText(url).catch(() => {})
     }
   }
 
@@ -626,6 +661,17 @@ export default function ProjectsMap() {
           </div>
         </div>
       </Modal>
+
+      <RecipientPicker
+        open={sharePicker}
+        onClose={() => setSharePicker(false)}
+        title="📍 Share live location"
+        description="Pick who gets notified — they receive a push with a link to your current spot."
+        onConfirm={(recipients) => {
+          setSharePicker(false)
+          sendLiveShare(recipients)
+        }}
+      />
     </>
   )
 }
