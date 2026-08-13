@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { isAuthed } from './api'
+import { isAuthed, api } from './api'
 import Layout from './Layout'
 import Login from './pages/Login'
 import Assistant from './pages/Assistant'
@@ -41,12 +41,32 @@ import VideoCall from './pages/VideoCall'
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Auto-refresh: poll the Firebase data version; when it changes, remount the
+  // active page so it re-fetches its data (live updates after data changes).
+  useEffect(() => {
+    if (!authed) return
+    let seen = 0
+    let stopped = false
+    async function poll() {
+      try {
+        const v = await api.firebaseVersion()
+        if (stopped) return
+        if (seen === 0) { seen = v.version }
+        else if (v.version !== seen && v.version > 0) { seen = v.version; setRefreshKey((k) => k + 1) }
+      } catch { /* firebase disabled / offline — ignore */ }
+    }
+    poll()
+    const t = setInterval(poll, 20000)
+    return () => { stopped = true; clearInterval(t) }
+  }, [authed])
 
   if (!authed) return <Login onAuthed={() => setAuthed(true)} />
 
   return (
     <BrowserRouter>
-      <Routes>
+      <Routes key={refreshKey}>
         <Route element={<Layout />}>
           <Route path="/" element={<Assistant />} />
           <Route path="/dashboard" element={<Dashboard />} />

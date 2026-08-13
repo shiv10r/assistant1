@@ -48,6 +48,11 @@ builder.Services.AddSingleton<IActivityService, ActivityService>();
 builder.Services.AddSingleton<TursoSyncService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<TursoSyncService>());
 
+// ---- Optional Firebase Storage mirror — persists data across Render redeploys.
+// Enable by setting FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT env vars (no-ops when unset). ----
+builder.Services.AddSingleton<FirebaseSyncService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<FirebaseSyncService>());
+
 // ---- Optional open-source AI chat (DeepSeek via OpenRouter) — enable with OPENROUTER_API_KEY. ----
 builder.Services.AddSingleton<ChatAiService>();
 

@@ -12,6 +12,16 @@ public class DatabaseService
 
     public string DbPath => _dbPath;
 
+    /// <summary>Closes the shared connection so the db3 file can be replaced (restore from cloud).</summary>
+    public async Task CloseAndResetAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.CloseAsync();
+            _db = null;
+        }
+    }
+
     private async Task<SQLiteAsyncConnection> GetDb()
     {
         if (_db is null)

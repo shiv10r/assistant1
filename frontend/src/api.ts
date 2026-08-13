@@ -40,6 +40,7 @@ export interface CashData { balance: number; entries: CashEntry[] }
 export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string }
 export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
 export interface BackupResult { ok: boolean; message: string }
+export interface FirebaseVersion { enabled: boolean; project: string | null; bucket: string | null; version: number; localRows: number }
 export interface AnalyticsData {
   billing: { youllGet: number; youllGive: number; monthSale: number }
   projects: { name: string; status: string; value: number; spent: number; received: number; taskPct: number; budgetPct: number; pctLabel: string; valueLabel: string; spentLabel: string; receivedLabel: string }[]
@@ -557,5 +558,8 @@ export const api = {
   backupStatus: () => get<BackupStatus>('/api/backup'),
   backupPush: () => post<BackupResult>('/api/backup/push', {}),
   backupPull: () => post<BackupResult>('/api/backup/pull', {}),
+  firebaseVersion: () => get<FirebaseVersion>('/api/backup/version'),
+  firebasePush: () => post<BackupResult>('/api/backup/firebase-push', {}),
+  firebasePull: () => post<BackupResult>('/api/backup/firebase-pull', {}),
   activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
 }
