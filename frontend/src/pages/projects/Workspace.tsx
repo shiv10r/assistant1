@@ -6,7 +6,7 @@ import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal
 import LocationPicker from '../../components/LocationPicker'
 import {
   ArrowLeft, Users, Wallet, Building2, ClipboardList, Clock3, Layers3, FileText, Palette, FolderOpen,
-  Plus, TrendingUp, TrendingDown, Target,
+  Plus, TrendingUp, TrendingDown, Target, MapPin,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -106,7 +106,12 @@ export default function Workspace() {
             <div className="muted">{p.address || 'No address'}</div>
           </div>
         </div>
-        <Button variant="outline" onClick={openEdit}>Edit Project</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={openEdit}>
+            <MapPin className="w-4 h-4" /> {p.latitude && p.longitude ? '📍 ' + p.latitude.toFixed(4) + ', ' + p.longitude.toFixed(4) : 'Set location'}
+          </Button>
+          <Button variant="outline" onClick={openEdit}>Edit Project</Button>
+        </div>
       </div>
 
       {/* KPIs */}
