@@ -1,0 +1,12 @@
+# Netlify reads this file from the repository root, not from frontend/.
+# base = "frontend" makes npm run build run inside the frontend/ folder.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# SPA routing: serve index.html for all client-side routes (avoids 404 on /dashboard etc.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

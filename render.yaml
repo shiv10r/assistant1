@@ -1,3 +1,6 @@
+# Render Blueprint — the API backend.
+# IMPORTANT: connect this repo to Render and point the service at branch `luxinfrabackend`
+# (push to that branch auto-deploys; `autoDeploy: true` is on by default).
 services:
   - type: web
     name: luxinfra
@@ -11,3 +14,18 @@ services:
         value: Production
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:8080
+      # Optional overrides (defaults are admin / admin123 / lux-admin-token-2024):
+      # - key: AUTH_USER
+      #   value: admin
+      # - key: AUTH_PASS
+      #   value: admin123
+      # - key: API_TOKEN
+      #   value: lux-admin-token-2024
+      # Turso cloud mirror (persists SQLite across redeploys):
+      # - key: TURSO_URL
+      #   sync: false
+      # - key: TURSO_TOKEN
+      #   sync: false
+      # Open-source AI chat (DeepSeek via OpenRouter):
+      # - key: OPENROUTER_API_KEY
+      #   sync: false

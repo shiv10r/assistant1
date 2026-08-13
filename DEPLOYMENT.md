@@ -1,157 +1,88 @@
-# LuxInfra — Deployment Guide
+# LuxInfra — Deployment Guide (current: React + .NET API)
 
-LuxInfra is an expense-tracking assistant for interior-design businesses. You chat with it
-("site A paint exp = 5k"), it categorizes and stores every expense **locally** (SQLite — no
-server database needed), shows structured tabular reports, exports them as **Excel / PDF / PNG**,
-and emails a daily summary automatically.
+LuxInfra is a web app for a construction/interior business — chat-based expense logging,
+billing (parties, items, transactions, cash/bank, cheques), project management (tasks,
+materials, attendance, MOM, design files), analytics, reports, and an optional open-source
+DeepSeek AI chat. It is a **React frontend + .NET 10 API** backed by SQLite.
 
-## Solution layout
+## Solution layout (current branches)
 
-| Project | What it is | Runs on |
+| Branch | Contains | Deployed to |
 |---|---|---|
-| `LuxInfra.Core` | Shared library — models, chat parser, category classifier, SQLite storage, report builder, Excel/PDF/PNG export | referenced by both apps |
-| `LuxInfra` | .NET MAUI app (MVVM, CommunityToolkit.Mvvm) | Windows 10/11 + Android |
-| `LuxInfra.Web` | Blazor Server web app | any browser |
+| `luxinfra-frontend` | React + Vite frontend | Netlify |
+| `luxinfrabackend` | .NET 10 API (`LuxInfra.Api`) | Render |
+| `luxinfra` | combined monorepo (both, kept in sync via cherry-pick) | — |
+| `main` / `dotnet-backend` / `react-frontend` / `maui-monolith` | legacy, do not deploy | — |
 
-Data storage is **local on every platform** (SQLite file):
-- Windows: `%LOCALAPPDATA%\Packages\...\LocalState\luxinfra.db3` (unpackaged: `%LOCALAPPDATA%`)
-- Android: app-private storage
-- Web: `LuxInfra.Web/data/luxinfra.db3` on the machine hosting the site
-
----
-
-## Prerequisites (build machine)
-
-1. **.NET 10 SDK** — <https://dotnet.microsoft.com/download>
-2. **MAUI workloads** (only for the Windows/Android app):
-   ```powershell
-   dotnet workload install maui-windows android
-   ```
-   (Installing Visual Studio 2026 with the ".NET Multi-platform App UI" workload does this for you.)
-3. Nothing else — no database server, no cloud account.
-
-Check your setup:
-```powershell
-dotnet --list-sdks
-dotnet workload list
-```
+> Deploy from `luxinfra-frontend` and `luxinfrabackend`. **Do not** use `main` — it is the old
+> Blazor/MAUI app. Pushes to those two branches auto-deploy (see config below); you should not
+> need to redeploy manually after a push.
 
 ---
 
-## 1) Windows desktop app
+## 1) Backend → Render (branch `luxinfrabackend`)
 
-### Run for development
-```powershell
-cd MyAssistant
-dotnet build LuxInfra/LuxInfra.csproj -f net10.0-windows10.0.19041.0
-.\LuxInfra\bin\Debug\net10.0-windows10.0.19041.0\win-x64\LuxInfra.exe
-```
+1. Render → New → Web Service → connect the GitHub repo `assistant1`.
+2. Branch: **`luxinfrabackend`** (not `main`, not `dotnet-backend`).
+3. Render auto-detects the repo `render.yaml` (Docker, `autoDeploy: true`).
+   - If it doesn't auto-apply, choose Docker + the root `Dockerfile`.
+4. Health check: `/` returns 200 with `{ "service": "LuxInfra API" }`.
+5. Default login (override via env vars if you want):
+   - `AUTH_USER=admin`, `AUTH_PASS=admin123`, `API_TOKEN=lux-admin-token-2024`
+6. The app binds `0.0.0.0:$PORT` on Render (handled in `Program.cs`).
 
-### Ship to another PC
-```powershell
-dotnet publish LuxInfra/LuxInfra.csproj -f net10.0-windows10.0.19041.0 -c Release
-```
-Copy the folder `LuxInfra\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\`
-to the target PC and run `LuxInfra.exe`. The target PC needs the
-[.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (or use
-`-p:SelfContained=true` to bundle it).
+### Optional env vars (set in Render dashboard, then Save + Deploy once)
+- `TURSO_URL` + `TURSO_TOKEN` — mirrors SQLite to Turso so data survives Render free-tier redeploys.
+- `OPENROUTER_API_KEY` — enables the DeepSeek AI chat (free key from openrouter.ai/keys).
+- `AUTH_USER` / `AUTH_PASS` — only set if you want non-default login.
 
 ---
 
-## 2) Android app (mobile)
+## 2) Frontend → Netlify (branch `luxinfra-frontend`)
 
-### Build the APK
-```powershell
-dotnet publish LuxInfra/LuxInfra.csproj -f net10.0-android -c Release
-```
-The signed APK appears at:
-```
-LuxInfra\bin\Release\net10.0-android\publish\com.luxinfra.assistant-Signed.apk
-```
-
-### Install on a phone
-**Option A — copy the APK**: send the `-Signed.apk` to the phone (WhatsApp/Drive/USB),
-tap it, allow "Install unknown apps". Done.
-
-**Option B — USB with developer mode**:
-```powershell
-adb install LuxInfra\bin\Release\net10.0-android\publish\com.luxinfra.assistant-Signed.apk
-```
-
-**Option C — Play Store**: build an `.aab` with `-p:AndroidPackageFormat=aab`, sign with your
-own keystore, and upload via the Play Console (requires a one-time $25 developer account).
+1. Netlify → Add new site → Import Git → repo `assistant1`.
+2. **Production branch: `luxinfra-frontend`** (not `main`, not `react-frontend`).
+3. Netlify reads `netlify.toml` at the repo root:
+   - build base `frontend`, command `npm run build`, publish `dist`, SPA rewrite `/* → /index.html`.
+   - Do **not** set a conflicting Base directory in the Netlify UI.
+4. The production build already points at the Render API
+   (`https://assistant1-2.onrender.com`) — no `VITE_API_URL` needed. Only set it if the
+   API URL changes.
 
 ---
 
-## 3) Web app
+## 3) Local development
 
-### Run locally
 ```powershell
-dotnet run --project LuxInfra.Web/LuxInfra.Web.csproj --urls http://localhost:5210
-```
-Open <http://localhost:5210>. Excel/PDF/PNG downloads work from the report panel.
+# API on http://localhost:5050
+dotnet run --project backend -c Release --urls http://localhost:5050
 
-### Serve on your office network (so anyone can use it)
-```powershell
-dotnet run --project LuxInfra.Web/LuxInfra.Web.csproj --urls http://0.0.0.0:5210
+# Frontend on http://localhost:5173 (Vite proxies /api to :5050)
+cd frontend; npm install; npm run dev
 ```
-Others on the same Wi-Fi open `http://<your-pc-ip>:5210`
-(find your IP with `ipconfig`). Allow port 5210 in Windows Firewall the first time.
 
-### Deploy to a server / cloud
-```powershell
-dotnet publish LuxInfra.Web/LuxInfra.Web.csproj -c Release -o publish-web
-```
-The `publish-web` folder runs anywhere with `dotnet LuxInfra.Web.dll`:
-- **IIS**: install the .NET 10 Hosting Bundle, point a site at the folder.
-- **Linux VPS**: `dotnet LuxInfra.Web.dll` behind nginx, or a systemd service.
-- **Azure App Service**: `az webapp up` or deploy the folder via VS/GitHub Actions.
-
-> The web app keeps its data in `data/luxinfra.db3` inside the app folder — back that
-> single file up and you've backed up everything.
+Login locally with `admin` / `admin123`.
 
 ---
 
-## 4) Daily email report (Windows/Android app)
+## Why I don't need to redeploy manually after every push
 
-1. Open **⚙️ Settings** in the app.
-2. The report email is pre-filled; change it if needed.
-3. **Without SMTP**: at the configured time (default 8 PM) the app opens your mail app
-   with the report pre-filled — one tap to send.
-4. **With SMTP (fully automatic)**: fill in
-   - Host: `smtp.gmail.com`, Port: `587`
-   - User: your Gmail address
-   - Password: a [Gmail App Password](https://myaccount.google.com/apppasswords)
-     (requires 2-step verification; regular passwords won't work)
-5. Tap **Save**, then **Send today's report** to test. Emails include the PDF report attached.
+- **Netlify**: production branch `luxinfra-frontend` → any push to that branch triggers a build+deploy.
+- **Render**: `autoDeploy: true` (from `render.yaml`) + service pinned to branch `luxinfrabackend` →
+  any push to that branch triggers a build+deploy.
+- Keep the two branches in sync by cherry-picking commits from `luxinfra` (combined) to each.
 
----
-
-## 5) Using the assistant
-
-| You type | What happens |
-|---|---|
-| `site A paint exp = 5k` | logs ₹5,000, category **Paint**, Site A |
-| `site B glass and tiles 100000` | logs ₹1,00,000, category **Glass & Mirror** |
-| `client Sharma site C labour 25k` | logs with the client attached |
-| `show report` / `send me complete report now` | structured table right in the chat |
-| `total` / `total site a` | running totals |
-| `email report` | emails the report |
-| `undo` | removes the last entry |
-
-Amounts understand `5k`, `1.5l` / `lakh`, `2cr`, commas, and `rs`/`₹` prefixes.
-Categories are auto-classified into buckets like Paint, Tiles & Flooring, Labour,
-Electrical, Plumbing, Wood & Carpentry, Furniture, Transport, Equipment, Hardware, etc.
-
-**Reports tab** (📑): filter Today / 7 days / Month / All time, see the table with
-per-category and per-site summaries, and download **Excel / PDF / PNG** — on Windows files
-land in your Downloads folder; on Android the share sheet opens.
-
----
+### If the wrong app shows up
+The old "AI Chat Assistant" site is the legacy frontend. Fix by setting the Netlify production
+branch to **`luxinfra-frontend`** and re-deploying (Deploy → Clear cache & deploy site).
 
 ## Troubleshooting
-
-- **Build error "file in use"** — close the running LuxInfra.exe before rebuilding.
-- **Android build slow the first time** — it downloads platform bits once; later builds are fast.
-- **SMTP fails with Gmail** — you must use an App Password, not your login password.
-- **Web app port busy** — change `--urls http://localhost:PORT`.
+- **401 on every `/api` call** — you need `Authorization: Bearer lux-admin-token-2024` on every
+  request except `/api/auth/login`.
+- **"Invalid username or password"** — use `admin` / `admin123`. If you set `AUTH_USER`/`AUTH_PASS`
+  env vars on Render, use those values instead.
+- **Login works locally but not on Render** — Render may still run an old build: push to
+  `luxinfrabackend` and let auto-deploy run, or Deploy manually once.
+- **Render free-tier disk wipes on redeploy** — enable `TURSO_URL`/`TURSO_TOKEN` to persist data.
+- **`DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false`** is set in the Dockerfile so ASP.NET doesn't
+  crash under Render's low inotify limit.
