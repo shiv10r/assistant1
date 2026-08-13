@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { Search, MapPin, LocateFixed, Loader2 } from 'lucide-react'
 import { Button } from './ui'
 import { cn } from '../lib/utils'
+import { getTheme } from '../theme'
 
 interface NominatimResult {
   place_id: number
@@ -49,8 +50,9 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
+    const dark = getTheme() === 'dark'
     const map = L.map(containerRef.current, { center: [20.5937, 78.9629], zoom: 5 })
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`, {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
