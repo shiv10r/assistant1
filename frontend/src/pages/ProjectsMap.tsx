@@ -7,7 +7,7 @@ import { useToast } from '../components/ui/Toast'
 import LocationPicker from '../components/LocationPicker'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapPin, Navigation, Car, LocateFixed, Search, Route, Crosshair, Radio, Sparkles } from 'lucide-react'
+import { MapPin, Navigation, Car, LocateFixed, Search, Route, Crosshair, Radio, Sparkles, ExternalLink, Share2 } from 'lucide-react'
 import { getTheme } from '../theme'
 
 type Place = { label: string; lat: number; lng: number }
@@ -408,6 +408,16 @@ export default function ProjectsMap() {
     setRoute(null); setFromLoc(null); setToLoc(null)
   }
 
+  const shareLive = () => {
+    if (!userLoc) { toast({ title: 'Start tracking first', description: 'Turn on Live tracking, then share.', variant: 'error' }); return }
+    const url = `https://www.google.com/maps?q=${userLoc.lat},${userLoc.lng}`
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => toast({ title: 'Live location copied', description: 'Paste it anywhere to share your current spot.', variant: 'success' })).catch(() => window.open(url, '_blank'))
+    } else {
+      window.open(url, '_blank')
+    }
+  }
+
   const openProject = (p: Project) => {
     setSelectedProject(p)
     const marker = markerRefs.current.get(p.id)
@@ -438,6 +448,11 @@ export default function ProjectsMap() {
               {live ? 'Live · on' : 'Live tracking'}
             </span>
           </Button>
+          {live && (
+            <Button variant="outline" onClick={shareLive}>
+              <Share2 className="w-4 h-4" /> Share live location
+            </Button>
+          )}
           <Button variant="outline" onClick={() => locate(false)} disabled={locating}>
             {userLoc ? <LocateFixed className="w-4 h-4" /> : <Navigation className="w-4 h-4" />}
             {locating ? 'Locating…' : userLoc ? 'Recenter' : 'My location'}
@@ -466,6 +481,16 @@ export default function ProjectsMap() {
             {route && (
               <>
                 <span className="text-sm font-semibold text-primary">{route.km.toFixed(1)} km · {Math.round(route.min)} min</span>
+                {fromLoc && toLoc && (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${fromLoc.lat},${fromLoc.lng}&destination=${toLoc.lat},${toLoc.lng}&travelmode=driving`}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg px-3 py-1.5 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Route in Google Maps
+                  </a>
+                )}
                 <Button variant="ghost" onClick={clearRoute}>Clear</Button>
               </>
             )}
@@ -573,7 +598,7 @@ export default function ProjectsMap() {
               icon={<MapPin className="w-12 h-12" />}
               title="No projects yet"
               description="Create a project first — then tag its location here to plot it on the map."
-              action={<Link to="/projects/new"><Button>Create a project</Button></Link>}
+              action={<Link to="/projects"><Button>Create a project</Button></Link>}
             />
           )}
         </div>
