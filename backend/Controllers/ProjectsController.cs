@@ -283,8 +283,14 @@ public class ProjectsController : ControllerBase
             Note = dto.Note
         });
         if (_push is not null)
-            _ = _push.SendAsync("🚨 SOS — " + project.Name, $"{p.Name} raised an emergency{(dto.Note is { Length: > 0 } n ? ": " + n : "")}",
-                $"/projects/{id}/attendance");
+        {
+            var title = "🚨 SOS — " + project.Name;
+            var body = $"{p.Name} raised an emergency{(dto.Note is { Length: > 0 } n ? ": " + n : "")}";
+            if (dto.Recipients is { Length: > 0 })
+                _ = _push.SendToUsersAsync(dto.Recipients, title, body, $"/projects/{id}/attendance");
+            else
+                _ = _push.SendAsync(title, body, $"/projects/{id}/attendance");
+        }
         return Ok(alert);
     }
 
@@ -447,6 +453,6 @@ public class ProjectsController : ControllerBase
     public record BiometricPushDto(string DeviceId, string Name, string Event, DateTime? When, double Latitude, double Longitude);
     public record RequestDto(int PartyId, string Kind, DateTime DateFrom, DateTime DateTo, string Reason);
     public record DecideDto(string Status, string? DecidedBy);
-    public record SosDto(int PartyId, double Latitude, double Longitude, double Accuracy, string? Note);
+    public record SosDto(int PartyId, double Latitude, double Longitude, double Accuracy, string? Note, string[]? Recipients);
     public record UploadDto(string Category, string Name, string ContentType, long Size, string DataBase64);
 }

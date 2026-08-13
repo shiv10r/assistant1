@@ -40,6 +40,17 @@ public class PushController : ControllerBase
         return Ok(new { ok = _push.Enabled, enabled = _push.Enabled, sent });
     }
 
+    /// <summary>Sends a notification only to the devices of the given usernames.</summary>
+    [HttpPost("notify")]
+    public async Task<ActionResult> Notify([FromBody] NotifyDto dto)
+    {
+        if (dto.Recipients is not { Length: > 0 })
+            return BadRequest(new { ok = false, message = "Select at least one recipient." });
+        var sent = await _push.SendToUsersAsync(dto.Recipients, dto.Title ?? "LuxInfra", dto.Body ?? "", dto.Url);
+        return Ok(new { ok = _push.Enabled, enabled = _push.Enabled, sent });
+    }
+
     public record RegisterTokenDto(string Token, string Platform);
     public record TestPushDto(string? Title, string? Body);
+    public record NotifyDto(string[] Recipients, string? Title, string? Body, string? Url);
 }
