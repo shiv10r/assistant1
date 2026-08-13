@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { login, register, api } from '../api'
 import { firebaseEnabled, signInWithEmail, signInWithGoogle } from '../firebase'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, Lock } from 'lucide-react'
+
+const USER_KEY = 'lux_user'
 
 export default function Login({ onAuthed }: { onAuthed: () => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [username, setUsername] = useState('admin')
+  const [username, setUsername] = useState(() => localStorage.getItem(USER_KEY) ?? 'admin')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [remember, setRemember] = useState(true)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const [fbOn, setFbOn] = useState(false)
@@ -26,6 +30,8 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
       } else {
         await login(username, password)
       }
+      if (remember) localStorage.setItem(USER_KEY, username)
+      else localStorage.removeItem(USER_KEY)
       onAuthed()
     } catch (ex) {
       setErr(ex instanceof Error ? ex.message : 'Something went wrong')
@@ -71,6 +77,10 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
     setConfirm('')
   }
 
+  function forgot() {
+    setErr('Default login is admin / admin123 — or ask the owner to reset your password.')
+  }
+
   return (
     <div className="login-wrap">
       <div className="login-aurora" aria-hidden="true">
@@ -78,9 +88,16 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
       </div>
 
       <div className="login-intro">
+        <div className="login-badge"><Lock size={13} /> Secure sign in</div>
         <div className="intro-line l1">Welcome to</div>
         <div className="intro-line l2"><span className="grad-text">Lux Infra</span></div>
         <div className="intro-line l3">Your business, one dashboard away</div>
+        <div className="intro-feats">
+          <div className="int-feat"><span>🗂️</span> Projects, parties & site operations</div>
+          <div className="int-feat"><span>💸</span> Payments, payroll & expenses in one place</div>
+          <div className="int-feat"><span>⏱️</span> Biometric & geofenced attendance</div>
+          <div className="int-feat"><span>🤖</span> AI assistant & instant push alerts</div>
+        </div>
       </div>
 
       <form className="login-card" onSubmit={submit}>
@@ -88,7 +105,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
           <svg viewBox="0 0 456 456" width="64" height="64">
             <defs>
               <linearGradient id="lux-login" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#7C4DFF" /><stop offset="0.6" stopColor="#00B8D9" /><stop offset="1" stopColor="#00E5C3" />
+                <stop offset="0" stopColor="#4F6BED" /><stop offset="0.6" stopColor="#6E4FED" /><stop offset="1" stopColor="#10B981" />
               </linearGradient>
             </defs>
             <rect width="456" height="456" rx="100" fill="url(#lux-login)" />
@@ -120,20 +137,26 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
+            autoFocus
             placeholder={mode === 'register' ? 'e.g. ravi123' : 'admin'}
           />
         </div>
         <div className="login-field">
           <label htmlFor="login-password">{mode === 'register' ? 'Create password' : 'Password'}</label>
-          <input
-            id="login-password"
-            className="login-input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-            placeholder="••••••••"
-          />
+          <div className="pw-wrap">
+            <input
+              id="login-password"
+              className="login-input"
+              type={showPw ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+              placeholder="••••••••"
+            />
+            <button type="button" className="pw-toggle" onClick={() => setShowPw((s) => !s)} aria-label={showPw ? 'Hide password' : 'Show password'}>
+              {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
         </div>
         {mode === 'register' && (
           <div className="login-field login-field-anim">
@@ -141,12 +164,22 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
             <input
               id="login-confirm"
               className="login-input"
-              type="password"
+              type={showPw ? 'text' : 'password'}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="new-password"
               placeholder="••••••••"
             />
+          </div>
+        )}
+
+        {mode === 'login' && (
+          <div className="login-meta">
+            <label className="login-remember">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              Remember me
+            </label>
+            <button type="button" className="login-forgot" onClick={forgot}>Forgot password?</button>
           </div>
         )}
 

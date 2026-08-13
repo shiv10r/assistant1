@@ -27,6 +27,9 @@ export interface SiteParty { id: number; projectId: number; name: string; phone:
 export interface ProjectTask { id: number; projectId: number; name: string; status: string; members: string; location: string; durationDays: number; startDate: string; endDate: string; estQuantity: number; progressPercent: number; imagePath: string; link: string }
 export interface ProjectTxn { id: number; projectId: number; type: string; partyId: number; partyName: string; amount: number; description: string; referenceNumber: string; paymentMethod: string; costCode: string; date: string }
 export interface AttendanceRecord { id: number; projectId: number; partyId: number; partyName: string; date: string; status: string; hoursLogged: number }
+export interface AttendancePunch { id: number; projectId: number; partyId: number; partyName: string; kind: string; source: string; when: string; latitude: number; longitude: number; accuracy: number; inGeofence: boolean; distanceMeters: number; deviceId: string | null; note: string | null }
+export interface AttendanceRequest { id: number; projectId: number; partyId: number; partyName: string; kind: string; dateFrom: string; dateTo: string; reason: string; status: string; createdAt: string; decidedBy: string | null }
+export interface EmergencyAlert { id: number; projectId: number; partyId: number; partyName: string; latitude: number; longitude: number; accuracy: number; note: string | null; createdAt: string; handled: boolean }
 export interface MaterialTxn { id: number; projectId: number; kind: string; materialName: string; quantity: number; unit: string; vendorName: string; vendorLocation: string; paymentMode: string; amount: number; date: string }
 export interface SiteLog { id: number; projectId: number; date: string; progressPercent: number; note: string }
 export interface MeetingMinute { id: number; projectId: number; title: string; date: string; attendees: string; notes: string }
@@ -339,6 +342,14 @@ const projects = {
   attendance: (projectId: number, date: string) => get<AttendanceRecord[]>(`/api/projects/${projectId}/attendance?date=${date}`),
   setAttendanceStatus: (projectId: number, d: { partyId: number; date: string; status: string }) => postVoid(`/api/projects/${projectId}/attendance/status`, d),
   setAttendanceHours: (projectId: number, d: { partyId: number; date: string; hours: number }) => postVoid(`/api/projects/${projectId}/attendance/hours`, d),
+  punches: (projectId: number, date?: string) => get<AttendancePunch[]>(`/api/projects/${projectId}/attendance/punches${date ? `?date=${date}` : ''}`),
+  punch: (projectId: number, d: { partyId: number; kind: 'In' | 'Out'; when?: string; source?: string; latitude?: number; longitude?: number; accuracy?: number; deviceId?: string; note?: string }) => post<AttendancePunch>(`/api/projects/${projectId}/attendance/punch`, d),
+  biometricPush: (projectId: number, d: { deviceId: string; name: string; event: string; when?: string; latitude?: number; longitude?: number }) => post<AttendancePunch>(`/api/projects/${projectId}/attendance/biometric-push`, d),
+  requests: (projectId: number) => get<AttendanceRequest[]>(`/api/projects/${projectId}/attendance/requests`),
+  submitRequest: (projectId: number, d: { partyId: number; kind: string; dateFrom: string; dateTo: string; reason: string }) => post<AttendanceRequest>(`/api/projects/${projectId}/attendance/requests`, d),
+  decideRequest: (projectId: number, requestId: number, status: string, decidedBy?: string) => post<AttendanceRequest>(`/api/projects/${projectId}/attendance/requests/${requestId}/decide`, { status, decidedBy }),
+  sos: (projectId: number, d: { partyId: number; latitude?: number; longitude?: number; accuracy?: number; note?: string }) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos`, d),
+  emergencies: (projectId: number) => get<EmergencyAlert[]>(`/api/projects/${projectId}/attendance/emergencies`),
   materials: (projectId: number, kind?: string) => get<MaterialTxn[]>(`/api/projects/${projectId}/materials${kind ? `?kind=${encodeURIComponent(kind)}` : ''}`),
   saveMaterial: (projectId: number, m: MaterialTxn) => post<MaterialTxn>(`/api/projects/${projectId}/materials`, m),
   inventory: (projectId: number) => get<{ material: string; qty: number; unit: string }[]>(`/api/projects/${projectId}/inventory`),
