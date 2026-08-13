@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '../api'
+import { api, BASE } from '../api'
 import type { BackupStatus, BackupResult, FirebaseVersion } from '../api'
 import { btnStyle } from '../ui'
 import { subscribePush, onPushMessage } from '../firebase'
@@ -144,7 +144,7 @@ export default function Backup() {
     setBusy('push'); setPushState('')
     try {
       if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        await navigator.serviceWorker.register('/firebase-messaging-sw.js?api=' + encodeURIComponent(BASE))
       }
       const res = await subscribePush()
       if (res.error) { setPushState('Push error: ' + res.error); return }

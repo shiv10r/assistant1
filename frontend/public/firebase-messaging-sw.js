@@ -4,7 +4,9 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js')
 
 async function init() {
-  const res = await fetch('/api/firebase/config')
+  const params = new URL(self.location.href).searchParams
+  const apiBase = (params.get('api') || '').replace(/\/$/, '')
+  const res = await fetch(apiBase ? apiBase + '/api/firebase/config' : '/api/firebase/config')
   const cfg = await res.json()
   if (!cfg.enabled) return
   firebase.initializeApp({

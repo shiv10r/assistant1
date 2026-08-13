@@ -1,6 +1,6 @@
 // Dev: BASE = '' -> Vite proxies /api to the local backend.
 // Prod: default to the deployed Render API so no VITE_API_URL env var is required in Netlify.
-const BASE =
+export const BASE =
   (import.meta.env.VITE_API_URL as string | undefined) ??
   (import.meta.env.PROD ? 'https://assistant1-2.onrender.com' : '')
 
