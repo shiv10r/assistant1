@@ -21,6 +21,8 @@ public sealed class TokenAuthMiddleware
         var path = ctx.Request.Path.Value ?? "";
         var isPublic = path.StartsWith("/api/auth/login", StringComparison.OrdinalIgnoreCase) ||
                        path.StartsWith("/api/auth/register", StringComparison.OrdinalIgnoreCase) ||
+                       path.StartsWith("/api/auth/firebase", StringComparison.OrdinalIgnoreCase) ||
+                       path.StartsWith("/api/firebase/config", StringComparison.OrdinalIgnoreCase) ||
                        path.StartsWith("/api/payments/razorpay/webhook", StringComparison.OrdinalIgnoreCase) ||
                        path.StartsWith("/api/integrations/drive/callback", StringComparison.OrdinalIgnoreCase);
 

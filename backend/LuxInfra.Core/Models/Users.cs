@@ -51,3 +51,14 @@ public class UserSession
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(30);
 }
+
+/// <summary>Browser/device registration tokens so the backend can send FCM push notifications.</summary>
+[Table("device_tokens")]
+public class DeviceToken
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public string Token { get; set; } = "";
+    public string Platform { get; set; } = "web";
+    public string Username { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
