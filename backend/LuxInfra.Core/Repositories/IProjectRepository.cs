@@ -28,6 +28,17 @@ public interface IProjectRepository
     Task InsertAttendanceAsync(AttendanceRecord r);
     Task UpdateAttendanceAsync(AttendanceRecord r);
 
+    Task InsertAttendancePunchAsync(AttendancePunch p);
+    Task<List<AttendancePunch>> GetAttendancePunchesInRangeAsync(int projectId, DateTime from, DateTime to);
+
+    Task InsertAttendanceRequestAsync(AttendanceRequest r);
+    Task UpdateAttendanceRequestAsync(AttendanceRequest r);
+    Task<AttendanceRequest?> GetAttendanceRequestAsync(int id);
+    Task<List<AttendanceRequest>> GetAttendanceRequestsAsync(int projectId);
+
+    Task InsertEmergencyAlertAsync(EmergencyAlert a);
+    Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId);
+
     Task InsertMaterialTxnAsync(MaterialTxn m);
     Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId);
 

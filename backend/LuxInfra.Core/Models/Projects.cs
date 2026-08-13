@@ -152,6 +152,88 @@ public class AttendanceRecord
     [Ignore] public string HoursLabel => $"{HoursLogged:0.#} hrs";
 }
 
+public static class PunchSources
+{
+    public const string Manual = "Manual";
+    public const string Remote = "Remote";
+    public const string Biometric = "Biometric";
+
+    public static readonly string[] All = { Manual, Remote, Biometric };
+}
+
+/// <summary>A clock-in/out event captured from the site (manual, remote GPS or a biometric device webhook).</summary>
+[Table("attendance_punches")]
+public class AttendancePunch
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public int ProjectId { get; set; }
+    public int PartyId { get; set; }
+    public string PartyName { get; set; } = "";
+    public string Kind { get; set; } = "In";              // In | Out
+    public string Source { get; set; } = PunchSources.Manual;
+    public DateTime When { get; set; } = DateTime.Now;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public double Accuracy { get; set; }
+    /// <summary>True when the punch coords fall inside the project's geofence radius.</summary>
+    public bool InGeofence { get; set; } = true;
+    public double DistanceMeters { get; set; }
+    public string? DeviceId { get; set; }
+    public string? Note { get; set; }
+}
+
+public static class RequestKinds
+{
+    public const string Wfh = "WFH";
+    public const string Sick = "Sick Leave";
+    public const string Casual = "Casual Leave";
+    public const string EmergencyLeave = "Emergency Leave";
+
+    public static readonly string[] All = { Wfh, Sick, Casual, EmergencyLeave };
+}
+
+public static class RequestStatuses
+{
+    public const string Pending = "Pending";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
+
+    public static readonly string[] All = { Pending, Approved, Rejected };
+}
+
+/// <summary>Remote / leave request: WFH, sick leave, casual leave or emergency leave.</summary>
+[Table("attendance_requests")]
+public class AttendanceRequest
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public int ProjectId { get; set; }
+    public int PartyId { get; set; }
+    public string PartyName { get; set; } = "";
+    public string Kind { get; set; } = RequestKinds.Wfh;
+    public DateTime DateFrom { get; set; } = DateTime.Today;
+    public DateTime DateTo { get; set; } = DateTime.Today;
+    public string Reason { get; set; } = "";
+    public string Status { get; set; } = RequestStatuses.Pending;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public string? DecidedBy { get; set; }
+}
+
+/// <summary>SOS / emergency alert raised from the site, capturing GPS coords.</summary>
+[Table("emergency_alerts")]
+public class EmergencyAlert
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public int ProjectId { get; set; }
+    public int PartyId { get; set; }
+    public string PartyName { get; set; } = "";
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public double Accuracy { get; set; }
+    public string? Note { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public bool Handled { get; set; }
+}
+
 public static class MaterialTxnKinds
 {
     public const string Request = "Request";
