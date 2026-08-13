@@ -34,6 +34,7 @@ public interface IProjectService
 
     Task<EmergencyAlert> TriggerEmergencyAsync(Project project, SiteParty party, EmergencyAlert alert);
     Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId);
+    Task<EmergencyAlert?> ResolveEmergencyAsync(int projectId, int alertId);
 
     Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId, string? kind = null);
     Task SaveMaterialTxnAsync(MaterialTxn m);

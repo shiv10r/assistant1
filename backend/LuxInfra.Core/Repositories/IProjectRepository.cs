@@ -38,6 +38,8 @@ public interface IProjectRepository
 
     Task InsertEmergencyAlertAsync(EmergencyAlert a);
     Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId);
+    Task<EmergencyAlert?> GetEmergencyAlertAsync(int id);
+    Task UpdateEmergencyAlertAsync(EmergencyAlert a);
 
     Task InsertMaterialTxnAsync(MaterialTxn m);
     Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId);
