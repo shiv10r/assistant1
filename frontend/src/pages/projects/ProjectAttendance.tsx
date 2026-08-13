@@ -155,6 +155,11 @@ export default function ProjectAttendance() {
     api.projects.requests(pid).then(setRequests).catch(() => setRequests([]))
   }
 
+  const resolveSos = async (a: EmergencyAlert) => {
+    await api.projects.resolveSos(pid, a.id)
+    api.projects.emergencies(pid).then(setEmergencies).catch(() => setEmergencies([]))
+  }
+
   const saveWorker = async () => {
     try {
       if (!w.name.trim()) { setErr('Name is required'); return }
@@ -196,8 +201,8 @@ export default function ProjectAttendance() {
           <button className="btn danger" disabled={!provider || sosBusy} onClick={doSos}>
             {sosBusy ? 'Sending SOS…' : '🚨 SOS'}
           </button>
-          {emergencies.length > 0 && (
-            <span style={{ color: '#E05C7A', fontSize: 12.5, fontWeight: 700 }}>🚨 {emergencies.length} active emergency</span>
+          {emergencies.filter((e) => !e.handled).length > 0 && (
+            <span style={{ color: '#E05C7A', fontSize: 12.5, fontWeight: 700 }}>🚨 {emergencies.filter((e) => !e.handled).length} active emergency</span>
           )}
           {lastPunch && (
             <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>
@@ -277,7 +282,7 @@ export default function ProjectAttendance() {
         </div>
       )}
 
-      {(punches.length > 0 || requests.length > 0) && (
+      {(punches.length > 0 || requests.length > 0 || emergencies.length > 0) && (
         <div className="card-grid">
           <div className="card" style={{ margin: 0 }}>
             <h2>Today's Punches <span className="muted" style={{ fontWeight: 400 }}>(manual, remote & biometric)</span></h2>
@@ -331,6 +336,49 @@ export default function ProjectAttendance() {
                         <button className="btn" style={{ padding: '4px 12px', fontSize: 12 }} onClick={() => decide(r, 'Approved')}>Approve</button>
                         <button className="btn ghost" style={{ padding: '4px 12px', fontSize: 12 }} onClick={() => decide(r, 'Rejected')}>Reject</button>
                       </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card" style={{ margin: 0, borderColor: 'rgba(224,92,122,.4)' }}>
+            <h2 style={{ color: '#E05C7A' }}>🚨 Emergency Alerts</h2>
+            {emergencies.length === 0 ? (
+              <div className="empty" style={{ padding: '18px 0' }}>No SOS alerts raised.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {emergencies.map((a) => (
+                  <div key={a.id} style={{
+                    border: `1px solid ${a.handled ? 'var(--border)' : 'rgba(224,92,122,.5)'}`,
+                    borderRadius: 10, padding: '10px 12px',
+                    background: a.handled ? 'var(--surface2)' : 'rgba(224,92,122,.08)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <b style={{ color: a.handled ? 'var(--text)' : '#E05C7A' }}>{a.partyName}</b>
+                      <span className="muted">{fmtTime(a.createdAt)}</span>
+                      {a.latitude !== 0 && (
+                        <a
+                          className="btn ghost"
+                          style={{ padding: '2px 8px', fontSize: 11 }}
+                          target="_blank" rel="noopener noreferrer"
+                          href={`https://maps.google.com/?q=${a.latitude},${a.longitude}`}
+                        >📍 View spot</a>
+                      )}
+                      <span
+                        style={{
+                          marginLeft: 'auto', padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+                          color: a.handled ? '#2E8B57' : '#E05C7A',
+                          background: a.handled ? 'rgba(46,139,87,.14)' : 'rgba(224,92,122,.14)',
+                        }}
+                      >{a.handled ? 'Resolved' : 'Active'}</span>
+                    </div>
+                    {a.note && <div className="muted" style={{ marginTop: 4, fontSize: 12.5 }}>{a.note}</div>}
+                    {!a.handled && (
+                      <button className="btn" style={{ marginTop: 8, padding: '4px 12px', fontSize: 12 }} onClick={() => resolveSos(a)}>
+                        ✓ Mark resolved & stop alerts
+                      </button>
                     )}
                   </div>
                 ))}

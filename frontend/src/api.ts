@@ -350,6 +350,7 @@ const projects = {
   decideRequest: (projectId: number, requestId: number, status: string, decidedBy?: string) => post<AttendanceRequest>(`/api/projects/${projectId}/attendance/requests/${requestId}/decide`, { status, decidedBy }),
   sos: (projectId: number, d: { partyId: number; latitude?: number; longitude?: number; accuracy?: number; note?: string }) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos`, d),
   emergencies: (projectId: number) => get<EmergencyAlert[]>(`/api/projects/${projectId}/attendance/emergencies`),
+  resolveSos: (projectId: number, alertId: number) => post<EmergencyAlert>(`/api/projects/${projectId}/attendance/sos/${alertId}/resolve`, {}),
   materials: (projectId: number, kind?: string) => get<MaterialTxn[]>(`/api/projects/${projectId}/materials${kind ? `?kind=${encodeURIComponent(kind)}` : ''}`),
   saveMaterial: (projectId: number, m: MaterialTxn) => post<MaterialTxn>(`/api/projects/${projectId}/materials`, m),
   inventory: (projectId: number) => get<{ material: string; qty: number; unit: string }[]>(`/api/projects/${projectId}/inventory`),

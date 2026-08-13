@@ -6,8 +6,55 @@ import { Card, CardContent, Badge, Empty, money, Button } from '../components/ui
 import { useToast } from '../components/ui/Toast'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapPin, Navigation, Car, Navigation2, LocateFixed } from 'lucide-react'
+import { MapPin, Navigation, Car, Navigation2, LocateFixed, Search, Route } from 'lucide-react'
 import { getTheme } from '../theme'
+
+type Place = { label: string; lat: number; lng: number }
+
+function PlaceSearch({ placeholder, onPick }: { placeholder: string; onPick: (p: Place) => void }) {
+  const [q, setQ] = useState('')
+  const [sugg, setSugg] = useState<Place[]>([])
+  const timer = useRef<number | null>(null)
+  const pick = (p: Place) => { setQ(p.label); setSugg([]); onPick(p) }
+  const search = (v: string) => {
+    setQ(v)
+    if (timer.current) window.clearTimeout(timer.current)
+    if (!v.trim()) { setSugg([]); return }
+    timer.current = window.setTimeout(async () => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(v)}`)
+        const data = await res.json()
+        setSugg((data ?? []).map((r: { display_name: string; lat: string; lon: string }) => ({
+          label: r.display_name, lat: Number(r.lat), lng: Number(r.lon),
+        })))
+      } catch { setSugg([]) }
+    }, 350)
+  }
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+        <input
+          className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-surface text-sm outline-none focus:border-primary"
+          value={q}
+          placeholder={placeholder}
+          onChange={(e) => search(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (sugg[0]) pick(sugg[0]) } }}
+        />
+      </div>
+      {sugg.length > 0 && (
+        <div className="absolute z-[1000] mt-1 w-full rounded-lg border border-border bg-surface shadow-lg overflow-hidden">
+          {sugg.map((s, i) => (
+            <button key={i} type="button" onClick={() => pick(s)}
+              className="block w-full text-left px-3 py-2 text-sm text-text hover:bg-surface-hover truncate">
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const DEFAULT_CENTER: [number, number] = [20.5937, 78.9629] // India
 const DEFAULT_ZOOM = 5
@@ -58,6 +105,11 @@ export default function ProjectsMap() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [locating, setLocating] = useState(false)
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null)
+  const [fromLoc, setFromLoc] = useState<Place | null>(null)
+  const [toLoc, setToLoc] = useState<Place | null>(null)
+  const [routing, setRouting] = useState(false)
+  const [route, setRoute] = useState<{ km: number; min: number } | null>(null)
+  const routeLayerRef = useRef<L.LayerGroup | null>(null)
 
   useEffect(() => {
     api.projects.list().then(setProjects).catch(() => setProjects([]))
@@ -152,6 +204,48 @@ export default function ProjectsMap() {
     return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.latitude},${dest.longitude}&travelmode=driving`
   }
 
+  const useMyLocForFrom = () => {
+    if (!('geolocation' in navigator)) { toast({ title: 'Geolocation not supported', variant: 'error' }); return }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setFromLoc({ label: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => toast({ title: 'Could not get your location', variant: 'error' }),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  const showRoute = async () => {
+    if (!fromLoc || !toLoc) { toast({ title: 'Set both From and To', variant: 'error' }); return }
+    setRouting(true); setRoute(null)
+    try {
+      const res = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${fromLoc.lng},${fromLoc.lat};${toLoc.lng},${toLoc.lat}?overview=full&geometries=geojson`
+      )
+      const data = await res.json()
+      if (data.code !== 'Ok' || !data.routes?.[0]) { toast({ title: 'No route found between these places', variant: 'error' }); return }
+      const r = data.routes[0] as { distance: number; duration: number; geometry: GeoJSON.GeoJSON }
+      setRoute({ km: r.distance / 1000, min: r.duration / 60 })
+      const map = mapRef.current
+      if (map) {
+        routeLayerRef.current?.remove()
+        const layer = L.layerGroup().addTo(map)
+        routeLayerRef.current = layer
+        L.geoJSON(r.geometry, { style: { color: '#4F6BED', weight: 5, opacity: 0.85 } }).addTo(layer)
+        L.marker([fromLoc.lat, fromLoc.lng], { icon: L.divIcon({ className: 'lux-route-marker', html: '<span class="route-pt pt-a">A</span>', iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(layer)
+        L.marker([toLoc.lat, toLoc.lng], { icon: L.divIcon({ className: 'lux-route-marker', html: '<span class="route-pt pt-b">B</span>', iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(layer)
+        map.fitBounds(L.geoJSON(r.geometry).getBounds(), { padding: [40, 40] })
+      }
+    } catch {
+      toast({ title: 'Route service unreachable', variant: 'error' })
+    } finally {
+      setRouting(false)
+    }
+  }
+
+  const clearRoute = () => {
+    routeLayerRef.current?.remove(); routeLayerRef.current = null
+    setRoute(null); setFromLoc(null); setToLoc(null)
+  }
+
   return (
     <>
       <div className="page-head">
@@ -169,6 +263,31 @@ export default function ProjectsMap() {
           </Button>
         </div>
       </div>
+
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Route className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-text">Plan a route<br /><span className="text-xs font-normal text-muted">Search a From & To location — or tap "From: my location"</span></h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <PlaceSearch placeholder="From — search a place, e.g. Delhi" onPick={(p) => { setFromLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
+            <PlaceSearch placeholder="To — search a place or site address" onPick={(p) => { setToLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={showRoute} disabled={routing || !fromLoc || !toLoc}>
+              <Navigation className="w-4 h-4" /> {routing ? 'Routing…' : 'Show route'}
+            </Button>
+            <Button variant="outline" onClick={useMyLocForFrom}><LocateFixed className="w-4 h-4" /> From: my location</Button>
+            {route && (
+              <>
+                <span className="text-sm font-semibold text-primary">{route.km.toFixed(1)} km · {Math.round(route.min)} min</span>
+                <Button variant="ghost" onClick={clearRoute}>Clear</Button>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {withCoords.length === 0 ? (
         <Card>
