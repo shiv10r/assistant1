@@ -37,6 +37,8 @@ import {
   CloudSun,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
+import WeatherCard from './components/WeatherCard'
+import { Modal } from './components/ui'
 import { usePlan } from './hooks/usePlan'
 import { cn, Button } from './components/ui'
 import './Layout.css'
@@ -97,6 +99,7 @@ export default function Layout() {
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
+  const [weatherOpen, setWeatherOpen] = useState(false)
   const { plan } = usePlan()
   const isAdmin = getRole() === 'admin' || !getRole()
   const weather = useWeather()
@@ -105,6 +108,7 @@ export default function Layout() {
     const next = !weatherOn
     setWeatherOn(next)
     setWeatherMode(next)
+    setWeatherOpen(true)
     if (next) {
       weather.setMode(true)
       weather.enable()
@@ -172,9 +176,9 @@ export default function Layout() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleWeatherMode}
-          aria-label="Toggle weather app mode"
-          title={weatherOn ? 'Weather mode on — theme follows site weather' : 'Switch to weather app mode — theme follows site weather'}
+          onClick={() => setWeatherOpen(true)}
+          aria-label="Weather"
+          title={weatherOn ? `Weather: ${weather.weather?.condition ?? 'loading…'}` : 'Weather'}
           className={weatherOn ? '!text-amber-400 !border !border-amber-400/40 rounded-lg' : ''}
         >
           {weatherOn && weather.weather
@@ -241,6 +245,19 @@ export default function Layout() {
         <main className="content"><Outlet /></main>
       </div>
       <AiWidget />
+
+      <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
+        <div className="space-y-4">
+          <WeatherCard useMyLocation siteName="Your location" className="w-full" />
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={weatherOn} onChange={() => toggleWeatherMode()} className="accent-[var(--primary)]" />
+              Weather app mode — theme follows current weather
+            </label>
+          </div>
+          <p className="text-[11px] text-muted">Weather data by <a className="text-primary hover:underline" href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> — free &amp; open source, no API key needed.</p>
+        </div>
+      </Modal>
     </div>
   )
 }

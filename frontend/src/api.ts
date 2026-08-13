@@ -375,7 +375,8 @@ export interface UserSessionInfo { token: string; username: string; role: string
 export interface PayrollRow { partyId: number; name: string; role: string; dailyRate: number; days: number; hours: number; totalHours: number; amount: number; amountLabel: string; currentBalance: number; netPayable: number; netPayableLabel: string }
 export interface PayrollResult { from: string; to: string; totalDays: number; totalAmount: number; totalAmountLabel: string; rows: PayrollRow[] }
 export interface IntegrationStatus { email: string; emailProvider?: string; razorpay: string; razorpayKeyId?: string; upi: string; upiId?: string; drive: string; driveFolder?: string; vision: string; visionModel?: string }
-export interface ProjectWeather { temperature: number; feelsLike: number; humidity: number; windSpeed: number; rainProbability: number; precipitation: number; weatherCode: number; isDay: boolean; condition: string; updatedAt: string }
+export interface DailyForecast { date: string; weatherCode: number; tempMax: number; tempMin: number; rainProbability: number }
+export interface ProjectWeather { temperature: number; feelsLike: number; humidity: number; windSpeed: number; rainProbability: number; precipitation: number; weatherCode: number; isDay: boolean; condition: string; forecast: DailyForecast[]; updatedAt: string }
 export interface EinvoiceResult { ok: boolean; txn?: { id: number; refLabel: string; date: string }; payload?: unknown; error?: string }
 export interface VisionResult { ok: boolean; progress?: number; note?: string; model?: string; error?: string; code?: string; message?: string }
 
