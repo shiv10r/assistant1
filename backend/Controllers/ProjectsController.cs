@@ -185,6 +185,113 @@ public class ProjectsController : ControllerBase
         return Ok();
     }
 
+    // ---- Attendance: punches (manual / remote-GPS) ----
+    [HttpGet("{id:int}/attendance/punches")]
+    public async Task<List<AttendancePunch>> Punches(int id, [FromQuery] DateTime? date)
+        => await _projects.GetPunchesAsync(id, date);
+
+    [HttpPost("{id:int}/attendance/punch")]
+    public async Task<ActionResult> Punch(int id, [FromBody] PunchDto dto)
+    {
+        var project = await _projects.GetProjectAsync(id);
+        if (project is null) return NotFound();
+        var p = await FindParty(id, dto.PartyId);
+        var punch = await _projects.PunchAsync(project, p, new AttendancePunch
+        {
+            Kind = dto.Kind,
+            Source = dto.Source,
+            When = dto.When ?? DateTime.Now,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Accuracy = dto.Accuracy,
+            DeviceId = dto.DeviceId,
+            Note = dto.Note
+        });
+        if (_push is not null)
+            _ = _push.SendAsync("Attendance punch", $"{p.Name} clocked {dto.Kind} · {(punch.InGeofence ? "in geofence" : "OUTSIDE geofence")}",
+                $"/projects/{id}/attendance");
+        return Ok(punch);
+    }
+
+    // ---- Biometric device webhook (e.g. ZKTeco) ----
+    [HttpPost("{id:int}/attendance/biometric-push")]
+    public async Task<ActionResult> BiometricPush(int id, [FromBody] BiometricPushDto dto)
+    {
+        var project = await _projects.GetProjectAsync(id);
+        if (project is null) return NotFound();
+        var party = await _projects.FindPartyByNameAsync(id, dto.Name);
+        if (party is null) return BadRequest($"No site party matches biometric name '{dto.Name}'");
+
+        var isCheckIn = dto.Event?.Trim() == "0" || dto.Event is null;   // ZKTeco: 0 = check-in, 1 = check-out
+        var punch = await _projects.PunchAsync(project, party, new AttendancePunch
+        {
+            Kind = isCheckIn ? "In" : "Out",
+            Source = PunchSources.Biometric,
+            When = dto.When ?? DateTime.Now,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            DeviceId = dto.DeviceId
+        });
+        return Ok(punch);
+    }
+
+    // ---- Attendance: requests (WFH / leave) ----
+    [HttpGet("{id:int}/attendance/requests")]
+    public async Task<List<AttendanceRequest>> Requests(int id)
+        => await _projects.GetRequestsAsync(id);
+
+    [HttpPost("{id:int}/attendance/requests")]
+    public async Task<ActionResult> SubmitRequest(int id, [FromBody] RequestDto dto)
+    {
+        var p = await FindParty(id, dto.PartyId);
+        var req = await _projects.SubmitRequestAsync(id, p, new AttendanceRequest
+        {
+            Kind = dto.Kind,
+            DateFrom = dto.DateFrom,
+            DateTo = dto.DateTo,
+            Reason = dto.Reason
+        });
+        if (_push is not null)
+            _ = _push.SendAsync($"{dto.Kind} request", $"{p.Name} requested {dto.Kind} ({dto.DateFrom:dd-MMM} → {dto.DateTo:dd-MMM})",
+                $"/projects/{id}/attendance");
+        return Ok(req);
+    }
+
+    [HttpPost("{id:int}/attendance/requests/{requestId:int}/decide")]
+    public async Task<ActionResult> DecideRequest(int id, int requestId, [FromBody] DecideDto dto)
+    {
+        var req = await _projects.DecideRequestAsync(id, requestId, dto.Status, dto.DecidedBy);
+        if (req is null) return NotFound();
+        if (_push is not null)
+            _ = _push.SendAsync("Request " + dto.Status, $"{req.PartyName}'s {req.Kind} was {dto.Status} by {dto.DecidedBy}",
+                $"/projects/{id}/attendance");
+        return Ok(req);
+    }
+
+    // ---- SOS / emergency ----
+    [HttpPost("{id:int}/attendance/sos")]
+    public async Task<ActionResult> Sos(int id, [FromBody] SosDto dto)
+    {
+        var project = await _projects.GetProjectAsync(id);
+        if (project is null) return NotFound();
+        var p = await FindParty(id, dto.PartyId);
+        var alert = await _projects.TriggerEmergencyAsync(project, p, new EmergencyAlert
+        {
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Accuracy = dto.Accuracy,
+            Note = dto.Note
+        });
+        if (_push is not null)
+            _ = _push.SendAsync("🚨 SOS — " + project.Name, $"{p.Name} raised an emergency{(dto.Note is { Length: > 0 } n ? ": " + n : "")}",
+                $"/projects/{id}/attendance");
+        return Ok(alert);
+    }
+
+    [HttpGet("{id:int}/attendance/emergencies")]
+    public async Task<List<EmergencyAlert>> Emergencies(int id)
+        => await _projects.GetEmergencyAlertsAsync(id);
+
     // ---- Materials ----
     [HttpGet("{id:int}/materials")]
     public async Task<List<MaterialTxn>> Materials(int id, [FromQuery] string? kind = null)
@@ -326,5 +433,10 @@ public class ProjectsController : ControllerBase
     }
 
     public record AttendanceDto(int PartyId, DateTime Date, string? Status, double Hours);
+    public record PunchDto(int PartyId, string Kind, DateTime? When, string? Source, double Latitude, double Longitude, double Accuracy, string? DeviceId, string? Note);
+    public record BiometricPushDto(string DeviceId, string Name, string Event, DateTime? When, double Latitude, double Longitude);
+    public record RequestDto(int PartyId, string Kind, DateTime DateFrom, DateTime DateTo, string Reason);
+    public record DecideDto(string Status, string? DecidedBy);
+    public record SosDto(int PartyId, double Latitude, double Longitude, double Accuracy, string? Note);
     public record UploadDto(string Category, string Name, string ContentType, long Size, string DataBase64);
 }

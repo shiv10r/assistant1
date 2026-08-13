@@ -25,6 +25,16 @@ public interface IProjectService
     Task SetAttendanceStatusAsync(int projectId, SiteParty party, DateTime date, string status);
     Task SetAttendanceHoursAsync(int projectId, SiteParty party, DateTime date, double hours);
 
+    Task<AttendancePunch> PunchAsync(Project project, SiteParty party, AttendancePunch punch);
+    Task<List<AttendancePunch>> GetPunchesAsync(int projectId, DateTime? date);
+
+    Task<AttendanceRequest> SubmitRequestAsync(int projectId, SiteParty party, AttendanceRequest req);
+    Task<List<AttendanceRequest>> GetRequestsAsync(int projectId);
+    Task<AttendanceRequest?> DecideRequestAsync(int projectId, int requestId, string status, string? decidedBy);
+
+    Task<EmergencyAlert> TriggerEmergencyAsync(Project project, SiteParty party, EmergencyAlert alert);
+    Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId);
+
     Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId, string? kind = null);
     Task SaveMaterialTxnAsync(MaterialTxn m);
     Task<List<(string Material, double Qty, string Unit)>> GetInventoryAsync(int projectId);

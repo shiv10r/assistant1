@@ -114,6 +114,111 @@ public class ProjectService : IProjectService
         }
     }
 
+    // ---------- punches / remote login / WFH / SOS ----------
+
+    /// <summary>Geofence radius around the project coordinates (metres).</summary>
+    private const double GeofenceRadiusMeters = 500;
+
+    private static double Haversine(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371000;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+    }
+
+    /// <summary>Records a punch (in/out) from manual, remote-GPS or biometric source, validates the geofence
+    /// against the project coordinates, and keeps the day's attendance row in sync.</summary>
+    public async Task<AttendancePunch> PunchAsync(Project project, SiteParty party, AttendancePunch punch)
+    {
+        punch.ProjectId = project.Id;
+        punch.PartyId = party.Id;
+        punch.PartyName = party.Name;
+        if (string.IsNullOrEmpty(punch.Source)) punch.Source = PunchSources.Remote;
+
+        if (project.HasCoordinates && (punch.Latitude != 0 || punch.Longitude != 0))
+        {
+            punch.DistanceMeters = Math.Round(Haversine(project.Latitude, project.Longitude, punch.Latitude, punch.Longitude), 1);
+            punch.InGeofence = punch.DistanceMeters <= GeofenceRadiusMeters;
+        }
+
+        var day = punch.When.Date;
+        var existing = await _repo.GetAttendanceAsync(project.Id, party.Id, day);
+
+        if (punch.Kind == "In")
+        {
+            if (existing is null)
+                await _repo.InsertAttendanceAsync(new AttendanceRecord
+                {
+                    ProjectId = project.Id, PartyId = party.Id, PartyName = party.Name,
+                    Date = day, Status = AttendanceStatuses.Present, HoursLogged = 0
+                });
+            else if (existing.Status != AttendanceStatuses.Present)
+            {
+                existing.Status = AttendanceStatuses.Present;
+                await _repo.UpdateAttendanceAsync(existing);
+            }
+        }
+        else if (existing is not null)
+        {
+            var punches = await _repo.GetAttendancePunchesInRangeAsync(project.Id, day, day);
+            var @in = punches.Where(p => p.PartyId == party.Id && p.Kind == "In")
+                .OrderBy(p => p.When).FirstOrDefault();
+            if (@in is not null && punch.When > @in.When)
+                existing.HoursLogged = Math.Round((punch.When - @in.When).TotalHours, 1);
+            existing.Status = AttendanceStatuses.Present;
+            await _repo.UpdateAttendanceAsync(existing);
+        }
+
+        await _repo.InsertAttendancePunchAsync(punch);
+        return punch;
+    }
+
+    public Task<List<AttendancePunch>> GetPunchesAsync(int projectId, DateTime? date)
+        => date is null
+            ? _repo.GetAttendancePunchesInRangeAsync(projectId, DateTime.Today.AddDays(-30), DateTime.Today)
+            : _repo.GetAttendancePunchesInRangeAsync(projectId, date.Value, date.Value);
+
+    public async Task<AttendanceRequest> SubmitRequestAsync(int projectId, SiteParty party, AttendanceRequest req)
+    {
+        req.ProjectId = projectId;
+        req.PartyId = party.Id;
+        req.PartyName = party.Name;
+        req.Status = RequestStatuses.Pending;
+        req.CreatedAt = DateTime.Now;
+        await _repo.InsertAttendanceRequestAsync(req);
+        return req;
+    }
+
+    public Task<List<AttendanceRequest>> GetRequestsAsync(int projectId)
+        => _repo.GetAttendanceRequestsAsync(projectId);
+
+    public async Task<AttendanceRequest?> DecideRequestAsync(int projectId, int requestId, string status, string? decidedBy)
+    {
+        var req = await _repo.GetAttendanceRequestAsync(requestId);
+        if (req is null || req.ProjectId != projectId) return null;
+        req.Status = status;
+        req.DecidedBy = decidedBy;
+        await _repo.UpdateAttendanceRequestAsync(req);
+        return req;
+    }
+
+    public async Task<EmergencyAlert> TriggerEmergencyAsync(Project project, SiteParty party, EmergencyAlert alert)
+    {
+        alert.ProjectId = project.Id;
+        alert.PartyId = party.Id;
+        alert.PartyName = party.Name;
+        alert.CreatedAt = DateTime.Now;
+        await _repo.InsertEmergencyAlertAsync(alert);
+        return alert;
+    }
+
+    public Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId)
+        => _repo.GetEmergencyAlertsAsync(projectId);
+
     // ---------- material ----------
 
     public async Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId, string? kind = null)

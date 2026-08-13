@@ -21,6 +21,9 @@ public class ProjectRepository : IProjectRepository
             await conn.CreateTableAsync<ProjectTask>();
             await conn.CreateTableAsync<ProjectTxn>();
             await conn.CreateTableAsync<AttendanceRecord>();
+            await conn.CreateTableAsync<AttendancePunch>();
+            await conn.CreateTableAsync<AttendanceRequest>();
+            await conn.CreateTableAsync<EmergencyAlert>();
             await conn.CreateTableAsync<MaterialTxn>();
             await conn.CreateTableAsync<SiteLog>();
             await conn.CreateTableAsync<MeetingMinute>();
@@ -67,6 +70,9 @@ public class ProjectRepository : IProjectRepository
         await conn.Table<ProjectTask>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<ProjectTxn>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<AttendanceRecord>().DeleteAsync(t => t.ProjectId == id);
+        await conn.Table<AttendancePunch>().DeleteAsync(t => t.ProjectId == id);
+        await conn.Table<AttendanceRequest>().DeleteAsync(t => t.ProjectId == id);
+        await conn.Table<EmergencyAlert>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<MaterialTxn>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<SiteLog>().DeleteAsync(t => t.ProjectId == id);
         await conn.Table<MeetingMinute>().DeleteAsync(t => t.ProjectId == id);
@@ -169,6 +175,65 @@ public class ProjectRepository : IProjectRepository
     {
         var conn = await Conn();
         await conn.UpdateAsync(r);
+    }
+
+    public async Task InsertAttendancePunchAsync(AttendancePunch p)
+    {
+        var conn = await Conn();
+        await conn.InsertAsync(p);
+    }
+
+    public async Task<List<AttendancePunch>> GetAttendancePunchesInRangeAsync(int projectId, DateTime from, DateTime to)
+    {
+        var conn = await Conn();
+        var start = from.Date;
+        var end = to.Date.AddDays(1);
+        return await conn.Table<AttendancePunch>()
+            .Where(a => a.ProjectId == projectId && a.When >= start && a.When < end)
+            .OrderByDescending(a => a.When)
+            .ToListAsync();
+    }
+
+    public async Task InsertAttendanceRequestAsync(AttendanceRequest r)
+    {
+        var conn = await Conn();
+        await conn.InsertAsync(r);
+    }
+
+    public async Task UpdateAttendanceRequestAsync(AttendanceRequest r)
+    {
+        var conn = await Conn();
+        await conn.UpdateAsync(r);
+    }
+
+    public async Task<AttendanceRequest?> GetAttendanceRequestAsync(int id)
+    {
+        var conn = await Conn();
+        return await conn.FindAsync<AttendanceRequest>(id);
+    }
+
+    public async Task<List<AttendanceRequest>> GetAttendanceRequestsAsync(int projectId)
+    {
+        var conn = await Conn();
+        return await conn.Table<AttendanceRequest>()
+            .Where(r => r.ProjectId == projectId)
+            .OrderByDescending(r => r.Id)
+            .ToListAsync();
+    }
+
+    public async Task InsertEmergencyAlertAsync(EmergencyAlert a)
+    {
+        var conn = await Conn();
+        await conn.InsertAsync(a);
+    }
+
+    public async Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId)
+    {
+        var conn = await Conn();
+        return await conn.Table<EmergencyAlert>()
+            .Where(a => a.ProjectId == projectId)
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
     }
 
     // ---------- materials ----------
