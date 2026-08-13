@@ -33,6 +33,22 @@ export default function ProjectMaterial() {
     } catch (e) { setErr(String(e)) }
   }
 
+  const addStock = async (item: { material: string; qty: number; unit: string }, delta: number, stockKind: string) => {
+    try {
+      const m: MaterialTxn = { id: 0, projectId: pid, kind: stockKind, materialName: item.material, quantity: Math.abs(delta), unit: item.unit, vendorName: 'Stock Adjustment', vendorLocation: '', paymentMode: 'Cash', amount: 0, date: todayISO() }
+      await api.projects.saveMaterial(pid, m)
+      load()
+    } catch (e) { setErr(String(e)) }
+  }
+
+  const removeStock = async (item: { material: string; qty: number; unit: string }) => {
+    try {
+      const m: MaterialTxn = { id: 0, projectId: pid, kind: 'Delivered', materialName: item.material, quantity: item.qty, unit: item.unit, vendorName: 'Stock Adjustment', vendorLocation: '', paymentMode: 'Cash', amount: 0, date: todayISO() }
+      await api.projects.saveMaterial(pid, m)
+      load()
+    } catch (e) { setErr(String(e)) }
+  }
+
   return (
     <>
       <PageHead icon="🧱" title="Materials" sub="Inventory, requests, received & delivered" right={<button className="btn" onClick={() => nav(`/projects/${pid}`)}>← Back</button>} />
@@ -51,9 +67,20 @@ export default function ProjectMaterial() {
         inventory.length === 0 ? <Empty>No stock yet. Add received / delivered materials.</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
-              <thead><tr><th>Material</th><th className="num">Stock</th><th>Unit</th></tr></thead>
+              <thead><tr><th>Material</th><th className="num">Stock</th><th>Unit</th><th>Adjust</th></tr></thead>
               <tbody>{inventory.map((m) => (
-                <tr key={m.material}><td className="cat">{m.material}</td><td className="num">{num(m.qty)}</td><td className="muted">{m.unit}</td></tr>
+                <tr key={m.material}>
+                  <td className="cat">{m.material}</td>
+                  <td className="num">{num(m.qty)}</td>
+                  <td className="muted">{m.unit}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <button className="btn ghost" style={{ padding: '4px 10px', fontSize: 12 }} title="Add stock (received)" onClick={() => addStock(m, 1, 'Received')}>＋</button>
+                      <button className="btn ghost" style={{ padding: '4px 10px', fontSize: 12 }} title="Use stock (delivered)" onClick={() => addStock(m, 1, 'Delivered')}>－</button>
+                      <button className="btn ghost" style={{ padding: '4px 10px', fontSize: 12 }} title="Remove all this material" onClick={() => removeStock(m)}>✕</button>
+                    </div>
+                  </td>
+                </tr>
               ))}</tbody>
             </table>
           </div>
