@@ -64,6 +64,9 @@ builder.Services.AddSingleton<RazorpayService>();
 builder.Services.AddSingleton<DriveBackupService>();
 builder.Services.AddSingleton<VisionAiService>();
 
+// ---- Weather (Open-Meteo, free + key-less; cached per site) ----
+builder.Services.AddSingleton<IWeatherService, OpenMeteoWeatherService>();
+
 // ---- CORS for the React frontend (dev server + Netlify deploy) ----
 builder.Services.AddCors(o =>
 {

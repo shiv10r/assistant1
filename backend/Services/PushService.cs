@@ -44,6 +44,22 @@ public sealed class PushService
     {
         if (!_fb.Enabled) return 0;
         var tokens = await _users.GetDeviceTokensAsync();
+        return await SendTokensAsync(tokens, title, body, url);
+    }
+
+    /// <summary>Sends a notification only to the devices of the given usernames.</summary>
+    public async Task<int> SendToUsersAsync(string[] usernames, string title, string body, string? url = null)
+    {
+        if (!_fb.Enabled || usernames.Length == 0) return 0;
+        var tokens = await _users.GetDeviceTokensAsync();
+        var targets = tokens
+            .Where(t => usernames.Contains(t.Username, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        return await SendTokensAsync(targets, title, body, url);
+    }
+
+    private async Task<int> SendTokensAsync(List<DeviceToken> tokens, string title, string body, string? url)
+    {
         if (tokens.Count == 0) return 0;
 
         var sent = 0;
