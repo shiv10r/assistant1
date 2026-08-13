@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { api, BASE } from '../api'
+import { api } from '../api'
 import type { BackupStatus, BackupResult, FirebaseVersion } from '../api'
 import { btnStyle } from '../ui'
-import { subscribePush, onPushMessage } from '../firebase'
+import { subscribePush, onPushMessage, ensureServiceWorker } from '../firebase'
 
 export default function Backup() {
   const [status, setStatus] = useState<BackupStatus | null>(null)
@@ -143,9 +143,8 @@ export default function Backup() {
   async function enablePush() {
     setBusy('push'); setPushState('')
     try {
-      if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.register('/firebase-messaging-sw.js?api=' + encodeURIComponent(BASE))
-      }
+      const reg = await ensureServiceWorker()
+      if (!reg) { setPushState('Could not register the notification service worker.'); return }
       const res = await subscribePush()
       if (res.error) { setPushState('Push error: ' + res.error); return }
       if (!res.token) { setPushState('Firebase returned no token'); return }

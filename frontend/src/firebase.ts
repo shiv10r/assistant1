@@ -1,7 +1,7 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, type Auth } from 'firebase/auth'
 import { getMessaging, getToken, onMessage, type Messaging } from 'firebase/messaging'
-import { api, type FirebaseWebConfig } from './api'
+import { api, BASE, type FirebaseWebConfig } from './api'
 
 let cached: { config: FirebaseWebConfig; app: FirebaseApp | null; auth: Auth | null; messaging: Messaging | null } | null = null
 
@@ -39,6 +39,20 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return { idToken: await cred.user.getIdToken() }
 }
 
+/** Registers (or reuses) the FCM service worker and returns it once active. */
+export async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (!('serviceWorker' in navigator)) return null
+  try {
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js?api=' + encodeURIComponent(BASE))
+    await navigator.serviceWorker.ready
+    await reg.update()
+    return reg
+  } catch (e) {
+    console.error('FCM SW registration failed:', e)
+    return null
+  }
+}
+
 /** Subscribes this browser to push notifications. Returns { token } or { error }. */
 export async function subscribePush(): Promise<{ token: string | null; error?: string }> {
   const { config, app } = await load()
@@ -47,7 +61,11 @@ export async function subscribePush(): Promise<{ token: string | null; error?: s
   }
   try {
     const messaging = getMessaging(app)
-    const token = await getToken(messaging, { vapidKey: config.vapidKey })
+    const reg = await ensureServiceWorker()
+    const token = await getToken(messaging, {
+      vapidKey: config.vapidKey,
+      serviceWorkerRegistration: reg ?? undefined,
+    })
     return { token: token || null }
   } catch (e) {
     return { token: null, error: e instanceof Error ? e.message : String(e) }
