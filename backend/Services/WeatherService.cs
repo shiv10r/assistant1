@@ -16,7 +16,20 @@ public record ProjectWeatherDto
     public int WeatherCode { get; init; }
     public bool IsDay { get; init; }
     public string Condition { get; init; } = "";
+    public List<DailyForecastDto> Forecast { get; init; } = new();
     public DateTime UpdatedAt { get; init; } = DateTime.Now;
+}
+
+/// <summary>
+/// One day of the short-range site forecast.
+/// </summary>
+public record DailyForecastDto
+{
+    public string Date { get; init; } = "";
+    public int WeatherCode { get; init; }
+    public double TempMax { get; init; }
+    public double TempMin { get; init; }
+    public double RainProbability { get; init; }
 }
 
 /// <summary>
@@ -73,13 +86,15 @@ public sealed class OpenMeteoWeatherService : IWeatherService
                 $"https://api.open-meteo.com/v1/forecast?latitude={latitude:0.####}&longitude={longitude:0.####}" +
                 "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m,is_day" +
                 "&hourly=temperature_2m,precipitation_probability,weather_code" +
-                "&forecast_hours=12&timezone=auto";
+                "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+                "&forecast_days=5&forecast_hours=12&timezone=auto";
 
             var doc = await _http.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>(url);
             if (doc is null) return null;
 
             var current = doc["current"]?.AsObject();
             var hourly = doc["hourly"]?.AsObject();
+            var daily = doc["daily"]?.AsObject();
             if (current is null) return null;
 
             var code = current["weather_code"]?.GetValue<int?>() ?? 0;
@@ -96,6 +111,31 @@ public sealed class OpenMeteoWeatherService : IWeatherService
                 }
             }
 
+            // 5-day forecast from the daily arrays.
+            var forecast = new List<DailyForecastDto>();
+            if (daily is not null)
+            {
+                var dates = daily["time"] as System.Text.Json.Nodes.JsonArray;
+                var codes = daily["weather_code"] as System.Text.Json.Nodes.JsonArray;
+                var maxT = daily["temperature_2m_max"] as System.Text.Json.Nodes.JsonArray;
+                var minT = daily["temperature_2m_min"] as System.Text.Json.Nodes.JsonArray;
+                var rain = daily["precipitation_probability_max"] as System.Text.Json.Nodes.JsonArray;
+                if (dates is not null)
+                {
+                    for (var i = 0; i < dates.Count; i++)
+                    {
+                        forecast.Add(new DailyForecastDto
+                        {
+                            Date = dates[i]?.GetValue<string?>() ?? "",
+                            WeatherCode = codes is not null && i < codes.Count ? codes[i]?.GetValue<int?>() ?? 0 : 0,
+                            TempMax = maxT is not null && i < maxT.Count ? maxT[i]?.GetValue<double?>() ?? 0 : 0,
+                            TempMin = minT is not null && i < minT.Count ? minT[i]?.GetValue<double?>() ?? 0 : 0,
+                            RainProbability = rain is not null && i < rain.Count ? rain[i]?.GetValue<double?>() ?? 0 : 0,
+                        });
+                    }
+                }
+            }
+
             lock (_cache)
             {
                 _cache[key] = (new ProjectWeatherDto
@@ -109,6 +149,7 @@ public sealed class OpenMeteoWeatherService : IWeatherService
                     WeatherCode = code,
                     IsDay = isDay,
                     Condition = MapCondition(code),
+                    Forecast = forecast,
                     UpdatedAt = DateTime.Now,
                 }, DateTime.UtcNow);
             }
