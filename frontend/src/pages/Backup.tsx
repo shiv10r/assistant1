@@ -146,9 +146,10 @@ export default function Backup() {
       if ('serviceWorker' in navigator) {
         await navigator.serviceWorker.register('/firebase-messaging-sw.js')
       }
-      const token = await subscribePush()
-      if (!token) { setPushState('Firebase push is not enabled. Add FIREBASE_WEB_* and FIREBASE_VAPID_KEY on the server.'); return }
-      const r = await api.pushRegister(token)
+      const res = await subscribePush()
+      if (res.error) { setPushState('Push error: ' + res.error); return }
+      if (!res.token) { setPushState('Firebase returned no token'); return }
+      const r = await api.pushRegister(res.token)
       setPushState(r.ok ? 'done' : (r.message || 'Registration failed'))
     } catch (e) {
       setPushState(String(e))

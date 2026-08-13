@@ -39,16 +39,18 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return { idToken: await cred.user.getIdToken() }
 }
 
-/** Subscribes this browser to push notifications and returns the FCM token. */
-export async function subscribePush(): Promise<string | null> {
+/** Subscribes this browser to push notifications. Returns { token } or { error }. */
+export async function subscribePush(): Promise<{ token: string | null; error?: string }> {
   const { config, app } = await load()
-  if (!app || !config.messagingSenderId || !config.vapidKey) return null
+  if (!app || !config.messagingSenderId || !config.vapidKey) {
+    return { token: null, error: `Push config incomplete (messagingSenderId=${!!config.messagingSenderId}, vapidKey=${!!config.vapidKey})` }
+  }
   try {
     const messaging = getMessaging(app)
     const token = await getToken(messaging, { vapidKey: config.vapidKey })
-    return token || null
-  } catch {
-    return null
+    return { token: token || null }
+  } catch (e) {
+    return { token: null, error: e instanceof Error ? e.message : String(e) }
   }
 }
 
