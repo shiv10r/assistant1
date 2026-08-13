@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { AttendancePunch, AttendanceRecord, AttendanceRequest, EmergencyAlert, SiteParty } from '../../api'
 import { Empty, fmtDate, Modal, money, num, PageHead } from '../../ui'
+import RecipientPicker from '../../components/RecipientPicker'
 
 const ROLES = ['Site Staff', 'Sub-contractor', 'Material Supplier']
 const STATUSES = ['Present', 'Half-Day', 'Absent']
@@ -48,6 +49,7 @@ export default function ProjectAttendance() {
   const [provider, setProvider] = useState(0)
   const [punchBusy, setPunchBusy] = useState<'In' | 'Out' | null>(null)
   const [sosBusy, setSosBusy] = useState(false)
+  const [sosPickerOpen, setSosPickerOpen] = useState(false)
   const [lastPunch, setLastPunch] = useState<AttendancePunch | null>(null)
   const [reqOpen, setReqOpen] = useState(false)
   const [reqKind, setReqKind] = useState(REQ_KINDS[0])
@@ -129,13 +131,15 @@ export default function ProjectAttendance() {
     } catch (e) { setErr(String(e)) } finally { setPunchBusy(null) }
   }
 
-  const doSos = async () => {
+  const doSos = async (recipients?: string[]) => {
     if (!provider) { setErr('Select a worker first'); return }
-    if (!window.confirm('🚨 Raise an emergency SOS with the current GPS location?')) return
     setSosBusy(true); setErr('')
     try {
       const pos = await getPos()
-      await api.projects.sos(pid, { partyId: provider, latitude: pos.lat, longitude: pos.lng, accuracy: pos.acc })
+      await api.projects.sos(pid, {
+        partyId: provider, latitude: pos.lat, longitude: pos.lng, accuracy: pos.acc,
+        recipients: recipients && recipients.length > 0 ? recipients : undefined,
+      })
       refreshPunchFeed()
     } catch (e) { setErr(String(e)) } finally { setSosBusy(false) }
   }
@@ -198,7 +202,7 @@ export default function ProjectAttendance() {
             {punchBusy === 'Out' ? 'Punching…' : 'Remote Punch Out'}
           </button>
           <button className="btn ghost" disabled={!provider} onClick={() => { setErr(''); setReqOpen(true) }}>📝 WFH / Leave Request</button>
-          <button className="btn danger" disabled={!provider || sosBusy} onClick={doSos}>
+          <button className="btn danger" disabled={!provider || sosBusy} onClick={() => { setErr(''); setSosPickerOpen(true) }}>
             {sosBusy ? 'Sending SOS…' : '🚨 SOS'}
           </button>
           {emergencies.filter((e) => !e.handled).length > 0 && (
@@ -433,6 +437,17 @@ export default function ProjectAttendance() {
           </div>
         </Modal>
       )}
+
+      <RecipientPicker
+        open={sosPickerOpen}
+        onClose={() => setSosPickerOpen(false)}
+        title="🚨 SOS — Notify people"
+        description="Choose who receives this emergency alert. Leave none selected to broadcast to all devices."
+        onConfirm={(recipients) => {
+          setSosPickerOpen(false)
+          doSos(recipients)
+        }}
+      />
     </>
   )
 }
