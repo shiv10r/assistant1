@@ -8,8 +8,13 @@ namespace LuxInfra.Api.Controllers;
 public class BackupController : ControllerBase
 {
     private readonly TursoSyncService _sync;
+    private readonly FirebaseSyncService _firebase;
 
-    public BackupController(TursoSyncService sync) => _sync = sync;
+    public BackupController(TursoSyncService sync, FirebaseSyncService firebase)
+    {
+        _sync = sync;
+        _firebase = firebase;
+    }
 
     [HttpGet]
     public async Task<ActionResult> Status() => Ok(await _sync.StatusAsync());
@@ -25,6 +30,25 @@ public class BackupController : ControllerBase
     public async Task<ActionResult> Pull()
     {
         var (ok, message) = await _sync.PullNowAsync();
+        return Ok(new { ok, message });
+    }
+
+    // ---- Firebase mirror ----
+
+    [HttpGet("version")]
+    public async Task<ActionResult> Version() => Ok(await _firebase.StatusAsync());
+
+    [HttpPost("firebase-push")]
+    public async Task<ActionResult> FirebasePush()
+    {
+        var (ok, message) = await _firebase.PushNowAsync();
+        return Ok(new { ok, message });
+    }
+
+    [HttpPost("firebase-pull")]
+    public async Task<ActionResult> FirebasePull()
+    {
+        var (ok, message) = await _firebase.PullNowAsync();
         return Ok(new { ok, message });
     }
 }

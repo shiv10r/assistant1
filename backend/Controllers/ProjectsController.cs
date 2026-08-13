@@ -1,3 +1,4 @@
+using LuxInfra.Api.Services;
 using LuxInfra.Models;
 using LuxInfra.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,13 @@ public class ProjectsController : ControllerBase
 {
     private readonly IProjectService _projects;
     private readonly IActivityService _activity;
+    private readonly PushService? _push;
 
-    public ProjectsController(IProjectService projects, IActivityService activity)
+    public ProjectsController(IProjectService projects, IActivityService activity, PushService? push = null)
     {
         _projects = projects;
         _activity = activity;
+        _push = push;
     }
 
     // ---- Projects ----
@@ -169,6 +172,8 @@ public class ProjectsController : ControllerBase
     {
         var p = await FindParty(id, dto.PartyId);
         await _projects.SetAttendanceStatusAsync(id, p, dto.Date, dto.Status ?? AttendanceStatuses.Registered);
+        if (_push is not null)
+            _ = _push.SendAsync("Attendance updated", $"{p.Name} marked {dto.Status} for {dto.Date:dd-MMM}", $"/projects/{id}/attendance");
         return Ok();
     }
 
@@ -193,6 +198,8 @@ public class ProjectsController : ControllerBase
     {
         m.ProjectId = id;
         await _projects.SaveMaterialTxnAsync(m);
+        if (_push is not null && m.Kind == MaterialTxnKinds.Delivered)
+            _ = _push.SendAsync("Material used", $"{m.Quantity} {m.Unit} of {m.MaterialName} issued on site", $"/projects/{id}/material");
         return Ok(m);
     }
 
@@ -205,6 +212,8 @@ public class ProjectsController : ControllerBase
     {
         log.ProjectId = id;
         await _projects.SaveSiteLogAsync(log);
+        if (_push is not null)
+            _ = _push.SendAsync("Site progress updated", $"Site at {log.ProgressPercent}% — {log.Note}", $"/projects/{id}/site");
         return Ok(log);
     }
 
