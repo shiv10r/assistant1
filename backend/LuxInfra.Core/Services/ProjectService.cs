@@ -219,6 +219,16 @@ public class ProjectService : IProjectService
     public Task<List<EmergencyAlert>> GetEmergencyAlertsAsync(int projectId)
         => _repo.GetEmergencyAlertsAsync(projectId);
 
+    /// <summary>Marks an SOS alert as handled/resolved so it drops out of the active feed.</summary>
+    public async Task<EmergencyAlert?> ResolveEmergencyAsync(int projectId, int alertId)
+    {
+        var alert = await _repo.GetEmergencyAlertAsync(alertId);
+        if (alert is null || alert.ProjectId != projectId) return null;
+        alert.Handled = true;
+        await _repo.UpdateEmergencyAlertAsync(alert);
+        return alert;
+    }
+
     // ---------- material ----------
 
     public async Task<List<MaterialTxn>> GetMaterialTxnsAsync(int projectId, string? kind = null)

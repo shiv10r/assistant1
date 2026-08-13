@@ -292,6 +292,16 @@ public class ProjectsController : ControllerBase
     public async Task<List<EmergencyAlert>> Emergencies(int id)
         => await _projects.GetEmergencyAlertsAsync(id);
 
+    [HttpPost("{id:int}/attendance/sos/{alertId:int}/resolve")]
+    public async Task<ActionResult> ResolveSos(int id, int alertId)
+    {
+        var alert = await _projects.ResolveEmergencyAsync(id, alertId);
+        if (alert is null) return NotFound();
+        if (_push is not null)
+            _ = _push.SendAsync("SOS resolved", $"{alert.PartyName}'s emergency was marked as resolved.", $"/projects/{id}/attendance");
+        return Ok(alert);
+    }
+
     // ---- Materials ----
     [HttpGet("{id:int}/materials")]
     public async Task<List<MaterialTxn>> Materials(int id, [FromQuery] string? kind = null)

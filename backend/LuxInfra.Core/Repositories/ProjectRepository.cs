@@ -236,6 +236,18 @@ public class ProjectRepository : IProjectRepository
             .ToListAsync();
     }
 
+    public async Task<EmergencyAlert?> GetEmergencyAlertAsync(int id)
+    {
+        var conn = await Conn();
+        return await conn.FindAsync<EmergencyAlert>(id);
+    }
+
+    public async Task UpdateEmergencyAlertAsync(EmergencyAlert a)
+    {
+        var conn = await Conn();
+        await conn.UpdateAsync(a);
+    }
+
     // ---------- materials ----------
 
     public async Task InsertMaterialTxnAsync(MaterialTxn m)
