@@ -4,6 +4,7 @@ import { api } from '../../api'
 import type { Project } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
+import LocationPicker from '../../components/LocationPicker'
 import { Plus, Search, FolderKanban, Trash2, ArrowRight, Calendar } from 'lucide-react'
 import { cn, fmtDate } from '../../lib/utils'
 
@@ -25,7 +26,7 @@ export default function ProjectsList() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const nav = useNavigate()
-  const [f, setF] = useState({ name: '', address: '', value: '', status: 'In Discussion' })
+  const [f, setF] = useState({ name: '', address: '', value: '', status: 'In Discussion', latitude: '', longitude: '' })
 
   const load = () => api.projects.list().then(setProjects).catch(() => setProjects([]))
   useEffect(() => { load() }, [])
@@ -43,6 +44,7 @@ export default function ProjectsList() {
       if (!f.name.trim()) { setErr('Project name is required'); return }
       const p = await api.projects.save({
         id: 0, name: f.name.trim(), address: f.address, value: Number(f.value) || 0, status: f.status,
+        latitude: f.latitude ? Number(f.latitude) : 0, longitude: f.longitude ? Number(f.longitude) : 0,
         createdAt: new Date().toISOString().slice(0, 10),
       })
       toast({ title: 'Project created', description: p.name })
@@ -77,7 +79,7 @@ export default function ProjectsList() {
           <h1>Projects</h1>
           <div className="muted">Track construction & interior-design jobs end to end</div>
         </div>
-        <Button onClick={() => { setErr(''); setF({ name: '', address: '', value: '', status: 'In Discussion' }); setOpen(true) }}>
+        <Button onClick={() => { setErr(''); setF({ name: '', address: '', value: '', status: 'In Discussion', latitude: '', longitude: '' }); setOpen(true) }}>
           <Plus className="w-4 h-4" /> New Project
         </Button>
       </div>
@@ -175,6 +177,14 @@ export default function ProjectsList() {
           <div>
             <Label htmlFor="paddr">Address / Site</Label>
             <Textarea id="paddr" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} placeholder="Site address, city" rows={2} />
+          </div>
+          <div>
+            <Label>Location <span className="text-xs text-muted">— search the address, use your location, or click the map</span></Label>
+            <LocationPicker
+              latitude={f.latitude}
+              longitude={f.longitude}
+              onChange={(lat, lng, addr) => setF((prev) => ({ ...prev, latitude: lat, longitude: lng, address: addr || prev.address }))}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>

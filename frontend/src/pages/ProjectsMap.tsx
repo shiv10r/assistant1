@@ -2,14 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { Project } from '../api'
-import { Card, CardContent, Badge, Empty, money, Button } from '../components/ui'
+import { Card, CardContent, Badge, Empty, money, Button, Modal } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
+import LocationPicker from '../components/LocationPicker'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapPin, Navigation, Car, Navigation2, LocateFixed, Search, Route } from 'lucide-react'
+import { MapPin, Navigation, Car, LocateFixed, Search, Route, Crosshair, Radio, Sparkles } from 'lucide-react'
 import { getTheme } from '../theme'
 
 type Place = { label: string; lat: number; lng: number }
+type Tagged = { p: Project; lat: number; lng: number; approx: boolean }
 
 function PlaceSearch({ placeholder, onPick }: { placeholder: string; onPick: (p: Place) => void }) {
   const [q, setQ] = useState('')
@@ -63,6 +65,13 @@ function tileUrl(dark: boolean): string {
   return `https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`
 }
 
+function statusColor(status: string): string {
+  if (status === 'Completed') return '#10B981'
+  if (status === 'Ongoing') return '#4F6BED'
+  if (status === 'On Hold') return '#F59E0B'
+  return '#8E97A8'
+}
+
 function leafletIcon(color = '#4F6BED') {
   return L.divIcon({
     className: 'lux-map-marker',
@@ -103,18 +112,28 @@ export default function ProjectsMap() {
   const [projects, setProjects] = useState<Project[]>([])
   const mapRef = useRef<L.Map | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const markerRefs = useRef<Map<number, L.Marker>>(new Map())
+  const projectLayerRef = useRef<L.LayerGroup | null>(null)
+  const userLayerRef = useRef<L.LayerGroup | null>(null)
+  const routeLayerRef = useRef<L.LayerGroup | null>(null)
+  const watchRef = useRef<number | null>(null)
+  const fittedRef = useRef(false)
+
   const [locating, setLocating] = useState(false)
+  const [live, setLive] = useState(false)
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null)
+  const [userAcc, setUserAcc] = useState<number | null>(null)
+  const [geocoded, setGeocoded] = useState<Map<number, { lat: number; lng: number }>>(new Map())
   const [fromLoc, setFromLoc] = useState<Place | null>(null)
   const [toLoc, setToLoc] = useState<Place | null>(null)
   const [routing, setRouting] = useState(false)
   const [route, setRoute] = useState<{ km: number; min: number } | null>(null)
-  const routeLayerRef = useRef<L.LayerGroup | null>(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [locModal, setLocModal] = useState<Project | null>(null)
+  const [locBusy, setLocBusy] = useState(false)
+  const [locF, setLocF] = useState({ latitude: '', longitude: '', address: '' })
 
-  useEffect(() => {
-    api.projects.list().then(setProjects).catch(() => setProjects([]))
-  }, [])
-
+  // ---- init map (always, so route preview + tagging work even with zero coords) ----
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
     const map = L.map(containerRef.current, { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
@@ -124,75 +143,218 @@ export default function ProjectsMap() {
       maxZoom: 19,
     }).addTo(map)
     mapRef.current = map
-    return () => { map.remove(); mapRef.current = null }
+    return () => { watchRef.current && navigator.geolocation.clearWatch(watchRef.current); map.remove(); mapRef.current = null }
   }, [])
 
+  // ---- load projects ----
+  useEffect(() => {
+    api.projects.list().then(setProjects).catch(() => setProjects([]))
+  }, [])
+
+  // ---- auto-geocode project addresses so sites get tagged even without stored coords ----
+  useEffect(() => {
+    const todo = projects.filter((p) => !p.latitude && !p.longitude && p.address?.trim())
+    if (!todo.length) return
+    let cancelled = false
+    ;(async () => {
+      for (const p of todo) {
+        if (cancelled) return
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(p.address)}`)
+          const data = await res.json()
+          if (!cancelled && data?.[0]) {
+            setGeocoded((prev) => new Map(prev).set(p.id, { lat: Number(data[0].lat), lng: Number(data[0].lon) }))
+          }
+        } catch { /* geocoder down — tag manually instead */ }
+        await new Promise((r) => setTimeout(r, 1150)) // polite to Nominatim usage policy
+      }
+    })()
+    return () => { cancelled = true }
+  }, [projects])
+
+  const tagged = useMemo<Tagged[]>(() => {
+    return projects
+      .map((p) => {
+        if (p.latitude && p.longitude) return { p, lat: p.latitude, lng: p.longitude, approx: false }
+        const g = geocoded.get(p.id)
+        if (g) return { p, lat: g.lat, lng: g.lng, approx: true }
+        return null
+      })
+      .filter((x): x is Tagged => !!x)
+  }, [projects, geocoded])
+
+  const taggedIds = useMemo(() => new Set(tagged.map((t) => t.p.id)), [tagged])
+  const untagged = projects.filter((p) => !taggedIds.has(p.id))
+  const approxCount = tagged.filter((t) => t.approx).length
+
+  // ---- user marker layer: live dot + accuracy circle + guide lines to sites ----
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-    const markers = projects.filter((p) => p.latitude && p.longitude)
-    markers.forEach((p) => {
-      const status = p.status === 'Completed' ? '#10B981' : p.status === 'Ongoing' ? '#4F6BED' : p.status === 'On Hold' ? '#F59E0B' : '#8E97A8'
-      const marker = L.marker([p.latitude!, p.longitude!], { icon: leafletIcon(status) }).addTo(map)
-      const popup = L.popup({ className: 'lux-map-popup' }).setContent(`
-        <div class="lux-popwrap">
-          <b>${p.name}</b>
-          <div class="pop-addr">${p.address || 'No address'}</div>
-          <div class="pop-val">${money(p.value)} · <span class="pop-status">${p.status}</span></div>` +
-          (userLoc ? `<div class="pop-dist">📍 ${distLabel(haversineKm(userLoc.lat, userLoc.lng, p.latitude!, p.longitude!))} from you</div>` : '') +
-          `<div class="pop-actions">
-            <button data-project="${p.id}" class="pop-open">Open project →</button>
-            ${userLoc
-              ? `<a href="${gmapsUrl(userLoc, { latitude: p.latitude!, longitude: p.longitude! })}" target="_blank" rel="noopener" class="pop-visit">Plan visit</a>`
-              : ''}
-          </div>
-        </div>`)
-      marker.bindPopup(popup)
-      marker.on('popupopen', () => {
-        popup.getElement()?.querySelector('button')?.addEventListener('click', () => nav(`/projects/${p.id}`))
-      })
-    })
-    if (markers.length === 1) {
-      map.setView([markers[0].latitude!, markers[0].longitude!], 13)
-    } else if (markers.length > 1) {
-      const bounds = L.latLngBounds(markers.map((p) => [p.latitude!, p.longitude!]))
-      if (userLoc) bounds.extend([userLoc.lat, userLoc.lng])
-      map.fitBounds(bounds, { padding: [40, 40] })
-    }
-  }, [projects, nav, userLoc])
-
-  // Lines from user location to each site
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map || !userLoc) return
+    userLayerRef.current?.remove()
+    userLayerRef.current = null
+    if (!userLoc) return
     const layer = L.layerGroup().addTo(map)
-    projects.filter((p) => p.latitude && p.longitude).forEach((p) => {
+    userLayerRef.current = layer
+    tagged.forEach((t) => {
       L.polyline(
-        [[userLoc.lat, userLoc.lng], [p.latitude!, p.longitude!]],
+        [[userLoc.lat, userLoc.lng], [t.lat, t.lng]],
         { color: '#4F6BED', weight: 2, dashArray: '6 8', opacity: 0.45 }
       ).addTo(layer)
     })
     L.marker([userLoc.lat, userLoc.lng], { icon: userIcon() }).addTo(layer)
-    L.circle([userLoc.lat, userLoc.lng], { radius: 60, color: '#4F6BED', weight: 1, opacity: 0.3, fillOpacity: 0.08 }).addTo(layer)
+    L.circle([userLoc.lat, userLoc.lng], {
+      radius: userAcc && userAcc > 0 ? userAcc : 60,
+      color: live ? '#10B981' : '#4F6BED', weight: 1, opacity: 0.35, fillOpacity: live ? 0.12 : 0.08,
+    }).addTo(layer)
+    if (live) {
+      L.circle([userLoc.lat, userLoc.lng], { radius: 9, color: '#fff', weight: 2, fillOpacity: 1, fillColor: '#10B981' }).addTo(layer)
+    }
     return () => { layer.remove() }
-  }, [projects, userLoc])
+  }, [userLoc, userAcc, live, tagged])
 
-  const withCoords = projects.filter((p) => p.latitude && p.longitude)
+  // ---- project markers ----
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    projectLayerRef.current?.remove()
+    projectLayerRef.current = null
+    markerRefs.current = new Map()
+    if (!tagged.length) return
+    const layer = L.layerGroup().addTo(map)
+    projectLayerRef.current = layer
+    tagged.forEach(({ p, lat, lng, approx }) => {
+      const marker = L.marker([lat, lng], { icon: leafletIcon(statusColor(p.status)) }).addTo(layer)
+      markerRefs.current.set(p.id, marker)
+      const popup = L.popup({ className: 'lux-map-popup' }).setContent(`
+        <div class="lux-popwrap">
+          <b>${p.name}</b>` +
+          (approx ? `<div class="pop-chip pop-approx">≈ tagged from address</div>` : `<div class="pop-chip pop-exact">live coordinates</div>`) +
+          `<div class="pop-addr">${p.address || 'No address'}</div>
+          <div class="pop-val">${money(p.value)} · <span class="pop-status">${p.status}</span></div>` +
+          (userLoc ? `<div class="pop-dist">📍 ${distLabel(haversineKm(userLoc.lat, userLoc.lng, lat, lng))} from you</div>` : '') +
+          `<div class="pop-actions">
+            <button data-project="${p.id}" class="pop-open">Open project →</button>
+            ${userLoc
+              ? `<a href="${gmapsUrl(userLoc, { lat, lng })}" target="_blank" rel="noopener" class="pop-visit">Plan visit</a>`
+              : ''}
+          </div>
+        </div>`)
+      marker.bindPopup(popup)
+      marker.on('click', () => setSelectedProject(p))
+      marker.on('popupopen', () => {
+        popup.getElement()?.querySelector('button')?.addEventListener('click', () => nav(`/projects/${p.id}`))
+      })
+    })
+    if (!fittedRef.current) {
+      const bounds = L.latLngBounds(tagged.map((t) => [t.lat, t.lng]))
+      if (userLoc) bounds.extend([userLoc.lat, userLoc.lng])
+      map.fitBounds(bounds, { padding: [40, 40] })
+      fittedRef.current = true
+    }
+    return () => { layer.remove() }
+  }, [tagged, nav, userLoc])
 
-  const distances = useMemo(() => {
-    if (!userLoc) return []
-    return withCoords
-      .map((p) => ({ p, km: haversineKm(userLoc.lat, userLoc.lng, p.latitude!, p.longitude!) }))
+  // ---- open popup for the selected project (sidebar click) ----
+  useEffect(() => {
+    const marker = selectedProject ? markerRefs.current.get(selectedProject.id) : null
+    if (marker) {
+      mapRef.current?.panTo(marker.getLatLng())
+      marker.openPopup()
+    }
+  }, [selectedProject, tagged])
+
+  // ---- tag-on-map: click the map to save a project's coordinates ----
+  const [autotagBusy, setAutotagBusy] = useState(false)
+
+  const autotagFromAddresses = async () => {
+    const todo = untagged.filter((p) => p.address?.trim())
+    if (!todo.length) { toast({ title: 'Nothing to tag', description: 'Add an address to a project first (via its Edit page or the locator here).', variant: 'info' }); return }
+    setAutotagBusy(true)
+    let ok = 0
+    for (const p of todo) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(p.address)}`)
+        const data = await res.json()
+        if (data?.[0]) {
+          await api.projects.update({ ...p, latitude: Number(data[0].lat), longitude: Number(data[0].lon) })
+          ok++
+        }
+        await new Promise((r) => setTimeout(r, 1150)) // polite to Nominatim
+      } catch { /* skip */ }
+    }
+    setAutotagBusy(false)
+    fittedRef.current = false
+    const fresh = await api.projects.list()
+    setProjects(fresh)
+    toast({ title: ok ? `Tagged ${ok} of ${todo.length} projects` : 'Could not tag any project', description: ok ? 'Locations saved from their addresses.' : 'Try setting locations from the picker instead.', variant: ok ? 'success' : 'error' })
+  }
+
+  const openLocator = (p: Project) => {
+    setLocF({ latitude: p.latitude ? String(p.latitude) : '', longitude: p.longitude ? String(p.longitude) : '', address: p.address })
+    setLocModal(p)
+  }
+
+  const saveLocation = async () => {
+    if (!locModal) return
+    if (!locF.latitude || !locF.longitude) { toast({ title: 'Set a location first', description: 'Search a place, use your location, or click the map.', variant: 'error' }); return }
+    setLocBusy(true)
+    try {
+      await api.projects.update({
+        ...locModal,
+        latitude: Number(locF.latitude), longitude: Number(locF.longitude),
+        address: locF.address || locModal.address,
+      })
+      setLocBusy(false)
+      setLocModal(null)
+      fittedRef.current = false
+      const fresh = await api.projects.list()
+      setProjects(fresh)
+      toast({ title: 'Location saved', description: `${locModal.name} is now tagged on the map.`, variant: 'success' })
+    } catch (e) {
+      setLocBusy(false)
+      toast({ title: 'Could not save location', description: String(e), variant: 'error' })
+    }
+  }
+
+  const sortedTags = useMemo(() => {
+    if (!userLoc) return tagged
+    return [...tagged]
+      .map((t) => ({ t, km: haversineKm(userLoc.lat, userLoc.lng, t.lat, t.lng) }))
       .sort((a, b) => a.km - b.km)
-  }, [userLoc, withCoords])
+      .map((x) => x.t)
+  }, [tagged, userLoc])
 
-  const locate = () => {
+  const locate = (watch: boolean) => {
+    if (watch) {
+      if (live) {
+        if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
+        watchRef.current = null
+        setLive(false)
+        toast({ title: 'Live tracking off', variant: 'info' })
+        return
+      }
+      if (!('geolocation' in navigator)) { toast({ title: 'Geolocation not supported', variant: 'error' }); return }
+      setLive(true)
+      const onPos = (pos: GeolocationPosition) => {
+        const u = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setUserLoc(u)
+        setUserAcc(pos.coords.accuracy)
+        mapRef.current?.setView([u.lat, u.lng], 15)
+      }
+      navigator.geolocation.getCurrentPosition(onPos, () => { setLive(false); toast({ title: 'Could not start tracking', variant: 'error' }) }, { enableHighAccuracy: true, timeout: 10000 })
+      watchRef.current = navigator.geolocation.watchPosition(onPos, () => { setLive(false); toast({ title: 'Tracking stopped', variant: 'error' }) }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 })
+      toast({ title: 'Live tracking on', description: 'Following your position in real time.', variant: 'success' })
+      return
+    }
     if (!('geolocation' in navigator)) { toast({ title: 'Geolocation not supported', variant: 'error' }); return }
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        mapRef.current?.setView([pos.coords.latitude, pos.coords.longitude], 12)
+        const u = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setUserLoc(u)
+        setUserAcc(pos.coords.accuracy)
+        mapRef.current?.setView([u.lat, u.lng], 12)
         setLocating(false)
       },
       () => { setLocating(false); toast({ title: 'Could not get your location', variant: 'error' }) },
@@ -200,8 +362,8 @@ export default function ProjectsMap() {
     )
   }
 
-  function gmapsUrl(origin: { lat: number; lng: number }, dest: { latitude: number; longitude: number }) {
-    return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.latitude},${dest.longitude}&travelmode=driving`
+  function gmapsUrl(origin: { lat: number; lng: number }, dest: { lat: number; lng: number }) {
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.lat},${dest.lng}&travelmode=driving`
   }
 
   const useMyLocForFrom = () => {
@@ -246,19 +408,41 @@ export default function ProjectsMap() {
     setRoute(null); setFromLoc(null); setToLoc(null)
   }
 
+  const openProject = (p: Project) => {
+    setSelectedProject(p)
+    const marker = markerRefs.current.get(p.id)
+    if (marker) {
+      mapRef.current?.panTo(marker.getLatLng())
+      marker.openPopup()
+    } else {
+      openLocator(p)
+    }
+  }
+
   return (
     <>
       <div className="page-head">
         <div>
           <h1>Site Map</h1>
-          <div className="muted">{userLoc ? 'Distances from your live location' : 'Project locations on the map — locate yourself to plan visits'}</div>
+          <div className="muted">
+            {tagged.length > 0
+              ? `${tagged.length} project${tagged.length === 1 ? '' : 's'} on the map${approxCount > 0 ? ` · ${approxCount} tagged from address` : ''}${userLoc ? ' · distances from your live location' : ''}`
+              : 'Project locations on the map — locate yourself to plan visits'}
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={locate} disabled={locating}>
+          <Button variant="outline" onClick={() => locate(true)} className={live ? '!text-emerald-500 !border-emerald-500/50' : ''}>
+            <span className="flex items-center gap-1.5">
+              {live && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>}
+              <Radio className="w-4 h-4" />
+              {live ? 'Live · on' : 'Live tracking'}
+            </span>
+          </Button>
+          <Button variant="outline" onClick={() => locate(false)} disabled={locating}>
             {userLoc ? <LocateFixed className="w-4 h-4" /> : <Navigation className="w-4 h-4" />}
             {locating ? 'Locating…' : userLoc ? 'Recenter' : 'My location'}
           </Button>
-          <Button variant="ghost" onClick={() => { api.projects.list().then(setProjects).catch(() => {}) }}>
+          <Button variant="ghost" onClick={() => { fittedRef.current = false; api.projects.list().then(setProjects).catch(() => {}) }}>
             <MapPin className="w-4 h-4" /> Refresh
           </Button>
         </div>
@@ -289,81 +473,134 @@ export default function ProjectsMap() {
         </CardContent>
       </Card>
 
-      {withCoords.length === 0 ? (
-        <Card>
-          <CardContent className="py-16">
+      <div className="grid gap-4 lg:grid-cols-3 mb-4">
+        <div className="lg:col-span-1 space-y-3 max-h-[620px] overflow-y-auto pr-1">
+          {!userLoc && (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted mb-3">Tap <b>Live tracking</b> to follow your position and see how far every site is in real time.</p>
+                <Button onClick={() => locate(true)} disabled={locating} className="w-full">
+                  <Radio className="w-4 h-4" /> {live ? 'Live · on' : 'Start live tracking'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {tagged.length === 0 && untagged.length > 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm text-text mb-3">
+                  <b>No sites on the map yet.</b> Add a location to each project below — search the address, use your location, or auto-tag from the project addresses.
+                </p>
+                <Button onClick={autotagFromAddresses} disabled={autotagBusy} className="w-full">
+                  <Sparkles className="w-4 h-4" /> {autotagBusy ? 'Tagging from addresses…' : 'Auto-tag from addresses'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {untagged.length > 0 && tagged.length > 0 && (
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-text"><b>{untagged.length} project{untagged.length === 1 ? '' : 's'}</b> not on the map yet.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={autotagFromAddresses} disabled={autotagBusy}>
+                  <Sparkles className="w-3.5 h-3.5" /> {autotagBusy ? '…' : 'Auto-tag'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {sortedTags.map(({ p, lat, lng, approx }, i) => (
+            <Card key={p.id} className="mb-0">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <button type="button" onClick={() => openProject(p)} className="font-medium text-text hover:text-primary hover:underline truncate text-left">{p.name}</button>
+                  {userLoc && <Badge variant="outline" size="sm" className="flex-shrink-0">#{i + 1}</Badge>}
+                </div>
+                <p className="text-xs text-muted truncate mb-1">{p.address || 'No address'} · {money(p.value)}</p>
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  {approx
+                    ? <span className="pop-chip pop-approx">≈ from address</span>
+                    : <span className="pop-chip pop-exact">live coordinates</span>}
+                  <Badge variant="outline" size="sm" className="flex-shrink-0">{p.status}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-primary flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" /> {userLoc ? distLabel(haversineKm(userLoc.lat, userLoc.lng, lat, lng)) : `${lat.toFixed(4)}, ${lng.toFixed(4)}`}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => openProject(p)}><Crosshair className="w-3.5 h-3.5" /> View</Button>
+                    {userLoc && (
+                      <a
+                        href={gmapsUrl(userLoc, { lat, lng })}
+                        target="_blank"
+                        rel="noopener"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        <Car className="w-3.5 h-3.5" /> Plan visit
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {untagged.map((p) => (
+            <Card key={p.id} className="mb-0">
+              <CardContent className="p-4 flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <button type="button" onClick={() => openProject(p)} className="font-medium text-text hover:text-primary hover:underline block truncate text-left">{p.name}</button>
+                  <p className="text-xs text-muted truncate">{p.address || 'No address'} · {money(p.value)}</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => openLocator(p)}>
+                  <MapPin className="w-3.5 h-3.5" /> Set location
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+
+          {projects.length === 0 && (
             <Empty
               icon={<MapPin className="w-12 h-12" />}
-              title="No site coordinates yet"
-              description="Set latitude & longitude on a project (or its address) to plot it here. Edit a project to add coordinates."
-              action={<Link to="/projects"><Button>Go to Projects</Button></Link>}
+              title="No projects yet"
+              description="Create a project first — then tag its location here to plot it on the map."
+              action={<Link to="/projects/new"><Button>Create a project</Button></Link>}
             />
-          </CardContent>
+          )}
+        </div>
+
+        <Card className="mb-0 overflow-hidden lg:col-span-2 relative">
+          <div ref={containerRef} style={{ height: '620px', zIndex: 0 }} className="w-full" />
         </Card>
-      ) : (
-        <>
-          <div className="grid gap-4 lg:grid-cols-3 mb-4">
-            <div className="lg:col-span-1 space-y-3 max-h-[560px] overflow-y-auto pr-1">
-              {!userLoc && (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm text-muted mb-3">Tap <b>My location</b> to see how far each site is and plan your next visit.</p>
-                    <Button onClick={locate} disabled={locating} className="w-full">
-                      <Navigation2 className="w-4 h-4" /> {locating ? 'Locating…' : 'Use my location'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+      </div>
 
-              {distances.map(({ p, km }, i) => (
-                <Card key={p.id} className="mb-0">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <Link to={`/projects/${p.id}`} className="font-medium text-text hover:text-primary hover:underline truncate">{p.name}</Link>
-                      {userLoc && <Badge variant="outline" size="sm" className="flex-shrink-0">#{i + 1}</Badge>}
-                    </div>
-                    <p className="text-xs text-muted truncate mb-2">{p.address || 'No address'} · {money(p.value)}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-primary flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" /> {userLoc ? distLabel(km) : p.status}
-                      </span>
-                      {userLoc && (
-                        <a
-                          href={gmapsUrl(userLoc, { latitude: p.latitude!, longitude: p.longitude! })}
-                          target="_blank"
-                          rel="noopener"
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg px-3 py-1.5 transition-colors"
-                        >
-                          <Car className="w-3.5 h-3.5" /> Plan visit
-                        </a>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {!userLoc && withCoords.map((p) => (
-                <Card key={p.id} className="mb-0">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-4 h-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <Link to={`/projects/${p.id}`} className="font-medium text-text hover:text-primary hover:underline block truncate">{p.name}</Link>
-                      <p className="text-xs text-muted truncate">{p.address || 'No address'} · {money(p.value)}</p>
-                    </div>
-                    <Badge variant="outline" size="sm">{p.status}</Badge>
-                  </CardContent>
-                </Card>
-              ))}
+      <Modal open={locModal !== null} onClose={() => setLocModal(null)} title="Set project location" description={locModal ? `${locModal.name} — search the address, use your location, or click the map.` : ''} size="md">
+        <div className="space-y-4">
+          <LocationPicker
+            latitude={locF.latitude}
+            longitude={locF.longitude}
+            onChange={(lat, lng, addr) => setLocF((prev) => ({ ...prev, latitude: lat, longitude: lng, address: addr || prev.address }))}
+          />
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-border">
+            <p className="text-xs text-muted">Coordinates are saved to the project and shown on the map.</p>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setLocModal(null)}>Cancel</Button>
+              <Button onClick={saveLocation} disabled={locBusy || !locF.latitude || !locF.longitude}>
+                <MapPin className="w-4 h-4" /> {locBusy ? 'Saving…' : 'Save location'}
+              </Button>
             </div>
-
-            <Card className="mb-0 overflow-hidden lg:col-span-2">
-              <div ref={containerRef} style={{ height: '560px', zIndex: 0 }} className="w-full" />
-            </Card>
           </div>
-        </>
-      )}
+        </div>
+      </Modal>
     </>
   )
 }
