@@ -41,13 +41,16 @@ Startup / after redeploy:
 
 ## What is required from you (setup)
 1. Create a **Firebase project** (free Spark plan) at https://console.firebase.google.com.
-2. Enable **Firestore** and **Storage** in that project.
+2. Enable exactly **two** services in that project:
+   - **Cloud Storage for Firebase** — holds the `luxinfra.db3` backup blob (Build → Storage → Get started). Bucket becomes `<project-id>.appspot.com`.
+   - **Cloud Firestore** — holds the `meta/data` version doc (Build → Firestore Database → Create database, production mode).
+   - *Not needed:* Authentication, Realtime Database, Firebase Hosting.
 3. Generate a **service account JSON** (Project settings → Service accounts → Generate new private key). Save it.
 4. On Render, set these env vars (restart/redeploy after adding):
    - `FIREBASE_PROJECT_ID` = your Firebase project id
    - `FIREBASE_SERVICE_ACCOUNT` = base64 of the JSON file (easiest on Render), **or** path to the JSON
    - `FIREBASE_BUCKET` = optional; defaults to `<project_id>.appspot.com`
-5. After the first deploy, hit **Backup → Firebase → Push now** once to upload the current DB. From then on every change auto-syncs and survives redeploys.
+5. After the first deploy, hit **Backup → Firebase → Upload to Firebase** once to upload the current DB. From then on every change auto-syncs and survives redeploys.
 
 ## Env var summary
 | Variable | Required | Purpose |
