@@ -214,6 +214,64 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 .leaflet-container { font-family: inherit; }
 .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.18); }
 
+/* ---------- Leaflet maps (themed) ---------- */
+.leaflet-container { background: var(--bg); }
+.leaflet-control-zoom a { border-color: var(--border) !important; color: var(--text) !important; }
+.leaflet-control-attribution { background: var(--surface) !important; color: var(--dim) !important; font-size: 10px; }
+.leaflet-control-attribution a { color: var(--dim) !important; }
+
+.lux-pin {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 8px;
+  transform: rotate(-45deg);
+  background: var(--pin, var(--primary));
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  border: 2px solid #fff;
+}
+.lux-pin-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+}
+.lux-user-marker .user-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px var(--primary);
+  display: block;
+}
+
+.lux-map-popup .leaflet-popup-content-wrapper {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.lux-map-popup .leaflet-popup-tip { background: var(--surface); border: 1px solid var(--border); }
+.lux-popwrap { font-size: 13px; min-width: 210px; }
+.lux-popwrap b { font-size: 14px; }
+.pop-addr { color: var(--dim); margin: 2px 0 6px; }
+.pop-val { margin-bottom: 6px; }
+.pop-status { color: var(--dim); }
+.pop-dist { color: var(--primary); font-weight: 600; margin-bottom: 6px; }
+.pop-actions { display: flex; gap: 6px; }
+.pop-open {
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  padding: 6px 10px; cursor: pointer; font-weight: 600; font-size: 12.5px; flex: 1;
+}
+.pop-visit {
+  background: #10B981; color: #fff; border-radius: 8px; padding: 6px 10px;
+  cursor: pointer; font-weight: 600; font-size: 12.5px; text-decoration: none;
+  flex: 1; text-align: center;
+}
+
 /* ---------- Category bars (Reports) ---------- */
 .cat-bars { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 20px; }
 .cat-bar-row { display: grid; grid-template-columns: 180px 1fr 90px; align-items: center; gap: 12px; }
@@ -253,6 +311,13 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 .input-row input:focus { border-color: var(--primary); }
 .input-row .send { width: 44px; height: 44px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font-size: 16px; cursor: pointer; transition: background .15s ease; }
 .input-row .send:hover { background: color-mix(in srgb, var(--primary) 85%, #000); }
+.search-box { border-top: 1px solid var(--border); background: var(--surface); }
+.search-box .input-row { padding: 10px 14px 8px; }
+.search-results { max-height: 40%; overflow-y: auto; padding: 0 14px 10px; display: flex; flex-direction: column; gap: 10px; }
+.sr-group { }
+.sr-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--dim); padding: 4px 0; }
+.sr-row { font-size: 13px; padding: 6px 10px; background: var(--surface2); border-radius: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sr-row strong { color: var(--text); }
 
 .ai-mode-switch { display: inline-flex; gap: 4px; background: var(--surface2); border-radius: 999px; padding: 3px; margin-left: auto; }
 .ai-mode-switch button { border: none; background: transparent; color: var(--dim); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer; transition: all .15s ease; }

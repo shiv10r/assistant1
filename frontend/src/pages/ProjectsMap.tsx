@@ -7,17 +7,22 @@ import { useToast } from '../components/ui/Toast'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Navigation, Car, Navigation2, LocateFixed } from 'lucide-react'
+import { getTheme } from '../theme'
 
 const DEFAULT_CENTER: [number, number] = [20.5937, 78.9629] // India
 const DEFAULT_ZOOM = 5
 
+function tileUrl(dark: boolean): string {
+  return `https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`
+}
+
 function leafletIcon(color = '#4F6BED') {
   return L.divIcon({
     className: 'lux-map-marker',
-    html: `<svg width="30" height="42" viewBox="0 0 24 24" fill="${color}"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
-    iconSize: [30, 42],
-    iconAnchor: [15, 42],
-    popupAnchor: [0, -40],
+    html: `<span class="lux-pin" style="--pin:${color}"><span class="lux-pin-dot"></span></span>`,
+    iconSize: [34, 46],
+    iconAnchor: [17, 44],
+    popupAnchor: [0, -42],
   })
 }
 
@@ -61,7 +66,8 @@ export default function ProjectsMap() {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
     const map = L.map(containerRef.current, { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const dark = getTheme() === 'dark'
+    L.tileLayer(tileUrl(dark), {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
@@ -76,16 +82,16 @@ export default function ProjectsMap() {
     markers.forEach((p) => {
       const status = p.status === 'Completed' ? '#10B981' : p.status === 'Ongoing' ? '#4F6BED' : p.status === 'On Hold' ? '#F59E0B' : '#8E97A8'
       const marker = L.marker([p.latitude!, p.longitude!], { icon: leafletIcon(status) }).addTo(map)
-      const popup = L.popup().setContent(`
-        <div style="font-family:sans-serif;font-size:13px;min-width:200px">
-          <b style="font-size:14px">${p.name}</b>
-          <div style="color:#666;margin:2px 0 6px">${p.address || 'No address'}</div>
-          <div style="margin-bottom:6px">${money(p.value)} · <span style="color:#888">${p.status}</span></div>
-          ${userLoc ? `<div style="color:#4F6BED;font-weight:600;margin-bottom:6px">📍 ${distLabel(haversineKm(userLoc.lat, userLoc.lng, p.latitude!, p.longitude!))} from you</div>` : ''}
-          <div style="display:flex;gap:6px">
-            <button data-project="${p.id}" style="background:#4F6BED;color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:600;flex:1">Open project →</button>
+      const popup = L.popup({ className: 'lux-map-popup' }).setContent(`
+        <div class="lux-popwrap">
+          <b>${p.name}</b>
+          <div class="pop-addr">${p.address || 'No address'}</div>
+          <div class="pop-val">${money(p.value)} · <span class="pop-status">${p.status}</span></div>` +
+          (userLoc ? `<div class="pop-dist">📍 ${distLabel(haversineKm(userLoc.lat, userLoc.lng, p.latitude!, p.longitude!))} from you</div>` : '') +
+          `<div class="pop-actions">
+            <button data-project="${p.id}" class="pop-open">Open project →</button>
             ${userLoc
-              ? `<a href="${gmapsUrl(userLoc, { latitude: p.latitude!, longitude: p.longitude! })}" target="_blank" rel="noopener" style="background:#10B981;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:600;text-decoration:none;flex:1;text-align:center">Plan visit</a>`
+              ? `<a href="${gmapsUrl(userLoc, { latitude: p.latitude!, longitude: p.longitude! })}" target="_blank" rel="noopener" class="pop-visit">Plan visit</a>`
               : ''}
           </div>
         </div>`)
