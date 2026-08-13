@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using LuxInfra.Api.Auth;
+using LuxInfra.Api.Services;
 using LuxInfra.Models;
 using LuxInfra.Repositories;
 using LuxInfra.Services;
@@ -16,17 +17,20 @@ public class AuthController : ControllerBase
     private readonly AuthOptions _auth;
     private readonly IUserRepository _users;
     private readonly IActivityService _activity;
+    private readonly FirebasePlatformService _firebase;
 
-    public AuthController(AuthOptions auth, IUserRepository users, IActivityService activity)
+    public AuthController(AuthOptions auth, IUserRepository users, IActivityService activity, FirebasePlatformService firebase)
     {
         _auth = auth;
         _users = users;
         _activity = activity;
+        _firebase = firebase;
     }
 
     public record LoginRequest(string? Username, string? Password);
     public record LoginResult(string Token, string Username, string Role);
     public record RegisterRequest(string? Username, string? Password, string? Name);
+    public record FirebaseLoginRequest(string? IdToken);
 
     [HttpPost("login")]
     [AllowAnonymous]
@@ -56,6 +60,44 @@ public class AuthController : ControllerBase
         }
 
         return Unauthorized(new { error = "Invalid username or password" });
+    }
+
+    // ---- Firebase Auth (email/password + Google, free Spark plan) ----
+    // The client signs in via the Firebase Web SDK and sends its ID token here. We
+    // verify it server-side, then map the account to an app user/role + session token.
+
+    [HttpPost("firebase")]
+    [AllowAnonymous]
+    public async Task<ActionResult> FirebaseLogin([FromBody] FirebaseLoginRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req?.IdToken))
+            return BadRequest(new { error = "Missing ID token" });
+
+        var (ok, error, email, uid) = await _firebase.VerifyIdTokenAsync(req.IdToken);
+        if (!ok)
+            return Unauthorized(new { error = error });
+
+        var username = string.IsNullOrWhiteSpace(email) ? uid ?? "user" : email;
+        var user = await _users.GetUserByUsernameAsync(username);
+        if (user is null)
+        {
+            user = new AppUser { Username = username, Role = Roles.Supervisor, IsActive = true };
+            await _users.InsertUserAsync(user);
+            await _activity.LogAsync("Firebase account linked", username);
+        }
+        if (user is null || !user.IsActive)
+            return Unauthorized(new { error = "Account not active" });
+
+        var token = GenerateToken();
+        await _users.CreateSessionAsync(new UserSession
+        {
+            Token = token,
+            UserId = user.Id,
+            Username = user.Username,
+            Role = user.Role,
+            ExpiresAt = DateTime.UtcNow.AddDays(30),
+        });
+        return Ok(new LoginResult(token, user.Username, user.Role));
     }
 
     // ---- Self-registration (creates a supervisor account, auto-login) ----

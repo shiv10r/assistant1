@@ -48,8 +48,10 @@ builder.Services.AddSingleton<IActivityService, ActivityService>();
 builder.Services.AddSingleton<TursoSyncService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<TursoSyncService>());
 
-// ---- Optional Firebase Storage mirror — persists data across Render redeploys.
-// Enable by setting FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT env vars (no-ops when unset). ----
+// ---- Firebase platform: Auth (email/Google) + FCM push + Firestore backup — free Spark plan.
+// Enable with FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT (+ web SDK & VAPID for push). ----
+builder.Services.AddSingleton<FirebasePlatformService>();
+builder.Services.AddSingleton<PushService>();
 builder.Services.AddSingleton<FirebaseSyncService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<FirebaseSyncService>());
 

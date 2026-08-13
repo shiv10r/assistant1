@@ -1,16 +1,17 @@
+using System.IO.Compression;
 using System.Text;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
-using Google.Cloud.Storage.V1;
 using LuxInfra.Services;
 
 namespace LuxInfra.Api.Services;
 
 /// <summary>
-/// Mirrors the local SQLite database file to Firebase Storage and records a data
-/// version in Firestore so the frontend can auto-refresh when data changes.
-/// The app keeps working on the local SQLite file (zero changes to the data layer);
-/// this service backs it up so data survives Render free-tier redeploys.
+/// Mirrors the local SQLite database file to Firestore (chunked gzip + base64) and records a
+/// data version doc so the frontend auto-refreshes when data changes. The app keeps working on
+/// the local SQLite file; this service backs it up so data survives Render free-tier redeploys.
+///
+/// Firestore is used (not Cloud Storage) because Storage buckets require the paid Blaze plan.
 /// Enabled only when FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT are set.
 /// </summary>
 public sealed class FirebaseSyncService : BackgroundService
@@ -20,13 +21,10 @@ public sealed class FirebaseSyncService : BackgroundService
 
     private readonly bool _enabled;
     private readonly string _projectId;
-    private readonly string _bucket;
-    private readonly string _objectName = "luxinfra.db3";
     private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
     private DateTime _lastFileUtc = DateTime.MinValue;
     private long _lastVersion;
 
-    private StorageClient? _storage;
     private FirestoreDb? _firestore;
 
     public FirebaseSyncService(IConfiguration cfg, DatabaseService db, ILogger<FirebaseSyncService> log)
@@ -36,7 +34,6 @@ public sealed class FirebaseSyncService : BackgroundService
 
         _projectId = cfg["FIREBASE_PROJECT_ID"] ?? "";
         var rawCred = cfg["FIREBASE_SERVICE_ACCOUNT"] ?? "";
-        _bucket = cfg["FIREBASE_BUCKET"] ?? $"{_projectId}.appspot.com";
 
         if (string.IsNullOrWhiteSpace(_projectId) || string.IsNullOrWhiteSpace(rawCred))
         {
@@ -52,7 +49,6 @@ public sealed class FirebaseSyncService : BackgroundService
                 _enabled = false;
                 return;
             }
-            _storage = StorageClient.Create(cred);
             _firestore = new FirestoreDbBuilder { ProjectId = _projectId, Credential = cred }.Build();
             _enabled = true;
         }
@@ -86,7 +82,7 @@ public sealed class FirebaseSyncService : BackgroundService
         {
             var version = await UploadAsync(ct);
             return version > 0
-                ? (true, $"Uploaded current DB to Firebase Storage (version {version}).")
+                ? (true, $"Stored current DB in Firestore (version {version}).")
                 : (false, "Nothing to upload — DB file missing or unchanged.");
         }
         catch (Exception ex)
@@ -103,8 +99,8 @@ public sealed class FirebaseSyncService : BackgroundService
         {
             var ok = await DownloadAsync(ct);
             return ok
-                ? (true, "Restored the database from Firebase Storage.")
-                : (false, "Restore failed — no backup found in Firebase.");
+                ? (true, "Restored the database from Firestore.")
+                : (false, "Restore failed — no backup found in Firestore.");
         }
         catch (Exception ex)
         {
@@ -119,7 +115,7 @@ public sealed class FirebaseSyncService : BackgroundService
         {
             enabled = _enabled,
             project = _enabled ? _projectId : null,
-            bucket = _enabled ? _bucket : null,
+            bucket = _enabled ? $"{_projectId} (Firestore)" : null,
             version,
             localRows = LocalRowCount()
         };
@@ -135,7 +131,7 @@ public sealed class FirebaseSyncService : BackgroundService
             return;
         }
 
-        _log.LogInformation("Firebase sync enabled → {Project}/{Bucket}", _projectId, _bucket);
+        _log.LogInformation("Firebase sync enabled → Firestore project {Project}", _projectId);
         try
         {
             await ReconcileAsync(ct);
@@ -173,7 +169,7 @@ public sealed class FirebaseSyncService : BackgroundService
         if (!empty)
         {
             var v = await UploadAsync(ct);
-            if (v > 0) _log.LogInformation("Uploaded local DB to Firebase (version {V}).", v);
+            if (v > 0) _log.LogInformation("Stored local DB in Firestore (version {V}).", v);
             return;
         }
 
@@ -181,12 +177,12 @@ public sealed class FirebaseSyncService : BackgroundService
         if (exists)
         {
             if (await DownloadAsync(ct))
-                _log.LogInformation("Restored the database from Firebase.");
+                _log.LogInformation("Restored the database from Firestore.");
         }
         else
         {
             var v = await UploadAsync(ct);
-            if (v > 0) _log.LogInformation("Firebase empty — uploaded fresh local state (version {V}).", v);
+            if (v > 0) _log.LogInformation("Firestore empty — stored fresh local state (version {V}).", v);
         }
     }
 
@@ -203,65 +199,113 @@ public sealed class FirebaseSyncService : BackgroundService
         catch { return 0; }
     }
 
-    // ---- push: local -> Firebase ----
+    // ---- Firestore snapshot doc layout ----
+    // backup/luxinfra  →  { version: long, chunkCount: int, size: int, updatedAt: Timestamp }
+    // backup/chunks/{i} →  { index: int, data: base64(gzip(dbfile)) }
+
+    private const string SnapshotDoc = "backup/luxinfra";
+    private const string ChunksPath = "backup/chunks";
+    private readonly int _chunkLimit = 110_000; // ~82KB binary per chunk → safe under doc limits
+
+    // ---- push: local -> Firestore ----
 
     private async Task<long> UploadAsync(CancellationToken ct)
     {
         if (!File.Exists(_db.DbPath)) return 0;
-        await using var stream = File.OpenRead(_db.DbPath);
 
-        var obj = await _storage!.UploadObjectAsync(
-            _bucket, _objectName, "application/x-sqlite3", stream,
-            options: new UploadObjectOptions { IfGenerationMatch = null }, cancellationToken: ct);
+        var bytes = File.ReadAllBytes(_db.DbPath);
+        var packed = Pack(bytes);
+
+        // Delete old chunks first so a restore never mixes generations.
+        await ClearChunksAsync(ct);
+
+        var count = (int)Math.Ceiling((double)packed.Length / _chunkLimit);
+        var coll = _firestore!.Collection(ChunksPath);
+        for (var i = 0; i < count; i++)
+        {
+            var part = packed.Substring(i * _chunkLimit, Math.Min(_chunkLimit, packed.Length - i * _chunkLimit));
+            await coll.Document(i.ToString()).SetAsync(new { index = i, data = part }, cancellationToken: ct);
+        }
 
         var version = DateTime.UtcNow.Ticks;
+        _firestore.Document(SnapshotDoc).SetAsync(new
+        {
+            version,
+            chunkCount = count,
+            size = bytes.Length,
+            updatedAt = DateTime.UtcNow
+        }, SetOptions.MergeAll, ct).GetAwaiter().GetResult();
         await SetVersionAsync(version, ct);
         _lastVersion = version;
-        _log.LogInformation("Uploaded {Size} bytes → gs://{B}/{O} (version {V}).",
-            obj.Size ?? 0, _bucket, _objectName, version);
+        _log.LogInformation("Stored {Size} bytes → Firestore {Project} (version {V}, {N} chunks).",
+            bytes.Length, _projectId, version, count);
         return version;
     }
 
-    // ---- pull: Firebase -> local ----
+    private async Task ClearChunksAsync(CancellationToken ct)
+    {
+        var coll = _firestore!.Collection(ChunksPath);
+        var snaps = await coll.GetSnapshotAsync(ct);
+        foreach (var snap in snaps.Documents)
+            await snap.Reference.DeleteAsync(cancellationToken: ct);
+    }
+
+    // ---- pull: Firestore -> local ----
 
     private async Task<bool> DownloadAsync(CancellationToken ct)
     {
-        await using var stream = new MemoryStream();
-        try
-        {
-            await _storage!.DownloadObjectAsync(_bucket, _objectName, stream, cancellationToken: ct);
-        }
-        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
-        {
+        var snap = await _firestore!.Document(SnapshotDoc).GetSnapshotAsync(ct);
+        if (!snap.Exists || !snap.TryGetValue<int>("chunkCount", out var count) || count <= 0)
             return false;
+
+        var sb = new StringBuilder();
+        var coll = _firestore.Collection(ChunksPath);
+        for (var i = 0; i < count; i++)
+        {
+            var chunk = await coll.Document(i.ToString()).GetSnapshotAsync(ct);
+            if (!chunk.Exists || !chunk.TryGetValue<string>("data", out var data)) return false;
+            sb.Append(data);
         }
-        if (stream.Length == 0) return false;
+
+        var bytes = Unpack(sb.ToString());
+        if (bytes.Length == 0) return false;
 
         // Replace the local file safely: close the shared connection first.
         await _db.CloseAndResetAsync();
         var tmp = _db.DbPath + ".tmp";
-        await File.WriteAllBytesAsync(tmp, stream.ToArray(), ct);
+        await File.WriteAllBytesAsync(tmp, bytes, ct);
         File.Move(tmp, _db.DbPath, overwrite: true);
 
-        var version = await ReadVersionAsync();
-        _lastVersion = version;
+        _lastVersion = snap.TryGetValue<long>("version", out var v) ? v : 0;
         _lastFileUtc = File.Exists(_db.DbPath) ? File.GetLastWriteTimeUtc(_db.DbPath) : DateTime.MinValue;
-        _log.LogInformation("Restored {Size} bytes from gs://{B}/{O} (version {V}).",
-            stream.Length, _bucket, _objectName, version);
+        _log.LogInformation("Restored {Size} bytes from Firestore (version {V}).", bytes.Length, _lastVersion);
         return true;
     }
 
     private async Task<bool> RemoteExistsAsync(CancellationToken ct)
     {
-        try
-        {
-            var obj = await _storage!.GetObjectAsync(_bucket, _objectName, cancellationToken: ct);
-            return obj is not null;
-        }
-        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return false;
-        }
+        var snap = await _firestore!.Document(SnapshotDoc).GetSnapshotAsync(ct);
+        return snap.Exists;
+    }
+
+    // ---- pack / unpack ----
+
+    private static string Pack(byte[] bytes)
+    {
+        using var ms = new MemoryStream();
+        using (var gz = new GZipStream(ms, CompressionLevel.Optimal, leaveOpen: true))
+            gz.Write(bytes, 0, bytes.Length);
+        return Convert.ToBase64String(ms.ToArray());
+    }
+
+    private static byte[] Unpack(string packed)
+    {
+        var raw = Convert.FromBase64String(packed);
+        using var input = new MemoryStream(raw);
+        using var gz = new GZipStream(input, CompressionMode.Decompress);
+        using var output = new MemoryStream();
+        gz.CopyTo(output);
+        return output.ToArray();
     }
 
     // ---- version meta doc (Firestore) ----

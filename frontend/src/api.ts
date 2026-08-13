@@ -38,6 +38,7 @@ export interface FileBlobMeta { id: number; projectId: number; category: string;
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
 export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string }
+export interface FirebaseWebConfig { enabled: boolean; apiKey: string; authDomain: string; projectId: string; messagingSenderId: string; appId: string; vapidKey: string }
 export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
 export interface BackupResult { ok: boolean; message: string }
 export interface FirebaseVersion { enabled: boolean; project: string | null; bucket: string | null; version: number; localRows: number }
@@ -561,5 +562,24 @@ export const api = {
   firebaseVersion: () => get<FirebaseVersion>('/api/backup/version'),
   firebasePush: () => post<BackupResult>('/api/backup/firebase-push', {}),
   firebasePull: () => post<BackupResult>('/api/backup/firebase-pull', {}),
+
+  // ---- Firebase Auth + Push (free Spark plan) ----
+  firebaseConfig: async (): Promise<FirebaseWebConfig> => {
+    const r = await fetch(BASE + '/api/firebase/config')
+    if (!r.ok) throw new Error(`API error ${r.status}`)
+    return r.json()
+  },
+  firebaseLogin: async (idToken: string): Promise<void> => {
+    const r = await fetch(BASE + '/api/auth/firebase', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    })
+    const data = await r.json()
+    if (!r.ok) throw new Error(data?.error || 'Firebase sign-in failed')
+    finishLogin(data)
+  },
+  pushRegister: (token: string, platform = 'web') => post<{ ok: boolean; message: string }>('/api/push/register', { token, platform }),
+  pushDevices: () => get<{ id: number; token: string; platform: string; username: string; createdAt: string }[]>('/api/push/devices'),
+  pushTest: (title?: string, body?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/test', { title, body }),
   activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
 }

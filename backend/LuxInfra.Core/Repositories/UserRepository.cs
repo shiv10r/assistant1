@@ -17,6 +17,10 @@ public interface IUserRepository
     Task<UserSession?> GetSessionAsync(string token);
     Task RevokeSessionAsync(string token);
     Task<List<UserSession>> GetSessionsAsync();
+
+    Task<List<DeviceToken>> GetDeviceTokensAsync();
+    Task AddDeviceTokenAsync(DeviceToken token);
+    Task RemoveDeviceTokenAsync(string token);
 }
 
 public class UserRepository : IUserRepository
@@ -33,6 +37,7 @@ public class UserRepository : IUserRepository
         {
             await conn.CreateTableAsync<AppUser>();
             await conn.CreateTableAsync<UserSession>();
+            await conn.CreateTableAsync<DeviceToken>();
             _initialized = true;
         }
         return conn;
@@ -97,5 +102,36 @@ public class UserRepository : IUserRepository
     {
         var conn = await Conn();
         return await conn.Table<UserSession>().OrderByDescending(s => s.CreatedAt).ToListAsync();
+    }
+
+    public async Task<List<DeviceToken>> GetDeviceTokensAsync()
+    {
+        var conn = await Conn();
+        return await conn.Table<DeviceToken>().ToListAsync();
+    }
+
+    public async Task AddDeviceTokenAsync(DeviceToken token)
+    {
+        var conn = await Conn();
+        var existing = (await conn.Table<DeviceToken>().ToListAsync()).FirstOrDefault(t => t.Token == token.Token);
+        if (existing is not null)
+        {
+            existing.Platform = token.Platform;
+            existing.Username = token.Username;
+            existing.CreatedAt = DateTime.UtcNow;
+            await conn.UpdateAsync(existing);
+        }
+        else
+        {
+            await conn.InsertAsync(token);
+        }
+    }
+
+    public async Task RemoveDeviceTokenAsync(string token)
+    {
+        var conn = await Conn();
+        var existing = (await conn.Table<DeviceToken>().ToListAsync()).FirstOrDefault(t => t.Token == token);
+        if (existing is not null)
+            await conn.DeleteAsync(existing);
     }
 }

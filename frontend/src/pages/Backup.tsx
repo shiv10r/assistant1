@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { BackupStatus, BackupResult, FirebaseVersion } from '../api'
 import { btnStyle } from '../ui'
+import { subscribePush, onPushMessage } from '../firebase'
 
 export default function Backup() {
   const [status, setStatus] = useState<BackupStatus | null>(null)
   const [fb, setFb] = useState<FirebaseVersion | null>(null)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [pushState, setPushState] = useState('')
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     api.backupStatus().then(setStatus).catch(() => {})
     api.firebaseVersion().then(setFb).catch(() => {})
+    onPushMessage((p) => setToast(`${p.title ?? 'LuxInfra'} — ${p.body ?? ''}`))
   }, [])
 
   async function run(kind: 'push' | 'pull') {
@@ -85,8 +89,8 @@ export default function Backup() {
       </div>
 
       <div className="card">
-        <h2>Firebase Storage backup</h2>
-        <p className="muted">Mirrors your entire database file to Firebase Storage and auto-restores it after redeploys, so data survives Render free-tier disk wipes.</p>
+        <h2>Firebase backup</h2>
+        <p className="muted">Stores your entire database snapshot in Cloud Firestore (free Spark plan) and auto-restores it after redeploys, so data survives Render free-tier disk wipes. Your browser also refreshes automatically when the data version changes.</p>
         {fb === null ? (
           <div className="muted">Checking…</div>
         ) : (
@@ -98,7 +102,7 @@ export default function Backup() {
             {fb.enabled && (
               <>
                 <div className="backup-row"><span className="muted">Project</span><span>{fb.project}</span></div>
-                <div className="backup-row"><span className="muted">Bucket</span><span>{fb.bucket}</span></div>
+                <div className="backup-row"><span className="muted">Store</span><span>{fb.bucket}</span></div>
                 <div className="backup-row"><span className="muted">Data version</span><span>{fb.version > 0 ? fb.version : 'no backup yet'}</span></div>
                 <div className="backup-row"><span className="muted">Local rows</span><span>{fb.localRows}</span></div>
               </>
@@ -118,6 +122,50 @@ export default function Backup() {
         </div>
         {msg && <div className={`backup-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
       </div>
+
+      <div className="card">
+        <h2>Push notifications (FCM)</h2>
+        <p className="muted">Enable browser notifications to get alerts on the phone/app when attendance is marked, site progress is logged, or material is issued. Works on the free Spark plan.</p>
+        <div className="row-gap">
+          <button style={btnStyle} onClick={enablePush} disabled={busy !== null}>
+            {busy === 'push' ? 'Enabling…' : 'Enable notifications on this device'}
+          </button>
+          <button className="ghost-btn" onClick={sendTest} disabled={busy !== null}>
+            {busy === 'test' ? 'Sending…' : 'Send test notification'}
+          </button>
+        </div>
+        {pushState && <div className={`backup-msg ${pushState === 'done' ? 'ok' : 'err'}`}>{pushState}</div>}
+        {toast && <div className="backup-msg ok" style={{ marginTop: 8 }}>🔔 {toast}</div>}
+      </div>
     </>
   )
+
+  async function enablePush() {
+    setBusy('push'); setPushState('')
+    try {
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      }
+      const token = await subscribePush()
+      if (!token) { setPushState('Firebase push is not enabled. Add FIREBASE_WEB_* and FIREBASE_VAPID_KEY on the server.'); return }
+      const r = await api.pushRegister(token)
+      setPushState(r.ok ? 'done' : (r.message || 'Registration failed'))
+    } catch (e) {
+      setPushState(String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function sendTest() {
+    setBusy('test'); setPushState('')
+    try {
+      const r = await api.pushTest()
+      setPushState(r.ok && r.enabled ? `done` : r.sent > 0 ? `Sent to ${r.sent} device(s)` : 'Sent — but no devices registered yet')
+    } catch (e) {
+      setPushState(String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
 }
