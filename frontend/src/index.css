@@ -400,8 +400,12 @@ textarea { resize: vertical; min-height: 64px; }
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
 .toolbar input, .toolbar select { width: auto; min-width: 140px; }
 
-/* ---------- Login ---------- */
-.login-wrap {
+/* Route A/B markers on the site map */
+.route-pt { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
+.route-pt.pt-a { background: #4F6BED; }
+.route-pt.pt-b { background: #10B981; }
+
+/* ---------- Login ---------- */.login-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; gap: 56px;
   position: relative; overflow: hidden;
   background:
