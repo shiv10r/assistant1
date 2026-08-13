@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { ProjectDetail } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Empty, money } from '../../components/ui'
+import LocationPicker from '../../components/LocationPicker'
 import {
   ArrowLeft, Users, Wallet, Building2, ClipboardList, Clock3, Layers3, FileText, Palette, FolderOpen,
   Plus, TrendingUp, TrendingDown, Target,
@@ -206,15 +207,16 @@ export default function Workspace() {
               </Select>
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="elat">Latitude</Label>
-              <Input id="elat" placeholder="e.g. 19.0760" value={f.latitude} onChange={(e) => setF({ ...f, latitude: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor="elng">Longitude</Label>
-              <Input id="elng" placeholder="e.g. 72.8777" value={f.longitude} onChange={(e) => setF({ ...f, longitude: e.target.value })} />
-            </div>
+          <div>
+            <Label>Location (search or click the map)</Label>
+            <LocationPicker
+              latitude={f.latitude}
+              longitude={f.longitude}
+              onChange={(lat, lng, addr) => {
+                setF((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+                if (addr) setF((prev) => ({ ...prev, address: prev.address || addr }))
+              }}
+            />
           </div>
           {err && <div className={cn('p-3 rounded-lg text-sm border', 'bg-red-500/10 border-red-500/20 text-red-500')}>{err}</div>}
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
