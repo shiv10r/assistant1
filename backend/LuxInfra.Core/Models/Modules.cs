@@ -99,6 +99,18 @@ public class Snag
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
 
+/// <summary>App-wide announcement shown as a scrolling marquee + FCM push to all devices (advanced/premium feature).</summary>
+[Table("broadcasts")]
+public class Broadcast
+{
+    [PrimaryKey, AutoIncrement] public int Id { get; set; }
+    public string Message { get; set; } = "";
+    public DateTime PublishedAt { get; set; } = DateTime.Now;
+    public bool IsActive { get; set; } = true;
+
+    [Ignore] public string PublishedLabel => PublishedAt.ToString("dd MMM yyyy HH:mm");
+}
+
 /// <summary>Contractor / vendor rating list (feature 30).</summary>
 [Table("contractor_ratings")]
 public class ContractorRating

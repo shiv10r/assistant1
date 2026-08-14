@@ -64,6 +64,7 @@ public class ModuleRepository : IModuleRepository
             await conn.CreateTableAsync<ResourceAllocation>();
             await conn.CreateTableAsync<ChangeOrder>();
             await conn.CreateTableAsync<EquipmentMaintenance>();
+            await conn.CreateTableAsync<Broadcast>();
             _initialized = true;
         }
         return conn;
