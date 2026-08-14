@@ -212,6 +212,9 @@ public static class InvoicePdfService
                         else
                             RowLine("IGST", ReportService.Money(txn.Tax));
                     }
+                    if (txn.Tcs > 0) RowLine("TCS (2%/1%)", ReportService.Money(txn.Tcs));
+                    if (txn.Tds > 0) RowLine("TDS", "− " + ReportService.Money(txn.Tds));
+                    if (txn.ReverseCharge) RowLine("Reverse charge", "Yes");
                     if (Math.Abs(txn.RoundOff) > 0.001) RowLine("Round off", ReportService.Money(txn.RoundOff));
                     c.Item().PaddingVertical(2).LineHorizontal(1).LineColor(purple);
                     RowLine("TOTAL", Money2(txn.Total), bold: true);
