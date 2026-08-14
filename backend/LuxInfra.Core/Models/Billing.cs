@@ -57,11 +57,12 @@ public static class TxnTypes
     public const string SaleOrder = "SALE_ORDER";
     public const string PurchaseOrder = "PURCHASE_ORDER";
     public const string DeliveryChallan = "DELIVERY_CHALLAN";
+    public const string Proforma = "PROFORMA";
     public const string PaymentIn = "PAYMENT_IN";
     public const string PaymentOut = "PAYMENT_OUT";
 
     public static readonly string[] All =
-        { Sale, Purchase, Estimate, SaleOrder, PurchaseOrder, DeliveryChallan, PaymentIn, PaymentOut };
+        { Sale, Purchase, Estimate, SaleOrder, PurchaseOrder, DeliveryChallan, Proforma, PaymentIn, PaymentOut };
 
     public static string Display(string type) => type switch
     {
@@ -73,6 +74,7 @@ public static class TxnTypes
         SaleOrder => "Sale Order",
         PurchaseOrder => "Purchase Order",
         DeliveryChallan => "Delivery Challan",
+        Proforma => "Proforma Invoice",
         PaymentIn => "Payment-In",
         PaymentOut => "Payment-Out",
         _ => type
@@ -86,6 +88,7 @@ public static class TxnTypes
         SaleOrder => "SALE ORDER",
         PurchaseOrder => "PURCHASE ORDER",
         DeliveryChallan => "DELIVERY CHALLAN",
+        Proforma => "PROFORMA INVOICE",
         PaymentIn => "PAYMENT RECEIPT",
         PaymentOut => "PAYMENT VOUCHER",
         _ => type
@@ -118,6 +121,9 @@ public class BizTxn
     public string ChequeStatus { get; set; } = "";          // open | cleared | bounced (when PaymentMode=Cheque)
     public string Description { get; set; } = "";
     public string StateOfSupply { get; set; } = "";
+    public double Tcs { get; set; }                            // TCS (Tax Collected at Source) ₹
+    public double Tds { get; set; }                            // TDS (Tax Deducted at Source) ₹
+    public bool ReverseCharge { get; set; }                    // GST reverse-charge mechanism
     public string Status { get; set; } = "OPEN";
 
     [Ignore] public string TypeLabel => TxnTypes.Display(Type);

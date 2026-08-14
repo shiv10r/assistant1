@@ -220,21 +220,28 @@ public class ModulesController : ControllerBase
         return Ok();
     }
 
-    // ---- Free Jitsi video call (open-source, no API key) ----
+    // ---- Video call — Google Meet / Teams / Jitsi links (no WebRTC server needed) ----
 
     [HttpGet("video-session")]
-    public async Task<ActionResult> VideoSession([FromQuery] int? projectId)
+    public async Task<ActionResult> VideoSession([FromQuery] int? projectId, [FromQuery] string? provider)
     {
         var stamp = DateTime.Now.ToString("yyyyMMdd");
         var suffix = Random.Shared.Next(1000, 9999).ToString();
         var room = projectId is > 0
             ? $"luxinfra-p{projectId}-{stamp}-{suffix}"
             : $"luxinfra-meet-{stamp}-{suffix}";
-        var url = $"https://meet.jit.si/{Uri.EscapeDataString(room)}";
+
+        var providerName = string.IsNullOrWhiteSpace(provider) ? "meet" : provider.ToLowerInvariant();
+        var url = providerName switch
+        {
+            "teams" => $"https://teams.microsoft.com/l/meetup-join/19%3ameeting_{DateTime.Now:yyyyMMddHHmm}_{suffix}%40thread.v2/0?context=%7b%22Tid%22%3a%22%22%7d",
+            "jitsi" => $"https://meet.jit.si/{Uri.EscapeDataString(room)}",
+            _ => $"https://meet.google.com/new"
+        };
 
         if (projectId is > 0)
-            await _activity.LogAsync("Video call started", $"Project #{projectId}");
-        return Ok(new { room, url, provider = "jitsi" });
+            await _activity.LogAsync("Video call started", $"Project #{projectId} ({providerName})");
+        return Ok(new { room, url, provider = providerName });
     }
 
     private static string Sanitize(string s)
