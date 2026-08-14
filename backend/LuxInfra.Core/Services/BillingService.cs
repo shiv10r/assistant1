@@ -62,6 +62,15 @@ public class BillingService : IBillingService
         ["gst.composite_scheme"] = "0",
         ["gst.tcs"] = "0",
         ["gst.tds"] = "0",
+        // firm identity
+        ["general.firm_pan"] = "",
+        ["general.firm_state_code"] = "",
+        ["general.firm_city"] = "",
+        ["general.firm_pin"] = "",
+        ["general.firm_bank_name"] = "",
+        ["general.firm_bank_account"] = "",
+        ["general.firm_bank_ifsc"] = "",
+        ["general.firm_bank_holder"] = "",
         // item settings
         ["item.enabled"] = "1",
         ["item.type"] = "Products and Services",
@@ -113,6 +122,10 @@ public class BillingService : IBillingService
         ["print.payment_mode"] = "0",
         ["print.acknowledgement"] = "0",
         ["print.page_numbers"] = "1",
+        ["print.pan_on_sale"] = "1",
+        ["print.state_code"] = "1",
+        ["print.bank_details"] = "1",
+        ["print.place_of_supply"] = "1",
         // sms / auto-share
         ["sms.send_to_party"] = "1",
         ["sms.copy_to_self"] = "0",

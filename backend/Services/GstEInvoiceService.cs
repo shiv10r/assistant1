@@ -14,6 +14,7 @@ public static class GstEInvoiceService
         if (txn.Type != TxnTypes.Sale && txn.Type != TxnTypes.SaleReturn)
             return (false, null, "E-invoice applies to Sale / Sale Return only.");
 
+        var firmStateCode = s.GetValueOrDefault("general.firm_state_code", "");
         var seller = new Dictionary<string, object?>
         {
             ["Gstin"] = s.GetValueOrDefault("general.firm_gstin", ""),
@@ -21,7 +22,7 @@ public static class GstEInvoiceService
             ["Addr1"] = s.GetValueOrDefault("general.firm_address", ""),
             ["Loc"] = s.GetValueOrDefault("general.firm_city", ""),
             ["Pin"] = s.GetValueOrDefault("general.firm_pin", ""),
-            ["Stcd"] = s.GetValueOrDefault("general.firm_state", ""),
+            ["Stcd"] = string.IsNullOrEmpty(firmStateCode) ? s.GetValueOrDefault("general.firm_state", "") : firmStateCode,
             ["Ph"] = s.GetValueOrDefault("general.firm_phone", ""),
             ["Em"] = s.GetValueOrDefault("general.firm_email", ""),
         };
@@ -32,7 +33,7 @@ public static class GstEInvoiceService
             ["LglNm"] = string.IsNullOrEmpty(party?.Name) ? "Walk-in Customer" : party.Name,
             ["Addr1"] = party?.BillingAddress ?? "",
             ["Loc"] = party?.State ?? "",
-            ["Stcd"] = party?.State ?? "",
+            ["Stcd"] = string.IsNullOrEmpty(party?.StateCode) ? (party?.State ?? "") : party.StateCode,
             ["Ph"] = party?.Phone ?? "",
             ["Em"] = party?.Email ?? "",
         };

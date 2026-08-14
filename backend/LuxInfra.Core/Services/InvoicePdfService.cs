@@ -56,8 +56,14 @@ public static class InvoicePdfService
         bool On(string key) => s.GetValueOrDefault(key) == "1";
         var firm = s.GetValueOrDefault("general.firm_name", "LuxInfra");
         var firmState = s.GetValueOrDefault("general.firm_state", "");
+        var firmStateCode = s.GetValueOrDefault("general.firm_state_code", "");
         var firmPhone = s.GetValueOrDefault("general.firm_phone", "");
         var firmGstin = s.GetValueOrDefault("general.firm_gstin", "");
+        var firmPan = s.GetValueOrDefault("general.firm_pan", "");
+        var firmBankName = s.GetValueOrDefault("general.firm_bank_name", "");
+        var firmBankAccount = s.GetValueOrDefault("general.firm_bank_account", "");
+        var firmBankIfsc = s.GetValueOrDefault("general.firm_bank_ifsc", "");
+        var firmBankHolder = s.GetValueOrDefault("general.firm_bank_holder", "");
         string Money2(double v) => On("print.amount_decimal")
             ? string.Format(new System.Globalization.CultureInfo("en-IN"), "₹{0:N2}", v)
             : ReportService.Money(v);
@@ -102,8 +108,10 @@ public static class InvoicePdfService
                             c.Item().Text($"Ph: {firmPhone}").FontSize(8.5f).FontColor(dim);
                         if (On("print.gstin_on_sale") && !string.IsNullOrEmpty(firmGstin))
                             c.Item().Text($"GSTIN: {firmGstin}").FontSize(8.5f).FontColor(dim);
+                        if (On("print.pan_on_sale") && !string.IsNullOrEmpty(firmPan))
+                            c.Item().Text($"PAN: {firmPan}").FontSize(8.5f).FontColor(dim);
                         if (!string.IsNullOrEmpty(firmState))
-                            c.Item().Text($"State: {firmState}").FontSize(8.5f).FontColor(dim);
+                            c.Item().Text($"State: {firmState}{(On("print.state_code") && !string.IsNullOrEmpty(firmStateCode) ? $" (Code {firmStateCode})" : "")}").FontSize(8.5f).FontColor(dim);
                     });
                     row.ConstantItem(200).AlignRight().Column(c =>
                     {
@@ -132,10 +140,16 @@ public static class InvoicePdfService
                             if (!string.IsNullOrEmpty(party.BillingAddress)) c.Item().Text(party.BillingAddress).FontSize(8.5f);
                             if (!string.IsNullOrEmpty(party.Phone)) c.Item().Text($"Ph: {party.Phone}").FontSize(8.5f);
                             if (!string.IsNullOrEmpty(party.Gstin)) c.Item().Text($"GSTIN: {party.Gstin}").FontSize(8.5f);
+                            if (On("print.state_code") && !string.IsNullOrEmpty(party.StateCode))
+                                c.Item().Text($"State: {party.State}{(string.IsNullOrEmpty(party.StateCode) ? "" : $" (Code {party.StateCode})")}").FontSize(8.5f);
                         }
                     });
-                    if (On("gst.state_of_supply") && !string.IsNullOrEmpty(txn.StateOfSupply))
-                        row.ConstantItem(160).AlignRight().Text($"State of Supply: {txn.StateOfSupply}").FontSize(8.5f);
+                    if (On("print.place_of_supply") && On("gst.state_of_supply") && !string.IsNullOrEmpty(txn.StateOfSupply))
+                        row.ConstantItem(180).AlignRight().Column(c =>
+                        {
+                            c.Item().AlignRight().Text("Place of Supply").FontSize(8).Bold().FontColor(dim);
+                            c.Item().AlignRight().Text(txn.StateOfSupply).FontSize(8.5f);
+                        });
                 });
 
                 // items table
@@ -236,6 +250,24 @@ public static class InvoicePdfService
 
                 if (On("print.party_balance") && party is not null)
                     col.Item().PaddingTop(4).Text($"Party balance: {party.BalanceDirection} {party.BalanceLabel}").FontSize(8.5f).FontColor(dim);
+
+                if (On("print.bank_details") && !string.IsNullOrEmpty(firmBankAccount))
+                {
+                    col.Item().PaddingTop(14).LineHorizontal(0.6f).LineColor("#BBBBBB");
+                    col.Item().PaddingTop(6).Text("BANK DETAILS").FontSize(8.5f).Bold().FontColor(purple);
+                    col.Item().PaddingTop(2).Column(bank =>
+                    {
+                        void BankLine(string label, string value) => bank.Item().Row(r =>
+                        {
+                            r.ConstantItem(130).Text(label).FontSize(8.5f).FontColor(dim);
+                            r.RelativeItem().Text(value).FontSize(8.5f).Bold();
+                        });
+                        if (!string.IsNullOrEmpty(firmBankName)) BankLine("Bank", firmBankName);
+                        if (!string.IsNullOrEmpty(firmBankHolder)) BankLine("Account Holder", firmBankHolder);
+                        BankLine("Account No", firmBankAccount);
+                        if (!string.IsNullOrEmpty(firmBankIfsc)) BankLine("IFSC", firmBankIfsc);
+                    });
+                }
 
                 // footer block
                 col.Item().PaddingTop(18).Row(row =>
