@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import type { Settings } from '../api'
+import type { Settings, BackupStatus, FirebaseVersion } from '../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Building2, Phone, MapPin, Banknote, BadgeIndianRupee, Save, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { usePlan } from '../hooks/usePlan'
+import { Building2, Phone, MapPin, Banknote, BadgeIndianRupee, Save, CheckCircle2, XCircle, Loader2, Crown, CreditCard, Settings2, HardDrive, Cloud, Bell, ShieldCheck, Database, Info } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { Link } from 'react-router-dom'
 
 const STATE_LIST = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat',
@@ -38,22 +40,57 @@ function Field({ label, value, onChange, placeholder, type, list }: {
   )
 }
 
+function ServiceRow({ icon, title, state, note, action }: {
+  icon: React.ReactNode
+  title: string
+  state: 'ok' | 'warn' | 'off'
+  note: string
+  action?: React.ReactNode
+}) {
+  const tone = state === 'ok' ? 'text-emerald-500' : state === 'warn' ? 'text-amber-500' : 'text-text/40'
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">
+      <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">{title}</p>
+        <p className={cn('text-xs mt-0.5', tone)}>{note}</p>
+      </div>
+      {action}
+    </div>
+  )
+}
+
+const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
+
 export default function Account() {
   const { toast } = useToast()
+  const { plan, isPremium, setPlan } = usePlan()
   const [s, setS] = useState<Settings>({})
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [backup, setBackup] = useState<BackupStatus | null>(null)
+  const [firebase, setFirebase] = useState<FirebaseVersion | null>(null)
+  const [drive, setDrive] = useState<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string } | null>(null)
+  const [pushDevices, setPushDevices] = useState<number>(0)
 
-  useEffect(() => { api.billing.settings().then(setS).catch(() => {}) }, [])
+  useEffect(() => {
+    api.billing.settings().then(setS).catch(() => {})
+    api.backupStatus().then(setBackup).catch(() => {})
+    api.firebaseVersion().then(setFirebase).catch(() => {})
+    api.integrations.driveStatus().then(setDrive).catch(() => {})
+    api.pushDevices().then((d) => setPushDevices(d.length)).catch(() => {})
+  }, [])
 
   const set = (k: string) => (v: string) => setS((p) => ({ ...p, [k]: v }))
 
   const saveFirm = async () => {
     const keys = [
       'general.firm_name', 'general.owner_name', 'general.business_type', 'general.firm_gstin', 'general.firm_pan',
+      'general.firm_state_code',
       'general.firm_phone', 'general.firm_email', 'general.firm_website',
       'general.firm_address', 'general.firm_city', 'general.firm_state', 'general.firm_pincode',
       'bank.bank_name', 'bank.acc_no', 'bank.ifsc', 'bank.upi',
+      'general.firm_bank_name', 'general.firm_bank_account', 'general.firm_bank_ifsc', 'general.firm_bank_holder',
       'print.footer_note', 'print.amount_words', 'general.firm_logo',
     ]
     setSaving(true)
@@ -74,7 +111,7 @@ export default function Account() {
       <div className="page-head">
         <div>
           <h1>My Account</h1>
-          <div className="muted">Your firm profile, contact details and bank information</div>
+          <div className="muted">Your firm profile, billing, services and data</div>
         </div>
         <Button onClick={saveFirm} disabled={saving}>
           {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> Save Profile</>}
@@ -87,6 +124,31 @@ export default function Account() {
           {msg.text}
         </div>
       )}
+
+      {/* Plan & profile summary */}
+      <Card className="mb-6">
+        <CardContent className="p-5">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-xl font-bold shrink-0">
+              {(s['general.firm_name'] || 'Lux').slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-lg truncate">{s['general.firm_name'] || 'LuxInfra'}</p>
+                <Badge variant={isPremium ? 'success' : 'outline'}><Crown className="w-3 h-3" /> {PLAN_LABEL[plan] ?? 'Free'}</Badge>
+              </div>
+              <p className="text-sm text-muted mt-0.5 truncate">
+                {[s['general.firm_city'], s['general.firm_state']].filter(Boolean).join(', ') || 'Set your firm details below'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {!isPremium && <Button size="sm" onClick={() => setPlan('pro')}><Crown className="w-4 h-4" /> Activate Pro</Button>}
+              <Link to="/plans" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg bg-surface border border-border text-text hover:bg-surface-hover"><CreditCard className="w-4 h-4" /> Plans</Link>
+              <Link to="/settings" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg text-text hover:bg-surface"><Settings2 className="w-4 h-4" /> Settings</Link>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Business Identity */}
       <Card className="mb-6">
@@ -101,6 +163,7 @@ export default function Account() {
             <Field label="Business Type" value={s['general.business_type'] || ''} onChange={set('general.business_type')} list={BUSINESS_TYPES} />
             <Field label="GSTIN" value={s['general.firm_gstin'] || ''} onChange={set('general.firm_gstin')} placeholder="29AAACL1234A1Z5" />
             <Field label="PAN" value={s['general.firm_pan'] || ''} onChange={set('general.firm_pan')} placeholder="AABCL1234F" />
+            <Field label="Firm State Code" value={s['general.firm_state_code'] || ''} onChange={set('general.firm_state_code')} placeholder="29 (for e-invoice Stcd)" />
           </div>
         </CardContent>
       </Card>
@@ -154,6 +217,15 @@ export default function Account() {
             <Field label="IFSC" value={s['bank.ifsc'] || ''} onChange={set('bank.ifsc')} placeholder="HDFC0001234" />
             <Field label="UPI ID" value={s['bank.upi'] || ''} onChange={set('bank.upi')} placeholder="firm@okhdfcbank" />
           </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-xs font-semibold text-muted mb-3">Bank details on GST invoices (BANK DETAILS block)</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Field label="Bank Name (invoice)" value={s['general.firm_bank_name'] || ''} onChange={set('general.firm_bank_name')} placeholder="HDFC Bank" />
+              <Field label="Account No (invoice)" value={s['general.firm_bank_account'] || ''} onChange={set('general.firm_bank_account')} placeholder="50100234567890" />
+              <Field label="IFSC (invoice)" value={s['general.firm_bank_ifsc'] || ''} onChange={set('general.firm_bank_ifsc')} placeholder="HDFC0001234" />
+              <Field label="Account Holder (invoice)" value={s['general.firm_bank_holder'] || ''} onChange={set('general.firm_bank_holder')} placeholder="LuxInfra Pvt Ltd" />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -186,17 +258,75 @@ export default function Account() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><BadgeIndianRupee className="w-5 h-5" /></div>
-            <div>
-              <p className="font-medium text-text">Account Security</p>
-              <p className="text-sm text-muted">Default login is <Badge variant="outline" size="sm">admin</Badge> · password set via <code className="text-primary">AUTH_PASS</code> server env variable.</p>
-            </div>
-          </div>
+      {/* Connected services */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Cloud className="w-5 h-5 text-primary" /> Connected Services</CardTitle>
+          <CardDescription>Backup, notifications and cloud status</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-2 sm:grid-cols-2">
+          <ServiceRow
+            icon={<HardDrive className="w-4 h-4" />}
+            title="Google Drive backup"
+            state={drive?.configured ? 'ok' : drive?.hasCredentials ? 'warn' : 'off'}
+            note={drive?.configured ? `Backing up to ${drive.folder}${drive.email ? ` · ${drive.email}` : ''}` : drive?.hasCredentials ? 'Credentials set — connect via Integrations' : 'Not configured'}
+            action={<Link to="/integrations" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Set up</Link>}
+          />
+          <ServiceRow
+            icon={<Database className="w-4 h-4" />}
+            title="Cloud sync"
+            state={backup?.enabled ? 'ok' : 'off'}
+            note={backup?.enabled ? `Turso mirror ${backup.localRows ?? 0} local records synced` : 'Turso not configured'}
+          />
+          <ServiceRow
+            icon={<Cloud className="w-4 h-4" />}
+            title="Firebase mirror"
+            state={firebase?.enabled ? 'ok' : 'off'}
+            note={firebase?.enabled ? `Auto-restore on redeploy · v${firebase.version ?? 0}` : 'Firebase not configured'}
+            action={firebase?.enabled ? <Link to="/backup" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Manage</Link> : undefined}
+          />
+          <ServiceRow
+            icon={<Bell className="w-4 h-4" />}
+            title="Push notifications"
+            state={pushDevices > 0 ? 'ok' : 'warn'}
+            note={pushDevices > 0 ? `${pushDevices} device(s) receiving alerts` : 'No device registered yet'}
+            action={<Link to="/backup" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Enable</Link>}
+          />
         </CardContent>
       </Card>
+
+      {/* Account security + app info */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" /> Account Security</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><BadgeIndianRupee className="w-5 h-5" /></div>
+              <div>
+                <p className="text-sm font-medium text-text">Default login is <Badge variant="outline" size="sm">admin</Badge></p>
+                <p className="text-sm text-muted mt-0.5">Password set via <code className="text-primary">AUTH_PASS</code> server env variable.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Info className="w-5 h-5 text-primary" /> App &amp; Data</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Database className="w-5 h-5" /></div>
+              <div>
+                <p className="text-sm font-medium text-text">Data is stored on the backend (SQLite)</p>
+                <p className="text-sm text-muted mt-0.5">Back up to Trail Tech services in <Link className="text-primary hover:underline" to="/backup">Backup &amp; Sync</Link> or Drive above.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </>
   )
 }
