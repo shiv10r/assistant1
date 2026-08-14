@@ -4,7 +4,7 @@ import type { AppUser, UserSessionInfo } from '../api'
 import { isAdmin } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Empty } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Users as UsersIcon, UserPlus, Shield, ShieldCheck, ShieldOff, Trash2, KeyRound } from 'lucide-react'
+import { Users as UsersIcon, UserPlus, Shield, ShieldCheck, ShieldOff, Trash2, KeyRound, Search } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 const ROLE_LABEL: Record<string, string> = { admin: 'Admin', accountant: 'Accountant', supervisor: 'Site Supervisor' }
@@ -17,12 +17,20 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<Partial<AppUser> & { password?: string } | null>(null)
   const [err, setErr] = useState('')
   const [saving, setSaving] = useState(false)
+  const [q, setQ] = useState('')
 
   const load = () => {
     api.auth.users().then(setUsers).catch(() => setUsers([]))
     api.auth.sessions().then(setSessions).catch(() => setSessions([]))
   }
   useEffect(load, [])
+
+  const query = q.trim().toLowerCase()
+  const filteredUsers = query
+    ? users.filter((u) =>
+        u.username.toLowerCase().includes(query) ||
+        (ROLE_LABEL[u.role] || u.role).toLowerCase().includes(query))
+    : users
 
   const save = async () => {
     if (!editing) return
@@ -80,10 +88,21 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><UsersIcon className="w-5 h-5 text-primary" /> Staff accounts</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+              <input
+                className="pl-9 pr-3 py-2 w-56 rounded-lg border border-border bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="Search users…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
-          {users.length === 0 ? (
-            <CardContent><Empty icon={<UsersIcon className="w-12 h-12" />} title="No staff users" description="Add an accountant or supervisor to share access safely." /></CardContent>
+          {filteredUsers.length === 0 ? (
+            <CardContent><Empty icon={<UsersIcon className="w-12 h-12" />} title={q ? `No users match "${q}"` : 'No staff users'} description="Add an accountant or supervisor to share access safely." /></CardContent>
           ) : (
             <Table>
               <TableHeader>
@@ -95,7 +114,7 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell>
                       <p className="font-medium text-text">{u.username}</p>

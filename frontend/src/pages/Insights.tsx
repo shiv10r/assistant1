@@ -41,7 +41,12 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: 'gr
 function Pl() {
   const [rows, setRows] = useState<PlRow[]>([])
   const [totals, setTotals] = useState<{ receivedLabel: string; spentLabel: string; profitLabel: string } | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.pl().then((d) => { setRows(d.rows); setTotals(d.totals) }).catch(() => {}) }, [])
+  const query = q.trim().toLowerCase()
+  const filtered = query
+    ? rows.filter((r) => r.name.toLowerCase().includes(query) || r.status.toLowerCase().includes(query))
+    : rows
   return (
     <div className="space-y-4">
       {totals && (
@@ -51,14 +56,15 @@ function Pl() {
           <Stat label="Net Profit" value={totals.profitLabel} tone="gold" />
         </div>
       )}
-      {rows.length === 0 ? <Empty title="No projects yet" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search projects…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {filtered.length === 0 ? <Empty title={rows.length === 0 ? 'No projects yet' : `No projects match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">
               <tr><th className="p-3">Project</th><th className="p-3 text-right">Value</th><th className="p-3 text-right">Received</th><th className="p-3 text-right">Spent</th><th className="p-3 text-right">Profit</th><th className="p-3 text-right">Margin</th></tr>
             </thead>
             <tbody className="divide-y">
-              {rows.map((r) => (
+              {filtered.map((r) => (
                 <tr key={r.id}>
                   <td className="p-3 font-medium">{r.name}<span className="block text-xs text-text/40">{r.status}</span></td>
                   <td className="p-3 text-right">{r.valueLabel}</td>
@@ -79,9 +85,12 @@ function Pl() {
 function Gstr1() {
   const [data, setData] = useState<Gstr1Data | null>(null)
   const [period, setPeriod] = useState('Month')
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.gstr1(period).then(setData).catch(() => setData(null)) }, [period])
   if (!data) return <Empty title="No sales yet" />
   const s = data.summary
+  const query = q.trim().toLowerCase()
+  const hsnRows = query ? data.hsnRows.filter((h) => h.hsn.toLowerCase().includes(query)) : data.hsnRows
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -99,14 +108,15 @@ function Gstr1() {
         <Stat label="CGST" value={s.cgst} />
         <Stat label="SGST" value={s.sgst} />
       </div>
-      {data.hsnRows.length === 0 ? <Empty title="No HSN lines" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search HSN codes…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {hsnRows.length === 0 ? <Empty title={data.hsnRows.length === 0 ? 'No HSN lines' : `No HSN codes match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">
               <tr><th className="p-3">HSN</th><th className="p-3 text-right">Lines</th><th className="p-3 text-right">Taxable</th><th className="p-3 text-right">Tax</th></tr>
             </thead>
             <tbody className="divide-y">
-              {data.hsnRows.map((h) => (
+              {hsnRows.map((h) => (
                 <tr key={h.hsn}>
                   <td className="p-3">{h.hsn}<span className="block text-xs text-text/40">@{h.rateLabel}</span></td>
                   <td className="p-3 text-right">{h.count}</td>
@@ -127,9 +137,14 @@ function Credit() {
   const [overdue, setOverdue] = useState<CreditRow[]>([])
   const [net, setNet] = useState('')
   const [parties, setParties] = useState<{ id: number; name: string; phone: string; balanceLabel: string; direction: string }[]>([])
+  const [q, setQ] = useState('')
   useEffect(() => {
     api.insights.credit().then((d) => { setBuckets(d.buckets); setOverdue(d.overdue); setNet(d.netReceivableLabel); setParties(d.parties) }).catch(() => {})
   }, [])
+  const query = q.trim().toLowerCase()
+  const filtered = query
+    ? overdue.filter((o) => o.party.toLowerCase().includes(query) || o.refLabel.toLowerCase().includes(query))
+    : overdue
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
@@ -138,13 +153,14 @@ function Credit() {
           <Stat key={b.bucket} label={`${b.bucket} days overdue`} value={b.total} tone={b.bucket === '90+' ? 'red' : 'gold'} />
         ))}
       </div>
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search party or invoice…" value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm">
           <thead className="bg-surface text-left text-xs text-text/50">
             <tr><th className="p-3">Invoice</th><th className="p-3">Party</th><th className="p-3 text-right">Balance</th><th className="p-3">Due</th><th className="p-3 text-right">Overdue</th><th className="p-3">Bucket</th></tr>
           </thead>
           <tbody className="divide-y">
-            {overdue.map((o) => (
+            {filtered.map((o) => (
               <tr key={o.id}>
                 <td className="p-3">{o.refLabel}</td>
                 <td className="p-3">{o.party}</td>
@@ -156,7 +172,7 @@ function Credit() {
             ))}
           </tbody>
         </table>
-        {overdue.length === 0 && <Empty title="No overdue invoices" />}
+        {filtered.length === 0 && <Empty title={overdue.length === 0 ? 'No overdue invoices' : `No invoices match "${q}"`} />}
       </div>
       {parties.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -196,8 +212,13 @@ function Forecast() {
 
 function Stock() {
   const [data, setData] = useState<{ totalValueLabel: string; lowStockCount: number; deadStockCount: number; rows: StockRow[] } | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.stock().then(setData).catch(() => setData(null)) }, [])
   if (!data) return <Empty title="No stock items" />
+  const query = q.trim().toLowerCase()
+  const rows = query
+    ? data.rows.filter((r) => r.name.toLowerCase().includes(query) || r.category.toLowerCase().includes(query))
+    : data.rows
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
@@ -205,7 +226,8 @@ function Stock() {
         <Stat label="Low Stock" value={String(data.lowStockCount)} tone="red" />
         <Stat label="Dead Stock" value={String(data.deadStockCount)} tone="gold" />
       </div>
-      {data.rows.length === 0 ? <Empty title="Nothing in stock" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search items…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {rows.length === 0 ? <Empty title={data.rows.length === 0 ? 'Nothing in stock' : `No items match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">
@@ -234,15 +256,19 @@ function Stock() {
 
 function Labour() {
   const [data, setData] = useState<{ totalPresentLabel: string; totalWagesLabel: string; rows: LabourRow[] } | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.labour().then(setData).catch(() => setData(null)) }, [])
   if (!data) return <Empty title="No attendance data" />
+  const query = q.trim().toLowerCase()
+  const rows = query ? data.rows.filter((r) => r.name.toLowerCase().includes(query)) : data.rows
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
         <Stat label="Man-days (30 days)" value={data.totalPresentLabel} />
         <Stat label="Wages (30 days)" value={data.totalWagesLabel} tone="gold" />
       </div>
-      {data.rows.length === 0 ? <Empty title="No projects" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search projects…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {rows.length === 0 ? <Empty title={data.rows.length === 0 ? 'No projects' : `No projects match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">
@@ -268,15 +294,21 @@ function Labour() {
 
 function Delayed() {
   const [data, setData] = useState<{ rate: number; totalInterestLabel: string; rows: DelayedRow[] } | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.delayed().then(setData).catch(() => setData(null)) }, [])
   if (!data) return <Empty title="No delayed payments" />
+  const query = q.trim().toLowerCase()
+  const rows = query
+    ? data.rows.filter((r) => r.party.toLowerCase().includes(query) || r.refLabel.toLowerCase().includes(query))
+    : data.rows
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
         <Stat label="Interest @ 12%/yr" value={data.totalInterestLabel} tone="gold" />
         <Stat label="Overdue invoices" value={String(data.rows.length)} tone="red" />
       </div>
-      {data.rows.length === 0 ? <Empty title="Nothing overdue" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search party or invoice…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {rows.length === 0 ? <Empty title={data.rows.length === 0 ? 'Nothing overdue' : `No invoices match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">
@@ -302,8 +334,13 @@ function Delayed() {
 
 function Advances() {
   const [data, setData] = useState<{ totalAdvanceLabel: string; totalSpentLabel: string; netAdvanceLabel: string; rows: AdvanceRow[] } | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => { api.insights.advances().then(setData).catch(() => setData(null)) }, [])
   if (!data) return <Empty title="No projects" />
+  const query = q.trim().toLowerCase()
+  const rows = query
+    ? data.rows.filter((r) => r.name.toLowerCase().includes(query) || r.status.toLowerCase().includes(query))
+    : data.rows
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
@@ -311,7 +348,8 @@ function Advances() {
         <Stat label="Spent" value={data.totalSpentLabel} tone="red" />
         <Stat label="Balance to Use" value={data.netAdvanceLabel} tone="gold" />
       </div>
-      {data.rows.length === 0 ? <Empty title="No projects" /> : (
+      <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search projects…" value={q} onChange={(e) => setQ(e.target.value)} />
+      {rows.length === 0 ? <Empty title={data.rows.length === 0 ? 'No projects' : `No projects match "${q}"`} /> : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-xs text-text/50">

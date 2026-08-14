@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { MaterialTxn } from '../../api'
-import { Empty, Modal, money, num, fmtDate, todayISO, PageHead } from '../../ui'
+import { Empty, Modal, money, num, fmtDate, todayISO, PageHead, inputStyle } from '../../ui'
 
 const TABS = ['Inventory', 'Request', 'Received', 'Delivered']
 const MODES = ['Cash', 'Bank Transfer', 'Cheque']
@@ -17,12 +17,21 @@ export default function ProjectMaterial() {
   const [err, setErr] = useState('')
   const [open, setOpen] = useState(false)
   const [kind, setKind] = useState('Request')
+  const [q, setQ] = useState('')
   const [f, setF] = useState({ materialName: '', quantity: 0, unit: 'Pcs', vendorName: '', vendorLocation: '', paymentMode: 'Cash', amount: 0, date: todayISO() })
 
   const load = () => Promise.all([api.projects.detail(pid), api.projects.inventory(pid)])
     .then(([d, inv]) => { setMaterials(d.materials); setInventory(inv) }).catch(() => {})
   useEffect(() => { load() }, [pid])
   useEffect(() => { if (tab !== 'Inventory') api.projects.materials(pid, tab).then(setMaterials).catch(() => setMaterials([])) }, [tab, pid])
+
+  const query = q.trim().toLowerCase()
+  const filteredInventory = query ? inventory.filter((m) => m.material.toLowerCase().includes(query)) : inventory
+  const filteredMaterials = query
+    ? materials.filter((m) =>
+        m.materialName.toLowerCase().includes(query) ||
+        (m.vendorName || '').toLowerCase().includes(query))
+    : materials
 
   const save = async () => {
     try {
@@ -63,12 +72,19 @@ export default function ProjectMaterial() {
         </div>
       )}
 
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder={tab === 'Inventory' ? 'Search inventory…' : 'Search materials (name, vendor)…'}
+        style={{ ...inputStyle, width: '100%', margin: '8px 0 16px' }}
+      />
+
       {tab === 'Inventory' ? (
-        inventory.length === 0 ? <Empty>No stock yet. Add received / delivered materials.</Empty> : (
+        filteredInventory.length === 0 ? <Empty>{q ? `No stock matches "${q}".` : 'No stock yet. Add received / delivered materials.'}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
               <thead><tr><th>Material</th><th className="num">Stock</th><th>Unit</th><th>Adjust</th></tr></thead>
-              <tbody>{inventory.map((m) => (
+              <tbody>{filteredInventory.map((m) => (
                 <tr key={m.material}>
                   <td className="cat">{m.material}</td>
                   <td className="num">{num(m.qty)}</td>
@@ -86,11 +102,11 @@ export default function ProjectMaterial() {
           </div>
         )
       ) : (
-        materials.length === 0 ? <Empty>No {tab.toLowerCase()} entries.</Empty> : (
+        filteredMaterials.length === 0 ? <Empty>{q ? `No ${tab.toLowerCase()} entries match "${q}".` : `No ${tab.toLowerCase()} entries.`}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
               <thead><tr><th>Material</th><th className="num">Qty</th><th>Vendor</th><th>Date</th><th className="num">Amount</th></tr></thead>
-              <tbody>{materials.map((m) => (
+              <tbody>{filteredMaterials.map((m) => (
                 <tr key={m.id}>
                   <td className="cat">{m.materialName}</td>
                   <td className="num">{num(m.quantity)} {m.unit}</td>

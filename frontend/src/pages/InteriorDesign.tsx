@@ -61,6 +61,16 @@ function useRows<T>(loader: () => Promise<T[]>, deps: unknown[] = []) {
   return { rows, setRows, refresh: load }
 }
 
+function useSearch<T>(rows: T[], text: (r: T) => string) {
+  const [q, setQ] = useState('')
+  const query = q.trim().toLowerCase()
+  const filtered = query ? rows.filter((r) => text(r).toLowerCase().includes(query)) : rows
+  const input = (
+    <input className="h-9 w-full rounded-lg border bg-surface px-3 text-sm" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
+  )
+  return { q, setQ, filtered, input, emptyMsg: (fallback: string) => (rows.length === 0 ? fallback : `No matches for "${q}"`) }
+}
+
 function Section({ title, subtitle, form, children }: { title?: string; subtitle?: string; form: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -99,6 +109,7 @@ function ProjectPicker({ projectId, setProjectId }: { projectId: string; setProj
 function TimeTracking() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<TimeEntry>(() => api.modules.timeEntries(Number(pid)), [pid])
+  const search = useSearch(rows, (e) => `${e.workerName} ${e.notes ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ workerName: '', hours: '', notes: '' })
   const save = async () => {
@@ -122,7 +133,8 @@ function TimeTracking() {
         <Button size="sm" variant="outline" onClick={() => api.modules.timeSummary(Number(pid)).then((d) => {
           toast({ title: `${d.totalManHoursLabel} · ${d.totalWagesLabel}` })
         }).catch((e) => toast({ title: String(e), variant: 'error' }))}><RefreshCw className="w-4 h-4" /> Summary</Button>
-        {rows.length === 0 ? <Empty title="No time entries" /> : rows.map((e) => (
+        {search.input}
+        {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No time entries')} /> : search.filtered.map((e) => (
           <RowItem key={e.id} right={<Button variant="ghost" size="sm" onClick={() => api.modules.deleteTimeEntry(e.id).then(() => setRows(prev => prev.filter(x => x.id !== e.id))).catch((er) => toast({ title: String(er), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>}>
             <p className="font-semibold">{e.workerName}</p>
             <p className="text-xs text-text/50">{e.hours} hrs · {e.date.slice(0, 10)} {e.roomId && `· ${e.roomId}`}</p>
@@ -137,6 +149,7 @@ function TimeTracking() {
 function RoomsPage() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<Room>(() => api.modules.rooms(Number(pid)), [pid])
+  const search = useSearch(rows, (r) => `${r.name} ${r.dimensions ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', areaSqFt: '', dimensions: '', status: 'In Progress' })
   const save = async () => {
@@ -160,7 +173,8 @@ function RoomsPage() {
           </Select>
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add room</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No rooms" /> : rows.map((r) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No rooms')} /> : search.filtered.map((r) => (
         <RowItem key={r.id} right={<>
           <Badge>{r.areaSqFt ? `${r.areaSqFt.toFixed(0)}` : '—'}</Badge>
           <Button variant="ghost" size="sm" onClick={() => api.modules.deleteRoom(r.id).then(() => setRows(prev => prev.filter(x => x.id !== r.id))).catch((e) => toast({ title: String(e), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
@@ -178,6 +192,7 @@ function RoomsPage() {
 function MoodBoard() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<MoodBoardItem>(() => api.modules.moodBoard(Number(pid)), [pid])
+  const search = useSearch(rows, (i) => `${i.title} ${i.category ?? ''} ${i.vendorName ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ title: '', category: '', price: '', imageUrl: '', vendorName: '', notes: '' })
   const save = async () => {
@@ -201,9 +216,10 @@ function MoodBoard() {
           <Textarea rows={2} placeholder="Notes" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Pin item</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No items yet" /> : (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No items yet')} /> : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {rows.map((i) => (
+          {search.filtered.map((i) => (
             <Card key={i.id} className="mb-0 p-0 overflow-hidden">
               <div className="aspect-square bg-surface flex items-center justify-center overflow-hidden">
                 {i.imageUrl
@@ -227,6 +243,7 @@ function MoodBoard() {
 // ---- Vendor Catalogue ----
 function Catalogue() {
   const { rows, setRows } = useRows<VendorCatalogueItem>(() => api.modules.catalogue())
+  const search = useSearch(rows, (i) => `${i.name} ${i.category ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', category: '', price: '', modelUrl: '', modelFormat: 'glb' as 'glb' | 'usdz' })
   const save = async () => {
@@ -249,7 +266,8 @@ function Catalogue() {
         </Select>
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
       </>}>
-      {rows.length === 0 ? <Empty title="No catalogue items" /> : rows.map((i) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No catalogue items')} /> : search.filtered.map((i) => (
         <RowItem key={i.id} right={<>
           {i.modelUrl && i.modelFormat === 'glb' && (
             <model-viewer src={i.modelUrl} ar alt="3D" style={{ width: 60, height: 60 }} />
@@ -269,6 +287,7 @@ function Catalogue() {
 function ScenePlanner() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<RoomScene>(() => api.modules.scenes(Number(pid)), [pid])
+  const search = useSearch(rows, (s) => `${s.name} ${s.roomRef ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', roomRef: '', sceneJson: '' })
   return (
@@ -292,14 +311,17 @@ function ScenePlanner() {
             </div>
             <div>
               <p className="text-xs font-medium mb-2">Saved versions ({rows.length})</p>
+              {search.input}
+              {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No saved scenes')} /> : (
               <div className="space-y-2 max-h-80 overflow-y-auto">
-                {rows.map((s) => (
+                {search.filtered.map((s) => (
                   <RowItem key={s.id} right={<Badge>{s.versionLabel}</Badge>}>
                     <p className="font-semibold text-sm">{s.name}</p>
                     <p className="text-xs text-text/50">{s.roomRef || '—'} · {s.createdAt.slice(0, 10)}</p>
                   </RowItem>
                 ))}
               </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -312,6 +334,7 @@ function ScenePlanner() {
 function RevisionsPage() {
   const [pid, setPid] = useState('1')
   const { rows: revisions, setRows } = useRows<DesignRevision>(() => api.modules.revisions(Number(pid)), [pid])
+  const search = useSearch(revisions, (r) => r.title)
   const { toast } = useToast()
   const [f, setF] = useState({ title: '', fileUrl: '' })
   const save = async () => {
@@ -331,7 +354,8 @@ function RevisionsPage() {
           <Input placeholder="File / render URL" value={f.fileUrl} onChange={(e) => setF({ ...f, fileUrl: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save revision</Button>
         </>}>
-      {revisions.length === 0 ? <Empty title="No revisions" /> : revisions.map((r) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No revisions')} /> : search.filtered.map((r) => (
         <RowItem key={r.id} right={<>
           <Badge variant={r.status === 'Approved' ? 'success' : r.status === 'In Review' ? 'warning' : r.status === 'Rejected' ? 'danger' : 'default'}>{r.status}</Badge>
           <Badge variant="outline">v{r.version}</Badge>
@@ -352,6 +376,9 @@ function QualityPage() {
   const templates = useRows<ChecklistTemplate>(() => api.modules.checklistTemplates())
   const { rows: inspections, setRows: setInspections } = useRows<InspectionRecord>(() => api.modules.inspections(Number(pid)), [pid])
   const { rows: ncrs, setRows: setNcrs } = useRows<NcrRecord>(() => api.modules.ncrs(Number(pid)), [pid])
+  const searchInsp = useSearch(inspections, (i) => `${i.templateName} ${i.inspectorName ?? ''}`)
+  const searchNcr = useSearch(ncrs, (n) => `${n.title} ${n.severity} ${n.status}`)
+  const searchTpl = useSearch(templates.rows, (t) => `${t.name} ${t.category ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ templateName: '', inspector: '', notes: '', isPassed: true, photos: [] as string[] })
 
@@ -392,7 +419,8 @@ function QualityPage() {
                 .then((i) => { setInspections(prev => [i, ...prev]); setF({ templateName: '', inspector: '', notes: '', isPassed: true, photos: [] }); toast({ title: 'Inspection saved' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Save</Button>
           </>}>
-          {inspections.length === 0 ? <Empty title="No inspections" /> : inspections.map((i) => (
+          {searchInsp.input}
+          {searchInsp.filtered.length === 0 ? <Empty title={searchInsp.emptyMsg('No inspections')} /> : searchInsp.filtered.map((i) => (
             <Card key={i.id}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex justify-between"><p className="font-semibold">{i.templateName}</p>
@@ -412,7 +440,8 @@ function QualityPage() {
                 .then((n) => { setNcrs(prev => [n, ...prev]); toast({ title: 'NCR raised' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Add NCR</Button>
           </>}>
-          {ncrs.length === 0 ? <Empty title="No NCRs" /> : ncrs.map((n) => (
+          {searchNcr.input}
+          {searchNcr.filtered.length === 0 ? <Empty title={searchNcr.emptyMsg('No NCRs')} /> : searchNcr.filtered.map((n) => (
             <RowItem key={n.id} right={<Badge variant={n.status === 'Closed' ? 'success' : 'warning'}>{n.status}</Badge>}>
               <p className="font-semibold">{n.title}</p>
               <p className="text-xs text-text/50">{n.severity} · {n.createdAt.slice(0, 10)}</p>
@@ -430,7 +459,8 @@ function QualityPage() {
                 .then((t) => { templates.setRows(prev => [t, ...prev]); toast({ title: 'Template saved' }) }).catch((e) => toast({ title: String(e), variant: 'error' }))
             }}><Plus className="w-4 h-4" /> Save template</Button>
           </>}>
-          {templates.rows.length === 0 ? <Empty title="No templates" /> : templates.rows.map((t) => (
+          {searchTpl.input}
+          {searchTpl.filtered.length === 0 ? <Empty title={searchTpl.emptyMsg('No templates')} /> : searchTpl.filtered.map((t) => (
             <RowItem key={t.id}>{t.name}<span className="block text-xs text-text/50">{t.category || '—'}</span></RowItem>
           ))}
           </Section>
@@ -444,6 +474,7 @@ function QualityPage() {
 function Subcontractor() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<SubcontractorWorkOrder>(() => api.modules.workOrders(Number(pid)), [pid])
+  const search = useSearch(rows, (w) => `${w.contractorName} ${w.title}`)
   const { toast } = useToast()
   const [f, setF] = useState({ contractorName: '', title: '', agreedRate: '', quantity: '' })
   const save = async () => {
@@ -465,7 +496,8 @@ function Subcontractor() {
           <Input type="number" placeholder="Quantity" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save work order</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No work orders" /> : rows.map((w) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No work orders')} /> : search.filtered.map((w) => (
         <RowItem key={w.id} right={<>
           <Badge variant={w.status === 'Completed' ? 'success' : w.status === 'Ongoing' ? 'warning' : 'default'}>{w.status}</Badge>
           <Button variant="ghost" size="sm" onClick={() => api.modules.deleteWorkOrder(w.id).then(() => setRows(prev => prev.filter(x => x.id !== w.id))).catch((e) => toast({ title: String(e), variant: 'error' }))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
@@ -483,6 +515,7 @@ function Subcontractor() {
 function QrInventory() {
   const [pid, setPid] = useState('1')
   const { rows: items, setRows: setItems } = useRows<QrInventoryItem>(() => api.modules.qrItems(Number(pid)), [pid])
+  const search = useSearch(items, (i) => `${i.name} ${i.barcode ?? ''} ${i.category ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', qty: '', barcode: '' })
   const save = async () => {
@@ -520,9 +553,10 @@ function QrInventory() {
       </div>
       <div>
         <p className="text-xs font-medium mb-2">Stock ({items.length})</p>
-        {items.length === 0 ? <Empty title="No items" /> : (
+        {search.input}
+        {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No items')} /> : (
           <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-            {items.map((i) => (
+            {search.filtered.map((i) => (
               <RowItem key={i.id} right={<Badge>{i.qtyOnHand}</Badge>}>
                 <p className="font-semibold">{i.name}</p>
                 <p className="text-xs text-text/50">{i.barcode || 'no barcode'} · {i.category || '—'}</p>
@@ -539,6 +573,7 @@ function QrInventory() {
 function AiCost() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<AiCostPrediction>(() => api.modules.costPrediction(Number(pid)), [pid])
+  const search = useSearch(rows, (p) => `${p.predictedLabel} ${p.model ?? ''}`)
   const { toast } = useToast()
   const predict = async () => {
     try {
@@ -554,7 +589,8 @@ function AiCost() {
         <p className="text-xs text-text/50">Generates a projecting cost. Compare to actuals to track variance.</p>
         <Button onClick={predict}><Brain className="w-4 h-4" /> Run AI prediction</Button>
       </CardContent></Card>
-      {rows.length === 0 ? <Empty title="No predictions yet" /> : rows.map((p) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No predictions yet')} /> : search.filtered.map((p) => (
         <RowItem key={p.id} right={<Badge variant="outline">{p.confidenceLabel}</Badge>}>
           <p className="font-semibold">{p.predictedLabel}</p>
           <p className="text-xs text-text/50">Residual: {p.residualLabel} · model: {p.model}</p>
@@ -592,6 +628,7 @@ function AiSummary() {
 function Lighting() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<LightingLayout>(() => api.modules.lighting(Number(pid)), [pid])
+  const search = useSearch(rows, (l) => `${l.name} ${l.type ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', wattage: '', quantity: '' })
   const save = async () => {
@@ -611,7 +648,8 @@ function Lighting() {
         <Input type="number" placeholder="Quantity" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add fixture</Button>
       </>}>
-      {rows.length === 0 ? <Empty title="No fixtures" /> : rows.map((l) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No fixtures')} /> : search.filtered.map((l) => (
         <RowItem key={l.id} right={<Badge>{l.wattageLabel}</Badge>}>
           <p className="font-semibold">{l.name}</p>
           <p className="text-xs text-text/50">{l.type || '—'} · qty {l.quantity || 1}</p>
@@ -625,6 +663,7 @@ function Lighting() {
 // ---- Finish Library ----
 function Finishes() {
   const { rows, setRows } = useRows<FinishSwatch>(() => api.modules.finishes())
+  const search = useSearch(rows, (s) => `${s.name} ${s.category ?? ''} ${s.manufacturer ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ name: '', category: '', colorCode: '', price: '', manufacturer: '' })
   const save = async () => {
@@ -644,7 +683,8 @@ function Finishes() {
       <Input type="number" placeholder="Price (₹)" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />
       <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
     </>}>
-    {rows.length === 0 ? <Empty title="No finishes" /> : rows.map((s) => (
+    {search.input}
+    {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No finishes')} /> : search.filtered.map((s) => (
       <RowItem key={s.id} right={<Badge style={{ backgroundColor: s.colorCode || undefined }}>{s.category || '—'}</Badge>}>
         <p className="font-semibold">{s.name}</p>
         <p className="text-xs text-text/50">{s.manufacturer || '—'} · {s.priceLabel}</p>
@@ -658,6 +698,7 @@ function Finishes() {
 function Quotations() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<QuotationRoom>(() => api.modules.quotationRooms(Number(pid)), [pid])
+  const search = useSearch(rows, (r) => r.roomName)
   const { toast } = useToast()
   const [f, setF] = useState({ roomName: '', amount: '' })
   const save = async () => {
@@ -678,9 +719,10 @@ function Quotations() {
           <Input type="number" placeholder="Amount (₹)" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add room</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No rooms" /> : (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No rooms')} /> : (
         <div className="space-y-2">
-          {rows.map((r) => (
+          {search.filtered.map((r) => (
             <RowItem key={r.id} right={<Badge>₹{(r.amount ?? 0).toLocaleString('en-IN')}</Badge>}>
               <p className="font-semibold">{r.roomName}</p>
               <p className="text-xs text-text/50">{r.isOptional && 'Optional'} · sort #{r.sortOrder}</p>
@@ -702,6 +744,7 @@ function Quotations() {
 function Payouts() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<DesignerPayout>(() => api.modules.payouts(Number(pid)), [pid])
+  const search = useSearch(rows, (p) => `${p.designerName} ${p.stage ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ designerName: '', grossAmount: '' })
   const save = async () => {
@@ -720,7 +763,8 @@ function Payouts() {
         <Input type="number" placeholder="Gross amount (₹)" value={f.grossAmount} onChange={(e) => setF({ ...f, grossAmount: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save</Button>
       </>}>
-      {rows.length === 0 ? <Empty title="No payouts" /> : rows.map((p) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No payouts')} /> : search.filtered.map((p) => (
         <RowItem key={p.id} right={<Badge variant={p.status === 'Paid' ? 'success' : 'default'}>{p.status}</Badge>}>
           <p className="font-semibold">{p.designerName}</p>
           <p className="text-xs text-text/50">{p.netLabel} · {p.stage}</p>
@@ -734,6 +778,7 @@ function Payouts() {
 // ---- Client Portal ----
 function ClientPortal() {
   const { rows, setRows } = useRows<ClientProject>(() => api.modules.clientProjects())
+  const search = useSearch(rows, (c) => `${c.clientName} ${c.projectName} ${c.clientEmail ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ projectName: '', clientName: '', clientEmail: '' })
   const save = async () => {
@@ -751,7 +796,8 @@ function ClientPortal() {
       <Input placeholder="Client email" value={f.clientEmail} onChange={(e) => setF({ ...f, clientEmail: e.target.value })} />
       <Button className="w-full mt-1" onClick={save}><UserPlus className="w-4 h-4" /> Create share link</Button>
     </>}>
-    {rows.length === 0 ? <Empty title="No client shares yet" /> : rows.map((c) => (
+    {search.input}
+    {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No client shares yet')} /> : search.filtered.map((c) => (
       <RowItem key={c.id} right={<Badge>{c.accessToken?.slice(0, 8)}…</Badge>}>
         <p className="font-semibold">{c.clientName}</p>
         <p className="text-xs text-text/50">{c.projectName} · {c.clientEmail}</p>
@@ -765,6 +811,7 @@ function ClientPortal() {
 function Boq() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<RoomBoqItem>(() => api.modules.boqItems(Number(pid)), [pid])
+  const search = useSearch(rows, (r) => `${r.roomName} ${r.itemName}`)
   const { toast } = useToast()
   const [f, setF] = useState({ roomName: '', itemName: '', quantity: '', rate: '' })
   const save = async () => {
@@ -787,9 +834,10 @@ function Boq() {
           <Input type="number" placeholder="Rate (₹)" value={f.rate} onChange={(e) => setF({ ...f, rate: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add line</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No BOQ lines" /> : (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No BOQ lines')} /> : (
         <div className="space-y-2">
-          {rows.map((r) => (
+          {search.filtered.map((r) => (
             <RowItem key={r.id} right={<Badge>{r.totalLabel}</Badge>}>
               <p className="font-semibold">{r.roomName} — {r.itemName}</p>
               <p className="text-xs text-text/50">{r.quantity.toFixed(2)} {r.unit} @ ₹{r.rate.toLocaleString('en-IN')}/unit</p>
@@ -811,6 +859,7 @@ function Boq() {
 function Install() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<InstallationTask>(() => api.modules.installTasks(Number(pid)), [pid])
+  const search = useSearch(rows, (t) => `${t.trade} ${t.title}`)
   const { toast } = useToast()
   const [f, setF] = useState({ trade: '', title: '', durationDays: '' })
   const save = async () => {
@@ -836,7 +885,8 @@ function Install() {
               <Button onClick={save}><Plus className="w-4 h-4" /> Add task</Button>
             </div>
             <div className="space-y-2 max-h-80 overflow-y-auto">
-              {rows.map((t) => (
+              {search.input}
+              {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No tasks')} /> : search.filtered.map((t) => (
                 <RowItem key={t.id} right={<Badge variant={t.status === 'Completed' ? 'success' : t.status === 'Ongoing' ? 'warning' : t.status === 'Blocked' ? 'danger' : 'default'}>{t.status}</Badge>}>
                   <p className="font-semibold">{t.trade}: {t.title}</p>
                   <p className="text-xs text-text/50">{t.durationDays} days · predecessor #{t.predecessorId || '—'}</p>
@@ -854,6 +904,7 @@ function Install() {
 function Procurement() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<RoomProcurementOrder>(() => api.modules.procurementOrders(Number(pid)), [pid])
+  const search = useSearch(rows, (o) => `${o.vendorName} ${o.poNumber ?? ''}`)
   const { toast } = useToast()
   const [f, setF] = useState({ vendorName: '', poNumber: '' })
   const save = async () => {
@@ -872,7 +923,8 @@ function Procurement() {
         <Input placeholder="PO number" value={f.poNumber} onChange={(e) => setF({ ...f, poNumber: e.target.value })} />
         <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Save PO</Button>
       </>}>
-      {rows.length === 0 ? <Empty title="No POs" /> : rows.map((o) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No POs')} /> : search.filtered.map((o) => (
         <RowItem key={o.id} right={<Badge variant={o.status === 'Received' ? 'success' : o.status === 'Ordered' ? 'warning' : 'default'}>{o.status}</Badge>}>
           <p className="font-semibold">{o.vendorName}</p>
           <p className="text-xs text-text/50">{o.poNumber || '—'} · {o.createdAt.slice(0, 10)}</p>
@@ -887,6 +939,7 @@ function Procurement() {
 function Timeline() {
   const [pid, setPid] = useState('1')
   const { rows, setRows } = useRows<ProjectTimelineStage>(() => api.modules.timelineStages(Number(pid)), [pid])
+  const search = useSearch(rows, (s) => `${s.stage} ${s.title}`)
   const { toast } = useToast()
   const [f, setF] = useState({ stage: 'Design', title: '' })
   const save = async () => {
@@ -908,7 +961,8 @@ function Timeline() {
           <Input placeholder="Stage title / progress note" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
           <Button className="w-full mt-1" onClick={save}><Plus className="w-4 h-4" /> Add stage</Button>
         </>}>
-      {rows.length === 0 ? <Empty title="No stages" /> : rows.map((s) => (
+      {search.input}
+      {search.filtered.length === 0 ? <Empty title={search.emptyMsg('No stages')} /> : search.filtered.map((s) => (
         <RowItem key={s.id} right={<Badge>{s.pctLabel}</Badge>}>
           <p className="font-semibold">{s.stage}: {s.title}</p>
           <p className="text-xs text-text/50">{s.startDate?.slice(0, 10) || '—'}</p>
