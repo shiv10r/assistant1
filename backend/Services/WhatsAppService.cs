@@ -22,7 +22,7 @@ public sealed class WhatsAppWaMeService : IWhatsAppService
     {
         var phone = NormalizePhone(party?.Phone ?? "");
         if (string.IsNullOrWhiteSpace(phone))
-            return Task.FromResult((false, "", "", "No phone number set for this party."));
+            return Task.FromResult((false, "", "", (string?)"No phone number set for this party."));
 
         var firmName = settings.GetValueOrDefault("general.firm_name", "LuxInfra");
         var lines = new List<string>
