@@ -55,6 +55,47 @@ public sealed class RazorpayService
         return string.IsNullOrEmpty(orderId) ? (false, null, "No order id returned") : (true, orderId, null);
     }
 
+    /// <summary>Create a shareable payment link for the given amount (₹). Returns short URL for WhatsApp/email.</summary>
+    public async Task<(bool Ok, string? Id, string? ShortUrl, string? Error)> CreatePaymentLinkAsync(double amountInr, string receipt)
+    {
+        if (!_enabled) return (false, null, null, "not_configured");
+
+        var payload = new JsonObject
+        {
+            ["amount"] = (long)Math.Round(amountInr * 100),
+            ["currency"] = "INR",
+            ["accept_partial"] = false,
+            ["description"] = $"Payment for {receipt}",
+            ["notes"] = new JsonObject { ["receipt"] = receipt },
+        };
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, "https://api.razorpay.com/v1/payment_links");
+        req.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
+        using var resp = await _http.SendAsync(req);
+        var body = await resp.Content.ReadAsStringAsync();
+
+        if (!resp.IsSuccessStatusCode)
+            return (false, null, null, $"Razorpay HTTP {resp.StatusCode}: {body[..Math.Min(200, body.Length)]}");
+
+        var node = JsonNode.Parse(body);
+        var id = node?["id"]?.GetValue<string>();
+        var shortUrl = node?["short_url"]?.GetValue<string>();
+        return string.IsNullOrEmpty(id) || string.IsNullOrEmpty(shortUrl)
+            ? (false, null, null, "No payment link id returned")
+            : (true, id, shortUrl, null);
+    }
+
+    /// <summary>Fetch an order's receipt (used to map a webhook order id back to the txn).</summary>
+    public async Task<string?> GetOrderReceiptAsync(string orderId)
+    {
+        if (!_enabled) return null;
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"https://api.razorpay.com/v1/orders/{orderId}");
+        using var resp = await _http.SendAsync(req);
+        if (!resp.IsSuccessStatusCode) return null;
+        var node = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
+        return node?["receipt"]?.GetValue<string>();
+    }
+
     /// <summary>Verify a webhook payload signature using the webhook secret.</summary>
     public bool VerifyWebhook(string signatureHeader, string payloadBody)
     {
