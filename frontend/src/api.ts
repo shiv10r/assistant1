@@ -16,7 +16,7 @@ export interface BillingKpis { youllGet: number; youllGive: number; monthSale: n
 
 export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; stateCode: string; billingAddress: string; email: string; currentBalance: number }
 export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
-export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string }
+export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string; paymentGateway: string; paymentStatus: string; paymentId: string; orderId: string; paidAt: string }
 export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }
 export interface CashEntry { id: number; kind: string; amount: number; date: string; description: string }
 export interface BankAccount { id: number; name: string; accNo: string; ifsc: string; upiId: string; openingBalance: number; asOf: string }
@@ -44,6 +44,7 @@ export interface ActivityItem { id: number; action: string; detail: string; sour
 export interface FirebaseWebConfig { enabled: boolean; apiKey: string; authDomain: string; projectId: string; storageBucket: string; messagingSenderId: string; appId: string; vapidKey: string; measurementId: string }
 export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
 export interface BackupResult { ok: boolean; message: string }
+export interface DriveStatus { configured: boolean; hasCredentials: boolean; folder?: string; email?: string }
 export interface FirebaseVersion { enabled: boolean; project: string | null; bucket: string | null; version: number; localRows: number }
 export interface AnalyticsData {
   billing: { youllGet: number; youllGive: number; monthSale: number }
@@ -427,6 +428,8 @@ const integrations = {
   emailInvoice: (txnId: number) => post<{ ok: boolean; to?: string; fileName?: string; subject?: string; error?: string; code?: string; message?: string }>(`/api/txns/${txnId}/email`, {}),
   einvoice: (txnId: number) => get<EinvoiceResult>(`/api/txns/${txnId}/einvoice`),
   razorpayOrder: (amountInr: number, receipt?: string) => post<{ ok: boolean; orderId?: string; keyId?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/order', { amountInr, receipt }),
+  razorpayPaymentLink: (amountInr: number, receipt?: string) => post<{ ok: boolean; id?: string; shortUrl?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/payment-link', { amountInr, receipt }),
+  whatsappLink: (txnId: number) => post<{ ok: boolean; url?: string; message?: string; paymentLink?: string | null; error?: string; code?: string }>(`/api/txns/${txnId}/whatsapp/link`, {}),
   driveBackup: () => post<{ ok: boolean; message?: string; error?: string; code?: string }>('/api/backup/drive', {}),
   driveAuthUrl: () => get<{ ok: boolean; url?: string; redirect?: string; state?: string; code?: string; message?: string }>('/api/integrations/drive/auth-url'),
   driveStatus: () => get<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string }>('/api/integrations/drive/status'),

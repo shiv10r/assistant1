@@ -148,6 +148,7 @@ export default function TxnForm() {
         roundOff: totals.roundOff, total: totals.total, received: totals.received,
         balance: totals.balance, paymentMode: mode, chequeStatus: mode === 'Cheque' ? (keepRef.status === 'OPEN' ? 'open' : '') : '',
         description, stateOfSupply, tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: keepRef.status,
+        paymentGateway: '', paymentStatus: '', paymentId: '', orderId: '', paidAt: '',
       }
       const good = lines.filter((l) => l.itemName && l.qty > 0 && l.rate > 0)
       await api.billing.saveTxn(txn, good)
