@@ -76,6 +76,40 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
     }
   }
 
+  const sendEmail = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.emailInvoice(t.id)
+      if (!r.ok) {
+        toast({ title: 'Email not sent', description: r.message || r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      toast({ title: 'Invoice emailed', description: `Sent to ${r.to}`, variant: 'success' })
+    } catch (e) { toast({ title: 'Could not email invoice', description: String(e), variant: 'error' }) }
+  }
+
+  const sendWhatsApp = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.whatsappLink(t.id)
+      if (!r.ok) {
+        toast({ title: 'WhatsApp not available', description: r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      window.open(r.url, '_blank', 'noopener')
+    } catch (e) { toast({ title: 'Could not open WhatsApp', description: String(e), variant: 'error' }) }
+  }
+
+  const payOnline = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.razorpayPaymentLink(t.balance, `txn-${t.id}`)
+      if (!r.ok) {
+        toast({ title: 'Payment link failed', description: r.message || r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      await navigator.clipboard.writeText(r.shortUrl || '')
+      toast({ title: 'Payment link ready', description: 'Copied to clipboard — share it with the customer.', variant: 'success' })
+    } catch (e) { toast({ title: 'Could not create payment link', description: String(e), variant: 'error' }) }
+  }
+
   return (
     <>
       <PageHead
@@ -141,7 +175,7 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         filteredTxns.length === 0 ? <Empty>{q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
-              <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th><th /></tr></thead>
+              <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th><th>Status</th><th /></tr></thead>
               <tbody>
                 {filteredTxns.map((tx) => (
                   <tr key={tx.id}>
@@ -151,8 +185,20 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
                     <td className="muted">{shortDate(tx.date)}</td>
                     <td className="num">{money(tx.total)}</td>
                     <td className="num" style={{ color: tx.balance > 0 ? '#E05C7A' : 'var(--dim)' }}>{money(tx.balance)}</td>
+                    <td>
+                      {tx.balance <= 0 ? <Badge tone="green">Paid</Badge>
+                        : tx.received > 0 ? <Badge tone="accent">Partial</Badge>
+                        : <Badge tone="pink">Pending</Badge>}
+                    </td>
                     <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                       <Link to={`/billing/sale?id=${tx.id}`} style={ghostStyle} title="Edit">✎</Link>{' '}
+                      {tx.balance > 0 && (['SALE', 'SALE_ORDER'].includes(tx.type)) && (
+                        <>
+                          <button style={ghostStyle} onClick={() => sendEmail(tx)} title="Email invoice">✉</button>{' '}
+                          <button style={ghostStyle} onClick={() => sendWhatsApp(tx)} title="WhatsApp invoice">💬</button>{' '}
+                          <button style={ghostStyle} onClick={() => payOnline(tx)} title="Copy payment link">🔗</button>{' '}
+                        </>
+                      )}
                       <button style={ghostStyle} onClick={() => removeTxn(tx)} title="Delete">🗑</button>
                     </td>
                   </tr>
