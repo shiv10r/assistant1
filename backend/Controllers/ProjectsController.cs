@@ -352,6 +352,14 @@ public class ProjectsController : ControllerBase
         return Ok(m);
     }
 
+    [HttpDelete("{id:int}/mom/{momId:int}")]
+    public async Task<ActionResult> DeleteMom(int id, int momId)
+    {
+        await _projects.DeleteMeetingMinuteAsync(momId);
+        await _activity.LogAsync("MOM deleted", $"#{momId}");
+        return Ok();
+    }
+
     // ---- Design ----
     [HttpGet("{id:int}/design")]
     public async Task<List<DesignFile>> Design(int id) => await _projects.GetDesignFilesAsync(id);
@@ -381,6 +389,30 @@ public class ProjectsController : ControllerBase
         file.ProjectId = id;
         await _projects.AddFileAsync(id, file.FolderId, file.FileName, file.FilePath);
         return Ok(file);
+    }
+
+    [HttpPut("files/{fileId:int}")]
+    public async Task<ActionResult> UpdateFile(int fileId, [FromBody] ProjectFile file)
+    {
+        file.Id = fileId;
+        await _projects.UpdateFileAsync(file);
+        return Ok(file);
+    }
+
+    [HttpDelete("files/{fileId:int}")]
+    public async Task<ActionResult> DeleteFile(int fileId)
+    {
+        await _projects.DeleteFileAsync(fileId);
+        await _activity.LogAsync("File deleted", $"#{fileId}");
+        return Ok();
+    }
+
+    [HttpDelete("{id:int}/folders/{folderId:int}")]
+    public async Task<ActionResult> DeleteFolder(int id, int folderId)
+    {
+        await _projects.DeleteFolderAsync(folderId);
+        await _activity.LogAsync("Folder deleted", $"#{folderId}");
+        return Ok();
     }
 
     // ---- Uploads (2D/3D models & files) ----

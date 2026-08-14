@@ -1,6 +1,7 @@
 using LuxInfra.Models;
 using LuxInfra.Repositories;
 using LuxInfra.Services;
+using LuxInfra.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LuxInfra.Api.Controllers;
@@ -15,9 +16,10 @@ public class ReportsController : ControllerBase
     private readonly IProjectService _projects;
     private readonly IUserRepository _users;
     private readonly IActivityService _activity;
+    private readonly EmailService _email;
 
     public ReportsController(ReportService reports, DatabaseService db, IBillingService billing,
-        IProjectService projects, IUserRepository users, IActivityService activity)
+        IProjectService projects, IUserRepository users, IActivityService activity, EmailService email)
     {
         _reports = reports;
         _db = db;
@@ -25,6 +27,7 @@ public class ReportsController : ControllerBase
         _projects = projects;
         _users = users;
         _activity = activity;
+        _email = email;
     }
 
     [HttpGet]
@@ -129,4 +132,24 @@ public class ReportsController : ControllerBase
         "all" => ReportPeriod.All,
         _ => ReportPeriod.Today
     };
+
+    /// <summary>Send a scheduled report email (HTML template) to one or more recipients.</summary>
+    [HttpPost("schedule-email")]
+    public async Task<ActionResult> ScheduleEmail([FromBody] ScheduleEmailDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email)) return BadRequest("Email required");
+        var p = Parse(dto.Period ?? "Today");
+        var data = await _reports.BuildReportAsync(p);
+        var pdf = ExportService.BuildPdf(data);
+        var html = EmailTemplates.ReportEmail(data, dto.PeriodLabel ?? p.ToString(), pdf.Length);
+        var stamp = DateTime.Now.ToString("yyyyMMdd_HHmm");
+        var fileName = $"LuxInfra_Report_{p}_{stamp}.pdf";
+        var error = await _email.SendHtmlAsync(dto.Email, $"LuxInfra Report — {dto.PeriodLabel ?? p.ToString()}", html, fileName, pdf);
+        if (error == "not_configured")
+            return Ok(new { ok = false, code = "not_configured", message = "Email is not enabled — add RESEND_API_KEY or SENDGRID_API_KEY on the server and redeploy." });
+        if (error is not null) return BadRequest(new { ok = false, error });
+        return Ok(new { ok = true, to = dto.Email, fileName });
+    }
+
+    public record ScheduleEmailDto(string Email, string? Period, string? PeriodLabel);
 }

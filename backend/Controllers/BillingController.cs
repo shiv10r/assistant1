@@ -45,6 +45,21 @@ public class BillingController : ControllerBase
         return Ok(p);
     }
 
+    [HttpDelete("parties/{id:int}")]
+    public async Task<ActionResult> DeleteParty(int id)
+    {
+        try
+        {
+            await _billing.DeletePartyAsync(id);
+            await _activity.LogAsync("Party deleted", $"#{id}");
+            return Ok();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     // ---- Catalog items ----
     [HttpGet("items")]
     public async Task<List<CatalogItem>> Items() => await _billing.GetItemsAsync();
@@ -76,6 +91,17 @@ public class BillingController : ControllerBase
         await _activity.LogAsync($"{TxnTypes.Display(saved.Type)} {saved.RefLabel} saved",
             $"{(string.IsNullOrEmpty(saved.PartyName) ? "Walk-in" : saved.PartyName)} — {ReportService.Money(saved.Total)}");
         return Ok(saved);
+    }
+
+    [HttpDelete("txns/{id:int}")]
+    public async Task<ActionResult> DeleteTxn(int id)
+    {
+        var txn = await _billing.GetTxnAsync(id);
+        await _billing.DeleteTxnAsync(id);
+        if (txn is not null)
+            await _activity.LogAsync($"{TxnTypes.Display(txn.Type)} {txn.RefLabel} deleted",
+                $"{(string.IsNullOrEmpty(txn.PartyName) ? "Walk-in" : txn.PartyName)}");
+        return Ok();
     }
 
     // ---- Cash & bank ----

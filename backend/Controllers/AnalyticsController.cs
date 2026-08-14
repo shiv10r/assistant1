@@ -27,13 +27,22 @@ public class AnalyticsController : ControllerBase
             var done = tasks.Count == 0 ? 0 : (double)tasks.Count(t => t.Status == TaskStatuses.Completed) / tasks.Count * 100;
             var spent = txns.Where(t => t.Type == ProjectTxnTypes.PaymentOut).Sum(t => t.Amount);
             var received = txns.Where(t => t.Type == ProjectTxnTypes.PaymentIn).Sum(t => t.Amount);
+            var parties = await _projects.GetPartiesAsync(p.Id);
+            var lead = parties
+                .Where(pt => pt.Role == SitePartyRoles.SiteStaff && pt.IsActive)
+                .OrderBy(pt => pt.Id)
+                .Select(pt => pt.Name)
+                .FirstOrDefault();
             projectRows.Add(new
             {
+                id = p.Id,
                 name = p.Name,
                 status = p.Status,
                 value = p.Value,
                 spent,
                 received,
+                entries = txns.Count,
+                lead = string.IsNullOrWhiteSpace(lead) ? null : lead,
                 taskPct = Math.Round(done),
                 budgetPct = p.Value > 0 ? Math.Round(spent / p.Value * 100) : 0,
                 pctLabel = p.Value > 0 ? $"{Math.Round(spent / p.Value * 100):0}%" : "—",

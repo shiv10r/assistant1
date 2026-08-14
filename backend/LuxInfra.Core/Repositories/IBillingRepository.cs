@@ -11,8 +11,10 @@ public interface IBillingRepository
 
     Task InsertPartyAsync(Party p);
     Task UpdatePartyAsync(Party p);
+    Task DeletePartyAsync(int id);
     Task<List<Party>> GetPartiesAsync();
     Task<Party?> GetPartyAsync(int id);
+    Task<int> CountTxnsForPartyAsync(int partyId);
 
     Task InsertItemAsync(CatalogItem item);
     Task UpdateItemAsync(CatalogItem item);
@@ -22,6 +24,7 @@ public interface IBillingRepository
     Task<int> NextRefNoAsync(string type);
     Task InsertTxnAsync(BizTxn txn);
     Task InsertLineAsync(BizTxnItem line);
+    Task DeleteTxnAsync(int id);
     Task<List<BizTxn>> GetTxnsAsync();
     Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId);
     Task<List<BizTxnItem>> GetAllLinesAsync();

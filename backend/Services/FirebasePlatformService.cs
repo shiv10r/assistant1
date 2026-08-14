@@ -20,12 +20,14 @@ public sealed class FirebasePlatformService
     public bool Enabled { get; }
     public string ProjectId { get; }
 
-    // Web SDK config (browser connects directly to Firebase Auth / FCM).
+    // Web SDK config (browser connects directly to Firebase Auth / FCM / Analytics / Performance).
     public string ApiKey { get; } = "";
     public string AuthDomain { get; } = "";
+    public string StorageBucket { get; } = "";
     public string MessagingSenderId { get; } = "";
     public string AppId { get; } = "";
     public string VapidKey { get; } = "";
+    public string MeasurementId { get; } = "";
 
     public FirebasePlatformService(IConfiguration cfg)
     {
@@ -33,9 +35,11 @@ public sealed class FirebasePlatformService
         var rawCred = cfg["FIREBASE_SERVICE_ACCOUNT"] ?? "";
         ApiKey = cfg["FIREBASE_WEB_API_KEY"] ?? "";
         AuthDomain = cfg["FIREBASE_AUTH_DOMAIN"] ?? (ProjectId.Length > 0 ? $"{ProjectId}.firebaseapp.com" : "");
+        StorageBucket = cfg["FIREBASE_STORAGE_BUCKET"] ?? (ProjectId.Length > 0 ? $"{ProjectId}.firebasestorage.app" : "");
         MessagingSenderId = cfg["FIREBASE_SENDER_ID"] ?? "";
         AppId = cfg["FIREBASE_APP_ID"] ?? "";
         VapidKey = cfg["FIREBASE_VAPID_KEY"] ?? "";
+        MeasurementId = cfg["FIREBASE_MEASUREMENT_ID"] ?? "";
 
         if (string.IsNullOrWhiteSpace(ProjectId) || string.IsNullOrWhiteSpace(rawCred))
         {
@@ -61,9 +65,11 @@ public sealed class FirebasePlatformService
         apiKey = ApiKey,
         authDomain = AuthDomain,
         projectId = ProjectId,
+        storageBucket = StorageBucket,
         messagingSenderId = MessagingSenderId,
         appId = AppId,
         vapidKey = VapidKey,
+        measurementId = MeasurementId,
         enabled = Enabled,
     };
 

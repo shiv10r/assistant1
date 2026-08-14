@@ -45,6 +45,7 @@ public interface IProjectService
 
     Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId);
     Task SaveMeetingMinuteAsync(MeetingMinute m);
+    Task DeleteMeetingMinuteAsync(int id);
 
     Task<List<DesignFile>> GetDesignFilesAsync(int projectId);
     Task SaveDesignFileAsync(DesignFile d);
@@ -54,6 +55,9 @@ public interface IProjectService
 
     Task<List<ProjectFile>> GetFilesAsync(int folderId);
     Task AddFileAsync(int projectId, int folderId, string fileName, string filePath);
+    Task UpdateFileAsync(ProjectFile f);
+    Task DeleteFileAsync(int id);
+    Task DeleteFolderAsync(int folderId);
 
     Task<List<FileBlob>> GetUploadsAsync(int projectId, string? category = null);
     Task<FileBlob?> GetUploadAsync(int id);

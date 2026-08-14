@@ -63,6 +63,7 @@ builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<RazorpayService>();
 builder.Services.AddSingleton<DriveBackupService>();
 builder.Services.AddSingleton<VisionAiService>();
+builder.Services.AddSingleton<IWhatsAppService, WhatsAppWaMeService>();
 
 // ---- Weather (Open-Meteo, free + key-less; cached per site) ----
 builder.Services.AddSingleton<IWeatherService, OpenMeteoWeatherService>();

@@ -2,6 +2,8 @@ using LuxInfra.Api.Services;
 using LuxInfra.Models;
 using LuxInfra.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using System.Text.Json.Nodes;
 
 namespace LuxInfra.Api.Controllers;
 
@@ -14,15 +16,20 @@ public class IntegrationsController : ControllerBase
     private readonly RazorpayService _razorpay;
     private readonly DriveBackupService _drive;
     private readonly VisionAiService _vision;
+    private readonly IWhatsAppService _whatsapp;
+    private readonly IActivityService _activity;
 
     public IntegrationsController(IBillingService billing, EmailService email,
-        RazorpayService razorpay, DriveBackupService drive, VisionAiService vision)
+        RazorpayService razorpay, DriveBackupService drive, VisionAiService vision,
+        IWhatsAppService whatsapp, IActivityService activity)
     {
         _billing = billing;
         _email = email;
         _razorpay = razorpay;
         _drive = drive;
         _vision = vision;
+        _whatsapp = whatsapp;
+        _activity = activity;
     }
 
     // ---- Integration status (frontend shows configure hints) ----
@@ -64,9 +71,16 @@ public class IntegrationsController : ControllerBase
         var pdf = InvoicePdfService.Build(txn, party, lines, settings);
         var fileName = $"{txn.RefLabel}-{txn.TypeLabel.Replace(" ", "").Replace("-", "")}.pdf";
         var subject = $"Invoice {txn.RefLabel} — {settings.GetValueOrDefault("general.firm_name", "LuxInfra")}";
-        var message = $"Dear {party.Name},\n\nPlease find attached invoice {txn.RefLabel} for {ReportService.Money(txn.Total)}.\n\nThanks,\n{settings.GetValueOrDefault("general.firm_name", "LuxInfra")}";
 
-        var error = await _email.SendPdfAsync(party.Email, subject, message, fileName, pdf);
+        string? paymentLink = null;
+        if (_razorpay.Configured)
+        {
+            var (ok, _, shortUrl, _) = await _razorpay.CreatePaymentLinkAsync(txn.Total, $"txn-{txn.Id}");
+            paymentLink = ok ? shortUrl : null;
+        }
+        var html = EmailTemplates.InvoiceEmail(txn, party, settings, paymentLink);
+
+        var error = await _email.SendHtmlAsync(party.Email, subject, html, fileName, pdf);
         if (error == "not_configured")
             return Ok(new { ok = false, code = "not_configured", message = "Email is not enabled — add RESEND_API_KEY (or SENDGRID_API_KEY) on the server and redeploy." });
         if (error is not null)
@@ -104,13 +118,78 @@ public class IntegrationsController : ControllerBase
         return Ok(new { ok = true, orderId, keyId = _razorpay.KeyId, amountInr = dto.AmountInr });
     }
 
-    /// <summary>Razorpay webhook — auto-reconcile a paid transaction (public, signature-verified).</summary>
+    [HttpPost("payments/razorpay/payment-link")]
+    public async Task<ActionResult> CreatePaymentLink([FromBody] PaymentOrderDto dto)
+    {
+        if (dto.AmountInr <= 0) return BadRequest(new { error = "Amount must be positive" });
+        var (ok, id, shortUrl, error) = await _razorpay.CreatePaymentLinkAsync(dto.AmountInr, dto.Receipt ?? $"txn-{Guid.NewGuid():N}");
+        if (!ok && error == "not_configured")
+            return Ok(new { ok = false, code = "not_configured", message = "Razorpay is not enabled — add RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET on the server and redeploy." });
+        if (!ok) return BadRequest(new { ok = false, error });
+        return Ok(new { ok = true, id, shortUrl, amountInr = dto.AmountInr });
+    }
+
+    /// <summary>Razorpay webhook — verifies the signature, reconciles payment.captured into the matching txn (public).</summary>
     [HttpPost("payments/razorpay/webhook")]
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<ActionResult> RazorpayWebhook()
     {
-        // Signature verification happens via middleware-independent check here.
-        return Ok();
+        string body;
+        using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+            body = await reader.ReadToEndAsync();
+
+        var signature = Request.Headers["X-Razorpay-Signature"].ToString();
+        if (!_razorpay.VerifyWebhook(signature, body))
+            return Unauthorized(new { error = "Invalid webhook signature" });
+
+        var node = JsonNode.Parse(body);
+        var eventName = node?["event"]?.GetValue<string>();
+        if (eventName != "payment.captured")
+            return Ok(new { ok = true, ignored = eventName });
+
+        var entity = node?["payload"]?["payment"]?["entity"];
+        var paymentId = entity?["id"]?.GetValue<string>() ?? "";
+        var orderId = entity?["order_id"]?.GetValue<string>() ?? "";
+        var amountPaise = entity?["amount"]?.GetValue<long>() ?? 0;
+        if (string.IsNullOrEmpty(paymentId) || string.IsNullOrEmpty(orderId) || amountPaise <= 0)
+            return BadRequest(new { error = "Missing payment details in webhook" });
+
+        var receipt = await _razorpay.GetOrderReceiptAsync(orderId);
+        if (string.IsNullOrWhiteSpace(receipt) || !receipt.StartsWith("txn-") ||
+            !int.TryParse(receipt["txn-".Length..], out var txnId))
+            return Ok(new { ok = false, error = $"Could not map order {orderId} to a transaction (receipt: {receipt})" });
+
+        var error = await _billing.RecordPaymentAsync(txnId, "razorpay", paymentId, orderId, amountPaise / 100.0);
+        if (error is not null)
+            return Ok(new { ok = false, error });
+
+        await _activity.LogAsync("Payment received",
+            $"₹{ReportService.Money(amountPaise / 100.0)} via Razorpay ({paymentId}) on txn {txnId}");
+        return Ok(new { ok = true, txnId });
+    }
+
+    // ---- WhatsApp invoice delivery (wa.me — no account needed) ----
+
+    [HttpPost("txns/{id:int}/whatsapp/link")]
+    public async Task<ActionResult> WhatsAppLink(int id)
+    {
+        var txn = await _billing.GetTxnAsync(id);
+        if (txn is null) return NotFound();
+
+        var party = txn.PartyId > 0 ? await _billing.GetPartyAsync(txn.PartyId) : null;
+        var settings = await _billing.GetAllSettingsAsync();
+
+        string? paymentLink = null;
+        if (_razorpay.Configured)
+        {
+            var (ok, _, shortUrl, _) = await _razorpay.CreatePaymentLinkAsync(txn.Total, $"txn-{txn.Id}");
+            paymentLink = ok ? shortUrl : null;
+        }
+
+        var (waOk, url, message, waError) = await _whatsapp.ShareInvoiceAsync(txn, party, settings, paymentLink);
+        if (!waOk)
+            return BadRequest(new { ok = false, error = waError, code = waError?.Contains("phone", StringComparison.OrdinalIgnoreCase) == true ? "no_phone" : null });
+        return Ok(new { ok = true, url, message, paymentLink });
     }
 
     // ---- Google Drive backup ----

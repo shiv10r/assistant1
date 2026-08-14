@@ -48,6 +48,8 @@ public interface IProjectRepository
     Task<List<SiteLog>> GetSiteLogsAsync(int projectId);
 
     Task InsertMeetingMinuteAsync(MeetingMinute m);
+    Task UpdateMeetingMinuteAsync(MeetingMinute m);
+    Task DeleteMeetingMinuteAsync(int id);
     Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId);
 
     Task InsertDesignFileAsync(DesignFile d);
@@ -57,6 +59,9 @@ public interface IProjectRepository
     Task<List<ProjectFolder>> GetFoldersAsync(int projectId);
 
     Task InsertFileAsync(int projectId, int folderId, string fileName, string filePath);
+    Task UpdateFileAsync(ProjectFile f);
+    Task DeleteFileAsync(int id);
+    Task DeleteFolderAsync(int folderId);
     Task<List<ProjectFile>> GetFilesAsync(int folderId);
 
     Task<FileBlob> InsertBlobAsync(FileBlob blob);
