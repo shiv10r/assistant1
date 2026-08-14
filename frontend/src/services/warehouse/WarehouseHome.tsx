@@ -33,7 +33,7 @@ export default function WarehouseHome() {
                 <div className="text-sm text-muted">{k.label}</div>
                 <div className="text-2xl font-semibold text-text mt-1">{k.value}</div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-surface2 border border-border flex items-center justify-center text-primary">{k.icon}</div>
+              <div className="w-10 h-10 rounded-lg bg-surface2 border border-border flex items-center justify-center text-primary">{k.icon}</div>
             </CardContent>
           </Card>
         ))}
@@ -76,7 +76,7 @@ export default function WarehouseHome() {
               { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
               { label: 'Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
             ].map((l) => (
-              <button key={l.to} onClick={() => navigate(l.to)} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-surface2 hover:border-primary/50 transition-colors">
+              <button key={l.to} onClick={() => navigate(l.to)} className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors">
                 <span className="text-primary">{l.icon}</span>
                 <span className="text-sm font-medium text-text">{l.label}</span>
               </button>
