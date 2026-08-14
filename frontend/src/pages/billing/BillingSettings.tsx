@@ -23,10 +23,16 @@ interface PreferenceGroup {
 const FIRM_FIELDS = [
   { key: 'general.firm_name', label: 'Firm Name', placeholder: 'LuxInfra', required: true },
   { key: 'general.firm_gstin', label: 'GSTIN', placeholder: '29AAACL1234A1Z5', pattern: '[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}' },
+  { key: 'general.firm_pan', label: 'PAN', placeholder: 'AAACL1234A' },
   { key: 'general.firm_phone', label: 'Phone', placeholder: '+91 98765 43210', type: 'tel' },
   { key: 'general.firm_email', label: 'Email', placeholder: 'billing@luxinfra.com', type: 'email' },
   { key: 'general.firm_state', label: 'State', placeholder: 'Karnataka' },
+  { key: 'general.firm_state_code', label: 'State Code', placeholder: '29' },
   { key: 'general.firm_address', label: 'Address', placeholder: '123 Business Park, Bangalore', multiline: true },
+  { key: 'general.firm_bank_name', label: 'Bank Name', placeholder: 'HDFC Bank' },
+  { key: 'general.firm_bank_account', label: 'Account No', placeholder: '50100234567890' },
+  { key: 'general.firm_bank_ifsc', label: 'IFSC', placeholder: 'HDFC0001234' },
+  { key: 'general.firm_bank_holder', label: 'Account Holder', placeholder: 'LuxInfra Pvt Ltd' },
 ]
 
 const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
@@ -89,6 +95,10 @@ const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
       { key: 'print.signature_text', label: 'Signature Label', desc: 'Custom text for signature line', type: 'textarea', dependsOn: 'print.signature' },
       { key: 'print.payment_mode', label: 'Payment Mode', desc: 'Show payment mode on invoices', type: 'toggle' },
       { key: 'print.page_numbers', label: 'Page Numbers', desc: 'Add page numbers to multi-page invoices', type: 'toggle' },
+      { key: 'print.pan_on_sale', label: 'PAN', desc: 'Print firm PAN on tax invoices', type: 'toggle' },
+      { key: 'print.state_code', label: 'State Code', desc: 'Show state code next to state names', type: 'toggle' },
+      { key: 'print.place_of_supply', label: 'Place of Supply', desc: 'Show place of supply on GST invoices', type: 'toggle' },
+      { key: 'print.bank_details', label: 'Bank Details', desc: 'Print firm bank details on invoices', type: 'toggle' },
     ]
   },
 }
