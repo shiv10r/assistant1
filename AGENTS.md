@@ -8,6 +8,9 @@
 - Fix root causes, not symptoms. Verify with build/tests before claiming done.
 - Never suppress type errors with `as any`, `@ts-ignore`, `@ts-expect-error`.
 - Only commit/push when explicitly requested.
+- **Never install anything (packages, tools, SDKs, global CLIs, system software) without explicit approval.** Do not run installs "just in case" — ask first.
+- Never take major/risky decisions unilaterally (installs, deletions, force-push, resets, changing infra/config, upgrading dependencies) — always ask before proceeding.
+- Don't do anything that could harm or modify the user's device/system outside the project scope without asking first.
 
 ## Branch-deployment rule (MANDATORY)
 
