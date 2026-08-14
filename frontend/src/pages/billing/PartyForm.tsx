@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { Party } from '../../api'
 import { PageHead, todayISO } from '../../ui'
@@ -8,12 +8,24 @@ const GST_TYPES = ['Unregistered/Consumer', 'Registered Business - Regular', 'Re
 
 export default function PartyForm() {
   const nav = useNavigate()
+  const [params] = useSearchParams()
+  const editId = Number(params.get('id')) || 0
   const [err, setErr] = useState('')
   const [f, setF] = useState<Party>({
     id: 0, name: '', phone: '', openingBalance: 0, balanceType: 'receive', asOfDate: todayISO(),
     creditLimit: 0, gstType: GST_TYPES[0], gstin: '', state: '', stateCode: '', billingAddress: '', email: '', currentBalance: 0,
   })
   const set = (k: keyof Party, v: unknown) => setF((p) => ({ ...p, [k]: v }))
+
+  useEffect(() => {
+    if (!editId) return
+    api.billing.parties()
+      .then((all) => {
+        const p = all.find((x) => x.id === editId)
+        if (p) setF({ ...p, openingBalance: p.openingBalance || 0, creditLimit: p.creditLimit || 0 })
+      })
+      .catch(() => setErr('Could not load party.'))
+  }, [editId])
 
   const save = async () => {
     try {
@@ -25,7 +37,7 @@ export default function PartyForm() {
 
   return (
     <>
-      <PageHead icon="👥" title="Add Party" sub="Customer / supplier / party" />
+      <PageHead icon="👥" title={editId ? 'Edit Party' : 'Add Party'} sub="Customer / supplier / party" />
       <div className="card">
         <div className="form-row">
           <input value={f.name} placeholder="Party name *" onChange={(e) => set('name', e.target.value)} />
@@ -59,7 +71,7 @@ export default function PartyForm() {
 
         {err && <div className="empty" style={{ color: '#E05C7A', padding: '12px 0' }}>{err}</div>}
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <button className="btn" onClick={save}>💾 Save Party</button>
+          <button className="btn" onClick={save}>{editId ? '💾 Save Changes' : '💾 Save Party'}</button>
           <button className="btn ghost" onClick={() => nav('/billing')}>Cancel</button>
         </div>
       </div>

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BillingKpis, Party, CatalogItem, CashData, BankAccount } from '../../api'
-import { Badge, Empty, money, shortDate, PageHead } from '../../ui'
+import { Badge, Empty, money, shortDate, PageHead, inputStyle, ghostStyle } from '../../ui'
+import { useToast } from '../../components/ui/Toast'
 
 const TYPE_BADGE: Record<string, 'green' | 'pink' | 'gray' | 'accent'> = {
   SALE: 'green', PURCHASE: 'pink', SALE_RETURN: 'pink', PURCHASE_RETURN: 'green',
@@ -16,6 +17,7 @@ export const txnTypeLabel = (t: string) =>
   : t === 'PURCHASE_ORDER' ? 'Purchase Order' : t === 'DELIVERY_CHALLAN' ? 'Delivery Challan' : t
 
 export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txns' | 'parties' }) {
+  const { toast } = useToast()
   const [kpis, setKpis] = useState<BillingKpis | null>(null)
   const [tab, setTab] = useState<'txns' | 'parties'>(initialTab)
   const [txns, setTxns] = useState<BizTxn[]>([])
@@ -23,6 +25,7 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
   const [items, setItems] = useState<CatalogItem[]>([])
   const [cash, setCash] = useState<CashData | null>(null)
   const [banks, setBanks] = useState<BankAccount[]>([])
+  const [q, setQ] = useState('')
 
   const load = () => {
     api.billing.kpis().then(setKpis).catch(() => setKpis(null))
@@ -36,7 +39,76 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
 
   const lowStock = items.filter((i) => i.type !== 'Service' && i.minStock > 0 && i.stockQty <= i.minStock)
   const bankTotal = banks.reduce((s, b) => s + b.openingBalance, 0)
-  const recent = txns.slice(0, 6)
+
+  const query = q.trim().toLowerCase()
+  const filteredTxns = query
+    ? txns.filter((t) =>
+        (t.partyName || '').toLowerCase().includes(query) ||
+        (t.prefix || '').toLowerCase().includes(query) ||
+        String(t.refNo).includes(query) ||
+        txnTypeLabel(t.type).toLowerCase().includes(query))
+    : txns
+  const filteredParties = query
+    ? parties.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        (p.phone || '').toLowerCase().includes(query) ||
+        (p.email || '').toLowerCase().includes(query))
+    : parties
+
+  const removeTxn = async (t: BizTxn) => {
+    if (!confirm(`Delete ${txnTypeLabel(t.type)} ${t.refNo ? '#' + t.refNo : ''} — ${t.partyName || 'Walk-in'} (${money(t.total)})?`)) return
+    try {
+      await api.billing.deleteTxn(t.id)
+      load()
+      toast({ title: 'Transaction deleted', description: `${t.partyName || 'Walk-in'} ${money(t.total)}`, variant: 'error' })
+    } catch (e) { toast({ title: 'Could not delete transaction', description: String(e), variant: 'error' }) }
+  }
+
+  const removeParty = async (p: Party) => {
+    if (!confirm(`Delete party "${p.name}"?`)) return
+    try {
+      await api.billing.deleteParty(p.id)
+      load()
+      toast({ title: 'Party deleted', description: p.name, variant: 'error' })
+    } catch (e) {
+      const msg = String(e).replace(/^API error \d+: /, '').trim()
+      toast({ title: 'Could not delete party', description: msg || String(e), variant: 'error' })
+    }
+  }
+
+  const sendEmail = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.emailInvoice(t.id)
+      if (!r.ok) {
+        toast({ title: 'Email not sent', description: r.message || r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      toast({ title: 'Invoice emailed', description: `Sent to ${r.to}`, variant: 'success' })
+    } catch (e) { toast({ title: 'Could not email invoice', description: String(e), variant: 'error' }) }
+  }
+
+  const sendWhatsApp = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.whatsappLink(t.id)
+      if (!r.ok) {
+        toast({ title: 'WhatsApp not available', description: r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      window.open(r.url, '_blank', 'noopener')
+    } catch (e) { toast({ title: 'Could not open WhatsApp', description: String(e), variant: 'error' }) }
+  }
+
+  const payOnline = async (t: BizTxn) => {
+    try {
+      const r = await api.integrations.razorpayPaymentLink(t.balance, `txn-${t.id}`)
+      if (!r.ok) {
+        toast({ title: 'Payment link failed', description: r.message || r.error || 'Unknown error', variant: 'error' })
+        return
+      }
+      await navigator.clipboard.writeText(r.shortUrl || '')
+      toast({ title: 'Payment link ready', description: 'Copied to clipboard — share it with the customer.', variant: 'success' })
+    } catch (e) { toast({ title: 'Could not create payment link', description: String(e), variant: 'error' }) }
+  }
 
   return (
     <>
@@ -92,13 +164,20 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         <button className={tab === 'parties' ? 'active' : ''} onClick={() => setTab('parties')}>Party Details</button>
       </div>
 
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder={tab === 'txns' ? 'Search transactions (party, ref, type)…' : 'Search parties (name, phone, email)…'}
+        style={{ ...inputStyle, width: '100%', margin: '8px 0 16px' }}
+      />
+
       {tab === 'txns' ? (
-        txns.length === 0 ? <Empty>No transactions yet — tap "Add New Sale".</Empty> : (
+        filteredTxns.length === 0 ? <Empty>{q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
-              <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th></tr></thead>
+              <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th><th>Status</th><th /></tr></thead>
               <tbody>
-                {recent.map((tx) => (
+                {filteredTxns.map((tx) => (
                   <tr key={tx.id}>
                     <td className="cat">{tx.partyName || 'Cash'}</td>
                     <td><Badge tone={TYPE_BADGE[tx.type]}>{txnTypeLabel(tx.type)}</Badge></td>
@@ -106,29 +185,50 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
                     <td className="muted">{shortDate(tx.date)}</td>
                     <td className="num">{money(tx.total)}</td>
                     <td className="num" style={{ color: tx.balance > 0 ? '#E05C7A' : 'var(--dim)' }}>{money(tx.balance)}</td>
+                    <td>
+                      {tx.balance <= 0 ? <Badge tone="green">Paid</Badge>
+                        : tx.received > 0 ? <Badge tone="accent">Partial</Badge>
+                        : <Badge tone="pink">Pending</Badge>}
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      <Link to={`/billing/sale?id=${tx.id}`} style={ghostStyle} title="Edit">✎</Link>{' '}
+                      {tx.balance > 0 && (['SALE', 'SALE_ORDER'].includes(tx.type)) && (
+                        <>
+                          <button style={ghostStyle} onClick={() => sendEmail(tx)} title="Email invoice">✉</button>{' '}
+                          <button style={ghostStyle} onClick={() => sendWhatsApp(tx)} title="WhatsApp invoice">💬</button>{' '}
+                          <button style={ghostStyle} onClick={() => payOnline(tx)} title="Copy payment link">🔗</button>{' '}
+                        </>
+                      )}
+                      <button style={ghostStyle} onClick={() => removeTxn(tx)} title="Delete">🗑</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {txns.length > 6 && <div className="muted" style={{ padding: '8px 12px' }}>Showing latest {recent.length} of {txns.length}.</div>}
+            <div className="muted" style={{ padding: '8px 12px' }}>{filteredTxns.length} transaction{filteredTxns.length === 1 ? '' : 's'}{q ? ` matching "${q}"` : ''}.</div>
           </div>
         )
       ) : (
-        parties.length === 0 ? <Empty>No parties yet — tap "Add New Party".</Empty> : (
+        filteredParties.length === 0 ? <Empty>{q ? `No parties match "${q}".` : 'No parties yet — tap "Add New Party".'}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
-              <thead><tr><th>Party</th><th>Phone</th><th className="num">Balance</th><th>Direction</th></tr></thead>
+              <thead><tr><th>Party</th><th>Phone</th><th className="num">Balance</th><th>Direction</th><th /></tr></thead>
               <tbody>
-                {parties.map((p) => (
+                {filteredParties.map((p) => (
                   <tr key={p.id}>
                     <td className="cat">{p.name}</td>
                     <td className="muted">{p.phone || '—'}</td>
                     <td className="num" style={{ color: p.currentBalance >= 0 ? '#2E8B57' : '#E05C7A' }}>{money(Math.abs(p.currentBalance))}</td>
                     <td><Badge tone={p.currentBalance >= 0 ? 'green' : 'pink'}>{p.currentBalance >= 0 ? "You'll Get" : "You'll Give"}</Badge></td>
+                    <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      <Link to={`/billing/party?id=${p.id}`} style={ghostStyle} title="Edit">✎</Link>{' '}
+                      <button style={ghostStyle} onClick={() => removeParty(p)} title="Delete">🗑</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <div className="muted" style={{ padding: '8px 12px' }}>{filteredParties.length} part{filteredParties.length === 1 ? 'y' : 'ies'}{q ? ` matching "${q}"` : ''}.</div>
           </div>
         )
       )}

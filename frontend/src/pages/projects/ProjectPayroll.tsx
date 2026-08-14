@@ -17,6 +17,7 @@ export default function ProjectPayroll() {
   const [to, setTo] = useState(today)
   const [data, setData] = useState<PayrollResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [q, setQ] = useState('')
 
   const load = async () => {
     if (!from || !to) { toast({ title: 'Select a date range', variant: 'error' }); return }
@@ -48,6 +49,11 @@ export default function ProjectPayroll() {
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  const query = q.trim().toLowerCase()
+  const filteredRows = data && query
+    ? data.rows.filter((r) => r.name.toLowerCase().includes(query) || r.role.toLowerCase().includes(query))
+    : data?.rows ?? []
 
   return (
     <>
@@ -82,9 +88,17 @@ export default function ProjectPayroll() {
         </CardContent>
       </Card>
 
-      {data && (
-        <>
-          <div className="grid gap-4 mb-5 sm:grid-cols-2 lg:grid-cols-4">
+{data && data.rows.length > 0 && (
+          <Input
+            className="mb-4"
+            placeholder="Search person…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        )}
+        {data && (
+          <>
+            <div className="grid gap-4 mb-5 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm text-muted">Working Days (in range)</p>
@@ -127,7 +141,7 @@ export default function ProjectPayroll() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.rows.map((r) => (
+                    {filteredRows.map((r) => (
                       <tr key={`${r.name}-${r.role}`} className="border-b border-border/50 last:border-0">
                         <td className="px-4 py-3">
                           <div className="font-medium text-text">{r.name}</div>
@@ -152,6 +166,11 @@ export default function ProjectPayroll() {
                     description="Add daily attendance for site people to compute payroll."
                     action={<Link to={`/projects/${pid}/attendance`}><Button>Open Attendance</Button></Link>}
                   />
+                </div>
+              )}
+              {data.rows.length > 0 && filteredRows.length === 0 && (
+                <div className="p-8">
+                  <Empty title={`No payroll rows match "${q}"`} />
                 </div>
               )}
             </CardContent>

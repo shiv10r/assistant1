@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { isAuthed, api } from './api'
+import { logPageView } from './firebase'
 import Layout from './Layout'
 import Login from './pages/Login'
 import Assistant from './pages/Assistant'
@@ -44,6 +45,12 @@ export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
   const [refreshKey, setRefreshKey] = useState(0)
 
+  function PageTracker() {
+    const location = useLocation()
+    useEffect(() => { void logPageView(location.pathname) }, [location.pathname])
+    return null
+  }
+
   // Auto-refresh: poll the Firebase data version; when it changes, remount the
   // active page so it re-fetches its data (live updates after data changes).
   useEffect(() => {
@@ -67,9 +74,11 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <PageTracker />
       <Routes key={refreshKey}>
         <Route element={<Layout />}>
-          <Route path="/" element={<Assistant />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/assistant" element={<Assistant />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/analytics" element={<Analytics />} />

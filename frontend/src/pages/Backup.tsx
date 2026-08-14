@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import type { BackupStatus, BackupResult, FirebaseVersion } from '../api'
+import type { BackupStatus, BackupResult, FirebaseVersion, DriveStatus } from '../api'
 import { btnStyle } from '../ui'
 import { subscribePush, onPushMessage, ensureServiceWorker } from '../firebase'
 
 export default function Backup() {
   const [status, setStatus] = useState<BackupStatus | null>(null)
   const [fb, setFb] = useState<FirebaseVersion | null>(null)
+  const [drive, setDrive] = useState<DriveStatus | null>(null)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [pushState, setPushState] = useState('')
@@ -15,8 +16,37 @@ export default function Backup() {
   useEffect(() => {
     api.backupStatus().then(setStatus).catch(() => {})
     api.firebaseVersion().then(setFb).catch(() => {})
+    api.integrations.driveStatus().then(setDrive).catch(() => {})
     onPushMessage((p) => setToast(`${p.title ?? 'LuxInfra'} — ${p.body ?? ''}`))
   }, [])
+
+  async function runDrive() {
+    setBusy('drive')
+    setMsg(null)
+    try {
+      const r = await api.integrations.driveBackup()
+      setMsg({ ok: !!r.ok, text: r.message || r.error || 'Drive backup failed' })
+      const s = await api.integrations.driveStatus()
+      setDrive(s)
+    } catch (e) {
+      setMsg({ ok: false, text: String(e) })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function connectDrive() {
+    setBusy('drive-connect')
+    try {
+      const r = await api.integrations.driveAuthUrl()
+      if (r.ok && r.url) window.open(r.url, '_blank', 'noopener')
+      else setMsg({ ok: false, text: r.message || 'Could not start Drive setup' })
+    } catch (e) {
+      setMsg({ ok: false, text: String(e) })
+    } finally {
+      setBusy(null)
+    }
+  }
 
   async function run(kind: 'push' | 'pull') {
     setBusy(kind)
@@ -119,6 +149,41 @@ export default function Backup() {
           <button className="ghost-btn" onClick={() => runFb('pull')} disabled={busy !== null || !fb?.enabled}>
             {busy === 'fb-pull' ? 'Restoring…' : 'Restore from Firebase'}
           </button>
+        </div>
+        {msg && <div className={`backup-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
+      </div>
+
+      <div className="card">
+        <h2>Google Drive backup (secondary)</h2>
+        <p className="muted">Uploads the full database snapshot — including all uploaded files (designs, project files, MOM attachments) — to your personal Google Drive. Works alongside Turso/Firebase as an extra copy you can open anywhere.</p>
+        {drive === null ? (
+          <div className="muted">Checking…</div>
+        ) : (
+          <>
+            <div className="backup-row">
+              <span className={`dot ${drive.configured ? 'on' : 'off'}`} />
+              <span>{drive.configured ? 'Google Drive connected' : drive.hasCredentials ? 'Credentials found — connect your Google account' : 'Google Drive not configured'}</span>
+            </div>
+            {drive.configured && (
+              <>
+                <div className="backup-row"><span className="muted">Folder</span><span>{drive.folder}</span></div>
+                {drive.email && <div className="backup-row"><span className="muted">Account</span><span>{drive.email}</span></div>}
+              </>
+            )}
+            {!drive.hasCredentials && (
+              <p className="muted">Set GOOGLE_DRIVE_CLIENT_ID and GOOGLE_DRIVE_CLIENT_SECRET environment variables on the server, then reload this page.</p>
+            )}
+          </>
+        )}
+        <div className="row-gap" style={{ marginTop: 12 }}>
+          <button style={btnStyle} onClick={runDrive} disabled={busy !== null || !drive?.configured}>
+            {busy === 'drive' ? 'Uploading…' : 'Back up to Drive'}
+          </button>
+          {drive?.hasCredentials && !drive.configured && (
+            <button className="ghost-btn" onClick={connectDrive} disabled={busy !== null}>
+              {busy === 'drive-connect' ? 'Opening…' : 'Connect Google Drive'}
+            </button>
+          )}
         </div>
         {msg && <div className={`backup-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
       </div>

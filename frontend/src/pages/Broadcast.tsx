@@ -13,6 +13,12 @@ export default function BroadcastPage() {
   const [history, setHistory] = useState<Broadcast[]>([])
   const [busy, setBusy] = useState(false)
   const [pushNote, setPushNote] = useState('')
+  const [q, setQ] = useState('')
+
+  const query = q.trim().toLowerCase()
+  const filteredHistory = query
+    ? history.filter((b) => b.message.toLowerCase().includes(query))
+    : history
 
   const load = () => {
     api.modules.broadcastActive().then((r) => setActive(r.active)).catch(() => {})
@@ -110,11 +116,15 @@ export default function BroadcastPage() {
 
           {history.length > 0 && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2"><History className="w-5 h-5 text-primary" /> Published</CardTitle>
+                <Badge variant="outline">{history.length}</Badge>
               </CardHeader>
               <CardContent className="space-y-2">
-                {history.map((b) => (
+                <Input placeholder="Search announcements…" value={q} onChange={(e) => setQ(e.target.value)} />
+                {filteredHistory.length === 0 ? (
+                  <p className="text-sm text-muted py-2">{history.length === 0 ? 'Nothing published yet.' : `No announcements match "${q}".`}</p>
+                ) : filteredHistory.map((b) => (
                   <div key={b.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm">{b.message}</p>

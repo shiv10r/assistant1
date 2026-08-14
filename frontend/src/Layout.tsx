@@ -51,8 +51,8 @@ type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
 const GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
-    { label: 'Chat', to: '/', icon: <MessageSquare className="w-5 h-5" />, end: true },
-    { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { label: 'Dashboard', to: '/', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+    { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
     { label: 'Reports', to: '/reports', icon: <FileText className="w-5 h-5" /> },
     { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" /> },
     { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },

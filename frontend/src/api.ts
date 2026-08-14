@@ -16,7 +16,7 @@ export interface BillingKpis { youllGet: number; youllGive: number; monthSale: n
 
 export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; stateCode: string; billingAddress: string; email: string; currentBalance: number }
 export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
-export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string }
+export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string; paymentGateway: string; paymentStatus: string; paymentId: string; orderId: string; paidAt: string }
 export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }
 export interface CashEntry { id: number; kind: string; amount: number; date: string; description: string }
 export interface BankAccount { id: number; name: string; accNo: string; ifsc: string; upiId: string; openingBalance: number; asOf: string }
@@ -40,14 +40,15 @@ export interface FileBlobMeta { id: number; projectId: number; category: string;
 
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
-export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string }
-export interface FirebaseWebConfig { enabled: boolean; apiKey: string; authDomain: string; projectId: string; messagingSenderId: string; appId: string; vapidKey: string }
+export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string; timestamp: string }
+export interface FirebaseWebConfig { enabled: boolean; apiKey: string; authDomain: string; projectId: string; storageBucket: string; messagingSenderId: string; appId: string; vapidKey: string; measurementId: string }
 export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
 export interface BackupResult { ok: boolean; message: string }
+export interface DriveStatus { configured: boolean; hasCredentials: boolean; folder?: string; email?: string }
 export interface FirebaseVersion { enabled: boolean; project: string | null; bucket: string | null; version: number; localRows: number }
 export interface AnalyticsData {
   billing: { youllGet: number; youllGive: number; monthSale: number }
-  projects: { name: string; status: string; value: number; spent: number; received: number; taskPct: number; budgetPct: number; pctLabel: string; valueLabel: string; spentLabel: string; receivedLabel: string }[]
+  projects: { id: number; name: string; status: string; value: number; spent: number; received: number; entries: number; lead: string | null; taskPct: number; budgetPct: number; pctLabel: string; valueLabel: string; spentLabel: string; receivedLabel: string }[]
   salesByMonth: { period: string; total: number }[]
   expenseByMonth: { period: string; total: number }[]
 }
@@ -274,7 +275,7 @@ async function put<T>(url: string, body: unknown): Promise<T> {
 async function del(url: string): Promise<void> {
   const r = await fetch(BASE + url, { method: 'DELETE', headers: authHeaders() })
   if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
-  if (!r.ok) throw new Error(`API error ${r.status}`)
+  if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
 }
 
 function today(): string { return new Date().toISOString().slice(0, 10) }
@@ -336,11 +337,13 @@ const billing = {
   kpis: () => get<BillingKpis>('/api/billing/kpis'),
   parties: () => get<Party[]>('/api/billing/parties'),
   saveParty: (p: Party) => post<Party>('/api/billing/parties', p),
+  deleteParty: (id: number) => del(`/api/billing/parties/${id}`),
   items: () => get<CatalogItem[]>('/api/billing/items'),
   saveItem: (i: CatalogItem) => post<CatalogItem>('/api/billing/items', i),
   txns: () => get<BizTxn[]>('/api/billing/txns'),
   txnLines: (id: number) => get<BizTxnItem[]>(`/api/billing/txns/${id}/lines`),
   saveTxn: (txn: BizTxn, lines: BizTxnItem[]) => post<BizTxn>('/api/billing/txns', { txn, lines }),
+  deleteTxn: (id: number) => del(`/api/billing/txns/${id}`),
   cash: () => get<CashData>('/api/billing/cash'),
   adjustCash: (e: CashEntry) => post<CashEntry>('/api/billing/cash', e),
   banks: () => get<BankAccount[]>('/api/billing/banks'),
@@ -381,12 +384,16 @@ const projects = {
   saveLog: (projectId: number, l: SiteLog) => post<SiteLog>(`/api/projects/${projectId}/logs`, l),
   mom: (projectId: number) => get<MeetingMinute[]>(`/api/projects/${projectId}/mom`),
   saveMom: (projectId: number, m: MeetingMinute) => post<MeetingMinute>(`/api/projects/${projectId}/mom`, m),
+  deleteMom: (projectId: number, id: number) => del(`/api/projects/${projectId}/mom/${id}`),
   design: (projectId: number) => get<DesignFile[]>(`/api/projects/${projectId}/design`),
   saveDesign: (projectId: number, d: DesignFile) => post<DesignFile>(`/api/projects/${projectId}/design`, d),
   folders: (projectId: number) => get<ProjectFolder[]>(`/api/projects/${projectId}/folders`),
   addFolder: (projectId: number, name: string) => post<ProjectFolder>(`/api/projects/${projectId}/folders`, { name }),
   files: (folderId: number) => get<ProjectFile[]>(`/api/projects/files/${folderId}`),
   addFile: (projectId: number, f: ProjectFile) => post<ProjectFile>(`/api/projects/${projectId}/files`, f),
+  updateFile: (f: ProjectFile) => put<ProjectFile>(`/api/projects/files/${f.id}`, f),
+  deleteFile: (id: number) => del(`/api/projects/files/${id}`),
+  deleteFolder: (projectId: number, folderId: number) => del(`/api/projects/${projectId}/folders/${folderId}`),
   uploads: (projectId: number, category?: string) => get<FileBlobMeta[]>(`/api/projects/${projectId}/uploads${category ? `?category=${encodeURIComponent(category)}` : ''}`),
   upload: (projectId: number, b: { category: string; name: string; contentType: string; dataBase64: string }) => post<FileBlobMeta>(`/api/projects/${projectId}/uploads`, b),
   removeUpload: (projectId: number, blobId: number) => del(`/api/projects/${projectId}/uploads/${blobId}`),
@@ -421,6 +428,8 @@ const integrations = {
   emailInvoice: (txnId: number) => post<{ ok: boolean; to?: string; fileName?: string; subject?: string; error?: string; code?: string; message?: string }>(`/api/txns/${txnId}/email`, {}),
   einvoice: (txnId: number) => get<EinvoiceResult>(`/api/txns/${txnId}/einvoice`),
   razorpayOrder: (amountInr: number, receipt?: string) => post<{ ok: boolean; orderId?: string; keyId?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/order', { amountInr, receipt }),
+  razorpayPaymentLink: (amountInr: number, receipt?: string) => post<{ ok: boolean; id?: string; shortUrl?: string; amountInr?: number; error?: string; code?: string; message?: string }>('/api/payments/razorpay/payment-link', { amountInr, receipt }),
+  whatsappLink: (txnId: number) => post<{ ok: boolean; url?: string; message?: string; paymentLink?: string | null; error?: string; code?: string }>(`/api/txns/${txnId}/whatsapp/link`, {}),
   driveBackup: () => post<{ ok: boolean; message?: string; error?: string; code?: string }>('/api/backup/drive', {}),
   driveAuthUrl: () => get<{ ok: boolean; url?: string; redirect?: string; state?: string; code?: string; message?: string }>('/api/integrations/drive/auth-url'),
   driveStatus: () => get<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string }>('/api/integrations/drive/status'),

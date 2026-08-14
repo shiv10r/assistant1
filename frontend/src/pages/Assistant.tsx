@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
-import type { ChatMessage, AiChatTurn } from '../api'
+import type { ChatMessage, AiChatTurn, AssistantSearch } from '../api'
 
 type Mode = 'app' | 'ai'
 
@@ -14,6 +14,9 @@ export default function Assistant() {
   ])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<AssistantSearch | null>(null)
+  const [searching, setSearching] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
   const historyRef = useRef<AiChatTurn[]>([])
 
@@ -23,6 +26,22 @@ export default function Assistant() {
       setAiConfigured(s.configured)
     }).catch(() => {})
   }, [])
+
+  async function runSearch(q: string) {
+    const text = q.trim()
+    if (text.length < 2) return
+    setSearchQuery(text)
+    setSearching(true)
+    setSearchResults(null)
+    try {
+      setSearchResults(await api.search(text))
+    } catch (err) {
+      setSearchResults(null)
+      setMessages((m) => [...m, { text: `⚠️ Search failed: ${err}`, isUser: false }])
+    } finally {
+      setSearching(false)
+    }
+  }
 
   const append = (msgs: ChatMessage[]) => setMessages((m) => [...m, ...msgs])
 
@@ -108,6 +127,48 @@ export default function Assistant() {
           const text = label.split(' ').slice(1).join(' ')
           return <button key={i} onClick={() => { setInput(text); if (mode === 'app') api.send(text).then(append).catch(() => {}) }}>{label}</button>
         })}
+      </div>
+
+      <div className="search-box">
+        <form onSubmit={(e) => { e.preventDefault(); runSearch(searchQuery) }} className="input-row">
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="🔍 Search projects, expenses, parties, invoices, rooms, catalogue..."
+          />
+          <button className="send" type="submit">{searching ? '…' : '🔍'}</button>
+        </form>
+        {searchResults && (
+          <div className="search-results">
+            {searchResults.projects.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Projects</div>{searchResults.projects.map((p, i) => (
+                <div className="sr-row" key={i}><strong>{p.name}</strong> <span className="muted">{p.status}{p.address ? ` · ${p.address}` : ''}</span></div>))}
+              </div>)}
+            {searchResults.expenses.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Expenses</div>{searchResults.expenses.map((e, i) => (
+                <div className="sr-row" key={i}><strong>{e.site}</strong> <span className="muted">{e.category} · ₹{e.amount.toLocaleString('en-IN')}</span></div>))}
+              </div>)}
+            {searchResults.parties.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Parties</div>{searchResults.parties.map((p, i) => (
+                <div className="sr-row" key={i}><strong>{p.name}</strong> <span className="muted">{p.phone}</span></div>))}
+              </div>)}
+            {searchResults.txns.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Invoices</div>{searchResults.txns.map((t, i) => (
+                <div className="sr-row" key={i}><strong>{t.refLabel}</strong> <span className="muted">{t.partyName} · {t.type} · ₹{t.total.toLocaleString('en-IN')}</span></div>))}
+              </div>)}
+            {searchResults.rooms.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Rooms</div>{searchResults.rooms.map((r, i) => (
+                <div className="sr-row" key={i}><strong>{r.name}</strong> {r.areaSqFt ? <span className="muted">{r.areaSqFt} sq ft</span> : null}</div>))}
+              </div>)}
+            {searchResults.items.length > 0 && (
+              <div className="sr-group"><div className="sr-title">Catalogue</div>{searchResults.items.map((it, i) => (
+                <div className="sr-row" key={i}><strong>{it.name}</strong> <span className="muted">{it.category} · ₹{it.salePrice.toLocaleString('en-IN')}</span></div>))}
+              </div>)}
+            {searchResults.projects.length === 0 && searchResults.expenses.length === 0 && searchResults.parties.length === 0 &&
+              searchResults.txns.length === 0 && searchResults.rooms.length === 0 && searchResults.items.length === 0 && (
+              <div className="muted" style={{ padding: 12, fontSize: 13 }}>No matches for "{searchQuery}"</div>)}
+          </div>
+        )}
       </div>
 
       <form className="input-row" onSubmit={send}>

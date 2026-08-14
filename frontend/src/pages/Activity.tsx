@@ -46,7 +46,7 @@ export default function Activity() {
     else if (dateRange === 'week') cutoff.setDate(now.getDate() - 7)
     else if (dateRange === 'month') cutoff.setDate(1)
     if (dateRange !== 'all') {
-      result = result.filter(a => new Date(a.timeLabel).getTime() >= cutoff.getTime())
+      result = result.filter(a => new Date(a.timestamp).getTime() >= cutoff.getTime())
     }
 
     // Type filter
@@ -84,7 +84,7 @@ export default function Activity() {
       billing: items.filter(a => ['Expense logged', 'Expense removed', 'Party added', 'Party updated', 'Item added', 'Item updated', 'Transaction saved', 'Cash adjusted', 'Bank account added', 'Bank account updated'].includes(a.action)).length,
       projects: items.filter(a => ['Project created', 'Project updated', 'Task created', 'Task updated', 'Project payment', 'Attendance set', 'Material saved', 'Site log saved', 'Meeting saved', 'Design saved'].includes(a.action)).length,
       assistant: items.filter(a => a.source === 'assistant').length,
-      today: items.filter(a => new Date(a.timeLabel).getTime() >= today.getTime()).length,
+      today: items.filter(a => new Date(a.timestamp).getTime() >= today.getTime()).length,
     }
   }, [items])
 
