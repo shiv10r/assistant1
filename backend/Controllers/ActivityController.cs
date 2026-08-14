@@ -15,8 +15,8 @@ public class ActivityController : ControllerBase
     public async Task<List<ActivityLogItemDto>> Recent([FromQuery] int count = 100)
     {
         var rows = await _activity.GetRecentAsync(count);
-        return rows.Select(a => new ActivityLogItemDto(a.Id, a.Action, a.Detail, a.Source, a.TimeLabel)).ToList();
+        return rows.Select(a => new ActivityLogItemDto(a.Id, a.Action, a.Detail, a.Source, a.TimeLabel, a.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss"))).ToList();
     }
 }
 
-public record ActivityLogItemDto(int Id, string Action, string Detail, string Source, string TimeLabel);
+public record ActivityLogItemDto(int Id, string Action, string Detail, string Source, string TimeLabel, string Timestamp);
