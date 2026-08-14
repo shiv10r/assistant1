@@ -43,6 +43,10 @@ import VideoCall from './pages/VideoCall'
 import ServiceChooser from './common/ServiceChooser'
 import InteriorHome from './services/interior/InteriorHome'
 import WarehouseHome from './services/warehouse/WarehouseHome'
+import WarehouseInventory from './services/warehouse/WarehouseInventory'
+import WarehousePurchaseOrders from './services/warehouse/WarehousePurchaseOrders'
+import WarehouseGrn from './services/warehouse/WarehouseGrn'
+import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
 import SchoolHome from './services/school/SchoolHome'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
@@ -119,10 +123,10 @@ export default function App() {
           {/* Warehouse service */}
           <Route path="/warehouse" element={<WarehouseHome />} />
           <Route path="/warehouse/dashboard" element={<WarehouseHome />} />
-          <Route path="/warehouse/inventory" element={<WarehouseHome />} />
-          <Route path="/warehouse/purchase-orders" element={<WarehouseHome />} />
-          <Route path="/warehouse/grn" element={<WarehouseHome />} />
-          <Route path="/warehouse/suppliers" element={<WarehouseHome />} />
+          <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
+          <Route path="/warehouse/purchase-orders" element={<WarehousePurchaseOrders />} />
+          <Route path="/warehouse/grn" element={<WarehouseGrn />} />
+          <Route path="/warehouse/suppliers" element={<WarehouseSuppliers />} />
 
           {/* School service */}
           <Route path="/school" element={<SchoolHome />} />
