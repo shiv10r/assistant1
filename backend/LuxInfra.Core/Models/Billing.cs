@@ -127,6 +127,13 @@ public class BizTxn
     public bool ReverseCharge { get; set; }                    // GST reverse-charge mechanism
     public string Status { get; set; } = "OPEN";
 
+    // ---- online payment tracking (Razorpay) ----
+    public string PaymentGateway { get; set; } = "";           // "" | razorpay
+    public string PaymentStatus { get; set; } = "unpaid";      // unpaid | pending | paid
+    public string PaymentId { get; set; } = "";                // gateway payment id
+    public string OrderId { get; set; } = "";                  // gateway order id
+    public DateTime? PaidAt { get; set; }                      // when the payment was captured
+
     [Ignore] public string TypeLabel => TxnTypes.Display(Type);
     [Ignore] public string RefLabel => string.IsNullOrEmpty(Prefix) ? $"#{RefNo}" : $"{Prefix}{RefNo}";
     [Ignore] public string TotalLabel => Services.ReportService.Money(Total);

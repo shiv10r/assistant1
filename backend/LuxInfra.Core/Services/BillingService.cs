@@ -341,6 +341,43 @@ _repo.GetTxnsAsync();
 
     public Task DeleteBankAccountAsync(int id) => _repo.DeleteBankAccountAsync(id);
 
+    public async Task<string?> RecordPaymentAsync(int txnId, string gateway, string paymentId, string orderId, double amountInr)
+    {
+        var txn = await _repo.GetTxnAsync(txnId);
+        if (txn is null) return "Transaction not found";
+
+        if (txn.PaymentStatus == "paid")
+            return string.IsNullOrEmpty(txn.PaymentId) || txn.PaymentId == paymentId ? null : "Transaction already paid";
+
+        txn.PaymentGateway = gateway;
+        txn.PaymentStatus = "paid";
+        txn.PaymentId = paymentId;
+        txn.OrderId = orderId;
+        txn.PaidAt = DateTime.Now;
+        txn.Received += amountInr;
+        txn.Balance = txn.Total - txn.Received;
+        if (txn.Balance < 0) txn.Balance = 0;
+        await _repo.UpdateTxnAsync(txn);
+
+        if (txn.PartyId > 0 && TxnTypes.IsLedger(txn.Type))
+        {
+            var party = await _repo.GetPartyAsync(txn.PartyId);
+            if (party is not null)
+            {
+                party.CurrentBalance += txn.Type switch
+                {
+                    TxnTypes.Sale => -amountInr,
+                    TxnTypes.SaleReturn => amountInr,
+                    TxnTypes.Purchase => amountInr,
+                    TxnTypes.PurchaseReturn => -amountInr,
+                    _ => 0
+                };
+                await _repo.UpdatePartyAsync(party);
+            }
+        }
+        return null;
+    }
+
     // ---------- utilities ----------
 
     /// <summary>Recomputes every party balance from opening + ledger txns and fixes drift.</summary>

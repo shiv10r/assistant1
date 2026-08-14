@@ -40,4 +40,7 @@ public interface IBillingService
 
     Task<string> VerifyDataAsync();
     string BuildShareMessage(BizTxn txn, Dictionary<string, string> settings);
+
+    /// <summary>Record an online (Razorpay) payment against a transaction — idempotent, updates Received/Balance + party balance.</summary>
+    Task<string?> RecordPaymentAsync(int txnId, string gateway, string paymentId, string orderId, double amountInr);
 }
