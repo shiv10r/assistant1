@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { getRole, logout } from './api'
+import { api } from './api'
+import type { Broadcast } from './api'
 import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
@@ -35,6 +37,7 @@ import {
   Boxes,
   Video,
   CloudSun,
+  Megaphone,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -73,6 +76,7 @@ const GROUPS: NavGroup[] = [
     { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
   ]},
   { title: 'Automation', items: [
+    { label: 'Broadcast', to: '/broadcast', icon: <Megaphone className="w-5 h-5" />, badge: 'PRO' },
     { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
     { label: 'AI Vision Progress', to: '/vision', icon: <Sparkles className="w-5 h-5" /> },
     { label: 'Integrations', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
@@ -87,6 +91,29 @@ const GROUPS: NavGroup[] = [
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
 const SIDEBAR_KEY = 'lux_sidebar_open'
+
+function BroadcastTicker() {
+  const [active, setActive] = useState<Broadcast | null>(null)
+
+  useEffect(() => {
+    const load = () => api.modules.broadcastActive().then((r) => setActive(r.active)).catch(() => {})
+    load()
+    const t = setInterval(load, 60000)
+    return () => clearInterval(t)
+  }, [])
+
+  if (!active) return null
+  return (
+    <div className="broadcast-ticker">
+      <div className="broadcast-ticker-track">
+        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
+      </div>
+    </div>
+  )
+}
 
 function defaultSidebarOpen(): boolean {
   const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -192,6 +219,8 @@ export default function Layout() {
           <LogOut className="w-5 h-5" />
         </Button>
       </header>
+
+      <BroadcastTicker />
 
       <div className="body-row">
         <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>

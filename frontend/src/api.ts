@@ -103,6 +103,14 @@ export interface ModuleSummary {
   billedMilestonesLabel: string
 }
 
+export interface Broadcast {
+  id: number
+  message: string
+  publishedAt: string
+  publishedLabel: string
+  isActive: boolean
+}
+
 // ---- Interior Design: worker time tracking ----
 export interface TimeEntry { id: number; projectId: number; roomId?: string; partyId: number; workerName: string; workerPhone: string; date: string; hours: number; notes: string; loggedAt: string }
 export interface TimeSummary { days: number; totalManHours: number; totalManHoursLabel: string; totalWagesLabel: string; rows: { date: string; dateLabel: string; worker: string; hours: number; hoursLabel: string }[] }
@@ -451,6 +459,12 @@ const modules = {
   saveRating: (r: Partial<ContractorRating>) => post<ContractorRating>('/api/modules/ratings', r),
   deleteRating: (id: number) => del(`/api/modules/ratings/${id}`),
   summary: () => get<ModuleSummary>('/api/modules/summary'),
+
+  broadcastActive: () => get<{ active: Broadcast | null }>('/api/broadcast/active'),
+  broadcastHistory: () => get<Broadcast[]>('/api/broadcast'),
+  broadcastPublish: (message: string) => post<{ ok: boolean; broadcast: Broadcast; sent: number; enabled: boolean }>('/api/broadcast', { message }),
+  broadcastStop: () => post<{ ok: boolean }>('/api/broadcast/stop', {}),
+  broadcastDelete: (id: number) => del(`/api/broadcast/${id}`),
 
   // ---- Interior design ----
   timeEntries: (projectId?: number) => get<TimeEntry[]>(`/api/interior/time-entries${projectId ? `?projectId=${projectId}` : ''}`),
