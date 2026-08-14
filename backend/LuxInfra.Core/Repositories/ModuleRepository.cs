@@ -33,6 +33,7 @@ public class ModuleRepository : IModuleRepository
             await conn.CreateTableAsync<FuelLog>();
             await conn.CreateTableAsync<Snag>();
             await conn.CreateTableAsync<ContractorRating>();
+            await conn.CreateTableAsync<Broadcast>();
             _initialized = true;
         }
         return conn;
