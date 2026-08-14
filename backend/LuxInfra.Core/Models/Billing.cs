@@ -15,6 +15,7 @@ public class Party
     public string GstType { get; set; } = "Unregistered/Consumer";
     public string Gstin { get; set; } = "";
     public string State { get; set; } = "";
+    public string StateCode { get; set; } = "";
     public string BillingAddress { get; set; } = "";
     public string Email { get; set; } = "";
     /// <summary>+ve → they owe you ("You'll Get"), −ve → you owe them ("You'll Give")</summary>
