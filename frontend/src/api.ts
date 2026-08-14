@@ -88,6 +88,21 @@ export interface FuelLog { id: number; vehicle: string; date: string; litres: nu
 export interface Snag { id: number; projectId: number; title: string; severity: string; status: string; assignee: string; dueDate: string; notes: string; createdAt: string }
 export interface ContractorRating { id: number; name: string; quality: number; punctuality: number; cost: number; notes: string; date: string; average: number }
 
+export interface ModuleSummary {
+  contracts: number
+  activeContracts: number
+  contractValue: number
+  contractValueLabel: string
+  openSnags: number
+  overdueSnags: number
+  fuelSpendMonth: number
+  fuelSpendMonthLabel: string
+  equipmentSpendMonth: number
+  equipmentSpendMonthLabel: string
+  billedMilestones: number
+  billedMilestonesLabel: string
+}
+
 // ---- Interior Design: worker time tracking ----
 export interface TimeEntry { id: number; projectId: number; roomId?: string; partyId: number; workerName: string; workerPhone: string; date: string; hours: number; notes: string; loggedAt: string }
 export interface TimeSummary { days: number; totalManHours: number; totalManHoursLabel: string; totalWagesLabel: string; rows: { date: string; dateLabel: string; worker: string; hours: number; hoursLabel: string }[] }
@@ -435,6 +450,7 @@ const modules = {
   ratings: () => get<ContractorRating[]>('/api/modules/ratings'),
   saveRating: (r: Partial<ContractorRating>) => post<ContractorRating>('/api/modules/ratings', r),
   deleteRating: (id: number) => del(`/api/modules/ratings/${id}`),
+  summary: () => get<ModuleSummary>('/api/modules/summary'),
 
   // ---- Interior design ----
   timeEntries: (projectId?: number) => get<TimeEntry[]>(`/api/interior/time-entries${projectId ? `?projectId=${projectId}` : ''}`),
