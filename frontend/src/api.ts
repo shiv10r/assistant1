@@ -16,7 +16,7 @@ export interface BillingKpis { youllGet: number; youllGive: number; monthSale: n
 
 export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; billingAddress: string; email: string; currentBalance: number }
 export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
-export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; status: string }
+export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string }
 export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }
 export interface CashEntry { id: number; kind: string; amount: number; date: string; description: string }
 export interface BankAccount { id: number; name: string; accNo: string; ifsc: string; upiId: string; openingBalance: number; asOf: string }
@@ -411,7 +411,7 @@ export function uploadUrl(projectId: number, blobId: number): string {
 }
 
 const modules = {
-  videoSession: (projectId?: number) => get<{ room: string; url: string; provider: string }>(`/api/modules/video-session${projectId ? `?projectId=${projectId}` : ''}`),
+  videoSession: (projectId?: number, provider?: string) => get<{ room: string; url: string; provider: string }>(`/api/modules/video-session${projectId ? `?projectId=${projectId}` : ''}${provider ? `${projectId ? '&' : '?'}provider=${provider}` : ''}`),
   contracts: () => get<SiteContract[]>('/api/modules/contracts'),
   saveContract: (c: Partial<SiteContract>) => post<SiteContract>('/api/modules/contracts', c),
   deleteContract: (id: number) => del(`/api/modules/contracts/${id}`),

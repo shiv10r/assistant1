@@ -1,30 +1,37 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Project } from '../api'
 import { Card, CardContent, Button, Badge, Empty } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Video, Link2, Copy, Check, RefreshCw, Briefcase } from 'lucide-react'
+import { Video, Link2, Copy, Check, RefreshCw, Briefcase, ExternalLink } from 'lucide-react'
+
+const PROVIDERS = [
+  { v: 'meet', l: 'Google Meet', desc: 'Open a new Meet room link', icon: '🟢' },
+  { v: 'teams', l: 'Microsoft Teams', desc: 'Open a Teams meeting link', icon: '🔵' },
+  { v: 'jitsi', l: 'Jitsi (embedded)', desc: 'Free open-source room shown in-app', icon: '🟣' },
+]
 
 export default function VideoCall() {
   const [room, setRoom] = useState('')
   const [url, setUrl] = useState('')
+  const [provider, setProvider] = useState('meet')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [projectId, setProjectId] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
-  const frameRef = useRef<HTMLIFrameElement>(null)
   const { toast } = useToast()
 
   useEffect(() => {
     api.projects.list().then(setProjects).catch(() => setProjects([]))
   }, [])
 
-  async function start(projectIdValue?: number) {
+  async function start() {
     setLoading(true)
     try {
-      const s = await api.modules.videoSession(projectIdValue || undefined)
+      const s = await api.modules.videoSession(projectId ? Number(projectId) : undefined, provider)
       setRoom(s.room)
       setUrl(s.url)
+      setProvider(s.provider || provider)
     } catch (e) {
       toast({ title: String(e), variant: 'error' })
     } finally {
@@ -41,19 +48,12 @@ export default function VideoCall() {
     })
   }
 
-  useEffect(() => {
-    if (!room) return
-    const frame = frameRef.current
-    if (!frame) return
-    frame.src = url
-  }, [room, url])
-
   return (
     <>
       <div className="page-head">
         <div>
           <h1 className="text-2xl font-bold">Video Call</h1>
-          <p className="text-text/60 text-sm mt-1">Free group calls powered by Jitsi Meet — no account needed.</p>
+          <p className="text-text/60 text-sm mt-1">Create links for Google Meet, Teams, or an embedded Jitsi room.</p>
         </div>
         {room && (
           <Button onClick={copy} variant="outline">
@@ -69,7 +69,7 @@ export default function VideoCall() {
             <Empty
               icon={<Video className="w-8 h-8" />}
               title="Start a call"
-              description="Create a private meeting room and share the link with your team or clients."
+              description="Pick a provider and share the link with your team or clients."
             />
             <div className="flex flex-wrap items-end gap-3">
               <div className="min-w-52">
@@ -85,20 +85,37 @@ export default function VideoCall() {
                   ))}
                 </select>
               </div>
-              <Button onClick={() => start(projectId ? Number(projectId) : undefined)} disabled={loading}>
+              <div className="min-w-64 flex-1 max-w-md">
+                <label className="text-sm font-medium mb-1 block">Provider</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {PROVIDERS.map((p) => (
+                    <button
+                      key={p.v}
+                      type="button"
+                      onClick={() => setProvider(p.v)}
+                      className={`rounded-lg border px-2 py-2 text-xs text-center transition-colors ${provider === p.v ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border hover:border-primary/40'}`}
+                      title={p.desc}
+                    >
+                      <span className="block text-base">{p.icon}</span>
+                      {p.l.replace(/ .*/, '')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Button onClick={start} disabled={loading}>
                 {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
                 {loading ? 'Starting…' : 'Start video call'}
               </Button>
             </div>
             <p className="text-xs text-text/50 flex items-center gap-1.5">
               <Link2 className="w-3.5 h-3.5" />
-              Works best on Chrome / Android. Joiners open the invite link directly in the browser.
+              Google Meet / Teams open a link — joiners click it in their browser or app. Jitsi embeds right here.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {room && (
+      {room && provider === 'jitsi' && (
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <Badge variant="success">
@@ -109,20 +126,45 @@ export default function VideoCall() {
           </div>
           <div className="rounded-2xl overflow-hidden border bg-surface shadow-sm">
             <iframe
-              ref={frameRef}
               title="Jitsi meeting"
+              src={url}
               className="w-full h-[70vh] block"
               allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
               allowFullScreen
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={copy} variant="outline">
-              <Copy className="w-4 h-4" /> Copy invite link
-            </Button>
-            <Button onClick={() => { setRoom(''); setUrl('') }} variant="ghost">
-              Leave / new call
-            </Button>
+            <Button onClick={copy} variant="outline"><Copy className="w-4 h-4" /> Copy invite link</Button>
+            <Button onClick={() => { setRoom(''); setUrl('') }} variant="ghost">Leave / new call</Button>
+          </div>
+        </div>
+      )}
+
+      {room && provider !== 'jitsi' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Badge variant="success">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+              {provider === 'teams' ? 'Microsoft Teams' : 'Google Meet'} — {room}
+            </Badge>
+            {projectId && <Badge><Briefcase className="w-3 h-3" /> Project #{projectId}</Badge>}
+          </div>
+          <Card>
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="text-5xl">{provider === 'teams' ? '🔵' : '🟢'}</div>
+              <p className="text-text">Your {provider === 'teams' ? 'Teams' : 'Meet'} room link is ready.</p>
+              <Button size="lg" onClick={() => window.open(url, '_blank')}>
+                <ExternalLink className="w-4 h-4" /> Open {provider === 'teams' ? 'Microsoft Teams' : 'Google Meet'} meeting
+              </Button>
+              <Button onClick={copy} variant="outline">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied' : 'Copy invite link'}
+              </Button>
+              <p className="text-xs text-muted break-all">{url}</p>
+            </CardContent>
+          </Card>
+          <div className="flex">
+            <Button onClick={() => { setRoom(''); setUrl('') }} variant="ghost">Leave / new call</Button>
           </div>
         </div>
       )}
