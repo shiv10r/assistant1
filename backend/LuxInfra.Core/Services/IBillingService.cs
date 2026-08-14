@@ -13,12 +13,15 @@ public interface IBillingService
     Task SavePartyAsync(Party p);
     Task<List<Party>> GetPartiesAsync();
     Task<Party?> GetPartyAsync(int id);
+    Task DeletePartyAsync(int id);
+    Task<bool> PartyHasTxnsAsync(int partyId);
 
     Task SaveItemAsync(CatalogItem item);
     Task<List<CatalogItem>> GetItemsAsync();
 
     Task<int> NextRefNoAsync(string type);
     Task SaveTxnAsync(BizTxn txn, List<BizTxnItem> lines);
+    Task DeleteTxnAsync(int id);
     Task<List<BizTxn>> GetTxnsAsync();
     Task<BizTxn?> GetTxnAsync(int id);
     Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId);

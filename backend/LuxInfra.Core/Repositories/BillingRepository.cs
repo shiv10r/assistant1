@@ -73,6 +73,18 @@ public class BillingRepository : IBillingRepository
         await conn.UpdateAsync(p);
     }
 
+    public async Task DeletePartyAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.DeleteAsync<Party>(id);
+    }
+
+    public async Task<int> CountTxnsForPartyAsync(int partyId)
+    {
+        var conn = await Conn();
+        return await conn.Table<BizTxn>().CountAsync(t => t.PartyId == partyId);
+    }
+
     public async Task<List<Party>> GetPartiesAsync()
     {
         var conn = await Conn();
@@ -195,6 +207,13 @@ public class BillingRepository : IBillingRepository
     {
         var conn = await Conn();
         return await conn.FindAsync<BizTxn>(id);
+    }
+
+    public async Task DeleteTxnAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.ExecuteAsync("DELETE FROM biz_txn_items WHERE TxnId = ?", id);
+        await conn.DeleteAsync<BizTxn>(id);
     }
 
     public async Task UpdateTxnAsync(BizTxn txn)

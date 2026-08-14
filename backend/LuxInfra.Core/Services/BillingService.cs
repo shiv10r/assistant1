@@ -173,6 +173,16 @@ public class BillingService : IBillingService
 
     public Task<Party?> GetPartyAsync(int id) => _repo.GetPartyAsync(id);
 
+    public async Task DeletePartyAsync(int id)
+    {
+        if (await _repo.CountTxnsForPartyAsync(id) > 0)
+            throw new InvalidOperationException("Party has transactions and cannot be deleted.");
+        await _repo.DeletePartyAsync(id);
+    }
+
+    public async Task<bool> PartyHasTxnsAsync(int partyId) =>
+        await _repo.CountTxnsForPartyAsync(partyId) > 0;
+
     // ---------- items ----------
 
     public Task SaveItemAsync(CatalogItem item)
@@ -190,6 +200,7 @@ public class BillingService : IBillingService
 
     public async Task SaveTxnAsync(BizTxn txn, List<BizTxnItem> lines)
     {
+        if (txn.Id != 0) await DeleteTxnAsync(txn.Id);
         if (txn.RefNo == 0) txn.RefNo = await NextRefNoAsync(txn.Type);
         txn.Balance = txn.Total - txn.Received;
         await _repo.InsertTxnAsync(txn);
@@ -240,6 +251,46 @@ public class BillingService : IBillingService
 _repo.GetTxnsAsync();
 
     public Task<BizTxn?> GetTxnAsync(int id) => _repo.GetTxnAsync(id);
+
+    public async Task DeleteTxnAsync(int id)
+    {
+        var txn = await _repo.GetTxnAsync(id);
+        if (txn is null) return;
+        var lines = await _repo.GetTxnLinesAsync(id);
+        var party = txn.PartyId > 0 ? await _repo.GetPartyAsync(txn.PartyId) : null;
+
+        await _repo.DeleteTxnAsync(id);
+
+        if (party is not null && TxnTypes.IsLedger(txn.Type))
+        {
+            party.CurrentBalance -= txn.Type switch
+            {
+                TxnTypes.Sale => txn.Balance,               // they no longer owe the unpaid part
+                TxnTypes.SaleReturn => -txn.Balance,
+                TxnTypes.Purchase => -txn.Balance,          // you no longer owe them
+                TxnTypes.PurchaseReturn => txn.Balance,
+                TxnTypes.PaymentIn => -txn.Total,           // their payment is reversed
+                TxnTypes.PaymentOut => txn.Total,
+                _ => 0
+            };
+            await _repo.UpdatePartyAsync(party);
+        }
+
+        if (await IsOnAsync("item.stock_maintenance") &&
+            txn.Type is TxnTypes.Sale or TxnTypes.Purchase or TxnTypes.SaleReturn or TxnTypes.PurchaseReturn)
+        {
+            var sign = txn.Type is TxnTypes.Sale or TxnTypes.PurchaseReturn ? 1 : -1;
+            foreach (var line in lines.Where(l => l.ItemId > 0))
+            {
+                var item = await _repo.GetItemAsync(line.ItemId);
+                if (item is not null && item.Type != "Service")
+                {
+                    item.StockQty += sign * (line.Qty + line.FreeQty);
+                    await _repo.UpdateItemAsync(item);
+                }
+            }
+        }
+    }
 
     public Task<List<BizTxnItem>> GetTxnLinesAsync(int txnId) 
 => _repo.GetTxnLinesAsync(txnId);

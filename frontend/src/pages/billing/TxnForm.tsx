@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BizTxnItem, CatalogItem, Party, Settings } from '../../api'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Textarea, Select, Label, Modal, money, todayISO } from '../../components/ui'
@@ -11,6 +11,9 @@ const TAX_RATES = [0, 0.25, 3, 5, 12, 18, 28]
 
 export default function TxnForm() {
   const nav = useNavigate()
+  const [params] = useSearchParams()
+  const editId = Number(params.get('id')) || 0
+  const [keepRef, setKeepRef] = useState({ refNo: 0, prefix: '', status: 'OPEN' })
   const [items, setItems] = useState<CatalogItem[]>([])
   const [parties, setParties] = useState<Party[]>([])
   const [settings, setSettings] = useState<Settings>({})
@@ -41,6 +44,30 @@ export default function TxnForm() {
       })
       .catch((e) => setErr(String(e)))
   }, [])
+
+  useEffect(() => {
+    if (!editId) return
+    Promise.all([api.billing.txns(), api.billing.txnLines(editId)])
+      .then(([all, ls]) => {
+        const t = all.find((x) => x.id === editId)
+        if (!t) return
+        setType(t.type)
+        setPartyId(t.partyId)
+        setDate(t.date?.slice(0, 10) || todayISO())
+        setDueDate(t.dueDate?.slice(0, 10) || t.date?.slice(0, 10) || todayISO())
+        setMode(t.paymentMode || 'Cash')
+        setDiscount(String(t.discount || 0))
+        setReceived(String(t.received || 0))
+        setDescription(t.description || '')
+        setStateOfSupply(t.stateOfSupply || '')
+        setTcs(String(t.tcs || 0))
+        setTds(String(t.tds || 0))
+        setReverseCharge(t.reverseCharge)
+        setKeepRef({ refNo: t.refNo, prefix: t.prefix || '', status: t.status || 'OPEN' })
+        setLines(ls.map((l) => ({ ...l })))
+      })
+      .catch((e) => setErr(String(e)))
+  }, [editId])
 
   // ---- settings-driven behaviour ----
   const gstOn = settings['gst.enabled'] !== '0'
@@ -115,12 +142,12 @@ export default function TxnForm() {
   const save = async () => {
     try {
       const txn: BizTxn = {
-        id: 0, partyId, partyName: parties.find((p) => p.id === partyId)?.name || '', type,
-        refNo: 0, prefix: '', date, dueDate,
+        id: editId, partyId, partyName: parties.find((p) => p.id === partyId)?.name || '', type,
+        refNo: keepRef.refNo, prefix: keepRef.prefix, date, dueDate,
         subtotal: totals.subtotal, discount: Number(discount) || 0, tax: totals.tax,
         roundOff: totals.roundOff, total: totals.total, received: totals.received,
-        balance: totals.balance, paymentMode: mode, chequeStatus: mode === 'Cheque' ? 'open' : '',
-        description, stateOfSupply, tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: 'OPEN',
+        balance: totals.balance, paymentMode: mode, chequeStatus: mode === 'Cheque' ? (keepRef.status === 'OPEN' ? 'open' : '') : '',
+        description, stateOfSupply, tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: keepRef.status,
       }
       const good = lines.filter((l) => l.itemName && l.qty > 0 && l.rate > 0)
       await api.billing.saveTxn(txn, good)
@@ -142,7 +169,7 @@ export default function TxnForm() {
     <>
       <div className="page-head">
         <div>
-          <h1>New {txnType(type)}</h1>
+          <h1>{editId ? `Edit ${txnType(type)}` : `New ${txnType(type)}`}</h1>
           <div className="muted">Create a bill, invoice, estimate or payment</div>
         </div>
         <Button variant="outline" onClick={() => nav('/billing')}><X className="w-4 h-4" /> Cancel</Button>
