@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 # LuxInfra local data
 LuxInfra.Web/data/
 *.db3
+
+# Build verification output
+_buildcheck/
