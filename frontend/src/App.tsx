@@ -37,6 +37,7 @@ import VisionProgress from './pages/VisionProgress'
 import Integrations from './pages/Integrations'
 import Insights from './pages/Insights'
 import Modules from './pages/Modules'
+import Broadcast from './pages/Broadcast'
 import VideoCall from './pages/VideoCall'
 
 export default function App() {
@@ -98,6 +99,7 @@ export default function App() {
           <Route path="/projects/:id/payroll" element={<ProjectPayroll />} />
           <Route path="/map" element={<ProjectsMap />} />
           <Route path="/vision" element={<VisionProgress />} />
+          <Route path="/broadcast" element={<Broadcast />} />
           <Route path="/integrations" element={<Integrations />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/modules" element={<Modules />} />

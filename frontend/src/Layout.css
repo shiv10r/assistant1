@@ -1,5 +1,42 @@
 .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
+/* Broadcast marquee ticker */
+.broadcast-ticker {
+  overflow: hidden;
+  width: 100%;
+  flex: 0 0 auto;
+  background: linear-gradient(90deg, var(--primary), #7C4DFF, #00B8D9);
+  color: #fff;
+  position: relative;
+  z-index: 30;
+}
+.broadcast-ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: broadcastScroll 30s linear infinite;
+}
+.broadcast-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 2.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.broadcast-ticker svg { flex-shrink: 0; }
+@keyframes broadcastScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Marquee preview animation (Broadcast page) */
+.marquee-track { max-width: 100%; }
+.marquee-anim {
+  display: inline-flex;
+  animation: broadcastScroll 25s linear infinite;
+}
+
 /* Topbar */
 .app { display: flex; flex-direction: column; height: 100vh; }
 .topbar {
