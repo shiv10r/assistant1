@@ -9,6 +9,19 @@
 - Never suppress type errors with `as any`, `@ts-ignore`, `@ts-expect-error`.
 - Only commit/push when explicitly requested.
 
+## Branch-deployment rule (MANDATORY)
+
+| Branch | Contains | Deploys to |
+|---|---|---|
+| `luxinfra-frontend` | frontend only | Netlify |
+| `luxinfrabackend` | backend only | Render |
+| `luxinfra` | combined monorepo (source of truth) | — |
+
+- **Frontend code (anything under `frontend/`) → push to `luxinfra-frontend`.** Backend code (anything under `backend/`) → push to `luxinfrabackend`. Never commit FE code only on `luxinfra` and call it done — it will never deploy.
+- Commit to `luxinfra` (monorepo) as the source of truth AND sync the change to the matching deploy branch. FE changes sync to `luxinfra-frontend`, BE changes sync to `luxinfrabackend`.
+- Before pushing a deploy branch, build/typecheck it and verify it deploys (Render: `luxinfrabackend`, Netlify: `luxinfra-frontend`).
+- Do not push to legacy branches (`main`, `dotnet-backend`, `react-frontend`, `maui-monolith`).
+
 ## Stack
 
 - Backend: .NET (ASP.NET Core) — `backend/`, controllers in `backend/Controllers`, services in `backend/Services` / `backend/LuxInfra.Core/Services`, models in `backend/LuxInfra.Core/Models`, SQLite via sqlite-net.
