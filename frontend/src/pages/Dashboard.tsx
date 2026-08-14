@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
-import type { Dashboard as D } from '../api'
+import type { Dashboard as D, ModuleSummary } from '../api'
 
 export default function Dashboard() {
   const [data, setData] = useState<D | null>(null)
+  const [mods, setMods] = useState<ModuleSummary | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     api.dashboard().then(setData).catch((e) => setError(String(e)))
+    api.modules.summary().then(setMods).catch(() => setMods(null))
   }, [])
 
   if (error) return <div className="empty">⚠️ Could not reach the API. Start the backend, then refresh. <br/><span className="muted">{error}</span></div>
@@ -42,6 +44,18 @@ export default function Dashboard() {
             </table>
           </div>
         </>
+      )}
+
+      {mods && (
+        <div className="card">
+          <h2><Link to="/modules" style={{ textDecoration: 'none' }}>Business Modules</Link></h2>
+          <div className="kpis">
+            <div className="kpi"><div className="kpi-label">ACTIVE CONTRACTS</div><div className="kpi-value">{mods.activeContracts} / {mods.contracts}</div></div>
+            <div className="kpi"><div className="kpi-label">OPEN SNAGS</div><div className="kpi-value">{mods.openSnags}{mods.overdueSnags > 0 ? <span className="kpi-label" style={{ color: '#dc2626' }}> ({mods.overdueSnags} overdue)</span> : null}</div></div>
+            <div className="kpi"><div className="kpi-label">CONTRACT VALUE</div><div className="kpi-value accent">{mods.contractValueLabel}</div></div>
+            <div className="kpi"><div className="kpi-label">FUEL THIS MONTH</div><div className="kpi-value">{mods.fuelSpendMonthLabel}</div></div>
+          </div>
+        </div>
       )}
     </>
   )
