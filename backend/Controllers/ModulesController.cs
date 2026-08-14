@@ -54,7 +54,10 @@ public class ModulesController : ControllerBase
 
         var project = c.ProjectId > 0 ? await _projects.GetProjectAsync(c.ProjectId) : null;
         var settings = await _billing.GetAllSettingsAsync();
-        var pdf = ContractPdfService.Build(c, project, settings);
+        var milestones = (await _mods.AllAsync<ContractMilestone>())
+            .Where(m => m.ContractId == c.Id)
+            .OrderBy(m => m.DueDate).ToList();
+        var pdf = ContractPdfService.Build(c, project, milestones, settings);
         return File(pdf, "application/pdf", $"Contract-{c.Id}-{Sanitize(c.Title)}.pdf");
     }
 
@@ -244,6 +247,45 @@ public class ModulesController : ControllerBase
         return Ok(new { room, url, provider = providerName });
     }
 
+    // ---- Business modules summary (dashboard widget) ----
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary()
+    {
+        var contracts = await _mods.AllAsync<SiteContract>();
+        var snags = await _mods.AllAsync<Snag>();
+        var fuel = await _mods.AllAsync<FuelLog>();
+        var equipment = await _mods.AllAsync<EquipmentLog>();
+        var milestones = await _mods.AllAsync<ContractMilestone>();
+
+        var now = DateTime.Today;
+        var monthStart = new DateTime(now.Year, now.Month, 1);
+
+        var activeContracts = contracts.Count(c => c.Status is "Active" or "On Hold");
+        var contractValue = contracts.Where(c => c.Status is "Active" or "On Hold").Sum(c => c.Amount);
+        var openSnags = snags.Count(s => s.Status != "Fixed");
+        var overdueSnags = snags.Count(s => s.Status != "Fixed" && s.DueDate < now);
+        var fuelSpendMonth = fuel.Where(f => f.Date >= monthStart).Sum(f => f.Cost);
+        var equipmentSpendMonth = equipment.Where(e => e.Date >= monthStart).Sum(e => e.RentalCost + e.FuelCost);
+        var billedMilestones = milestones.Where(m => m.IsPaid).Sum(m => m.Amount);
+
+        return Ok(new
+        {
+            contracts = contracts.Count,
+            activeContracts,
+            contractValue,
+            contractValueLabel = ReportService.Money(contractValue),
+            openSnags,
+            overdueSnags,
+            fuelSpendMonth,
+            fuelSpendMonthLabel = ReportService.Money(fuelSpendMonth),
+            equipmentSpendMonth,
+            equipmentSpendMonthLabel = ReportService.Money(equipmentSpendMonth),
+            billedMilestones,
+            billedMilestonesLabel = ReportService.Money(billedMilestones),
+        });
+    }
+
     private static string Sanitize(string s)
     {
         foreach (var ch in Path.GetInvalidFileNameChars()) s = s.Replace(ch, '-');
@@ -258,7 +300,7 @@ public static class ContractPdfService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public static byte[] Build(SiteContract c, Project? project, Dictionary<string, string> settings)
+    public static byte[] Build(SiteContract c, Project? project, List<ContractMilestone> milestones, Dictionary<string, string> settings)
     {
         const string purple = "#7C4DFF";
         const string aqua = "#00A896";
@@ -322,6 +364,25 @@ public static class ContractPdfService
                         col.Item().PaddingTop(6).Text(c.EscalationClause);
                     }
 
+                    if (milestones.Count > 0)
+                    {
+                        col.Item().PaddingTop(16).Text("Payment Milestones").FontSize(12).Bold().FontColor(purple);
+                        col.Item().PaddingTop(6).Table(table =>
+                        {
+                            table.ColumnsDefinition(cc => { cc.RelativeColumn(3); cc.ConstantColumn(70); cc.ConstantColumn(70); cc.ConstantColumn(70); });
+                            void H(string t) => table.Cell().Padding(4).Background("#F4F2FB").Text(t).Bold().FontSize(9);
+                            H("Milestone"); H("Amount"); H("Due"); H("Status");
+                            foreach (var m in milestones)
+                            {
+                                table.Cell().Padding(4).Text(m.Title).FontSize(9);
+                                table.Cell().Padding(4).Text(ReportService.Money(m.Amount)).FontSize(9);
+                                table.Cell().Padding(4).Text(m.DueDate.ToString("dd MMM yyyy")).FontSize(9);
+                                table.Cell().Padding(4).Text(m.IsPaid ? "Paid" : m.Status).FontSize(9);
+                            }
+                        });
+                    }
+
+                    col.Item().PaddingTop(16).Text($"Amount in words: {AmountWords.InWords(c.Amount)}").FontSize(10).Italic();
                     col.Item().PaddingTop(24).AlignCenter().Text("Signature: ________________________").FontSize(11).FontColor(dim);
                 });
 
