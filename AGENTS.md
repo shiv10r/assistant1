@@ -11,6 +11,7 @@
 - **Never install anything (packages, tools, SDKs, global CLIs, system software) without explicit approval.** Do not run installs "just in case" — ask first.
 - Never take major/risky decisions unilaterally (installs, deletions, force-push, resets, changing infra/config, upgrading dependencies) — always ask before proceeding.
 - Don't do anything that could harm or modify the user's device/system outside the project scope without asking first.
+- **Budget cap: use a maximum of ~125 credits per task in worst-case scenarios.** Plan and prioritize work to fit this budget — scope down, batch operations, and avoid redundant exploration/tool calls rather than blowing past the cap.
 
 ## Branch-deployment rule (MANDATORY)
 

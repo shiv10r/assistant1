@@ -1,21 +1,92 @@
-import { Card, CardHeader, CardTitle, CardContent, Empty } from '../../components/ui'
-import { Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Button, Input, Label, Modal, Empty } from '../../components/ui'
+import { Users, Plus, Search, Pencil, Trash2 } from 'lucide-react'
+import { useLocalCollection, genId } from '../../lib/localStore'
+import type { Supplier } from './types'
+import { SUPPLIER_SEED } from './seed'
+
+const emptyForm = { name: '', contact: '', phone: '', email: '', gstin: '' }
 
 export default function WarehouseSuppliers() {
+  const { items, add, update, remove } = useLocalCollection<Supplier>('warehouse:suppliers', SUPPLIER_SEED)
+  const [query, setQuery] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState<Supplier | null>(null)
+  const [form, setForm] = useState(emptyForm)
+
+  const filtered = useMemo(
+    () => items.filter((s) => `${s.name} ${s.contact}`.toLowerCase().includes(query.toLowerCase())),
+    [items, query]
+  )
+
+  function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
+  function openEdit(s: Supplier) { setEditing(s); setForm({ name: s.name, contact: s.contact, phone: s.phone, email: s.email, gstin: s.gstin }); setModalOpen(true) }
+
+  function save() {
+    if (!form.name.trim()) return
+    if (editing) update(editing.id, form)
+    else add({ id: genId(), ...form })
+    setModalOpen(false)
+  }
+
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Suppliers</CardTitle>
+          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add supplier</Button>
         </CardHeader>
         <CardContent>
-          <Empty
-            icon={<Users className="w-6 h-6" />}
-            title="Supplier management is coming soon"
-            description="Manage supplier contacts, price lists and order history once the warehouse backend module ships."
-          />
+          <div className="relative mb-4 max-w-sm">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <Input placeholder="Search suppliers..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+          </div>
+          {filtered.length === 0 ? (
+            <Empty icon={<Users className="w-6 h-6" />} title="No suppliers yet" description="Add a supplier to start creating purchase orders." />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow><TableHead>Name</TableHead><TableHead>Contact</TableHead><TableHead>Phone</TableHead><TableHead>Email</TableHead><TableHead>GSTIN</TableHead><TableHead></TableHead></TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.contact}</TableCell>
+                    <TableCell>{s.phone}</TableCell>
+                    <TableCell>{s.email}</TableCell>
+                    <TableCell className="font-mono text-xs">{s.gstin}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 justify-end">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(s)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => remove(s.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit supplier' : 'Add supplier'} size="md">
+        <div className="space-y-4">
+          <div><Label required>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><Label>Contact person</Label><Input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} /></div>
+            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+            <div><Label>GSTIN</Label><Input value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button onClick={save}>{editing ? 'Save changes' : 'Add supplier'}</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
