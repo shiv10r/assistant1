@@ -26,6 +26,9 @@ export default function TxnForm() {
   const [description, setDescription] = useState('')
   const [stateOfSupply, setStateOfSupply] = useState('')
   const [txnTax, setTxnTax] = useState(0)
+  const [tcs, setTcs] = useState('0')
+  const [tds, setTds] = useState('0')
+  const [reverseCharge, setReverseCharge] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [lines, setLines] = useState<BizTxnItem[]>([])
 
@@ -49,17 +52,23 @@ export default function TxnForm() {
   const termsOn = settings['txn.terms_enabled'] === '1'
   const termsText = settings['txn.terms_text'] || 'Thanks for doing business with us!'
   const billOfSupply = settings['print.bill_of_supply_non_tax'] === '1'
+  const autoInvoiceNo = settings['txn.invoice_number'] !== '0'
+  const tcsOn = gstOn && settings['gst.tcs'] === '1'
+  const tdsOn = gstOn && settings['gst.tds'] === '1'
+  const reverseChargeOn = gstOn && settings['gst.reverse_charge'] === '1'
 
   const TYPES = useMemo(() => {
     const all = [
       { v: 'SALE', l: 'Sale' }, { v: 'PURCHASE', l: 'Purchase' },
       { v: 'ESTIMATE', l: 'Estimate' }, { v: 'SALE_ORDER', l: 'Sale Order' },
       { v: 'PURCHASE_ORDER', l: 'Purchase Order' }, { v: 'DELIVERY_CHALLAN', l: 'Delivery Challan' },
+      { v: 'PROFORMA', l: 'Proforma Invoice' },
       { v: 'PAYMENT_IN', l: 'Payment-In' }, { v: 'PAYMENT_OUT', l: 'Payment-Out' },
     ]
     return all.filter((t) =>
       t.v === 'ESTIMATE' ? settings['txn.enable.estimate'] !== '0'
       : t.v === 'DELIVERY_CHALLAN' ? settings['txn.enable.delivery_challan'] !== '0'
+      : t.v === 'PROFORMA' ? settings['txn.enable.proforma'] === '1'
       : true)
   }, [settings])
 
@@ -72,14 +81,18 @@ export default function TxnForm() {
       ? subtotal * txnTax / 100
       : lines.reduce((s, l) => s + l.qty * l.rate * (l.taxRate || 0) / 100, 0)
     const d = Number(discount) || 0
+    const tcsAmt = tcsOn ? subtotal * Number(tcs || 0) / 100 : 0
+    const tdsAmt = tdsOn ? subtotal * Number(tds || 0) / 100 : 0
     let total = Math.max(0, subtotal + tax - d)
+    if (type !== 'PAYMENT_IN' && type !== 'PAYMENT_OUT') total += tcsAmt
+    if (type === 'PURCHASE') total -= tdsAmt
     let roundOff = 0
     if (roundOn) { roundOff = Math.round(total) - total; total = Math.round(total) }
     let recv = Number(received) || 0
     if (isPayment) recv = total
     else recv = Math.min(recv || 0, total)
-    return { subtotal, tax, total, roundOff, balance: total - recv, received: recv }
-  }, [lines, discount, received, isPayment, txnTaxOn, txnTax, roundOn])
+    return { subtotal, tax, total, roundOff, balance: total - recv, received: recv, tcsAmt, tdsAmt }
+  }, [lines, discount, received, isPayment, txnTaxOn, txnTax, roundOn, tcsOn, tcs, tdsOn, tds, type])
 
   const addLine = (item?: CatalogItem) => {
     setLines([...lines, {
@@ -107,7 +120,7 @@ export default function TxnForm() {
         subtotal: totals.subtotal, discount: Number(discount) || 0, tax: totals.tax,
         roundOff: totals.roundOff, total: totals.total, received: totals.received,
         balance: totals.balance, paymentMode: mode, chequeStatus: mode === 'Cheque' ? 'open' : '',
-        description, stateOfSupply, status: 'OPEN',
+        description, stateOfSupply, tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: 'OPEN',
       }
       const good = lines.filter((l) => l.itemName && l.qty > 0 && l.rate > 0)
       await api.billing.saveTxn(txn, good)
@@ -286,6 +299,28 @@ export default function TxnForm() {
                   </Select>
                 </div>
               )}
+              {(tcsOn || tdsOn) && !isPayment && (
+                <div className="grid gap-4 md:grid-cols-2 mt-4">
+                  {tcsOn && (
+                    <div>
+                      <Label>TCS % <span className="text-xs text-muted">(tax collected at source)</span></Label>
+                      <Input type="number" min={0} step="0.01" value={tcs} onChange={(e) => setTcs(e.target.value)} placeholder="0" />
+                    </div>
+                  )}
+                  {tdsOn && (
+                    <div>
+                      <Label>TDS % <span className="text-xs text-muted">(tax deducted at source)</span></Label>
+                      <Input type="number" min={0} step="0.01" value={tds} onChange={(e) => setTds(e.target.value)} placeholder="0" />
+                    </div>
+                  )}
+                </div>
+              )}
+              {reverseChargeOn && !isPayment && (
+                <div className="mt-4 flex items-center gap-2">
+                  <input type="checkbox" checked={reverseCharge} onChange={(e) => setReverseCharge(e.target.checked)} className="accent-[var(--primary)]" />
+                  <Label className="mb-0">Reverse Charge (GST payable by recipient)</Label>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -302,6 +337,8 @@ export default function TxnForm() {
                 <div className="flex justify-between text-muted"><span>Tax (GST)</span><span className="text-text">{money(totals.tax)}</span></div>
                 {isNonTaxable && <div className="flex justify-between text-muted"><span>Bill of supply (non-taxable)</span><Badge variant="info" size="sm">Non-taxable</Badge></div>}
                 <div className="flex justify-between text-muted"><span>Discount</span><span className="text-text">−{money(Number(discount) || 0)}</span></div>
+                {tcsOn && totals.tcsAmt > 0 && <div className="flex justify-between text-muted"><span>TCS</span><span className="text-text">{money(totals.tcsAmt)}</span></div>}
+                {tdsOn && totals.tdsAmt > 0 && <div className="flex justify-between text-muted"><span>TDS</span><span className="text-text">−{money(totals.tdsAmt)}</span></div>}
                 {roundOn && <div className="flex justify-between text-muted"><span>Round off</span><span className="text-text">{money(totals.roundOff)}</span></div>}
                 <div className="border-t border-border pt-3 flex justify-between text-base font-bold"><span>Total</span><span className="text-primary">{money(totals.total)}</span></div>
                 <div className="flex justify-between text-muted"><span>Received</span><span className="text-text">{money(totals.received)}</span></div>
@@ -326,14 +363,19 @@ export default function TxnForm() {
         <div className="border border-border rounded-xl p-6 bg-surface">
           <div className="flex items-start justify-between">
             <div>
-              <div className="brand" style={{ fontSize: 20 }}>Lux<span>Infra</span></div>
-              <div className="text-xs text-muted mt-1">{settings['general.firm_name'] || 'LuxInfra'}{settings['general.firm_gstin'] ? ` · GSTIN ${settings['general.firm_gstin']}` : ''}</div>
+              <div className="brand" style={{ fontSize: 20 }}>{settings['general.firm_name'] || 'Lux'}<span>Infra</span></div>
+              <div className="text-xs text-muted mt-1">{settings['general.firm_gstin'] ? `GSTIN ${settings['general.firm_gstin']}` : ''}</div>
+              {settings['general.firm_phone'] && <div className="text-xs text-muted">Ph: {settings['general.firm_phone']}</div>}
+              {settings['general.firm_email'] && <div className="text-xs text-muted">{settings['general.firm_email']}</div>}
+              {settings['general.firm_state'] && <div className="text-xs text-muted">State: {settings['general.firm_state']}</div>}
               <div className="text-xs text-muted">{settings['general.firm_address']}</div>
             </div>
             <div className="text-right">
               <p className="font-semibold text-text">{txnType(type)}</p>
-              <p className="text-xs text-muted">#{type === 'ESTIMATE' ? 'EST' : type === 'DELIVERY_CHALLAN' ? 'DC' : 'INV'}—</p>
+              {autoInvoiceNo && <p className="text-xs text-muted">#{type === 'ESTIMATE' ? 'EST' : type === 'DELIVERY_CHALLAN' ? 'DC' : type === 'PROFORMA' ? 'PF' : 'INV'}—auto</p>}
               <p className="text-xs text-muted">Date {date}</p>
+              {stateOn && <p className="text-xs text-muted">Supply: {stateOfSupply || '—'}</p>}
+              {reverseCharge && <p className="text-xs text-muted">Reverse charge</p>}
             </div>
           </div>
           <table className="w-full text-sm mt-6">

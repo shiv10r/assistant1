@@ -129,7 +129,6 @@ export default function Workspace() {
           latitude={p.latitude || undefined}
           longitude={p.longitude || undefined}
           siteName={p.name}
-          className="max-w-md"
           onSetLocation={openEdit}
         />
       </div>

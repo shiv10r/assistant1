@@ -58,87 +58,97 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
   }
 
   return (
-    <div className={cn('rounded-xl border border-border bg-surface p-4', className)}>
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="text-sm font-semibold text-text">🌤️ {siteName ? `${siteName} — Site Weather` : 'Site Weather'}</div>
-        <div className="flex items-center gap-2">
-          {w.weather && (
-            <Button size="sm" variant="ghost" onClick={download} title="Download weather report" className="!p-1.5 !h-8 !w-8">
-              <Download className="w-4 h-4" />
-            </Button>
-          )}
-          {w.weather && (
-            <Button size="sm" variant="ghost" onClick={() => (useMyLocation ? w.enable() : w.refresh(hasCoords ? latitude! : 20.5937, hasCoords ? longitude! : 78.9629))} title="Refresh weather" className="!p-1.5 !h-8 !w-8">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
-          )}
-          <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer"
-            className="text-[11px] text-muted hover:text-primary whitespace-nowrap" title="Weather data by Open-Meteo — free & open source">
-            Free data · Open-Meteo
-          </a>
-        </div>
-      </div>
-
+    <div className={cn('weather-card rounded-2xl border border-border bg-surface overflow-hidden', className)}>
       {!hasCoords && !useMyLocation ? (
-        <div className="text-sm text-muted">
-          <p className="mb-3">Weather is unavailable because this project has no location set.</p>
-          {onSetLocation && (
-            <Button size="sm" onClick={onSetLocation}>
-              <MapPin className="w-4 h-4" /> Set project location
-            </Button>
-          )}
+        <div className="p-6 text-sm text-muted flex items-center gap-4">
+          <MapPin className="w-8 h-8 text-muted flex-shrink-0" />
+          <div>
+            <p className="mb-2 text-sm">Weather is unavailable because this project has no location set.</p>
+            {onSetLocation && (
+              <Button size="sm" onClick={onSetLocation}>
+                <MapPin className="w-4 h-4" /> Set project location
+              </Button>
+            )}
+          </div>
         </div>
       ) : w.loading ? (
-        <div className="flex items-center gap-2 text-sm text-muted py-4">
+        <div className="flex items-center gap-2 text-sm text-muted p-6">
           <Loader2 className="w-4 h-4 animate-spin" /> Loading weather…
         </div>
       ) : w.error ? (
-        <p className="text-sm text-red-500">{w.error}</p>
+        <p className="text-sm text-red-500 p-6">{w.error}</p>
       ) : w.weather && meta ? (
         <>
-          <div className="flex items-end gap-3 mb-3">
-            <span className="text-4xl leading-none">{meta.icon}</span>
-            <div>
-              <div className="text-3xl font-bold text-text leading-none">{Math.round(w.weather.temperature)}°C</div>
-              <div className="text-sm text-muted mt-1">{meta.label} · feels like {Math.round(w.weather.feelsLike)}°C</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex items-center gap-2 text-muted"><span>💧</span> Humidity <b className="ml-auto text-text">{w.weather.humidity}%</b></div>
-            <div className="flex items-center gap-2 text-muted"><span>💨</span> Wind <b className="ml-auto text-text">{Math.round(w.weather.windSpeed)} km/h</b></div>
-            <div className="flex items-center gap-2 text-muted"><span>🌧️</span> Rain chance <b className="ml-auto text-text">{Math.round(w.weather.rainProbability)}%</b></div>
-            <div className="flex items-center gap-2 text-muted"><span>☔</span> Precip <b className="ml-auto text-text">{w.weather.precipitation} mm</b></div>
-          </div>
-
-          <p className="mt-3 text-xs rounded-lg bg-primary/10 text-primary px-3 py-2">{weatherBlurb(w.weather)}</p>
-
-          {(w.weather.forecast ?? []).length > 0 && (
-            <div className="mt-4 border-t border-border pt-3">
-              <div className="text-[11px] uppercase tracking-wide text-muted mb-2">5-day forecast</div>
-              <div className="grid grid-cols-5 gap-1 text-center">
-                {(w.weather.forecast ?? []).slice(0, 5).map((f, i) => {
-                  const fm = conditionMeta(f.weatherCode, true)
-                  return (
-                    <div key={f.date} className={cn('rounded-lg px-1 py-2', i === 0 && 'bg-primary/10')}>
-                      <div className="text-[11px] text-muted">{i === 0 ? 'Today' : WEEKDAYS[new Date(f.date + 'T00:00:00').getDay()]}</div>
-                      <div className="text-base leading-none my-1">{fm.icon}</div>
-                      <div className="text-xs font-semibold text-text">{Math.round(f.tempMax)}°<span className="text-muted font-normal">/{Math.round(f.tempMin)}°</span></div>
-                      <div className="text-[10px] text-muted">🌧 {Math.round(f.rainProbability)}%</div>
-                    </div>
-                  )
-                })}
+          {/* Animated hero band — wide, not square */}
+          <div className="weather-hero relative flex items-center gap-5 px-6 py-7 text-white overflow-hidden">
+            <div className="weather-sheen absolute inset-0 pointer-events-none" aria-hidden />
+            {/* floating condition icon */}
+            <div className="weather-float text-6xl sm:text-7xl leading-none flex-shrink-0 relative" aria-hidden>{meta.icon}</div>
+            <div className="relative flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-base font-semibold drop-shadow-sm">
+                  {siteName ? `${siteName} — Site Weather` : 'Site Weather'}
+                </div>
+                <div className="flex items-center gap-2">
+                  {w.weather && (
+                    <Button size="sm" variant="ghost" onClick={download} title="Download weather report" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {w.weather && (
+                    <Button size="sm" variant="ghost" onClick={() => (useMyLocation ? w.enable() : w.refresh(hasCoords ? latitude! : 20.5937, hasCoords ? longitude! : 78.9629))} title="Refresh weather" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
+              <div className="flex flex-wrap items-end gap-x-5 gap-y-2 mt-2">
+                <div className="text-5xl sm:text-6xl font-extrabold leading-none drop-shadow-sm">{Math.round(w.weather.temperature)}°C</div>
+                <div>
+                  <div className="text-sm font-medium">{meta.label}</div>
+                  <div className="text-xs text-white/80">feels like {Math.round(w.weather.feelsLike)}°C · {w.weather.isDay ? 'Daytime' : 'Night'}</div>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-white/90 inline-block rounded-lg bg-white/15 backdrop-blur px-3 py-1.5">{weatherBlurb(w.weather)}</p>
             </div>
-          )}
+          </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-[11px] text-muted">Updated {updatedAgo} min ago</p>
-            <p className="text-[11px] text-muted">Data by <a className="text-primary hover:underline" href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · free &amp; open source</p>
+          {/* Stats + forecast */}
+          <div className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div className="flex items-center gap-2 text-muted"><span>💧</span> Humidity <b className="ml-auto text-text">{w.weather.humidity}%</b></div>
+              <div className="flex items-center gap-2 text-muted"><span>💨</span> Wind <b className="ml-auto text-text">{Math.round(w.weather.windSpeed)} km/h</b></div>
+              <div className="flex items-center gap-2 text-muted"><span>🌧️</span> Rain chance <b className="ml-auto text-text">{Math.round(w.weather.rainProbability)}%</b></div>
+              <div className="flex items-center gap-2 text-muted"><span>☔</span> Precip <b className="ml-auto text-text">{w.weather.precipitation} mm</b></div>
+            </div>
+
+            {(w.weather.forecast ?? []).length > 0 && (
+              <div className="mt-5 border-t border-border pt-4">
+                <div className="text-[11px] uppercase tracking-wide text-muted mb-3">5-day forecast</div>
+                <div className="grid grid-cols-5 gap-2">
+                  {(w.weather.forecast ?? []).slice(0, 5).map((f, i) => {
+                    const fm = conditionMeta(f.weatherCode, true)
+                    return (
+                      <div key={f.date} className={cn('rounded-xl px-2 py-3 text-center', i === 0 && 'bg-primary/10')}>
+                        <div className="text-[11px] text-muted">{i === 0 ? 'Today' : WEEKDAYS[new Date(f.date + 'T00:00:00').getDay()]}</div>
+                        <div className="text-xl leading-none my-2">{fm.icon}</div>
+                        <div className="text-xs font-semibold text-text">{Math.round(f.tempMax)}°<span className="text-muted font-normal">/{Math.round(f.tempMin)}°</span></div>
+                        <div className="text-[10px] text-muted">🌧 {Math.round(f.rainProbability)}%</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-[11px] text-muted">Updated {updatedAgo} min ago</p>
+              <p className="text-[11px] text-muted">Data by <a className="text-primary hover:underline" href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · free &amp; open source</p>
+            </div>
           </div>
         </>
       ) : (
-        <p className="text-sm text-muted">Weather unavailable.</p>
+        <p className="text-sm text-muted p-6">Weather unavailable.</p>
       )}
     </div>
   )
