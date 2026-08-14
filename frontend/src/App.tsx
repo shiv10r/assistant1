@@ -48,6 +48,10 @@ import WarehousePurchaseOrders from './services/warehouse/WarehousePurchaseOrder
 import WarehouseGrn from './services/warehouse/WarehouseGrn'
 import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
 import SchoolHome from './services/school/SchoolHome'
+import SchoolStudents from './services/school/SchoolStudents'
+import SchoolClasses from './services/school/SchoolClasses'
+import SchoolFees from './services/school/SchoolFees'
+import SchoolAttendance from './services/school/SchoolAttendance'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
 function Redirect({ to }: { to: string }) {
@@ -130,6 +134,10 @@ export default function App() {
 
           {/* School service */}
           <Route path="/school" element={<SchoolHome />} />
+          <Route path="/school/students" element={<SchoolStudents />} />
+          <Route path="/school/classes" element={<SchoolClasses />} />
+          <Route path="/school/fees" element={<SchoolFees />} />
+          <Route path="/school/attendance" element={<SchoolAttendance />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

@@ -42,6 +42,9 @@ import {
   ClipboardList,
   Truck,
   GraduationCap,
+  Layers,
+  Wallet,
+  CalendarCheck,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -76,6 +79,10 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   school: [
     { title: 'School Management', items: [
       { label: 'Overview', to: '/school', icon: <GraduationCap className="w-5 h-5" />, end: true },
+      { label: 'Students', to: '/school/students', icon: <Users className="w-5 h-5" /> },
+      { label: 'Classes', to: '/school/classes', icon: <Layers className="w-5 h-5" /> },
+      { label: 'Fees', to: '/school/fees', icon: <Wallet className="w-5 h-5" /> },
+      { label: 'Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
     ]},
   ],
 }

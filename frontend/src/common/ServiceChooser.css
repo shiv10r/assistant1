@@ -12,6 +12,22 @@
 }
 
 /* ---------- Aurora backdrop ---------- */
+.chooser-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(79, 107, 237, 0.16), transparent 60%);
+}
+.chooser-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 .chooser-aurora {
   position: absolute;
   inset: 0;
@@ -34,31 +50,40 @@
 
 .chooser-head {
   position: relative;
+  z-index: 2;
   text-align: center;
 }
 .chooser-brand {
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   background: var(--grad);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: chooser-shimmer 6s linear infinite;
+}
+@keyframes chooser-shimmer {
+  to { background-position: -200% center; }
 }
 .chooser-brand span { color: var(--text); -webkit-text-fill-color: var(--text); }
 .chooser-sub {
   margin-top: 0.35rem;
   color: var(--text-muted);
   font-size: 0.95rem;
+  animation: chooser-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ---------- Cards ---------- */
 .chooser-grid {
   position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(220px, 300px));
   gap: 1.4rem;
   padding: 0 1.5rem;
+  perspective: 1000px;
 }
 .chooser-card {
   position: relative;
@@ -76,11 +101,12 @@
   box-shadow: var(--shadow);
   opacity: 0;
   transform: translateY(24px);
+  transform-style: preserve-3d;
   animation: chooser-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.15s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 @keyframes chooser-in {
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
 }
 .chooser-card::before {
   content: '';
@@ -93,7 +119,7 @@
   z-index: 0;
 }
 .chooser-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-6px) scale(1.02) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   border-color: transparent;
 }
@@ -138,7 +164,7 @@
 }
 
 /* ---------- Footer ---------- */
-.chooser-foot { position: relative; }
+.chooser-foot { position: relative; z-index: 2; }
 .chooser-return {
   font-size: 0.85rem;
   color: var(--text-muted);
