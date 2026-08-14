@@ -284,6 +284,18 @@ public class ProjectRepository : IProjectRepository
         await conn.InsertAsync(m);
     }
 
+    public async Task UpdateMeetingMinuteAsync(MeetingMinute m)
+    {
+        var conn = await Conn();
+        await conn.UpdateAsync(m);
+    }
+
+    public async Task DeleteMeetingMinuteAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.Table<MeetingMinute>().DeleteAsync(m => m.Id == id);
+    }
+
     public async Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId)
     {
         var conn = await Conn();
@@ -330,6 +342,25 @@ public class ProjectRepository : IProjectRepository
     {
         var conn = await Conn();
         return await conn.Table<ProjectFile>().Where(f => f.FolderId == folderId).OrderByDescending(f => f.Id).ToListAsync();
+    }
+
+    public async Task UpdateFileAsync(ProjectFile f)
+    {
+        var conn = await Conn();
+        await conn.UpdateAsync(f);
+    }
+
+    public async Task DeleteFileAsync(int id)
+    {
+        var conn = await Conn();
+        await conn.Table<ProjectFile>().DeleteAsync(f => f.Id == id);
+    }
+
+    public async Task DeleteFolderAsync(int folderId)
+    {
+        var conn = await Conn();
+        await conn.Table<ProjectFile>().DeleteAsync(f => f.FolderId == folderId);
+        await conn.Table<ProjectFolder>().DeleteAsync(fo => fo.Id == folderId);
     }
 
     // ---------- uploads ----------

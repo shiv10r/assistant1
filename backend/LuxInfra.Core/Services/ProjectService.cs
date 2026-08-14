@@ -264,7 +264,10 @@ public class ProjectService : IProjectService
 
     public Task<List<MeetingMinute>> GetMeetingMinutesAsync(int projectId) => _repo.GetMeetingMinutesAsync(projectId);
 
-    public Task SaveMeetingMinuteAsync(MeetingMinute m) => _repo.InsertMeetingMinuteAsync(m);
+    public Task SaveMeetingMinuteAsync(MeetingMinute m)
+        => m.Id == 0 ? _repo.InsertMeetingMinuteAsync(m) : _repo.UpdateMeetingMinuteAsync(m);
+
+    public Task DeleteMeetingMinuteAsync(int id) => _repo.DeleteMeetingMinuteAsync(id);
 
     // ---------- design ----------
 
@@ -282,6 +285,12 @@ public class ProjectService : IProjectService
 
     public Task AddFileAsync(int projectId, int folderId, string fileName, string filePath)
         => _repo.InsertFileAsync(projectId, folderId, fileName, filePath);
+
+    public Task UpdateFileAsync(ProjectFile f) => _repo.UpdateFileAsync(f);
+
+    public Task DeleteFileAsync(int id) => _repo.DeleteFileAsync(id);
+
+    public Task DeleteFolderAsync(int folderId) => _repo.DeleteFolderAsync(folderId);
 
     // ---------- uploads (2D/3D models & files) ----------
 
