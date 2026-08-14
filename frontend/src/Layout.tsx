@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getRole, logout } from './api'
 import { api } from './api'
 import type { Broadcast } from './api'
@@ -7,6 +7,7 @@ import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
 import { conditionMeta } from './lib/weather'
+import { serviceFromPath, type ServiceId } from './lib/services'
 import {
   LayoutDashboard,
   FileText,
@@ -38,6 +39,9 @@ import {
   Video,
   CloudSun,
   Megaphone,
+  ClipboardList,
+  Truck,
+  GraduationCap,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -49,9 +53,37 @@ import './Layout.css'
 type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
-const GROUPS: NavGroup[] = [
+/** Groups shown only while inside a given service's workspace. */
+const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
+  interior: [
+    { title: 'Interior Design', items: [
+      { label: 'Overview', to: '/interior/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'All Projects', to: '/interior/projects', icon: <Briefcase className="w-5 h-5" /> },
+      { label: 'Site Map', to: '/interior/map', icon: <Map className="w-5 h-5" /> },
+      { label: 'AI Vision Progress', to: '/interior/vision', icon: <Sparkles className="w-5 h-5" /> },
+      { label: 'Modules', to: '/interior/modules', icon: <Boxes className="w-5 h-5" /> },
+    ]},
+  ],
+  warehouse: [
+    { title: 'Warehouse Store', items: [
+      { label: 'Overview', to: '/warehouse/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'Inventory & Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
+      { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <ClipboardList className="w-5 h-5" /> },
+      { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
+      { label: 'Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
+    ]},
+  ],
+  school: [
+    { title: 'School Management', items: [
+      { label: 'Overview', to: '/school', icon: <GraduationCap className="w-5 h-5" />, end: true },
+    ]},
+  ],
+}
+
+/** Groups shared across every service. */
+const COMMON_GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
-    { label: 'Dashboard', to: '/', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+    { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
     { label: 'Reports', to: '/reports', icon: <FileText className="w-5 h-5" /> },
     { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" /> },
@@ -66,19 +98,13 @@ const GROUPS: NavGroup[] = [
     { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
     { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
   ]},
-  { title: 'Projects', items: [
-    { label: 'All Projects', to: '/projects', icon: <Briefcase className="w-5 h-5" /> },
-    { label: 'Site Map', to: '/map', icon: <Map className="w-5 h-5" /> },
-  ]},
   { title: 'Business', items: [
-    { label: 'Modules', to: '/modules', icon: <Boxes className="w-5 h-5" /> },
     { label: 'Insights', to: '/insights', icon: <ChartSpline className="w-5 h-5" /> },
     { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
   ]},
   { title: 'Automation', items: [
     { label: 'Broadcast', to: '/broadcast', icon: <Megaphone className="w-5 h-5" />, badge: 'PRO' },
     { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
-    { label: 'AI Vision Progress', to: '/vision', icon: <Sparkles className="w-5 h-5" /> },
     { label: 'Integrations', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
     { label: 'Team & Roles', to: '/users', icon: <ShieldCheck className="w-5 h-5" />, adminOnly: true },
   ]},
@@ -87,6 +113,12 @@ const GROUPS: NavGroup[] = [
     { label: 'My Profile', to: '/account', icon: <User className="w-5 h-5" /> },
   ]},
 ]
+
+/** Service-specific groups first, then the groups common to every workspace. */
+function navGroupsFor(serviceId: ServiceId | undefined): NavGroup[] {
+  const serviceGroups = serviceId ? SERVICE_GROUPS[serviceId] : []
+  return [...serviceGroups, ...COMMON_GROUPS]
+}
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
@@ -179,12 +211,23 @@ export default function Layout() {
     })
   }
 
+  const location = useLocation()
+  const navigate = useNavigate()
+  const service = serviceFromPath(location.pathname)
+  const groups = navGroupsFor(service?.id)
+
   return (
     <div className="app">
       <header className="topbar">
         <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
           <Menu className="w-6 h-6" />
         </button>
+        {service && (
+          <button className="service-pill" onClick={() => navigate('/')} title="Switch service">
+            <span className="pill-label">{service.label}</span>
+            <span className="pill-switch">Switch service</span>
+          </button>
+        )}
         <div className="logo-mark">
           <svg viewBox="0 0 456 456" width="32" height="32">
             <defs>
@@ -224,7 +267,7 @@ export default function Layout() {
 
       <div className="body-row">
         <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
-          {GROUPS.map((g) => {
+          {groups.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)
             return (
               <div className="nav-group" key={g.title}>

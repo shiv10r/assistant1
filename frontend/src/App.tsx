@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isAuthed, api } from './api'
 import { logPageView } from './firebase'
 import Layout from './Layout'
@@ -40,6 +40,17 @@ import Insights from './pages/Insights'
 import Modules from './pages/Modules'
 import Broadcast from './pages/Broadcast'
 import VideoCall from './pages/VideoCall'
+import ServiceChooser from './common/ServiceChooser'
+import InteriorHome from './services/interior/InteriorHome'
+import WarehouseHome from './services/warehouse/WarehouseHome'
+import SchoolHome from './services/school/SchoolHome'
+
+/** Redirect old top-level paths to their owning service so nothing breaks. */
+function Redirect({ to }: { to: string }) {
+  const location = useLocation()
+  const rest = location.pathname.replace(/^\/([^/]+)/, '')
+  return <Navigate to={`${to}${rest}`} replace />
+}
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
@@ -76,10 +87,13 @@ export default function App() {
     <BrowserRouter>
       <PageTracker />
       <Routes key={refreshKey}>
+        {/* Service chooser — the hub landing after login */}
+        <Route path="/" element={<ServiceChooser />} />
+
         <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/assistant" element={<Assistant />} />
+          {/* Common pages (available to all services) */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/assistant" element={<Assistant />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/backup" element={<Backup />} />
@@ -94,29 +108,52 @@ export default function App() {
           <Route path="/billing/cashbank" element={<CashBank />} />
           <Route path="/billing/settings" element={<BillingSettings />} />
 
-          <Route path="/projects" element={<ProjectsList />} />
-          <Route path="/projects/:id" element={<Workspace />} />
-          <Route path="/projects/:id/party" element={<ProjectParty />} />
-          <Route path="/projects/:id/tasks" element={<ProjectTasks />} />
-          <Route path="/projects/:id/txn" element={<ProjectTxn />} />
-          <Route path="/projects/:id/site" element={<ProjectSite />} />
-          <Route path="/projects/:id/attendance" element={<ProjectAttendance />} />
-          <Route path="/projects/:id/material" element={<ProjectMaterial />} />
-          <Route path="/projects/:id/mom" element={<ProjectMom />} />
-          <Route path="/projects/:id/design" element={<ProjectDesign />} />
-          <Route path="/projects/:id/files" element={<ProjectFiles />} />
-          <Route path="/projects/:id/payroll" element={<ProjectPayroll />} />
-          <Route path="/map" element={<ProjectsMap />} />
-          <Route path="/vision" element={<VisionProgress />} />
           <Route path="/broadcast" element={<Broadcast />} />
           <Route path="/integrations" element={<Integrations />} />
           <Route path="/insights" element={<Insights />} />
-          <Route path="/modules" element={<Modules />} />
-          <Route path="/video" element={<VideoCall />} />
           <Route path="/users" element={<Users />} />
-
           <Route path="/plans" element={<Plans />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/video" element={<VideoCall />} />
+
+          {/* Warehouse service */}
+          <Route path="/warehouse" element={<WarehouseHome />} />
+          <Route path="/warehouse/dashboard" element={<WarehouseHome />} />
+          <Route path="/warehouse/inventory" element={<WarehouseHome />} />
+          <Route path="/warehouse/purchase-orders" element={<WarehouseHome />} />
+          <Route path="/warehouse/grn" element={<WarehouseHome />} />
+          <Route path="/warehouse/suppliers" element={<WarehouseHome />} />
+
+          {/* School service */}
+          <Route path="/school" element={<SchoolHome />} />
+
+          {/* Interior service */}
+          <Route path="/interior" element={<InteriorHome />} />
+          <Route path="/interior/dashboard" element={<InteriorHome />} />
+          <Route path="/interior/projects" element={<ProjectsList />} />
+          <Route path="/interior/projects/:id" element={<Workspace />} />
+          <Route path="/interior/projects/:id/party" element={<ProjectParty />} />
+          <Route path="/interior/projects/:id/tasks" element={<ProjectTasks />} />
+          <Route path="/interior/projects/:id/txn" element={<ProjectTxn />} />
+          <Route path="/interior/projects/:id/site" element={<ProjectSite />} />
+          <Route path="/interior/projects/:id/attendance" element={<ProjectAttendance />} />
+          <Route path="/interior/projects/:id/material" element={<ProjectMaterial />} />
+          <Route path="/interior/projects/:id/mom" element={<ProjectMom />} />
+          <Route path="/interior/projects/:id/design" element={<ProjectDesign />} />
+          <Route path="/interior/projects/:id/files" element={<ProjectFiles />} />
+          <Route path="/interior/projects/:id/payroll" element={<ProjectPayroll />} />
+          <Route path="/interior/map" element={<ProjectsMap />} />
+          <Route path="/interior/vision" element={<VisionProgress />} />
+          <Route path="/interior/modules" element={<Modules />} />
+
+          {/* Backward-compat redirects from old top-level paths to their service */}
+          <Route path="/projects/*" element={<Redirect to="/interior/projects" />} />
+          <Route path="/map" element={<Navigate to="/interior/map" replace />} />
+          <Route path="/vision" element={<Navigate to="/interior/vision" replace />} />
+          <Route path="/modules" element={<Navigate to="/interior/modules" replace />} />
+
+          {/* Unknown paths → chooser */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

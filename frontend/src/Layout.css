@@ -54,6 +54,20 @@
   transition: background 0.2s;
 }
 .hamburger:hover { background: var(--primary); color: white; }
+.service-pill {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+  background: var(--surface-hover); color: var(--text);
+  border: 1px solid var(--border); border-radius: 999px;
+  cursor: pointer; font: inherit;
+}
+.service-pill .pill-label { font-weight: 600; font-size: 0.85rem; }
+.service-pill .pill-switch {
+  font-size: 0.7rem; font-weight: 600; color: var(--primary);
+  padding: 0.25rem 0.6rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.service-pill:hover .pill-switch { background: var(--primary); color: white; }
 .logo-mark svg { display: block; border-radius: 10px; }
 .brand { font-size: 1.25rem; font-weight: 700; }
 .brand span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }

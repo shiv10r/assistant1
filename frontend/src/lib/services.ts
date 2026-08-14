@@ -1,0 +1,61 @@
+export type ServiceId = 'interior' | 'warehouse' | 'school'
+
+export type ServiceDef = {
+  id: ServiceId
+  label: string
+  tagline: string
+  icon: string
+  gradient: string
+  home: string
+}
+
+export const SERVICES: ServiceDef[] = [
+  {
+    id: 'interior',
+    label: 'Interior Design',
+    tagline: 'Projects, sites, design boards & material planning',
+    icon: '🏠',
+    gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)',
+    home: '/interior/dashboard',
+  },
+  {
+    id: 'warehouse',
+    label: 'Warehouse Store',
+    tagline: 'Inventory, stock levels, suppliers & purchase orders',
+    icon: '📦',
+    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+    home: '/warehouse/dashboard',
+  },
+  {
+    id: 'school',
+    label: 'School Management',
+    tagline: 'Students, classes, fees & attendance (coming soon)',
+    icon: '🎓',
+    gradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+    home: '/school',
+  },
+]
+
+const LAST_SERVICE_KEY = 'lux_last_service'
+
+export function serviceById(id: string | undefined): ServiceDef | null {
+  if (!id) return null
+  return SERVICES.find((s) => s.id === id) ?? null
+}
+
+/** Persist the last-picked service so the chooser can offer "go straight there". */
+export function getLastService(): ServiceDef | null {
+  const id = localStorage.getItem(LAST_SERVICE_KEY)
+  return id ? serviceById(id) : null
+}
+
+export function setLastService(id: ServiceId | null) {
+  if (id) localStorage.setItem(LAST_SERVICE_KEY, id)
+  else localStorage.removeItem(LAST_SERVICE_KEY)
+}
+
+/** Derive the active service from the current path, or null when on a common page. */
+export function serviceFromPath(pathname: string): ServiceDef | null {
+  const match = pathname.split('/').filter(Boolean)[0]
+  return serviceById(match)
+}

@@ -1,0 +1,159 @@
+.chooser {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  background: var(--bg);
+  overflow: hidden;
+  z-index: 50;
+}
+
+/* ---------- Aurora backdrop ---------- */
+.chooser-aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.chooser-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  animation: chooser-drift 14s ease-in-out infinite alternate;
+}
+.chooser-blob.c1 { width: 420px; height: 420px; background: #4F6BED; top: -90px; left: -80px; }
+.chooser-blob.c2 { width: 380px; height: 380px; background: #10B981; bottom: -100px; right: -70px; animation-delay: -5s; }
+.chooser-blob.c3 { width: 300px; height: 300px; background: #6E4FED; top: 40%; left: 55%; animation-delay: -9s; }
+@keyframes chooser-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.12); }
+}
+
+.chooser-head {
+  position: relative;
+  text-align: center;
+}
+.chooser-brand {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.chooser-brand span { color: var(--text); -webkit-text-fill-color: var(--text); }
+.chooser-sub {
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ---------- Cards ---------- */
+.chooser-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 300px));
+  gap: 1.4rem;
+  padding: 0 1.5rem;
+}
+.chooser-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 1.6rem;
+  border-radius: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(24px);
+  animation: chooser-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+@keyframes chooser-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+.chooser-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: var(--card-grad);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 0;
+}
+.chooser-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  border-color: transparent;
+}
+.chooser-card:hover::before { opacity: 0.12; }
+
+.chooser-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+}
+.chooser-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.chooser-tag {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  min-height: 2.4em;
+}
+.chooser-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.55rem;
+  transition: background 0.2s ease;
+}
+.chooser-card:hover .chooser-enter { background: var(--primary); color: #fff; }
+
+/* ---------- Exit ---------- */
+.chooser-grid.chooser-exiting .chooser-card {
+  animation: chooser-out 0.25s ease forwards;
+}
+@keyframes chooser-out {
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+/* ---------- Footer ---------- */
+.chooser-foot { position: relative; }
+.chooser-return {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.chooser-return b { color: var(--text); }
+.chooser-return:hover { color: var(--text); border-color: var(--primary); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .chooser-grid { grid-template-columns: 1fr; max-width: 340px; }
+  .chooser { justify-content: flex-start; padding-top: 3rem; overflow-y: auto; }
+}
