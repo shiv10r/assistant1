@@ -14,7 +14,7 @@ export interface Dashboard { todayTotal: number; todayLabel: string; monthTotal:
 
 export interface BillingKpis { youllGet: number; youllGive: number; monthSale: number }
 
-export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; billingAddress: string; email: string; currentBalance: number }
+export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; stateCode: string; billingAddress: string; email: string; currentBalance: number }
 export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
 export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string }
 export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }

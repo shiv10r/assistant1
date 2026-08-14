@@ -365,16 +365,18 @@ export default function TxnForm() {
             <div>
               <div className="brand" style={{ fontSize: 20 }}>{settings['general.firm_name'] || 'Lux'}<span>Infra</span></div>
               <div className="text-xs text-muted mt-1">{settings['general.firm_gstin'] ? `GSTIN ${settings['general.firm_gstin']}` : ''}</div>
+              {settings['general.firm_pan'] && <div className="text-xs text-muted">PAN {settings['general.firm_pan']}</div>}
               {settings['general.firm_phone'] && <div className="text-xs text-muted">Ph: {settings['general.firm_phone']}</div>}
               {settings['general.firm_email'] && <div className="text-xs text-muted">{settings['general.firm_email']}</div>}
-              {settings['general.firm_state'] && <div className="text-xs text-muted">State: {settings['general.firm_state']}</div>}
+              {settings['general.firm_state'] && <div className="text-xs text-muted">State: {settings['general.firm_state']}{settings['general.firm_state_code'] ? ` (Code ${settings['general.firm_state_code']})` : ''}</div>}
               <div className="text-xs text-muted">{settings['general.firm_address']}</div>
             </div>
             <div className="text-right">
               <p className="font-semibold text-text">{txnType(type)}</p>
-              {autoInvoiceNo && <p className="text-xs text-muted">#{type === 'ESTIMATE' ? 'EST' : type === 'DELIVERY_CHALLAN' ? 'DC' : type === 'PROFORMA' ? 'PF' : 'INV'}—auto</p>}
+              {autoInvoiceNo && <p className="text-xs text-muted">{settings['general.firm_name'] ? 'Invoice No' : '#'}{type === 'ESTIMATE' ? ' EST' : type === 'DELIVERY_CHALLAN' ? ' DC' : type === 'PROFORMA' ? ' PF' : ' INV'}—auto</p>}
               <p className="text-xs text-muted">Date {date}</p>
-              {stateOn && <p className="text-xs text-muted">Supply: {stateOfSupply || '—'}</p>}
+              {dueDate && dueDate !== date && <p className="text-xs text-muted">Due {dueDate}</p>}
+              {stateOn && <p className="text-xs text-muted">Place of Supply: {stateOfSupply || '—'}</p>}
               {reverseCharge && <p className="text-xs text-muted">Reverse charge</p>}
             </div>
           </div>
@@ -405,6 +407,15 @@ export default function TxnForm() {
             </tfoot>
           </table>
           {termsOn && <p className="text-xs text-muted mt-4">{termsText}</p>}
+          {settings['general.firm_bank_account'] && (
+            <div className="text-xs text-muted mt-4 pt-3 border-t border-border">
+              <p className="font-semibold text-text mb-1">Bank Details</p>
+              {settings['general.firm_bank_name'] && <p>{settings['general.firm_bank_name']}</p>}
+              {settings['general.firm_bank_holder'] && <p>Account Holder: {settings['general.firm_bank_holder']}</p>}
+              <p>Account No: {settings['general.firm_bank_account']}</p>
+              {settings['general.firm_bank_ifsc'] && <p>IFSC: {settings['general.firm_bank_ifsc']}</p>}
+            </div>
+          )}
         </div>
       </Modal>
     </>

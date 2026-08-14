@@ -11,7 +11,7 @@ export default function PartyForm() {
   const [err, setErr] = useState('')
   const [f, setF] = useState<Party>({
     id: 0, name: '', phone: '', openingBalance: 0, balanceType: 'receive', asOfDate: todayISO(),
-    creditLimit: 0, gstType: GST_TYPES[0], gstin: '', state: '', billingAddress: '', email: '', currentBalance: 0,
+    creditLimit: 0, gstType: GST_TYPES[0], gstin: '', state: '', stateCode: '', billingAddress: '', email: '', currentBalance: 0,
   })
   const set = (k: keyof Party, v: unknown) => setF((p) => ({ ...p, [k]: v }))
 
@@ -50,6 +50,9 @@ export default function PartyForm() {
         </div>
         <div className="form-row">
           <input value={f.state} placeholder="State" onChange={(e) => set('state', e.target.value)} />
+          <input value={f.stateCode} placeholder="State code (e.g. 06)" onChange={(e) => set('stateCode', e.target.value)} />
+        </div>
+        <div className="form-row">
           <input type="number" min={0} value={f.creditLimit || ''} placeholder="Credit limit (Gold)" onChange={(e) => set('creditLimit', Number(e.target.value))} />
         </div>
         <textarea value={f.billingAddress} placeholder="Billing address" onChange={(e) => set('billingAddress', e.target.value)} />
