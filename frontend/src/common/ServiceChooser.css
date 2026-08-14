@@ -5,47 +5,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2.5rem;
+  gap: 2rem;
   background: var(--bg);
   overflow: hidden;
   z-index: 50;
 }
 
-/* ---------- Aurora backdrop ---------- */
-.chooser-spotlight {
+.chooser::before {
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(79, 107, 237, 0.16), transparent 60%);
-}
-.chooser-grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.04;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-.chooser-aurora {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.chooser-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
-  animation: chooser-drift 14s ease-in-out infinite alternate;
-}
-.chooser-blob.c1 { width: 420px; height: 420px; background: #4F6BED; top: -90px; left: -80px; }
-.chooser-blob.c2 { width: 380px; height: 380px; background: #10B981; bottom: -100px; right: -70px; animation-delay: -5s; }
-.chooser-blob.c3 { width: 300px; height: 300px; background: #6E4FED; top: 40%; left: 55%; animation-delay: -9s; }
-@keyframes chooser-drift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(60px, 40px) scale(1.12); }
+  opacity: 0.38;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 .chooser-head {
@@ -80,50 +53,40 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, minmax(220px, 300px));
-  gap: 1.4rem;
+  grid-template-columns: repeat(3, minmax(220px, 280px));
+  gap: 0;
   padding: 0 1.5rem;
-  perspective: 1000px;
 }
-.chooser-card {
+.chooser-workspace {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.7rem;
-  padding: 1.6rem;
-  border-radius: 1rem;
-  background: var(--surface);
+  gap: 0.6rem;
+  min-height: 210px;
+  padding: 1.5rem;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
   border: 1px solid var(--border);
+  border-right: 0;
   color: var(--text);
   cursor: pointer;
   text-align: left;
-  box-shadow: var(--shadow);
   opacity: 0;
   transform: translateY(24px);
-  transform-style: preserve-3d;
   animation: chooser-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  transition: transform 0.15s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 @keyframes chooser-in {
-  to { opacity: 1; transform: translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.chooser-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 1rem;
-  background: var(--card-grad);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  z-index: 0;
+.chooser-workspace:first-child { border-radius: 0.5rem 0 0 0.5rem; }
+.chooser-workspace:last-child { border-right: 1px solid var(--border); border-radius: 0 0.5rem 0.5rem 0; }
+.chooser-workspace:hover, .chooser-workspace:focus-visible {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  outline: none;
 }
-.chooser-card:hover {
-  transform: translateY(-6px) scale(1.02) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  border-color: transparent;
-}
-.chooser-card:hover::before { opacity: 0.12; }
 
 .chooser-icon {
   font-size: 2.4rem;
@@ -153,10 +116,10 @@
   border-radius: 0.55rem;
   transition: background 0.2s ease;
 }
-.chooser-card:hover .chooser-enter { background: var(--primary); color: #fff; }
+.chooser-workspace:hover .chooser-enter, .chooser-workspace:focus-visible .chooser-enter { background: var(--primary); color: #fff; }
 
 /* ---------- Exit ---------- */
-.chooser-grid.chooser-exiting .chooser-card {
+.chooser-grid.chooser-exiting .chooser-workspace {
   animation: chooser-out 0.25s ease forwards;
 }
 @keyframes chooser-out {
@@ -180,6 +143,8 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
-  .chooser-grid { grid-template-columns: 1fr; max-width: 340px; }
+  .chooser-grid { grid-template-columns: 1fr; max-width: 340px; gap: 0.75rem; }
+  .chooser-workspace { min-height: 0; border-right: 1px solid var(--border); border-radius: 0.5rem; }
+  .chooser-workspace:first-child, .chooser-workspace:last-child { border-radius: 0.5rem; }
   .chooser { justify-content: flex-start; padding-top: 3rem; overflow-y: auto; }
 }

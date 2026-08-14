@@ -1,4 +1,3 @@
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui'
 import { ArrowRight } from 'lucide-react'
@@ -15,21 +14,20 @@ export default function InteriorHome() {
   const navigate = useNavigate()
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Interior Design</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted text-sm mb-4">Your projects, design boards, materials and site operations live here.</p>
-          <div className="flex flex-wrap gap-3">
-            {LINKS.map((l) => (
-              <Button key={l.to} onClick={() => navigate(l.to)}>
-                {l.label} <ArrowRight className="w-4 h-4" />
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <header className="dashboard-command-bar">
+        <div>
+          <p className="dashboard-eyebrow">Design workspace</p>
+          <h1>Interior Design</h1>
+          <p className="text-muted text-sm mt-1">Projects, design boards, materials, and site operations.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {LINKS.map((l) => (
+            <Button key={l.to} onClick={() => navigate(l.to)}>
+              {l.label} <ArrowRight className="w-4 h-4" />
+            </Button>
+          ))}
+        </div>
+      </header>
     </div>
   )
 }

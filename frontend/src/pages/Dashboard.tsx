@@ -96,27 +96,18 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Hero — flagship Projects access */}
-      <Card className="mb-6 overflow-hidden border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 text-white">
-        <CardContent className="p-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Business Dashboard</h1>
-            <p className="text-white/80 mt-1">{today}</p>
-            <div className="flex flex-wrap items-center gap-2 mt-4">
-              <Link to="/projects" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-indigo-700 text-sm font-semibold hover:bg-white/90 transition-colors">
-                <Briefcase className="w-4 h-4" /> Visit Projects
-              </Link>
-              <Link to="/map" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/40 text-white text-sm font-medium hover:bg-white/10 transition-colors">
-                <Map className="w-4 h-4" /> Site Map
-              </Link>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold">{mods?.contractValueLabel ?? '—'}</p>
-            <p className="text-white/80 text-sm">Total contract value</p>
-          </div>
-        </CardContent>
-      </Card>
+      <header className="dashboard-command-bar">
+        <div>
+          <p className="dashboard-eyebrow">Portfolio overview</p>
+          <h1 className="text-2xl font-bold">Business Dashboard</h1>
+          <p className="text-sm text-muted mt-1">{today}</p>
+        </div>
+        <div className="dashboard-command-actions">
+          <div className="dashboard-total"><span>Contract value</span><strong>{mods?.contractValueLabel ?? '—'}</strong></div>
+          <Link to="/projects" className="dashboard-action-link"><Briefcase className="w-4 h-4" /> Projects</Link>
+          <Link to="/map" className="dashboard-action-link"><Map className="w-4 h-4" /> Site map</Link>
+        </div>
+      </header>
 
       {/* Row 1 — Executive KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
