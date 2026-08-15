@@ -32,7 +32,7 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
   function download() {
     if (!w.weather) return
     const lines = [
-      `Site Weather — ${siteName ?? 'LuxInfra Project'}`,
+      `Site Weather — ${siteName ?? 'VSR Systems Project'}`,
       `Condition: ${w.weather.condition}`,
       `Temperature: ${Math.round(w.weather.temperature)}°C (feels like ${Math.round(w.weather.feelsLike)}°C)`,
       `Humidity: ${w.weather.humidity}%`,

@@ -30,7 +30,7 @@ async function init() {
   })
 
   messaging.onBackgroundMessage((payload) => {
-    const title = payload.notification?.title || 'LuxInfra'
+    const title = payload.notification?.title || 'VSR Systems'
     self.registration.showNotification(title, {
       body: payload.notification?.body || '',
       icon: '/favicon.svg',

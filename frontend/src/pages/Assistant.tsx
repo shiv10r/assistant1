@@ -10,7 +10,7 @@ export default function Assistant() {
   const [aiModel, setAiModel] = useState<string | null>(null)
   const [aiConfigured, setAiConfigured] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { text: "👋 Hey! I'm your LuxInfra assistant. Tell me expenses like \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". Say \"show report\" any time.", isUser: false },
+    { text: "👋 Hey! I'm your VSR Systems assistant. Tell me expenses like \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". Say \"show report\" any time.", isUser: false },
   ])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -78,7 +78,7 @@ export default function Assistant() {
         ? `🧠 DeepSeek AI mode is on. Ask me anything — business or general — and I'll answer in the same language you write.`
         : "⚠️ AI chat isn't enabled yet — set the OPENROUTER_API_KEY env var on the server.", isUser: false }])
     } else {
-      setMessages([{ text: "👋 Back in LuxInfra mode. Tell me expenses like \"site A paint exp = 5k\" or \"spent 5000 on cement\".", isUser: false }])
+      setMessages([{ text: "👋 Back in VSR Systems mode. Tell me expenses like \"site A paint exp = 5k\" or \"spent 5000 on cement\".", isUser: false }])
     }
   }
 
