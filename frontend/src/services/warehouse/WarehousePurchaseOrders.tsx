@@ -9,8 +9,8 @@ import type { PurchaseOrder, POLine, POStatus, InventoryItem } from './types'
 import { PO_FLOW } from './types'
 import { SUPPLIER_SEED, PO_SEED, INVENTORY_SEED, WAREHOUSE_SEED } from './seed'
 import { fmtDate, todayISO, money } from '../../lib/utils'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 
 type LineDraft = { itemId: string; itemName: string; qty: string; unitPrice: string }
 const emptyLine: LineDraft = { itemId: '', itemName: '', qty: '1', unitPrice: '0' }

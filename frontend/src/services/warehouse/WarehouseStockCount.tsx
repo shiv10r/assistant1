@@ -8,8 +8,8 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { StockCount, StockCountLine, InventoryItem } from './types'
 import { STOCK_COUNT_SEED, INVENTORY_SEED, WAREHOUSE_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useStockLedger, useAdjustments } from './ledger'
 
 interface DraftLine { itemId: string; physicalQty: string; reason: string }

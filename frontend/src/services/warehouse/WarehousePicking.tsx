@@ -7,8 +7,8 @@ import { ListChecks, Plus, Search, CheckCircle2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { PickList, PickLine, SalesOrder, InventoryItem } from './types'
 import { PICK_SEED, ORDER_SEED, INVENTORY_SEED } from './seed'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useStockLedger } from './ledger'
 
 export default function WarehousePicking() {

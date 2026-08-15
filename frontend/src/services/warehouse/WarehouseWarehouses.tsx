@@ -7,8 +7,8 @@ import { Building2, MapPin, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Warehouse, LocationBin } from './types'
 import { WAREHOUSE_SEED, LOCATION_SEED } from './seed'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 
 const emptyWh = { name: '', code: '', address: '', contactPerson: '', phone: '', status: 'active' as 'active' | 'inactive' }
 const emptyLoc = { warehouseId: 'wh-1', code: '', zone: '', rack: '', bin: '', capacity: '0', status: 'active' as 'active' | 'inactive' }

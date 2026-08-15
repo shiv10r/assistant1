@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-  Button, Empty, cn,
-} from '../../../components/ui'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table'
+import { Button } from './Form'
+import { Empty } from './Empty'
+import { cn } from '../../lib/utils'
 import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react'
 
 export interface DataColumn<T> {

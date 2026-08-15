@@ -9,8 +9,8 @@ import type { ReturnRecord, ReturnLine, ReturnStatus, InventoryItem } from './ty
 import { RETURN_FLOW } from './types'
 import { RETURN_SEED, INVENTORY_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useStockLedger } from './ledger'
 
 interface DraftLine { itemId: string; qty: string; reason: string; condition: 'good' | 'damaged'; action: 'restock' | 'quarantine' | 'return_to_supplier' }

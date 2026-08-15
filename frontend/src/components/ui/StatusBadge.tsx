@@ -1,4 +1,4 @@
-import { Badge } from '../../../components/ui'
+import { Badge } from './Badge'
 
 const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'outline' | 'default'> = {
   // inventory

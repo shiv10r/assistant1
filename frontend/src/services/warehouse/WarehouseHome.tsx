@@ -7,7 +7,7 @@ import { availableOf, stockStatusOf } from './types'
 import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED, ORDER_SEED, TRANSFER_SEED } from './seed'
 import { money, fmtDate } from '../../lib/utils'
 import { KpiCard } from './components/KpiCard'
-import { StatusBadge } from './components/StatusBadge'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useStockLedger } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
 

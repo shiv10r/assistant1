@@ -8,8 +8,8 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Dispatch, SalesOrder } from './types'
 import { DISPATCH_SEED, ORDER_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/ui/DataTable'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useStockLedger } from './ledger'
 
 export default function WarehouseDispatch() {
