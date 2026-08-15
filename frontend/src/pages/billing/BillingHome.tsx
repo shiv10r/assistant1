@@ -2,17 +2,18 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BillingKpis, CatalogItem, CashData, BankAccount } from '../../api'
-import { Badge, Empty, money, shortDate, PageHead, inputStyle, ghostStyle } from '../../ui'
+import { Badge, Empty, Input, PageHead } from '../../components/ui'
+import { money, shortDate } from '../../lib/utils'
 import { useToast } from '../../components/ui/Toast'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
-const TYPE_BADGE: Record<string, 'green' | 'pink' | 'gray' | 'accent'> = {
-  SALE: 'green', PURCHASE: 'pink', SALE_RETURN: 'pink', PURCHASE_RETURN: 'green',
-  PAYMENT_IN: 'green', PAYMENT_OUT: 'pink', ESTIMATE: 'gray', SALE_ORDER: 'accent',
-  PURCHASE_ORDER: 'gray', DELIVERY_CHALLAN: 'accent',
+const TYPE_BADGE: Record<string, 'success' | 'danger' | 'outline' | 'default'> = {
+  SALE: 'success', PURCHASE: 'danger', SALE_RETURN: 'danger', PURCHASE_RETURN: 'success',
+  PAYMENT_IN: 'success', PAYMENT_OUT: 'danger', ESTIMATE: 'outline', SALE_ORDER: 'default',
+  PURCHASE_ORDER: 'outline', DELIVERY_CHALLAN: 'default',
 }
-export const txnTypeLabel = (t: string) =>
+const txnTypeLabel = (t: string) =>
   t === 'SALE' ? 'Sale' : t === 'PURCHASE' ? 'Purchase' : t === 'SALE_RETURN' ? 'Sale Return'
   : t === 'PURCHASE_RETURN' ? 'Purchase Return' : t === 'PAYMENT_IN' ? 'Payment-In'
   : t === 'PAYMENT_OUT' ? 'Payment-Out' : t === 'ESTIMATE' ? 'Estimate' : t === 'SALE_ORDER' ? 'Sale Order'
@@ -175,14 +176,14 @@ export default function BillingHome() {
         </div>
       )}
 
-      <input
+      <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search transactions (party, ref, type)…"
-        style={{ ...inputStyle, width: '100%', margin: '8px 0 16px' }}
+        className="w-full my-2 mb-4"
       />
 
-      {filteredTxns.length === 0 ? <Empty>{q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'}</Empty> : (
+      {filteredTxns.length === 0 ? <Empty title={q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'} /> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
               <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th><th>Status</th><th /></tr></thead>
@@ -190,26 +191,26 @@ export default function BillingHome() {
                 {filteredTxns.map((tx) => (
                   <tr key={tx.id}>
                     <td className="cat">{tx.partyName || 'Cash'}</td>
-                    <td><Badge tone={TYPE_BADGE[tx.type]}>{txnTypeLabel(tx.type)}</Badge></td>
+                    <td><Badge variant={TYPE_BADGE[tx.type] ?? 'outline'}>{txnTypeLabel(tx.type)}</Badge></td>
                     <td className="muted">{tx.prefix || '#'}{tx.refNo}</td>
                     <td className="muted">{shortDate(tx.date)}</td>
                     <td className="num">{money(tx.total)}</td>
                     <td className="num" style={{ color: tx.balance > 0 ? '#E05C7A' : 'var(--dim)' }}>{money(tx.balance)}</td>
                     <td>
-                      {tx.balance <= 0 ? <Badge tone="green">Paid</Badge>
-                        : tx.received > 0 ? <Badge tone="accent">Partial</Badge>
-                        : <Badge tone="pink">Pending</Badge>}
+                      {tx.balance <= 0 ? <Badge variant="success">Paid</Badge>
+                        : tx.received > 0 ? <Badge variant="default">Partial</Badge>
+                        : <Badge variant="danger">Pending</Badge>}
                     </td>
                     <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                      <Link to={`/billing/sale?id=${tx.id}`} style={ghostStyle} title="Edit">✎</Link>{' '}
+                      <Link to={`/billing/sale?id=${tx.id}`} className="ghost-btn" title="Edit">✎</Link>{' '}
                       {tx.balance > 0 && (['SALE', 'SALE_ORDER'].includes(tx.type)) && (
                         <>
-                          <button style={ghostStyle} onClick={() => sendEmail(tx)} title="Email invoice">✉</button>{' '}
-                          <button style={ghostStyle} onClick={() => sendWhatsApp(tx)} title="WhatsApp invoice">💬</button>{' '}
-                          <button style={ghostStyle} onClick={() => payOnline(tx)} title="Copy payment link">🔗</button>{' '}
+                          <button className="ghost-btn" onClick={() => sendEmail(tx)} title="Email invoice">✉</button>{' '}
+                          <button className="ghost-btn" onClick={() => sendWhatsApp(tx)} title="WhatsApp invoice">💬</button>{' '}
+                          <button className="ghost-btn" onClick={() => payOnline(tx)} title="Copy payment link">🔗</button>{' '}
                         </>
                       )}
-                      <button style={ghostStyle} onClick={() => removeTxn(tx)} title="Delete">🗑</button>
+                      <button className="ghost-btn" onClick={() => removeTxn(tx)} title="Delete">🗑</button>
                     </td>
                   </tr>
                 ))}
