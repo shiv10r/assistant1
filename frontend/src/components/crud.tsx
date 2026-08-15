@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Card, CardContent, Button, Input, Label, Empty } from './ui'
 import { Search, Download, Pencil, Trash2, CalendarDays, Plus } from 'lucide-react'
 
@@ -8,18 +7,6 @@ import { Search, Download, Pencil, Trash2, CalendarDays, Plus } from 'lucide-rea
  * consistent: a stat strip, a search toolbar, a left-hand form card and a
  * right-hand record list, with CSV export and inline edit/delete on each row.
  */
-
-export function money(n: number): string {
-  return n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-}
-
-export function useRows<T>(loader: () => Promise<T[]>) {
-  const [rows, setRows] = useState<T[]>([])
-  const [loading, setLoading] = useState(true)
-  const load = () => { setLoading(true); loader().then(setRows).catch(() => setRows([])).finally(() => setLoading(false)) }
-  useEffect(() => { load() /* eslint-disable-line react-hooks/exhaustive-deps */ }, [])
-  return { rows, setRows, load, loading }
-}
 
 export function Stat({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: string }) {
   return (
@@ -132,17 +119,6 @@ export function Progress({ pct, tone }: { pct: number; tone: string }) {
 
 export function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return <div><Label required={required}>{label}</Label>{children}</div>
-}
-
-export type CsvRow = (string | number)[]
-export function toCsv(filename: string, headers: string[], rows: CsvRow[]) {
-  const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
-  const body = [headers.map(esc).join(','), ...rows.map((r) => r.map(esc).join(','))].join('\n')
-  const blob = new Blob([`\uFEFF${body}`], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = filename; a.click()
-  URL.revokeObjectURL(url)
 }
 
 export function EmptyState({ title, description }: { title: string; description?: string }) {

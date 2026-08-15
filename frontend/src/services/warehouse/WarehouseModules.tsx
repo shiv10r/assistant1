@@ -5,8 +5,9 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 import {
-  StatStrip, CrudLayout, RowItem, CrudToolbar, EditDel, DatePill, toCsv, money, FormField,
+  StatStrip, CrudLayout, RowItem, CrudToolbar, EditDel, DatePill, FormField,
 } from '../../components/crud'
+import { formatNumber as money, toCsv } from '../../lib/utils'
 import {
   FileText, Flag, Tag, Cog, Fuel, TriangleAlert, Star, Plus, Download, Building2, TrendingUp, Wallet, Wrench,
   Scale, Check, Gauge,
