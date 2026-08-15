@@ -53,6 +53,20 @@ import {
   PackageCheck,
   RotateCcw,
   Search,
+  UserPlus,
+  BookOpen,
+  CalendarDays,
+  Monitor,
+  Trophy,
+  FileText,
+  UtensilsCrossed,
+  Flag,
+  HeartHandshake,
+  Bell,
+  Award,
+  LifeBuoy,
+  Scale,
+  Siren,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -124,28 +138,91 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
     ]},
   ],
   school: [
-    { title: 'School Management', items: [
-      { label: 'Overview', to: '/school', icon: <GraduationCap className="w-5 h-5" />, end: true },
+    { title: 'Command Center', items: [
+      { label: 'Overview', to: '/school', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     ]},
-    { title: 'Customer & Retailer', items: [
+    { title: 'People', items: [
       { label: 'Students', to: '/school/students', icon: <Users className="w-5 h-5" /> },
-      { label: 'Classes', to: '/school/classes', icon: <Layers className="w-5 h-5" /> },
-    ]},
-    { title: 'Inventory', items: [
-      { label: 'Stock', to: '/school/inventory', icon: <Package className="w-5 h-5" /> },
-    ]},
-    { title: 'Transactions', items: [
-      { label: 'Fees', to: '/school/fees', icon: <Wallet className="w-5 h-5" /> },
-      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
-      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
-      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
-    ]},
-    { title: 'Staff Management', items: [
+      { label: 'Parents', to: '/school/parents', icon: <Users className="w-5 h-5" /> },
+      { label: 'Directory', to: '/school/directory', icon: <Search className="w-5 h-5" /> },
       { label: 'Staff & Attendance', to: '/school/staff', icon: <Clock className="w-5 h-5" /> },
-      { label: 'Student Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
     ]},
-    { title: 'Project Management', items: [
-      { label: 'Projects & Events', to: '/school/projects', icon: <Briefcase className="w-5 h-5" /> },
+    { title: 'Admissions & CRM', items: [
+      { label: 'Admissions Pipeline', to: '/school/admissions', icon: <UserPlus className="w-5 h-5" /> },
+    ]},
+    { title: 'Academics', items: [
+      { label: 'Classes', to: '/school/classes', icon: <Layers className="w-5 h-5" /> },
+      { label: 'Sessions', to: '/school/sessions', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Subjects', to: '/school/subjects', icon: <BookOpen className="w-5 h-5" /> },
+      { label: 'Timetable', to: '/school/timetable', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Homework', to: '/school/homework', icon: <ClipboardList className="w-5 h-5" /> },
+      { label: 'LMS', to: '/school/lms', icon: <BookOpen className="w-5 h-5" /> },
+    ]},
+    { title: 'Attendance', items: [
+      { label: 'Student Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Attendance Analytics', to: '/school/attendance-analytics', icon: <BarChart3 className="w-5 h-5" /> },
+      { label: 'Leave Requests', to: '/school/leave', icon: <CalendarDays className="w-5 h-5" /> },
+    ]},
+    { title: 'Examination', items: [
+      { label: 'Question Bank', to: '/school/questions', icon: <ClipboardCheck className="w-5 h-5" /> },
+      { label: 'Exams & Marks', to: '/school/exams', icon: <ClipboardList className="w-5 h-5" /> },
+      { label: 'Online Exams', to: '/school/online-exams', icon: <Monitor className="w-5 h-5" /> },
+      { label: 'Results', to: '/school/results', icon: <Trophy className="w-5 h-5" /> },
+    ]},
+    { title: 'Finance', items: [
+      { label: 'Fees', to: '/school/fees', icon: <Wallet className="w-5 h-5" /> },
+      { label: 'Fee Structure', to: '/school/fee-structure', icon: <FileText className="w-5 h-5" /> },
+      { label: 'Receipts', to: '/school/receipts', icon: <ReceiptText className="w-5 h-5" /> },
+      { label: 'Expenses', to: '/school/expenses', icon: <CreditCard className="w-5 h-5" /> },
+      { label: 'Payroll', to: '/school/payroll', icon: <Banknote className="w-5 h-5" /> },
+    ]},
+    { title: 'HR', items: [
+      { label: 'Recruitment', to: '/school/recruitment', icon: <UserPlus className="w-5 h-5" /> },
+      { label: 'Performance', to: '/school/performance', icon: <BarChart3 className="w-5 h-5" /> },
+      { label: 'Training', to: '/school/training', icon: <GraduationCap className="w-5 h-5" /> },
+    ]},
+    { title: 'Operations', items: [
+      { label: 'Stock', to: '/school/inventory', icon: <Package className="w-5 h-5" /> },
+      { label: 'Transport', to: '/school/transport', icon: <Truck className="w-5 h-5" /> },
+      { label: 'Library', to: '/school/library', icon: <BookOpen className="w-5 h-5" /> },
+      { label: 'Procurement', to: '/school/procurement', icon: <ShoppingCart className="w-5 h-5" /> },
+      { label: 'Assets', to: '/school/assets', icon: <Package className="w-5 h-5" /> },
+      { label: 'Visitors', to: '/school/visitors', icon: <Users className="w-5 h-5" /> },
+      { label: 'Hostel', to: '/school/hostel', icon: <Building2 className="w-5 h-5" /> },
+      { label: 'Cafeteria', to: '/school/cafeteria', icon: <UtensilsCrossed className="w-5 h-5" /> },
+    ]},
+    { title: 'Student Life', items: [
+      { label: 'Clubs', to: '/school/clubs', icon: <Sparkles className="w-5 h-5" /> },
+      { label: 'Sports', to: '/school/sports', icon: <Trophy className="w-5 h-5" /> },
+      { label: 'Houses', to: '/school/houses', icon: <Flag className="w-5 h-5" /> },
+      { label: 'Discipline', to: '/school/discipline', icon: <ShieldCheck className="w-5 h-5" /> },
+      { label: 'Counselling', to: '/school/counselling', icon: <HeartHandshake className="w-5 h-5" /> },
+    ]},
+    { title: 'Communication', items: [
+      { label: 'Notices', to: '/school/notices', icon: <Megaphone className="w-5 h-5" /> },
+      { label: 'Events', to: '/school/events', icon: <CalendarDays className="w-5 h-5" /> },
+      { label: 'Messaging', to: '/school/messaging', icon: <MessageSquare className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/school/notifications', icon: <Bell className="w-5 h-5" /> },
+      { label: 'PTM', to: '/school/ptm', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Surveys', to: '/school/surveys', icon: <ClipboardCheck className="w-5 h-5" /> },
+    ]},
+    { title: 'Documents', items: [
+      { label: 'Documents', to: '/school/documents', icon: <FileText className="w-5 h-5" /> },
+      { label: 'Certificates', to: '/school/certificates', icon: <Award className="w-5 h-5" /> },
+    ]},
+    { title: 'Service', items: [
+      { label: 'Helpdesk', to: '/school/helpdesk', icon: <LifeBuoy className="w-5 h-5" /> },
+      { label: 'Grievances', to: '/school/grievances', icon: <Scale className="w-5 h-5" /> },
+      { label: 'Incidents', to: '/school/incidents', icon: <Siren className="w-5 h-5" /> },
+      { label: 'Tasks', to: '/school/tasks', icon: <ListChecks className="w-5 h-5" /> },
+    ]},
+    { title: 'System', items: [
+      { label: 'Users & Roles', to: '/school/users', icon: <Users className="w-5 h-5" /> },
+      { label: 'Audit Log', to: '/school/audit', icon: <ShieldCheck className="w-5 h-5" /> },
+      { label: 'Settings', to: '/school/settings', icon: <Settings className="w-5 h-5" /> },
+    ]},
+    { title: 'Projects & Events', items: [
+      { label: 'Projects', to: '/school/projects', icon: <Briefcase className="w-5 h-5" /> },
     ]},
   ],
 }

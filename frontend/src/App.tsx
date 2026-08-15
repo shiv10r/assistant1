@@ -69,6 +69,54 @@ import SchoolAttendance from './services/school/SchoolAttendance'
 import SchoolInventory from './services/school/SchoolInventory'
 import SchoolStaff from './services/school/SchoolStaff'
 import SchoolProjects from './services/school/SchoolProjects'
+import SchoolParents from './services/school/SchoolParents'
+import SchoolAdmissions from './services/school/SchoolAdmissions'
+import SchoolDirectory from './services/school/SchoolDirectory'
+import SchoolSessions from './services/school/SchoolSessions'
+import SchoolSubjects from './services/school/SchoolSubjects'
+import SchoolTimetable from './services/school/SchoolTimetable'
+import SchoolHomework from './services/school/SchoolHomework'
+import SchoolLMS from './services/school/SchoolLMS'
+import SchoolQuestionBank from './services/school/SchoolQuestionBank'
+import SchoolExams from './services/school/SchoolExams'
+import SchoolResults from './services/school/SchoolResults'
+import SchoolOnlineExams from './services/school/SchoolOnlineExams'
+import SchoolLeave from './services/school/SchoolLeave'
+import SchoolAttendanceAnalytics from './services/school/SchoolAttendanceAnalytics'
+import SchoolRecruitment from './services/school/SchoolRecruitment'
+import SchoolPerformance from './services/school/SchoolPerformance'
+import SchoolTraining from './services/school/SchoolTraining'
+import SchoolFeeStructure from './services/school/SchoolFeeStructure'
+import SchoolReceipts from './services/school/SchoolReceipts'
+import SchoolExpenses from './services/school/SchoolExpenses'
+import SchoolPayroll from './services/school/SchoolPayroll'
+import SchoolTransport from './services/school/SchoolTransport'
+import SchoolLibrary from './services/school/SchoolLibrary'
+import SchoolProcurement from './services/school/SchoolProcurement'
+import SchoolAssets from './services/school/SchoolAssets'
+import SchoolVisitors from './services/school/SchoolVisitors'
+import SchoolHostel from './services/school/SchoolHostel'
+import SchoolCafeteria from './services/school/SchoolCafeteria'
+import SchoolClubs from './services/school/SchoolClubs'
+import SchoolSports from './services/school/SchoolSports'
+import SchoolHouses from './services/school/SchoolHouses'
+import SchoolDiscipline from './services/school/SchoolDiscipline'
+import SchoolCounselling from './services/school/SchoolCounselling'
+import SchoolNotices from './services/school/SchoolNotices'
+import SchoolEvents from './services/school/SchoolEvents'
+import SchoolMessaging from './services/school/SchoolMessaging'
+import SchoolNotifications from './services/school/SchoolNotifications'
+import SchoolPTM from './services/school/SchoolPTM'
+import SchoolSurveys from './services/school/SchoolSurveys'
+import SchoolDocuments from './services/school/SchoolDocuments'
+import SchoolCertificates from './services/school/SchoolCertificates'
+import SchoolHelpdesk from './services/school/SchoolHelpdesk'
+import SchoolGrievances from './services/school/SchoolGrievances'
+import SchoolIncidents from './services/school/SchoolIncidents'
+import SchoolTasks from './services/school/SchoolTasks'
+import SchoolUsers from './services/school/SchoolUsers'
+import SchoolAuditLog from './services/school/SchoolAuditLog'
+import SchoolSettings from './services/school/SchoolSettings'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
 function Redirect({ to }: { to: string }) {
@@ -172,6 +220,54 @@ export default function App() {
           <Route path="/school/inventory" element={<SchoolInventory />} />
           <Route path="/school/staff" element={<SchoolStaff />} />
           <Route path="/school/projects" element={<SchoolProjects />} />
+          <Route path="/school/parents" element={<SchoolParents />} />
+          <Route path="/school/admissions" element={<SchoolAdmissions />} />
+          <Route path="/school/directory" element={<SchoolDirectory />} />
+          <Route path="/school/sessions" element={<SchoolSessions />} />
+          <Route path="/school/subjects" element={<SchoolSubjects />} />
+          <Route path="/school/timetable" element={<SchoolTimetable />} />
+          <Route path="/school/homework" element={<SchoolHomework />} />
+          <Route path="/school/lms" element={<SchoolLMS />} />
+          <Route path="/school/questions" element={<SchoolQuestionBank />} />
+          <Route path="/school/exams" element={<SchoolExams />} />
+          <Route path="/school/results" element={<SchoolResults />} />
+          <Route path="/school/online-exams" element={<SchoolOnlineExams />} />
+          <Route path="/school/leave" element={<SchoolLeave />} />
+          <Route path="/school/attendance-analytics" element={<SchoolAttendanceAnalytics />} />
+          <Route path="/school/recruitment" element={<SchoolRecruitment />} />
+          <Route path="/school/performance" element={<SchoolPerformance />} />
+          <Route path="/school/training" element={<SchoolTraining />} />
+          <Route path="/school/fee-structure" element={<SchoolFeeStructure />} />
+          <Route path="/school/receipts" element={<SchoolReceipts />} />
+          <Route path="/school/expenses" element={<SchoolExpenses />} />
+          <Route path="/school/payroll" element={<SchoolPayroll />} />
+          <Route path="/school/transport" element={<SchoolTransport />} />
+          <Route path="/school/library" element={<SchoolLibrary />} />
+          <Route path="/school/procurement" element={<SchoolProcurement />} />
+          <Route path="/school/assets" element={<SchoolAssets />} />
+          <Route path="/school/visitors" element={<SchoolVisitors />} />
+          <Route path="/school/hostel" element={<SchoolHostel />} />
+          <Route path="/school/cafeteria" element={<SchoolCafeteria />} />
+          <Route path="/school/clubs" element={<SchoolClubs />} />
+          <Route path="/school/sports" element={<SchoolSports />} />
+          <Route path="/school/houses" element={<SchoolHouses />} />
+          <Route path="/school/discipline" element={<SchoolDiscipline />} />
+          <Route path="/school/counselling" element={<SchoolCounselling />} />
+          <Route path="/school/notices" element={<SchoolNotices />} />
+          <Route path="/school/events" element={<SchoolEvents />} />
+          <Route path="/school/messaging" element={<SchoolMessaging />} />
+          <Route path="/school/notifications" element={<SchoolNotifications />} />
+          <Route path="/school/ptm" element={<SchoolPTM />} />
+          <Route path="/school/surveys" element={<SchoolSurveys />} />
+          <Route path="/school/documents" element={<SchoolDocuments />} />
+          <Route path="/school/certificates" element={<SchoolCertificates />} />
+          <Route path="/school/helpdesk" element={<SchoolHelpdesk />} />
+          <Route path="/school/grievances" element={<SchoolGrievances />} />
+          <Route path="/school/incidents" element={<SchoolIncidents />} />
+          <Route path="/school/tasks" element={<SchoolTasks />} />
+          <Route path="/school/users" element={<SchoolUsers />} />
+          <Route path="/school/audit" element={<SchoolAuditLog />} />
+          <Route path="/school/settings" element={<SchoolSettings />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />
