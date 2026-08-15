@@ -1,115 +1,27 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isAuthed, api } from './api'
-import { logPageView } from './firebase'
-import Layout from './Layout'
-import Login from './pages/Login'
-import Assistant from './pages/Assistant'
-import Dashboard from './pages/Dashboard'
-import Reports from './pages/Reports'
-import Settings from './pages/Settings'
-import Plans from './pages/Plans'
-import Account from './pages/Account'
-import Analytics from './pages/Analytics'
-import Backup from './pages/Backup'
-import Activity from './pages/Activity'
-import BillingHome from './pages/billing/BillingHome'
-import TxnForm from './pages/billing/TxnForm'
-import Catalog from './pages/billing/Catalog'
-import CashBank from './pages/billing/CashBank'
-import BillingSettings from './pages/billing/BillingSettings'
-import Users from './pages/Users'
-import Integrations from './pages/Integrations'
-import Insights from './pages/Insights'
-import Broadcast from './pages/Broadcast'
-import VideoCall from './pages/VideoCall'
-import ServiceChooser from './common/ServiceChooser'
-import InteriorHome from './services/interior/InteriorHome'
-import InteriorProjects from './services/interior/InteriorProjects'
-import InteriorProjectDetails from './services/interior/InteriorProjectDetails'
-import InteriorRoomDetails from './services/interior/InteriorRoomDetails'
-import InteriorGenerate from './services/interior/InteriorGenerate'
-import InteriorDesigns from './services/interior/InteriorDesigns'
-import InteriorDesignDetails from './services/interior/InteriorDesignDetails'
-import InteriorProducts from './services/interior/InteriorProducts'
-import InteriorQuotation from './services/interior/InteriorQuotation'
-import WarehouseHome from './services/warehouse/WarehouseHome'
-import WarehouseInventory from './services/warehouse/WarehouseInventory'
-import WarehousePurchaseOrders from './services/warehouse/WarehousePurchaseOrders'
-import WarehouseGrn from './services/warehouse/WarehouseGrn'
-import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
-import WarehouseStaff from './services/warehouse/WarehouseStaff'
-import WarehouseProjects from './services/warehouse/WarehouseProjects'
-import WarehouseProjectWorkspace from './services/warehouse/WarehouseProjectWorkspace'
-import WarehouseProjectAttendance from './services/warehouse/WarehouseProjectAttendance'
-import WarehouseProjectsMap from './services/warehouse/WarehouseProjectsMap'
-import WarehouseModules from './services/warehouse/WarehouseModules'
-import WarehouseProducts from './services/warehouse/WarehouseProducts'
-import WarehouseCustomers from './services/warehouse/WarehouseCustomers'
-import WarehouseWarehouses from './services/warehouse/WarehouseWarehouses'
-import WarehouseTransfers from './services/warehouse/WarehouseTransfers'
-import WarehouseOrders from './services/warehouse/WarehouseOrders'
-import WarehousePicking from './services/warehouse/WarehousePicking'
-import WarehousePacking from './services/warehouse/WarehousePacking'
-import WarehouseDispatch from './services/warehouse/WarehouseDispatch'
-import WarehouseReturns from './services/warehouse/WarehouseReturns'
-import WarehouseStockCount from './services/warehouse/WarehouseStockCount'
-import SchoolHome from './services/school/SchoolHome'
-import SchoolStudents from './services/school/SchoolStudents'
-import SchoolClasses from './services/school/SchoolClasses'
-import SchoolFees from './services/school/SchoolFees'
-import SchoolAttendance from './services/school/SchoolAttendance'
-import SchoolInventory from './services/school/SchoolInventory'
-import SchoolStaff from './services/school/SchoolStaff'
-import SchoolProjects from './services/school/SchoolProjects'
-import SchoolParents from './services/school/SchoolParents'
-import SchoolAdmissions from './services/school/SchoolAdmissions'
-import SchoolDirectory from './services/school/SchoolDirectory'
-import SchoolSessions from './services/school/SchoolSessions'
-import SchoolSubjects from './services/school/SchoolSubjects'
-import SchoolTimetable from './services/school/SchoolTimetable'
-import SchoolHomework from './services/school/SchoolHomework'
-import SchoolLMS from './services/school/SchoolLMS'
-import SchoolQuestionBank from './services/school/SchoolQuestionBank'
-import SchoolExams from './services/school/SchoolExams'
-import SchoolResults from './services/school/SchoolResults'
-import SchoolOnlineExams from './services/school/SchoolOnlineExams'
-import SchoolLeave from './services/school/SchoolLeave'
-import SchoolAttendanceAnalytics from './services/school/SchoolAttendanceAnalytics'
-import SchoolRecruitment from './services/school/SchoolRecruitment'
-import SchoolPerformance from './services/school/SchoolPerformance'
-import SchoolTraining from './services/school/SchoolTraining'
-import SchoolFeeStructure from './services/school/SchoolFeeStructure'
-import SchoolReceipts from './services/school/SchoolReceipts'
-import SchoolExpenses from './services/school/SchoolExpenses'
-import SchoolPayroll from './services/school/SchoolPayroll'
-import SchoolTransport from './services/school/SchoolTransport'
-import SchoolLibrary from './services/school/SchoolLibrary'
-import SchoolProcurement from './services/school/SchoolProcurement'
-import SchoolAssets from './services/school/SchoolAssets'
-import SchoolVisitors from './services/school/SchoolVisitors'
-import SchoolHostel from './services/school/SchoolHostel'
-import SchoolCafeteria from './services/school/SchoolCafeteria'
-import SchoolClubs from './services/school/SchoolClubs'
-import SchoolSports from './services/school/SchoolSports'
-import SchoolHouses from './services/school/SchoolHouses'
-import SchoolDiscipline from './services/school/SchoolDiscipline'
-import SchoolCounselling from './services/school/SchoolCounselling'
-import SchoolNotices from './services/school/SchoolNotices'
-import SchoolEvents from './services/school/SchoolEvents'
-import SchoolMessaging from './services/school/SchoolMessaging'
-import SchoolNotifications from './services/school/SchoolNotifications'
-import SchoolPTM from './services/school/SchoolPTM'
-import SchoolSurveys from './services/school/SchoolSurveys'
-import SchoolDocuments from './services/school/SchoolDocuments'
-import SchoolCertificates from './services/school/SchoolCertificates'
-import SchoolHelpdesk from './services/school/SchoolHelpdesk'
-import SchoolGrievances from './services/school/SchoolGrievances'
-import SchoolIncidents from './services/school/SchoolIncidents'
-import SchoolTasks from './services/school/SchoolTasks'
-import SchoolUsers from './services/school/SchoolUsers'
-import SchoolAuditLog from './services/school/SchoolAuditLog'
-import SchoolSettings from './services/school/SchoolSettings'
+import {
+  Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
+  CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
+  VideoCall, InteriorDesignDetails, InteriorDesigns, InteriorGenerate, InteriorHome,
+  InteriorProducts, InteriorProjectDetails, InteriorProjects, InteriorQuotation, InteriorRoomDetails,
+  WarehouseCustomers, WarehouseDispatch, WarehouseGrn, WarehouseHome, WarehouseInventory,
+  WarehouseModules, WarehouseOrders, WarehousePacking, WarehousePicking, WarehouseProducts,
+  WarehouseProjectAttendance, WarehouseProjects, WarehouseProjectsMap, WarehouseProjectWorkspace,
+  WarehousePurchaseOrders, WarehouseReturns, WarehouseStaff, WarehouseStockCount,
+  WarehouseSuppliers, WarehouseTransfers, WarehouseWarehouses, SchoolAdmissions, SchoolAssets,
+  SchoolAttendance, SchoolAttendanceAnalytics, SchoolAuditLog, SchoolCafeteria, SchoolCertificates,
+  SchoolClasses, SchoolClubs, SchoolCounselling, SchoolDirectory, SchoolDiscipline, SchoolDocuments,
+  SchoolEvents, SchoolExams, SchoolExpenses, SchoolFeeStructure, SchoolFees, SchoolGrievances,
+  SchoolHelpdesk, SchoolHomework, SchoolHome, SchoolHostel, SchoolHouses, SchoolIncidents,
+  SchoolInventory, SchoolLeave, SchoolLibrary, SchoolLMS, SchoolMessaging, SchoolNotices,
+  SchoolNotifications, SchoolOnlineExams, SchoolParents, SchoolPayroll, SchoolPerformance,
+  SchoolProcurement, SchoolProjects, SchoolPTM, SchoolQuestionBank, SchoolReceipts,
+  SchoolRecruitment, SchoolResults, SchoolSessions, SchoolSettings, SchoolSports, SchoolStaff,
+  SchoolStudents, SchoolSubjects, SchoolSurveys, SchoolTasks, SchoolTimetable, SchoolTraining,
+  SchoolTransport, SchoolUsers, SchoolVisitors, Layout, Login, ServiceChooser,
+} from './routes/lazyRoutes'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
 function Redirect({ to }: { to: string }) {
@@ -124,7 +36,9 @@ export default function App() {
 
   function PageTracker() {
     const location = useLocation()
-    useEffect(() => { void logPageView(location.pathname) }, [location.pathname])
+    useEffect(() => {
+      void import('./firebase').then(({ logPageView }) => logPageView(location.pathname))
+    }, [location.pathname])
     return null
   }
 
@@ -147,12 +61,19 @@ export default function App() {
     return () => { stopped = true; clearInterval(t) }
   }, [authed])
 
-  if (!authed) return <Login onAuthed={() => setAuthed(true)} />
+  if (!authed) {
+    return (
+      <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center text-sm text-muted" role="status">Loading sign in...</div>}>
+        <Login onAuthed={() => setAuthed(true)} />
+      </Suspense>
+    )
+  }
 
   return (
     <BrowserRouter>
       <PageTracker />
-      <Routes key={refreshKey}>
+      <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-sm text-muted" role="status">Loading workspace...</div>}>
+        <Routes key={refreshKey}>
         {/* Service chooser — the hub landing after login */}
         <Route path="/" element={<ServiceChooser />} />
 
@@ -283,7 +204,8 @@ export default function App() {
           {/* Unknown paths → chooser */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
