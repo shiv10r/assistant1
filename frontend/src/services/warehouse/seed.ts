@@ -1,4 +1,4 @@
-import type { InventoryItem, Supplier, PurchaseOrder, GrnRecord, StaffMember, ProjectRecord, Warehouse, LocationBin } from './types'
+import type { InventoryItem, Supplier, PurchaseOrder, GrnRecord, StaffMember, ProjectRecord, Warehouse, LocationBin, Customer, StockTransfer, SalesOrder, PickList, Package, Dispatch, ReturnRecord, StockCount } from './types'
 
 export const WAREHOUSE_SEED: Warehouse[] = [
   {
@@ -147,6 +147,71 @@ export const GRN_SEED: GrnRecord[] = [
     ],
     notes: 'All good',
   },
+]
+
+export const CUSTOMER_SEED: Customer[] = [
+  { id: 'cust-1', name: 'Urban Developers', company: 'Urban Developers Pvt Ltd', gstin: '27PQRST4567K1Z9', phone: '+91 98111 22334', email: 'procurement@urbandev.in', billingAddress: '12 MG Road, Gurgaon', shippingAddress: 'Site-7, Sector 65, Gurgaon', status: 'active' },
+  { id: 'cust-2', name: 'Nirmal Interiors', company: 'Nirmal Interiors LLP', gstin: '29LMNOP8901L2Z3', phone: '+91 98222 33445', email: 'orders@nirmalinteriors.in', billingAddress: '4A Lajpat Nagar, New Delhi', shippingAddress: '4A Lajpat Nagar, New Delhi', status: 'active' },
+  { id: 'cust-3', name: 'GreenBuild Projects', company: 'GreenBuild Projects Ltd', gstin: '27ABCDE1212M4Z5', phone: '+91 98333 44556', email: 'buy@greenbuild.in', billingAddress: '55 Cyber City, Gurgaon', shippingAddress: 'Plot 3, Manesar, Gurgaon', status: 'inactive' },
+]
+
+export const TRANSFER_SEED: StockTransfer[] = [
+  {
+    id: 'tr-1', transferNumber: 'TR-2026-001', fromWarehouseId: 'wh-1', toWarehouseId: 'wh-2',
+    date: '2026-08-10', status: 'received',
+    items: [
+      { itemId: 'item-1', itemName: 'Cement Bag (50kg)', sku: 'SKU-1001', qty: 40, fromBin: 'A01-01', toBin: 'B01-01' },
+      { itemId: 'item-3', itemName: 'PVC Pipe 4"', sku: 'SKU-1003', qty: 20, fromBin: 'A02-01', toBin: 'B02-02' },
+    ],
+    notes: 'Backfill Delhi stock',
+  },
+  { id: 'tr-2', transferNumber: 'TR-2026-002', fromWarehouseId: 'wh-1', toWarehouseId: 'wh-2', date: '2026-08-14', status: 'created', items: [{ itemId: 'item-2', itemName: 'Steel Rod (12mm)', sku: 'SKU-1002', qty: 10, fromBin: 'A01-02', toBin: 'B01-01' }], notes: '' },
+]
+
+export const ORDER_SEED: SalesOrder[] = [
+  {
+    id: 'so-1', orderNumber: 'SO-2026-001', customerId: 'cust-1', customerName: 'Urban Developers',
+    orderDate: '2026-08-12', warehouseId: 'wh-1', status: 'reserved',
+    lines: [
+      { itemId: 'item-1', itemName: 'Cement Bag (50kg)', sku: 'SKU-1001', qty: 30, price: 410, taxPct: 28, discountPct: 0, total: 15744 },
+      { itemId: 'item-5', itemName: 'Copper Wire 2.5sqmm', sku: 'SKU-1005', qty: 5, price: 2100, taxPct: 18, discountPct: 0, total: 12390 },
+    ],
+    subTotal: 22800, taxTotal: 5334, discountTotal: 0, grandTotal: 28134,
+    deliveryAddress: 'Site-7, Sector 65, Gurgaon', notes: 'Urgent delivery',
+  },
+  { id: 'so-2', orderNumber: 'SO-2026-002', customerId: 'cust-2', customerName: 'Nirmal Interiors', orderDate: '2026-08-14', warehouseId: 'wh-2', status: 'created', lines: [{ itemId: 'item-4', itemName: 'Paint Emulsion (20L)', sku: 'SKU-1004', qty: 4, price: 3500, taxPct: 18, discountPct: 5, total: 15694 }], subTotal: 14000, taxTotal: 2520, discountTotal: 700, grandTotal: 15820, deliveryAddress: '4A Lajpat Nagar, New Delhi', notes: '' },
+]
+
+export const PICK_SEED: PickList[] = [
+  {
+    id: 'pk-1', pickNumber: 'PL-2026-001', orderId: 'so-1', orderNumber: 'SO-2026-001', status: 'pending',
+    items: [
+      { itemId: 'item-1', itemName: 'Cement Bag (50kg)', sku: 'SKU-1001', location: 'A01-01', requiredQty: 30, pickedQty: 0 },
+      { itemId: 'item-5', itemName: 'Copper Wire 2.5sqmm', sku: 'SKU-1005', location: 'B02-02', requiredQty: 5, pickedQty: 0 },
+    ],
+  },
+]
+
+export const PACK_SEED: Package[] = [
+  { id: 'pc-1', packageId: 'PKG-2026-001', orderId: 'so-1', orderNumber: 'SO-2026-001', items: [{ itemId: 'item-1', itemName: 'Cement Bag (50kg)', qty: 30 }, { itemId: 'item-5', itemName: 'Copper Wire 2.5sqmm', qty: 5 }], totalWeight: '960 kg', dimensions: '120x100x90 cm', packageCount: 3, status: 'pending', remarks: '' },
+]
+
+export const DISPATCH_SEED: Dispatch[] = [
+  { id: 'dp-1', dispatchNumber: 'DS-2026-001', orderId: 'so-1', orderNumber: 'SO-2026-001', customerName: 'Urban Developers', packageId: 'PKG-2026-001', transporter: 'Delhivery', courier: '', trackingNumber: 'DLV-889977', dispatchDate: '2026-08-15', vehicleNumber: 'HR-55-AB-1234', driver: 'Ramesh Kumar', status: 'ready', remarks: '' },
+]
+
+export const RETURN_SEED: ReturnRecord[] = [
+  {
+    id: 'ret-1', returnNumber: 'RET-2026-001', type: 'customer', partyName: 'Urban Developers',
+    originalRef: 'SO-2026-001', date: '2026-08-13', status: 'received',
+    items: [{ itemId: 'item-5', itemName: 'Copper Wire 2.5sqmm', qty: 1, reason: 'Wrong specification', condition: 'good', action: 'restock' }],
+    remarks: '',
+  },
+  { id: 'ret-2', returnNumber: 'RET-2026-002', type: 'supplier', partyName: 'SteelCore Supplies', originalRef: 'GRN-2026-001', date: '2026-08-14', status: 'requested', items: [{ itemId: 'item-2', itemName: 'Steel Rod (12mm)', qty: 2, reason: 'Damaged in transit', condition: 'damaged', action: 'return_to_supplier' }], remarks: '' },
+]
+
+export const STOCK_COUNT_SEED: StockCount[] = [
+  { id: 'sc-1', countNumber: 'SC-2026-001', location: 'A01-01', warehouseId: 'wh-1', date: '2026-08-12', status: 'approved', items: [{ itemId: 'item-1', itemName: 'Cement Bag (50kg)', systemQty: 240, physicalQty: 238, difference: -2, reason: 'Stock damaged' }] },
 ]
 
 export const STAFF_SEED: StaffMember[] = [
