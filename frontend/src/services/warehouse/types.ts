@@ -41,6 +41,9 @@ export interface InventoryItem {
   sellingPrice: number
   hsn: string
   gstPct: number
+  barcode?: string
+  weight?: string
+  dimensions?: string
   location: string // default bin code
   warehouseId: string
   isActive: boolean
@@ -60,7 +63,7 @@ export function stockStatusOf(item: InventoryItem): StockStatus {
 }
 
 // ---------------- Stock ledger ----------------
-export type MovementType = 'GRN' | 'adjustment' | 'transfer_out' | 'transfer_in' | 'pick' | 'return' | 'stock_count'
+export type MovementType = 'GRN' | 'adjustment' | 'transfer_out' | 'transfer_in' | 'pick' | 'return' | 'stock_count' | 'dispatch'
 
 export interface StockMovement {
   id: string
@@ -102,6 +105,19 @@ export interface Supplier {
   gstin: string
   address: string
   paymentTerms: string
+  status: 'active' | 'inactive'
+}
+
+// ---------------- Customer ----------------
+export interface Customer {
+  id: string
+  name: string
+  company: string
+  gstin: string
+  phone: string
+  email: string
+  billingAddress: string
+  shippingAddress: string
   status: 'active' | 'inactive'
 }
 
@@ -156,6 +172,160 @@ export interface GrnRecord {
   date: string
   lines: GrnLine[]
   notes: string
+}
+
+// ---------------- Sales / Delivery Orders ----------------
+export type SalesOrderStatus = 'created' | 'confirmed' | 'reserved' | 'picking' | 'packed' | 'dispatched' | 'completed' | 'cancelled'
+export const ORDER_FLOW: SalesOrderStatus[] = ['created', 'confirmed', 'reserved', 'picking', 'packed', 'dispatched', 'completed']
+
+export interface SalesOrderLine {
+  itemId: string
+  itemName: string
+  sku: string
+  qty: number
+  price: number
+  taxPct: number
+  discountPct: number
+  total: number
+}
+
+export interface SalesOrder {
+  id: string
+  orderNumber: string
+  customerId: string
+  customerName: string
+  orderDate: string
+  warehouseId: string
+  status: SalesOrderStatus
+  lines: SalesOrderLine[]
+  subTotal: number
+  taxTotal: number
+  discountTotal: number
+  grandTotal: number
+  deliveryAddress: string
+  notes: string
+}
+
+// ---------------- Stock Transfer ----------------
+export type TransferStatus = 'created' | 'dispatched' | 'received' | 'completed'
+export const TRANSFER_FLOW: TransferStatus[] = ['created', 'dispatched', 'received', 'completed']
+
+export interface StockTransferLine {
+  itemId: string
+  itemName: string
+  sku: string
+  qty: number
+  fromBin?: string
+  toBin?: string
+}
+
+export interface StockTransfer {
+  id: string
+  transferNumber: string
+  fromWarehouseId: string
+  toWarehouseId: string
+  date: string
+  status: TransferStatus
+  items: StockTransferLine[]
+  notes: string
+}
+
+// ---------------- Picking ----------------
+export type PickStatus = 'pending' | 'picking' | 'picked'
+export interface PickLine {
+  itemId: string
+  itemName: string
+  sku: string
+  location: string
+  requiredQty: number
+  pickedQty: number
+}
+export interface PickList {
+  id: string
+  pickNumber: string
+  orderId: string
+  orderNumber: string
+  status: PickStatus
+  items: PickLine[]
+}
+
+// ---------------- Packing ----------------
+export type PackStatus = 'pending' | 'packing' | 'packed' | 'ready'
+export interface Package {
+  id: string
+  packageId: string
+  orderId: string
+  orderNumber: string
+  items: { itemId: string; itemName: string; qty: number }[]
+  totalWeight: string
+  dimensions: string
+  packageCount: number
+  status: PackStatus
+  remarks: string
+}
+
+// ---------------- Dispatch ----------------
+export type DispatchStatus = 'ready' | 'dispatched' | 'completed'
+export interface Dispatch {
+  id: string
+  dispatchNumber: string
+  orderId: string
+  orderNumber: string
+  customerName: string
+  packageId: string
+  transporter: string
+  courier: string
+  trackingNumber: string
+  dispatchDate: string
+  vehicleNumber: string
+  driver: string
+  status: DispatchStatus
+  remarks: string
+}
+
+// ---------------- Returns ----------------
+export type ReturnStatus = 'requested' | 'received' | 'inspected' | 'completed'
+export const RETURN_FLOW: ReturnStatus[] = ['requested', 'received', 'inspected', 'completed']
+
+export interface ReturnLine {
+  itemId: string
+  itemName: string
+  qty: number
+  reason: string
+  condition: 'good' | 'damaged'
+  action: 'restock' | 'quarantine' | 'return_to_supplier'
+}
+
+export interface ReturnRecord {
+  id: string
+  returnNumber: string
+  type: 'customer' | 'supplier'
+  partyName: string
+  originalRef: string
+  date: string
+  items: ReturnLine[]
+  status: ReturnStatus
+  remarks: string
+}
+
+// ---------------- Stock Count ----------------
+export interface StockCountLine {
+  itemId: string
+  itemName: string
+  systemQty: number
+  physicalQty: number
+  difference: number
+  reason: string
+}
+
+export interface StockCount {
+  id: string
+  countNumber: string
+  location: string
+  warehouseId: string
+  date: string
+  items: StockCountLine[]
+  status: 'open' | 'approved'
 }
 
 // ---------------- Staff & Projects (non-routed, kept for compatibility) ----------------

@@ -33,4 +33,5 @@ export const MOVEMENT_LABEL: Record<MovementType, string> = {
   pick: 'Pick',
   return: 'Return',
   stock_count: 'Stock count',
+  dispatch: 'Dispatch',
 }
