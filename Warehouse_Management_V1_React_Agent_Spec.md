@@ -3491,3 +3491,6 @@ Nothing below is duplicated per-service anymore; pages import them from the shar
 - `services/interior/` — design workspace entry
 - Pages now import shared components via `../../components/…` (previously warehouse pages pulled
   from a private `services/warehouse/components/` folder — that folder was deleted).
+
+  u r wasting my time u have not removed parties ledger option why ?
+  

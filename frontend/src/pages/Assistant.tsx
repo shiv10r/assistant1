@@ -134,7 +134,7 @@ export default function Assistant() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="🔍 Search projects, expenses, parties, invoices, rooms, catalogue..."
+            placeholder="🔍 Search projects, expenses, invoices, rooms, catalogue..."
           />
           <button className="send" type="submit">{searching ? '…' : '🔍'}</button>
         </form>
@@ -148,10 +148,6 @@ export default function Assistant() {
               <div className="sr-group"><div className="sr-title">Expenses</div>{searchResults.expenses.map((e, i) => (
                 <div className="sr-row" key={i}><strong>{e.site}</strong> <span className="muted">{e.category} · ₹{e.amount.toLocaleString('en-IN')}</span></div>))}
               </div>)}
-            {searchResults.parties.length > 0 && (
-              <div className="sr-group"><div className="sr-title">Parties</div>{searchResults.parties.map((p, i) => (
-                <div className="sr-row" key={i}><strong>{p.name}</strong> <span className="muted">{p.phone}</span></div>))}
-              </div>)}
             {searchResults.txns.length > 0 && (
               <div className="sr-group"><div className="sr-title">Invoices</div>{searchResults.txns.map((t, i) => (
                 <div className="sr-row" key={i}><strong>{t.refLabel}</strong> <span className="muted">{t.partyName} · {t.type} · ₹{t.total.toLocaleString('en-IN')}</span></div>))}
@@ -164,7 +160,7 @@ export default function Assistant() {
               <div className="sr-group"><div className="sr-title">Catalogue</div>{searchResults.items.map((it, i) => (
                 <div className="sr-row" key={i}><strong>{it.name}</strong> <span className="muted">{it.category} · ₹{it.salePrice.toLocaleString('en-IN')}</span></div>))}
               </div>)}
-            {searchResults.projects.length === 0 && searchResults.expenses.length === 0 && searchResults.parties.length === 0 &&
+            {searchResults.projects.length === 0 && searchResults.expenses.length === 0 &&
               searchResults.txns.length === 0 && searchResults.rooms.length === 0 && searchResults.items.length === 0 && (
               <div className="muted" style={{ padding: 12, fontSize: 13 }}>No matches for "{searchQuery}"</div>)}
           </div>

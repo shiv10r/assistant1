@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
-import type { BizTxn, BillingKpis, Party, CatalogItem, CashData, BankAccount } from '../../api'
+import type { BizTxn, BillingKpis, CatalogItem, CashData, BankAccount } from '../../api'
 import { Badge, Empty, money, shortDate, PageHead, inputStyle, ghostStyle } from '../../ui'
 import { useToast } from '../../components/ui/Toast'
 import { useViewMode } from '../../hooks/useViewMode'
@@ -18,13 +18,11 @@ export const txnTypeLabel = (t: string) =>
   : t === 'PAYMENT_OUT' ? 'Payment-Out' : t === 'ESTIMATE' ? 'Estimate' : t === 'SALE_ORDER' ? 'Sale Order'
   : t === 'PURCHASE_ORDER' ? 'Purchase Order' : t === 'DELIVERY_CHALLAN' ? 'Delivery Challan' : t
 
-export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txns' | 'parties' }) {
+export default function BillingHome() {
   const { toast } = useToast()
   const { isAdvanced } = useViewMode()
   const [kpis, setKpis] = useState<BillingKpis | null>(null)
-  const [tab, setTab] = useState<'txns' | 'parties'>(initialTab)
   const [txns, setTxns] = useState<BizTxn[]>([])
-  const [parties, setParties] = useState<Party[]>([])
   const [items, setItems] = useState<CatalogItem[]>([])
   const [cash, setCash] = useState<CashData | null>(null)
   const [banks, setBanks] = useState<BankAccount[]>([])
@@ -33,7 +31,6 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
   const load = () => {
     api.billing.kpis().then(setKpis).catch(() => setKpis(null))
     api.billing.txns().then(setTxns).catch(() => setTxns([]))
-    api.billing.parties().then(setParties).catch(() => setParties([]))
     api.billing.items().then(setItems).catch(() => setItems([]))
     api.billing.cash().then(setCash).catch(() => setCash(null))
     api.billing.banks().then(setBanks).catch(() => setBanks([]))
@@ -51,12 +48,6 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         String(t.refNo).includes(query) ||
         txnTypeLabel(t.type).toLowerCase().includes(query))
     : txns
-  const filteredParties = query
-    ? parties.filter((p) =>
-        p.name.toLowerCase().includes(query) ||
-        (p.phone || '').toLowerCase().includes(query) ||
-        (p.email || '').toLowerCase().includes(query))
-    : parties
 
   const removeTxn = async (t: BizTxn) => {
     if (!confirm(`Delete ${txnTypeLabel(t.type)} ${t.refNo ? '#' + t.refNo : ''} — ${t.partyName || 'Walk-in'} (${money(t.total)})?`)) return
@@ -65,18 +56,6 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
       load()
       toast({ title: 'Transaction deleted', description: `${t.partyName || 'Walk-in'} ${money(t.total)}`, variant: 'error' })
     } catch (e) { toast({ title: 'Could not delete transaction', description: String(e), variant: 'error' }) }
-  }
-
-  const removeParty = async (p: Party) => {
-    if (!confirm(`Delete party "${p.name}"?`)) return
-    try {
-      await api.billing.deleteParty(p.id)
-      load()
-      toast({ title: 'Party deleted', description: p.name, variant: 'error' })
-    } catch (e) {
-      const msg = String(e).replace(/^API error \d+: /, '').trim()
-      toast({ title: 'Could not delete party', description: msg || String(e), variant: 'error' })
-    }
   }
 
   const sendEmail = async (t: BizTxn) => {
@@ -117,7 +96,7 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
     <>
       <PageHead
         icon="🧾" title="Billing" sub="Vyapar-style billing"
-        right={<Link className="btn" style={{ textDecoration: 'none' }} to="/billing/sale">＋ Add New {tab === 'txns' ? 'Sale' : 'Party'}</Link>}
+        right={<Link className="btn" style={{ textDecoration: 'none' }} to="/billing/sale">＋ Add New Sale</Link>}
       />
 
       <div className="kpis">
@@ -166,7 +145,6 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         <Link to="/billing/sale" className="qa-btn">＋ Sale</Link>
         <Link to="/billing/sale" className="qa-btn alt">＋ Purchase</Link>
         <Link to="/billing/sale" className="qa-btn alt2">＋ Estimate</Link>
-        <Link to="/billing/party" className="qa-btn alt3">＋ Party</Link>
       </div>
 
       {(lowStock.length > 0 || banks.length > 0) && (
@@ -197,20 +175,14 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         </div>
       )}
 
-      <div className="tabs">
-        <button className={tab === 'txns' ? 'active' : ''} onClick={() => setTab('txns')}>Transaction Details</button>
-        <button className={tab === 'parties' ? 'active' : ''} onClick={() => setTab('parties')}>Party Details</button>
-      </div>
-
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder={tab === 'txns' ? 'Search transactions (party, ref, type)…' : 'Search parties (name, phone, email)…'}
+        placeholder="Search transactions (party, ref, type)…"
         style={{ ...inputStyle, width: '100%', margin: '8px 0 16px' }}
       />
 
-      {tab === 'txns' ? (
-        filteredTxns.length === 0 ? <Empty>{q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'}</Empty> : (
+      {filteredTxns.length === 0 ? <Empty>{q ? `No transactions match "${q}".` : 'No transactions yet — tap "Add New Sale".'}</Empty> : (
           <div className="card" style={{ padding: 8 }}>
             <table className="main-table">
               <thead><tr><th>Party</th><th>Type</th><th>Ref</th><th>Date</th><th className="num">Total</th><th className="num">Balance</th><th>Status</th><th /></tr></thead>
@@ -245,31 +217,7 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
             </table>
             <div className="muted" style={{ padding: '8px 12px' }}>{filteredTxns.length} transaction{filteredTxns.length === 1 ? '' : 's'}{q ? ` matching "${q}"` : ''}.</div>
           </div>
-        )
-      ) : (
-        filteredParties.length === 0 ? <Empty>{q ? `No parties match "${q}".` : 'No parties yet — tap "Add New Party".'}</Empty> : (
-          <div className="card" style={{ padding: 8 }}>
-            <table className="main-table">
-              <thead><tr><th>Party</th><th>Phone</th><th className="num">Balance</th><th>Direction</th><th /></tr></thead>
-              <tbody>
-                {filteredParties.map((p) => (
-                  <tr key={p.id}>
-                    <td className="cat">{p.name}</td>
-                    <td className="muted">{p.phone || '—'}</td>
-                    <td className="num" style={{ color: p.currentBalance >= 0 ? '#2E8B57' : '#E05C7A' }}>{money(Math.abs(p.currentBalance))}</td>
-                    <td><Badge tone={p.currentBalance >= 0 ? 'green' : 'pink'}>{p.currentBalance >= 0 ? "You'll Get" : "You'll Give"}</Badge></td>
-                    <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                      <Link to={`/billing/party?id=${p.id}`} style={ghostStyle} title="Edit">✎</Link>{' '}
-                      <button style={ghostStyle} onClick={() => removeParty(p)} title="Delete">🗑</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="muted" style={{ padding: '8px 12px' }}>{filteredParties.length} part{filteredParties.length === 1 ? 'y' : 'ies'}{q ? ` matching "${q}"` : ''}.</div>
-          </div>
-        )
-      )}
+        )}
     </>
   )
 }

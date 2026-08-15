@@ -16,7 +16,6 @@ export interface SearchResult {
 
 const GROUP_ICON: Record<string, React.ReactNode> = {
   Projects: <Briefcase className="w-4 h-4" />,
-  Parties: <Users className="w-4 h-4" />,
   Transactions: <ReceiptText className="w-4 h-4" />,
   Items: <Boxes className="w-4 h-4" />,
   Rooms: <Boxes className="w-4 h-4" />,
@@ -73,13 +72,6 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
       to: `/projects/${p.id}`,
       group: 'Projects',
       icon: GROUP_ICON.Projects,
-    }))
-    if (remote?.parties?.length) remote.parties.forEach((p) => out.push({
-      label: p.name,
-      sub: `${p.type} · balance ${money(p.currentBalance)}${p.phone ? ` · ${p.phone}` : ''}`,
-      to: `/billing/parties`,
-      group: 'Parties',
-      icon: GROUP_ICON.Parties,
     }))
     if (remote?.txns?.length) remote.txns.slice(0, 15).forEach((t) => out.push({
       label: `${t.refLabel} — ${t.partyName}`,
