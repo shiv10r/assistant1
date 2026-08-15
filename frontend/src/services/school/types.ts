@@ -41,3 +41,35 @@ export interface AttendanceRecord {
   date: string
   status: AttendanceStatus
 }
+
+export interface StaffMember {
+  id: string
+  name: string
+  role: string
+  phone: string
+  status: 'active' | 'inactive'
+  lastAttendance?: 'present' | 'absent'
+  lastAttendanceDate?: string
+}
+
+export type SchoolProjectStatus = 'planned' | 'active' | 'completed'
+
+export interface SchoolProject {
+  id: string
+  name: string
+  incharge: string
+  status: SchoolProjectStatus
+  startDate: string
+  budget: number
+}
+
+export interface StockItem {
+  id: string
+  sku: string
+  name: string
+  category: string
+  qty: number
+  unit: string
+  reorderLevel: number
+  unitPrice: number
+}

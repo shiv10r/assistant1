@@ -1,4 +1,4 @@
-import type { InventoryItem, Supplier, PurchaseOrder, GrnRecord } from './types'
+import type { InventoryItem, Supplier, PurchaseOrder, GrnRecord, StaffMember, ProjectRecord } from './types'
 
 export const INVENTORY_SEED: InventoryItem[] = [
   { id: 'item-1', sku: 'SKU-1001', name: 'Cement Bag (50kg)', category: 'Construction', qty: 240, unit: 'bag', reorderLevel: 50, unitPrice: 380 },
@@ -25,3 +25,12 @@ export const PO_SEED: PurchaseOrder[] = [
 ]
 
 export const GRN_SEED: GrnRecord[] = []
+
+export const STAFF_SEED: StaffMember[] = [
+  { id: 'staff-1', name: 'Vikram Singh', role: 'Warehouse Supervisor', phone: '+91 98765 12340', status: 'active' },
+  { id: 'staff-2', name: 'Priya Nair', role: 'Inventory Clerk', phone: '+91 98765 56780', status: 'active' },
+]
+
+export const PROJECT_SEED: ProjectRecord[] = [
+  { id: 'wproj-1', name: 'Warehouse Expansion - Bay 3', client: 'Internal', status: 'active', startDate: '2026-07-01', budget: 850000 },
+]

@@ -1,7 +1,11 @@
 import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
+// twMerge resolves conflicting utility overrides (e.g. base `px-4` + override `pl-9`)
+// which plain clsx cannot — without it, override classes could lose to base classes
+// depending on Tailwind's generated CSS order, misplacing things like search icons.
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs)
+  return twMerge(clsx(inputs))
 }
 
 export const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
