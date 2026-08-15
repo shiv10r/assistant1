@@ -5,6 +5,15 @@ billing (parties, items, transactions, cash/bank, cheques), project management (
 materials, attendance, MOM, design files), analytics, reports, and an optional open-source
 DeepSeek AI chat. It is a **React frontend + .NET 10 API** backed by SQLite.
 
+## Safety Rule
+
+- Perform only safe development work: inspect and edit project files, and run low-risk static checks or builds only when explicitly permitted by the user.
+- Do not unit test, launch, start, configure, or otherwise operate an MCP server or any local server unless the user explicitly asks in the current conversation.
+- Do not run local unit tests unless the user explicitly asks to run them. The user may run them independently, or explicitly tell the assistant when to do so.
+- Do not install software, packages, extensions, tools, or dependencies without explicit user approval.
+- Do not access, browse, scan, or explore external systems, services, websites, networks, or resources without explicit user approval.
+- Before any approved action that could alter the device, install software, consume resources, expose data, or otherwise create a risk, warn the user about the specific action and potential impact, then wait for confirmation.
+
 ## Solution layout (current branches)
 
 | Branch | Contains | Deployed to |
