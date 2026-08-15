@@ -42,7 +42,7 @@ export default function WarehouseWarehouses() {
       const matchesW = locWarehouse === 'all' || l.warehouseId === locWarehouse
       return matchesQ && matchesW
     })
-  }, [locations, locQuery, locWarehouse, warehouses])
+  }, [locations, locQuery, locWarehouse])
 
   function openAddWh() { setEditingWh(null); setWhForm(emptyWh); setWhModalOpen(true) }
   function openEditWh(w: Warehouse) {
