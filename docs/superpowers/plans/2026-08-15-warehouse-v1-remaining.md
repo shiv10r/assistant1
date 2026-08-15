@@ -836,7 +836,7 @@ Run: `git status` — Expected: only warehouse files + App.tsx + Layout.tsx + sp
 
 - [ ] **Step 1: Check clean tree**
 
-Run: `git status --short` — Expect only `Warehouse_Management_V1_React_Agent_Spec.md` untracked (keep untracked, or commit if user wants).
+Run: `git status --short` — Expect only `docs/services/warehouse-management-v1.md` untracked (keep untracked, or commit if user wants).
 
 - [ ] **Step 2: Push**
 

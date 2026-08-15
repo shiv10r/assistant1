@@ -5,7 +5,7 @@ Status: Approved (scope + nav + route registration confirmed by user)
 
 ## 1. Purpose
 
-Implement the remaining V1 warehouse modules from `Warehouse_Management_V1_React_Agent_Spec.md`
+Implement the remaining V1 warehouse modules from `docs/services/warehouse-management-v1.md`
 (§8, 12, 14, 18, 19, 20, 22, 23, 24, 25) as extensions of the existing LuxInfra warehouse
 service at `frontend/src/services/warehouse/`. Everything stays frontend-only and
 localStorage-backed via `useLocalCollection` (key prefix `warehouse:`), consistent with the
