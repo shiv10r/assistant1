@@ -13,7 +13,7 @@ export const SERVICES: ServiceDef[] = [
   {
     id: 'interior',
     label: 'Interior Design',
-    tagline: 'Projects, sites, design boards & material planning',
+    tagline: 'Projects, rooms, AI designs, products & cost estimates',
     icon: '🏠',
     gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)',
     home: '/interior/dashboard',

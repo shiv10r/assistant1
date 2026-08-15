@@ -20,6 +20,8 @@ const GROUP_ICON: Record<string, React.ReactNode> = {
   Items: <Boxes className="w-4 h-4" />,
   Rooms: <Boxes className="w-4 h-4" />,
   Expenses: <ReceiptText className="w-4 h-4" />,
+  'Interior Projects': <Briefcase className="w-4 h-4" />,
+  'Interior Products': <Boxes className="w-4 h-4" />,
   'Warehouse Products': <Boxes className="w-4 h-4" />,
   'Warehouse Customers': <Users className="w-4 h-4" />,
   'Warehouse Suppliers': <Users className="w-4 h-4" />,
@@ -181,6 +183,8 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
 
 /** Collection metadata: localStorage key prefix → target route + display group. */
 const COLLECTIONS: { key: string; group: string; to: (id: string) => string; nameField: string[] }[] = [
+  { key: 'luxinfra:interior:projects', group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
+  { key: 'luxinfra:interior:products', group: 'Interior Products', to: () => '/interior/products', nameField: ['name', 'category'] },
   { key: 'luxinfra:warehouse:products', group: 'Warehouse Products', to: () => '/warehouse/products', nameField: ['name', 'sku'] },
   { key: 'luxinfra:warehouse:customers', group: 'Warehouse Customers', to: () => '/warehouse/customers', nameField: ['name', 'company'] },
   { key: 'luxinfra:warehouse:suppliers', group: 'Warehouse Suppliers', to: () => '/warehouse/suppliers', nameField: ['name', 'company'] },

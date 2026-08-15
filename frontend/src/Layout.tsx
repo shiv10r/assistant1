@@ -85,10 +85,9 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   interior: [
     { title: 'Interior Design', items: [
       { label: 'Overview', to: '/interior/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-      { label: 'All Projects', to: '/interior/projects', icon: <Briefcase className="w-5 h-5" /> },
-      { label: 'Site Map', to: '/interior/map', icon: <Map className="w-5 h-5" /> },
-      { label: 'AI Vision Progress', to: '/interior/vision', icon: <Sparkles className="w-5 h-5" /> },
-      { label: 'Modules', to: '/interior/modules', icon: <Boxes className="w-5 h-5" /> },
+      { label: 'Projects', to: '/interior/projects', icon: <Briefcase className="w-5 h-5" /> },
+      { label: 'Products', to: '/interior/products', icon: <Package className="w-5 h-5" /> },
+      { label: 'AI Designs', to: '/interior/projects', icon: <Sparkles className="w-5 h-5" /> },
     ]},
     { title: 'Transactions', items: [
       { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },

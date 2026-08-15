@@ -18,28 +18,21 @@ import TxnForm from './pages/billing/TxnForm'
 import Catalog from './pages/billing/Catalog'
 import CashBank from './pages/billing/CashBank'
 import BillingSettings from './pages/billing/BillingSettings'
-import ProjectsList from './pages/projects/ProjectsList'
-import Workspace from './pages/projects/Workspace'
-import ProjectParty from './pages/projects/ProjectParty'
-import ProjectTasks from './pages/projects/ProjectTasks'
-import ProjectTxn from './pages/projects/ProjectTxn'
-import ProjectSite from './pages/projects/ProjectSite'
-import ProjectAttendance from './pages/projects/ProjectAttendance'
-import ProjectMaterial from './pages/projects/ProjectMaterial'
-import ProjectMom from './pages/projects/ProjectMom'
-import ProjectDesign from './pages/projects/ProjectDesign'
-import ProjectFiles from './pages/projects/ProjectFiles'
-import ProjectPayroll from './pages/projects/ProjectPayroll'
-import ProjectsMap from './pages/ProjectsMap'
 import Users from './pages/Users'
-import VisionProgress from './pages/VisionProgress'
 import Integrations from './pages/Integrations'
 import Insights from './pages/Insights'
-import Modules from './pages/Modules'
 import Broadcast from './pages/Broadcast'
 import VideoCall from './pages/VideoCall'
 import ServiceChooser from './common/ServiceChooser'
 import InteriorHome from './services/interior/InteriorHome'
+import InteriorProjects from './services/interior/InteriorProjects'
+import InteriorProjectDetails from './services/interior/InteriorProjectDetails'
+import InteriorRoomDetails from './services/interior/InteriorRoomDetails'
+import InteriorGenerate from './services/interior/InteriorGenerate'
+import InteriorDesigns from './services/interior/InteriorDesigns'
+import InteriorDesignDetails from './services/interior/InteriorDesignDetails'
+import InteriorProducts from './services/interior/InteriorProducts'
+import InteriorQuotation from './services/interior/InteriorQuotation'
 import WarehouseHome from './services/warehouse/WarehouseHome'
 import WarehouseInventory from './services/warehouse/WarehouseInventory'
 import WarehousePurchaseOrders from './services/warehouse/WarehousePurchaseOrders'
@@ -272,27 +265,20 @@ export default function App() {
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />
           <Route path="/interior/dashboard" element={<InteriorHome />} />
-          <Route path="/interior/projects" element={<ProjectsList />} />
-          <Route path="/interior/projects/:id" element={<Workspace />} />
-          <Route path="/interior/projects/:id/party" element={<ProjectParty />} />
-          <Route path="/interior/projects/:id/tasks" element={<ProjectTasks />} />
-          <Route path="/interior/projects/:id/txn" element={<ProjectTxn />} />
-          <Route path="/interior/projects/:id/site" element={<ProjectSite />} />
-          <Route path="/interior/projects/:id/attendance" element={<ProjectAttendance />} />
-          <Route path="/interior/projects/:id/material" element={<ProjectMaterial />} />
-          <Route path="/interior/projects/:id/mom" element={<ProjectMom />} />
-          <Route path="/interior/projects/:id/design" element={<ProjectDesign />} />
-          <Route path="/interior/projects/:id/files" element={<ProjectFiles />} />
-          <Route path="/interior/projects/:id/payroll" element={<ProjectPayroll />} />
-          <Route path="/interior/map" element={<ProjectsMap />} />
-          <Route path="/interior/vision" element={<VisionProgress />} />
-          <Route path="/interior/modules" element={<Modules />} />
+          <Route path="/interior/projects" element={<InteriorProjects />} />
+          <Route path="/interior/projects/:id" element={<InteriorProjectDetails />} />
+          <Route path="/interior/projects/:id/rooms/:roomId" element={<InteriorRoomDetails />} />
+          <Route path="/interior/projects/:id/generate" element={<InteriorGenerate />} />
+          <Route path="/interior/projects/:id/designs" element={<InteriorDesigns />} />
+          <Route path="/interior/projects/:id/designs/:designId" element={<InteriorDesignDetails />} />
+          <Route path="/interior/projects/:id/quotation" element={<InteriorQuotation />} />
+          <Route path="/interior/products" element={<InteriorProducts />} />
 
           {/* Backward-compat redirects from old top-level paths to their service */}
           <Route path="/projects/*" element={<Redirect to="/interior/projects" />} />
-          <Route path="/map" element={<Navigate to="/interior/map" replace />} />
-          <Route path="/vision" element={<Navigate to="/interior/vision" replace />} />
-          <Route path="/modules" element={<Navigate to="/interior/modules" replace />} />
+          <Route path="/map" element={<Navigate to="/interior/dashboard" replace />} />
+          <Route path="/vision" element={<Navigate to="/interior/dashboard" replace />} />
+          <Route path="/modules" element={<Navigate to="/interior/dashboard" replace />} />
 
           {/* Unknown paths → chooser */}
           <Route path="*" element={<Navigate to="/" replace />} />
