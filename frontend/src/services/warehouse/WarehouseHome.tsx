@@ -59,7 +59,7 @@ export default function WarehouseHome() {
             { label: 'Awaiting dispatch', value: String(pendingDispatch), delta: `${inTransit} transfers in transit`, deltaTone: 'flat' },
           ]}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock value by product</p>
               <BarChart
@@ -77,6 +77,52 @@ export default function WarehouseHome() {
                   { label: 'Low stock', value: lowStock.length, color: '#f59e0b' },
                   { label: 'Out of stock', value: outOfStock.length, color: '#ef4444' },
                 ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Order pipeline</p>
+              <BarChart
+                data={[
+                  { label: 'Created', value: orders.filter((o) => o.status === 'created').length },
+                  { label: 'Confirmed', value: orders.filter((o) => o.status === 'confirmed').length },
+                  { label: 'Reserved', value: orders.filter((o) => o.status === 'reserved').length },
+                  { label: 'Picking', value: orders.filter((o) => o.status === 'picking').length },
+                  { label: 'Packed', value: orders.filter((o) => o.status === 'packed').length },
+                  { label: 'Dispatched', value: orders.filter((o) => o.status === 'dispatched').length },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">PO pipeline</p>
+              <BarChart
+                data={[
+                  { label: 'Draft', value: pos.filter((p) => p.status === 'draft').length },
+                  { label: 'Submitted', value: pos.filter((p) => p.status === 'submitted').length },
+                  { label: 'Approved', value: pos.filter((p) => p.status === 'approved').length },
+                  { label: 'Partial', value: pos.filter((p) => p.status === 'partial').length },
+                  { label: 'Received', value: pos.filter((p) => p.status === 'received').length },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Order status mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Open', value: activeOrders.length, color: 'var(--primary)' },
+                  { label: 'Completed', value: orders.filter((o) => o.status === 'completed').length, color: '#10b981' },
+                  { label: 'Cancelled', value: orders.filter((o) => o.status === 'cancelled').length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Transfer status</p>
+              <DonutChart
+                data={[
+                  { label: 'Created', value: transfers.filter((t) => t.status === 'created').length, color: '#3b82f6' },
+                  { label: 'Dispatched', value: transfers.filter((t) => t.status === 'dispatched').length, color: '#f59e0b' },
+                  { label: 'Received', value: transfers.filter((t) => t.status === 'received').length, color: '#a78bfa' },
+                  { label: 'Completed', value: transfers.filter((t) => t.status === 'completed').length, color: 'var(--primary)' },
+                ].filter((d) => d.value > 0)}
               />
             </div>
           </div>

@@ -106,7 +106,7 @@ export default function ProjectsList() {
             { label: 'Completed', value: String(counts.completed), delta: `${counts.total ? Math.round((counts.completed / counts.total) * 100) : 0}% of portfolio`, deltaTone: 'flat' },
           ]}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Contract value by status</p>
               <BarChart
@@ -123,6 +123,42 @@ export default function ProjectsList() {
                   { label: 'In Discussion', value: counts.discussion, color: '#38bdf8' },
                   { label: 'On Hold', value: projects.filter((p) => p.status === 'On Hold').length, color: '#f59e0b' },
                   { label: 'Completed', value: counts.completed, color: '#10b981' },
+                ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Projects by status</p>
+              <BarChart
+                data={STATUSES
+                  .map((s) => ({ label: s, value: projects.filter((p) => p.status === s).length }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Avg contract value by status</p>
+              <BarChart
+                data={STATUSES
+                  .map((s) => {
+                    const list = projects.filter((p) => p.status === s)
+                    return { label: s, value: list.length ? Math.round(list.reduce((sum, p) => sum + p.value, 0) / list.length) : 0 }
+                  })
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Value share</p>
+              <DonutChart
+                data={STATUSES
+                  .map((s, i) => ({ label: s, value: projects.filter((p) => p.status === s).reduce((sum, p) => sum + p.value, 0), color: ['var(--primary)', '#38bdf8', '#f59e0b', '#10b981', '#a78bfa'][i] }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Filtered vs total</p>
+              <DonutChart
+                data={[
+                  { label: 'Shown', value: filtered.length, color: 'var(--primary)' },
+                  { label: 'Hidden', value: Math.max(0, projects.length - filtered.length), color: '#94a3b8' },
                 ]}
               />
             </div>

@@ -300,7 +300,7 @@ export default function WarehouseProjectWorkspace() {
             { label: 'Avg task progress', value: `${stats.taskPct}%`, delta: `${tasks.items.length} task(s)`, deltaTone: 'flat' },
           ]}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Budget vs received vs spent</p>
               <BarChart
@@ -318,6 +318,38 @@ export default function WarehouseProjectWorkspace() {
                   { label: 'In', value: txns.items.filter((t) => t.type === 'PAYMENT_IN').length, color: '#10b981' },
                   { label: 'Out', value: txns.items.filter((t) => t.type === 'PAYMENT_OUT').length, color: '#f59e0b' },
                 ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Cashflow (in vs out)</p>
+              <BarChart
+                data={[
+                  { label: 'In', value: txns.items.filter((t) => t.type === 'PAYMENT_IN').reduce((s, t) => s + Number(t.amount || 0), 0) },
+                  { label: 'Out', value: txns.items.filter((t) => t.type === 'PAYMENT_OUT').reduce((s, t) => s + Number(t.amount || 0), 0) },
+                ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Task status mix</p>
+              <DonutChart
+                data={Array.from(new Set(tasks.items.map((t) => String(t.status ?? ''))))
+                  .filter(Boolean)
+                  .map((s, i) => ({ label: s, value: tasks.items.filter((t) => String(t.status) === s).length, color: ['var(--primary)', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'][i] }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Task progress</p>
+              <BarChart
+                data={tasks.items.slice(0, 6).map((t) => ({ label: String(t.name ?? '').slice(0, 10), value: Number(t.progressPercent || 0) }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Site progress trend (logs)</p>
+              <BarChart
+                data={[...logs.items]
+                  .sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')))
+                  .slice(0, 8)
+                  .map((l) => ({ label: String(l.date ?? '').slice(5), value: Number(l.progressPercent || 0) }))}
               />
             </div>
           </div>

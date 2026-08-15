@@ -186,7 +186,7 @@ export default function Dashboard() {
             { label: 'Avg completion', value: `${projects.length ? Math.round(projects.reduce((s, p) => s + p.taskPct, 0) / projects.length) : 0}%`, delta: `${activeSites} active site(s)`, deltaTone: 'flat' },
           ]}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Revenue vs budget spent per site</p>
               <BarChart
@@ -202,6 +202,36 @@ export default function Dashboard() {
                   { label: 'On Hold', value: projects.filter((p) => p.status === 'On Hold').length, color: '#f59e0b' },
                   { label: 'Other', value: projects.filter((p) => !['Ongoing', 'Completed', 'On Hold'].includes(p.status)).length, color: '#94a3b8' },
                 ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Sales vs expenses (monthly)</p>
+              <BarChart
+                data={saleTotals.map((s) => ({
+                  label: s.period,
+                  value: s.total,
+                  valueLabel: `S ${money(s.total)}${expTotals.find((e) => e.period === s.period) ? ` · E ${money(expTotals.find((e) => e.period === s.period)!.total)}` : ''}`,
+                }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Snags by status</p>
+              <DonutChart
+                data={Array.from(new Set((snags ?? []).map((s) => s.status)))
+                  .map((s, i) => ({ label: s, value: (snags ?? []).filter((n) => n.status === s).length, color: ['var(--primary)', '#f59e0b', '#ef4444', '#10b981', '#3b82f6'][i] }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Milestone amounts (upcoming)</p>
+              <BarChart
+                data={upcomingMilestones.map((m) => ({ label: m.title.length > 10 ? m.title.slice(0, 10) + '…' : m.title, value: m.amount }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock alerts</p>
+              <BarChart
+                data={lowStockRows.map((r) => ({ label: r.name.length > 10 ? r.name.slice(0, 10) + '…' : r.name, value: 1 }))}
               />
             </div>
           </div>
