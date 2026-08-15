@@ -134,7 +134,7 @@ export default function Account() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="font-semibold text-lg truncate">{s['general.firm_name'] || 'LuxInfra'}</p>
+                <p className="font-semibold text-lg truncate">{s['general.firm_name'] || 'VSR Systems'}</p>
                 <Badge variant={isPremium ? 'success' : 'outline'}><Crown className="w-3 h-3" /> {PLAN_LABEL[plan] ?? 'Free'}</Badge>
               </div>
               <p className="text-sm text-muted mt-0.5 truncate">
@@ -158,7 +158,7 @@ export default function Account() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Field label="Firm Name *" value={s['general.firm_name'] || ''} onChange={set('general.firm_name')} placeholder="LuxInfra Interiors" />
+            <Field label="Firm Name *" value={s['general.firm_name'] || ''} onChange={set('general.firm_name')} placeholder="VSR Systems Interiors" />
             <Field label="Owner / Proprietor" value={s['general.owner_name'] || ''} onChange={set('general.owner_name')} placeholder="Full name" />
             <Field label="Business Type" value={s['general.business_type'] || ''} onChange={set('general.business_type')} list={BUSINESS_TYPES} />
             <Field label="GSTIN" value={s['general.firm_gstin'] || ''} onChange={set('general.firm_gstin')} placeholder="29AAACL1234A1Z5" />
@@ -177,8 +177,8 @@ export default function Account() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Field label="Phone / Mobile" value={s['general.firm_phone'] || ''} onChange={set('general.firm_phone')} placeholder="+91 98765 43210" type="tel" />
-            <Field label="Email" value={s['general.firm_email'] || ''} onChange={set('general.firm_email')} placeholder="hello@luxinfra.com" type="email" />
-            <Field label="Website" value={s['general.firm_website'] || ''} onChange={set('general.firm_website')} placeholder="www.luxinfra.com" />
+            <Field label="Email" value={s['general.firm_email'] || ''} onChange={set('general.firm_email')} placeholder="hello@vsrsystems.com" type="email" />
+            <Field label="Website" value={s['general.firm_website'] || ''} onChange={set('general.firm_website')} placeholder="www.vsrsystems.com" />
           </div>
         </CardContent>
       </Card>
@@ -223,7 +223,7 @@ export default function Account() {
               <Field label="Bank Name (invoice)" value={s['general.firm_bank_name'] || ''} onChange={set('general.firm_bank_name')} placeholder="HDFC Bank" />
               <Field label="Account No (invoice)" value={s['general.firm_bank_account'] || ''} onChange={set('general.firm_bank_account')} placeholder="50100234567890" />
               <Field label="IFSC (invoice)" value={s['general.firm_bank_ifsc'] || ''} onChange={set('general.firm_bank_ifsc')} placeholder="HDFC0001234" />
-              <Field label="Account Holder (invoice)" value={s['general.firm_bank_holder'] || ''} onChange={set('general.firm_bank_holder')} placeholder="LuxInfra Pvt Ltd" />
+              <Field label="Account Holder (invoice)" value={s['general.firm_bank_holder'] || ''} onChange={set('general.firm_bank_holder')} placeholder="VSR Systems Pvt Ltd" />
             </div>
           </div>
         </CardContent>

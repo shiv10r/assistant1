@@ -21,18 +21,18 @@ interface PreferenceGroup {
 }
 
 const FIRM_FIELDS = [
-  { key: 'general.firm_name', label: 'Firm Name', placeholder: 'LuxInfra', required: true },
+  { key: 'general.firm_name', label: 'Firm Name', placeholder: 'VSR Systems', required: true },
   { key: 'general.firm_gstin', label: 'GSTIN', placeholder: '29AAACL1234A1Z5', pattern: '[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}' },
   { key: 'general.firm_pan', label: 'PAN', placeholder: 'AAACL1234A' },
   { key: 'general.firm_phone', label: 'Phone', placeholder: '+91 98765 43210', type: 'tel' },
-  { key: 'general.firm_email', label: 'Email', placeholder: 'billing@luxinfra.com', type: 'email' },
+  { key: 'general.firm_email', label: 'Email', placeholder: 'billing@vsrsystems.com', type: 'email' },
   { key: 'general.firm_state', label: 'State', placeholder: 'Karnataka' },
   { key: 'general.firm_state_code', label: 'State Code', placeholder: '29' },
   { key: 'general.firm_address', label: 'Address', placeholder: '123 Business Park, Bangalore', multiline: true },
   { key: 'general.firm_bank_name', label: 'Bank Name', placeholder: 'HDFC Bank' },
   { key: 'general.firm_bank_account', label: 'Account No', placeholder: '50100234567890' },
   { key: 'general.firm_bank_ifsc', label: 'IFSC', placeholder: 'HDFC0001234' },
-  { key: 'general.firm_bank_holder', label: 'Account Holder', placeholder: 'LuxInfra Pvt Ltd' },
+  { key: 'general.firm_bank_holder', label: 'Account Holder', placeholder: 'VSR Systems Pvt Ltd' },
 ]
 
 const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
