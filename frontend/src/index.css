@@ -17,23 +17,23 @@
   --radius: 0.625rem;
 }
 
-/* ---------- Design tokens ---------- */
+/* ---------- Design tokens (enterprise deep-navy / warm-orange) ---------- */
 :root {
-  --bg: #0F1218;
-  --surface: #171B23;
-  --surface2: #1E232D;
-  --surface-hover: #232936;
-  --surface-elevated: #232936;
-  --primary: #4F6BED;
-  --primary-soft: #8FA3F0;
+  --bg: #080D16;
+  --surface: #151B25;
+  --surface2: #1B2432;
+  --surface-hover: #222D3E;
+  --surface-elevated: #1E2837;
+  --primary: #FF9638;
+  --primary-soft: #FFB066;
   --accent: #10B981;
-  --text: #E9ECF2;
-  --text-muted: #8E97A8;
-  --dim: #8E97A8;
-  --border: #2A3140;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.18);
-  --grad: linear-gradient(135deg, #4F6BED 0%, #6E4FED 100%);
-  --ring: rgba(79,107,237,.35);
+  --text: #F5F7FA;
+  --text-muted: #AAB2BF;
+  --dim: #737D8C;
+  --border: #2A3344;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 4px 16px rgba(0,0,0,.25);
+  --grad: linear-gradient(135deg, #FF9638 0%, #E8761D 100%);
+  --ring: rgba(255,150,56,.35);
 }
 
 :root[data-theme='light'] {
@@ -42,16 +42,16 @@
   --surface2: #F1F2F7;
   --surface-hover: #EAECF4;
   --surface-elevated: #FFFFFF;
-  --primary: #4F6BED;
-  --primary-soft: #4F5BBF;
+  --primary: #D97706;
+  --primary-soft: #B45309;
   --accent: #0E9F6E;
   --text: #1A1E28;
   --text-muted: #5C6474;
   --dim: #5C6474;
   --border: #E3E6EF;
   --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.08);
-  --grad: linear-gradient(135deg, #4F6BED 0%, #6E4FED 100%);
-  --ring: rgba(79,107,237,.25);
+  --grad: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  --ring: rgba(217,119,6,.25);
 }
 
 /* ---------- Weather app mode ----------
@@ -287,7 +287,7 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 /* ---------- Totals / export ---------- */
 .total-badge {
   background: var(--grad); border-radius: 10px; padding: 10px 20px; text-align: center;
-  box-shadow: 0 4px 16px rgba(79,107,237,.3);
+  box-shadow: 0 4px 16px rgba(255,150,56,.3);
 }
 .total-badge .amount { font-size: 18px; font-weight: 700; color: #fff; }
 .total-badge .entries { font-size: 10.5px; color: rgba(255,255,255,.85); }
@@ -342,12 +342,12 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 .user-dot {
   position: absolute; left: 50%; top: 50%; width: 16px; height: 16px;
   transform: translate(-50%, -50%); border-radius: 50%;
-  background: #4F6BED; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.4); z-index: 2;
+  background: #FF9638; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.4); z-index: 2;
 }
 .user-pulse {
   position: absolute; left: 50%; top: 50%; width: 40px; height: 40px;
   transform: translate(-50%, -50%); border-radius: 50%;
-  background: rgba(79,107,237,.35); animation: user-pulse 2s ease-out infinite; z-index: 1;
+  background: rgba(255,150,56,.35); animation: user-pulse 2s ease-out infinite; z-index: 1;
 }
 @keyframes user-pulse { 0% { transform: translate(-50%, -50%) scale(.5); opacity: .9; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
 .leaflet-container { font-family: inherit; }
@@ -464,7 +464,7 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 .ai-model-tag { font-size: 10px; color: var(--accent); background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; margin-left: 8px; }
 
 /* Floating AI widget */
-.ai-widget-fab { position: fixed; right: 22px; bottom: 22px; z-index: 60; width: 54px; height: 54px; border-radius: 999px; border: none; background: var(--primary); color: #fff; box-shadow: 0 8px 24px rgba(79,107,237,.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .15s ease; }
+.ai-widget-fab { position: fixed; right: 22px; bottom: 22px; z-index: 60; width: 54px; height: 54px; border-radius: 999px; border: none; background: var(--primary); color: #fff; box-shadow: 0 8px 24px rgba(255,150,56,.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .15s ease; }
 .ai-widget-fab:hover { transform: translateY(-2px); }
 .ai-widget-panel { position: fixed; right: 22px; bottom: 88px; z-index: 60; width: min(360px, calc(100vw - 44px)); height: min(460px, 70vh); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.3); display: flex; flex-direction: column; overflow: hidden; }
 .ai-widget-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-weight: 700; font-size: 14px; }
@@ -510,7 +510,7 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 
 /* ---------- FAB ---------- */
 .fab-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 30; }
-.fab { background: var(--primary); color: #fff; border: none; border-radius: 999px; padding: 13px 20px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(79,107,237,.4); transition: transform .15s ease; }
+.fab { background: var(--primary); color: #fff; border: none; border-radius: 999px; padding: 13px 20px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(255,150,56,.4); transition: transform .15s ease; }
 .fab:hover { transform: translateY(-1px); }
 
 /* ---------- Grid cards ---------- */
@@ -543,7 +543,7 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 
 /* Route A/B markers on the site map */
 .route-pt { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
-.route-pt.pt-a { background: #4F6BED; }
+.route-pt.pt-a { background: #FF9638; }
 .route-pt.pt-b { background: #10B981; }
 
 /* ---------- Login ---------- */.login-wrap {
