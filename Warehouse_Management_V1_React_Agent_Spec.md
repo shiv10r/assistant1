@@ -3286,3 +3286,59 @@ Leave bug 2 its fixed move on next items in the  list  chek the md file i have  
 once done alll the above task 
  create a new branch from frontend keep theoptimized version of the code industry level code use less numebr of files try to accomodate in less fiels 
  Dont stop for my approvals just do whats is best recommneded 
+
+Do all the changes on the lux infra  frontend branch  as it was heppening previosuly  optimized branch i  will deploy later will chk alter 
+
+ Here is major bug when ever side nav is open  the  right side of the  card items are  nto  coming in proper length that  are overlapping each other  wh ni close the hamburger  after clicking it the nthe form rows for 99%  cases is coming properly not overlapping  
+
+ Rows per page is not  organized cprrectly it should in one line only 
+
+ Through out the application staff attendence  should be common module  used in all the services  of this formate alreayd impl,ented in attendence section once project is added in  interior design service so  make it like  this 
+  ⏱️ Attendance
+Daily site attendance & wages
+← Back
+Punch for
+
+Select worker…
+in office punch in punch out
+⏱ Remote Punch In
+Remote Punch Out
+📝 WFH / Leave Request
+🚨 SOS
+← Prev
+15/08/2026
+Today
+Next →
+＋ Add Worker
+PRESENT
+1
+HALF-DAY
+0
+ABSENT
+0
+TOTAL HOURS
+8 hr
+TODAY WAGES
+₹0
+No workers added yet. Use "＋ Add Worker" to start tracking attendance.
+Today's Punches (manual, remote & biometric)
+Time	Worker	In/Out	Source	Geofence
+09:36 AM	g	In	Remote	⚠ outside
+WFH / Leave Requests
+No requests yet.
+🚨 Emergency Alerts
+Unknown
+06:21 PM
+📍 View spot
+Resolved
+diag
+ok
+03:25 PM
+📍 View spot
+Resolved
+ok
+03:25 PM
+📍 View spot
+Resolve
+
+
