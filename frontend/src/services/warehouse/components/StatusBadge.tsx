@@ -18,6 +18,25 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'o
   cancelled: 'danger',
   // GRN
   completed: 'success',
+  // Sales order workflow
+  created: 'outline',
+  confirmed: 'info',
+  reserved: 'info',
+  picking: 'warning',
+  picked: 'success',
+  // Packing
+  packing: 'warning',
+  packed: 'success',
+  // Dispatch
+  ready: 'info',
+  dispatched: 'warning',
+  // Transfers
+  // (created/dispatched/received/completed already mapped above)
+  // Returns
+  requested: 'warning',
+  inspected: 'info',
+  // Stock count
+  open: 'warning',
   // misc
   pending: 'warning',
   damaged: 'danger',
@@ -43,6 +62,18 @@ const LABEL: Record<string, string> = {
   damaged: 'Damaged',
   quarantine: 'Quarantine',
   available: 'Available',
+  created: 'Created',
+  confirmed: 'Confirmed',
+  reserved: 'Reserved',
+  picking: 'Picking',
+  picked: 'Picked',
+  packing: 'Packing',
+  packed: 'Packed',
+  ready: 'Ready',
+  dispatched: 'Dispatched',
+  requested: 'Requested',
+  inspected: 'Inspected',
+  open: 'Open',
 }
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
