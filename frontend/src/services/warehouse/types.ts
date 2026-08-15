@@ -54,3 +54,24 @@ export interface GrnRecord {
   lines: GrnLine[]
   notes: string
 }
+
+export interface StaffMember {
+  id: string
+  name: string
+  role: string
+  phone: string
+  status: 'active' | 'inactive'
+  lastAttendance?: 'present' | 'absent'
+  lastAttendanceDate?: string
+}
+
+export type ProjectStatus = 'planned' | 'active' | 'completed'
+
+export interface ProjectRecord {
+  id: string
+  name: string
+  client: string
+  status: ProjectStatus
+  startDate: string
+  budget: number
+}

@@ -10,7 +10,6 @@ import { conditionMeta } from './lib/weather'
 import { serviceFromPath, type ServiceId } from './lib/services'
 import {
   LayoutDashboard,
-  FileText,
   BarChart3,
   Database,
   Activity,
@@ -45,6 +44,7 @@ import {
   Layers,
   Wallet,
   CalendarCheck,
+  Clock,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -53,10 +53,10 @@ import { usePlan } from './hooks/usePlan'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
-type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean }
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean; premium?: boolean }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
-/** Groups shown only while inside a given service's workspace. */
+/** Groups shown only while inside a given service's workspace — everything service-specific lives here. */
 const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   interior: [
     { title: 'Interior Design', items: [
@@ -66,53 +66,84 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'AI Vision Progress', to: '/interior/vision', icon: <Sparkles className="w-5 h-5" /> },
       { label: 'Modules', to: '/interior/modules', icon: <Boxes className="w-5 h-5" /> },
     ]},
+    { title: 'Transactions', items: [
+      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
+      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
+      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
+      { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
+    ]},
   ],
   warehouse: [
     { title: 'Warehouse Store', items: [
       { label: 'Overview', to: '/warehouse/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-      { label: 'Inventory & Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
+    ]},
+    { title: 'Customer & Retailer', items: [
+      { label: 'Customers & Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
+      { label: 'Parties Ledger', to: '/billing/parties', icon: <Users className="w-5 h-5" /> },
+    ]},
+    { title: 'Inventory', items: [
+      { label: 'Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
       { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <ClipboardList className="w-5 h-5" /> },
       { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
-      { label: 'Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
+      { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
+    ]},
+    { title: 'Transactions', items: [
+      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
+      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
+      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
+      { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
+    ]},
+    { title: 'Staff Management', items: [
+      { label: 'Staff & Attendance', to: '/warehouse/staff', icon: <Clock className="w-5 h-5" /> },
+    ]},
+    { title: 'Project Management', items: [
+      { label: 'Projects', to: '/warehouse/projects', icon: <Briefcase className="w-5 h-5" /> },
     ]},
   ],
   school: [
     { title: 'School Management', items: [
       { label: 'Overview', to: '/school', icon: <GraduationCap className="w-5 h-5" />, end: true },
+    ]},
+    { title: 'Customer & Retailer', items: [
       { label: 'Students', to: '/school/students', icon: <Users className="w-5 h-5" /> },
       { label: 'Classes', to: '/school/classes', icon: <Layers className="w-5 h-5" /> },
+    ]},
+    { title: 'Inventory', items: [
+      { label: 'Stock', to: '/school/inventory', icon: <Package className="w-5 h-5" /> },
+    ]},
+    { title: 'Transactions', items: [
       { label: 'Fees', to: '/school/fees', icon: <Wallet className="w-5 h-5" /> },
-      { label: 'Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
+      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
+      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
+    ]},
+    { title: 'Staff Management', items: [
+      { label: 'Staff & Attendance', to: '/school/staff', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Student Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
+    ]},
+    { title: 'Project Management', items: [
+      { label: 'Projects & Events', to: '/school/projects', icon: <Briefcase className="w-5 h-5" /> },
     ]},
   ],
 }
 
-/** Groups shared across every service. */
+/** Groups shared across every service — kept to the fixed global feature set only. */
 const COMMON_GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
     { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
-    { label: 'Reports', to: '/reports', icon: <FileText className="w-5 h-5" /> },
     { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" /> },
     { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },
     { label: 'Activity', to: '/activity', icon: <Activity className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <Settings className="w-5 h-5" /> },
   ]},
-  { title: 'Billing', items: [
-    { label: 'Transactions', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
-    { label: 'Items & Catalog', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
-    { label: 'Parties', to: '/billing/parties', icon: <Users className="w-5 h-5" /> },
-    { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
-    { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
-  ]},
   { title: 'Business', items: [
     { label: 'Insights', to: '/insights', icon: <ChartSpline className="w-5 h-5" /> },
     { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
   ]},
-  { title: 'Automation', items: [
-    { label: 'Broadcast', to: '/broadcast', icon: <Megaphone className="w-5 h-5" />, badge: 'PRO' },
-    { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
-    { label: 'Integrations', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
+  { title: 'More', items: [
+    { label: 'Broadcast', to: '/broadcast', icon: <Megaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
+    { label: 'Upcoming Feature', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
     { label: 'Team & Roles', to: '/users', icon: <ShieldCheck className="w-5 h-5" />, adminOnly: true },
   ]},
   { title: 'Account', items: [
@@ -288,7 +319,7 @@ export default function Layout() {
                 </button>
                 {!isCollapsed && (
                   <div className="nav-items">
-                    {g.items.filter((it) => !it.adminOnly || isAdmin).map((it) => (
+                    {g.items.filter((it) => (!it.adminOnly || isAdmin) && (!it.premium || plan !== 'free')).map((it) => (
                       <NavLink
                         key={it.to}
                         to={it.to}

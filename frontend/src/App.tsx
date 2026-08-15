@@ -47,11 +47,16 @@ import WarehouseInventory from './services/warehouse/WarehouseInventory'
 import WarehousePurchaseOrders from './services/warehouse/WarehousePurchaseOrders'
 import WarehouseGrn from './services/warehouse/WarehouseGrn'
 import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
+import WarehouseStaff from './services/warehouse/WarehouseStaff'
+import WarehouseProjects from './services/warehouse/WarehouseProjects'
 import SchoolHome from './services/school/SchoolHome'
 import SchoolStudents from './services/school/SchoolStudents'
 import SchoolClasses from './services/school/SchoolClasses'
 import SchoolFees from './services/school/SchoolFees'
 import SchoolAttendance from './services/school/SchoolAttendance'
+import SchoolInventory from './services/school/SchoolInventory'
+import SchoolStaff from './services/school/SchoolStaff'
+import SchoolProjects from './services/school/SchoolProjects'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
 function Redirect({ to }: { to: string }) {
@@ -131,6 +136,8 @@ export default function App() {
           <Route path="/warehouse/purchase-orders" element={<WarehousePurchaseOrders />} />
           <Route path="/warehouse/grn" element={<WarehouseGrn />} />
           <Route path="/warehouse/suppliers" element={<WarehouseSuppliers />} />
+          <Route path="/warehouse/staff" element={<WarehouseStaff />} />
+          <Route path="/warehouse/projects" element={<WarehouseProjects />} />
 
           {/* School service */}
           <Route path="/school" element={<SchoolHome />} />
@@ -138,6 +145,9 @@ export default function App() {
           <Route path="/school/classes" element={<SchoolClasses />} />
           <Route path="/school/fees" element={<SchoolFees />} />
           <Route path="/school/attendance" element={<SchoolAttendance />} />
+          <Route path="/school/inventory" element={<SchoolInventory />} />
+          <Route path="/school/staff" element={<SchoolStaff />} />
+          <Route path="/school/projects" element={<SchoolProjects />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

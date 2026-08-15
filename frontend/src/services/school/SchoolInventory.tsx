@@ -1,19 +1,17 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Modal, Empty, money } from '../../components/ui'
-import { Boxes, Plus, Search, Pencil, Trash2, RefreshCw } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Modal, Empty } from '../../components/ui'
+import { Boxes, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
-import type { InventoryItem, PurchaseOrder } from './types'
-import { INVENTORY_SEED, PO_SEED } from './seed'
-import { todayISO } from '../../lib/utils'
+import type { StockItem } from './types'
+import { STOCK_SEED } from './seed'
 
 const emptyForm = { sku: '', name: '', category: '', qty: '0', unit: 'pcs', reorderLevel: '0', unitPrice: '0' }
 
-export default function WarehouseInventory() {
-  const { items, add, update, remove } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
-  const { items: purchaseOrders, add: addPO } = useLocalCollection<PurchaseOrder>('warehouse:purchase-orders', PO_SEED)
+export default function SchoolInventory() {
+  const { items, add, update, remove } = useLocalCollection<StockItem>('school:inventory', STOCK_SEED)
   const [query, setQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState<InventoryItem | null>(null)
+  const [editing, setEditing] = useState<StockItem | null>(null)
   const [form, setForm] = useState(emptyForm)
 
   const filtered = useMemo(
@@ -21,59 +19,22 @@ export default function WarehouseInventory() {
     [items, query]
   )
 
-  function openAdd() {
-    setEditing(null)
-    setForm(emptyForm)
-    setModalOpen(true)
-  }
-
-  function openEdit(item: InventoryItem) {
+  function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
+  function openEdit(item: StockItem) {
     setEditing(item)
-    setForm({
-      sku: item.sku,
-      name: item.name,
-      category: item.category,
-      qty: String(item.qty),
-      unit: item.unit,
-      reorderLevel: String(item.reorderLevel),
-      unitPrice: String(item.unitPrice),
-    })
+    setForm({ sku: item.sku, name: item.name, category: item.category, qty: String(item.qty), unit: item.unit, reorderLevel: String(item.reorderLevel), unitPrice: String(item.unitPrice) })
     setModalOpen(true)
   }
 
   function save() {
     if (!form.name.trim() || !form.sku.trim()) return
     const payload = {
-      sku: form.sku.trim(),
-      name: form.name.trim(),
-      category: form.category.trim() || 'General',
-      qty: Number(form.qty) || 0,
-      unit: form.unit.trim() || 'pcs',
-      reorderLevel: Number(form.reorderLevel) || 0,
-      unitPrice: Number(form.unitPrice) || 0,
+      sku: form.sku.trim(), name: form.name.trim(), category: form.category.trim() || 'General',
+      qty: Number(form.qty) || 0, unit: form.unit.trim() || 'pcs', reorderLevel: Number(form.reorderLevel) || 0, unitPrice: Number(form.unitPrice) || 0,
     }
     if (editing) update(editing.id, payload)
     else add({ id: genId(), ...payload })
     setModalOpen(false)
-  }
-
-  function hasDraftReorder(itemId: string) {
-    return purchaseOrders.some((po) => po.status === 'draft' && po.lines.some((l) => l.itemId === itemId))
-  }
-
-  function reorder(it: InventoryItem) {
-    if (hasDraftReorder(it.id)) return
-    const qty = Math.max(it.reorderLevel * 2 - it.qty, it.reorderLevel)
-    addPO({
-      id: genId(),
-      poNumber: `PO-AUTO-${Date.now().toString().slice(-5)}`,
-      supplierId: '',
-      supplierName: 'Auto-reorder (assign supplier)',
-      date: todayISO(),
-      status: 'draft',
-      lines: [{ itemId: it.id, itemName: it.name, qty, unitPrice: it.unitPrice }],
-      total: qty * it.unitPrice,
-    })
   }
 
   return (
@@ -93,14 +54,7 @@ export default function WarehouseInventory() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Unit price</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
+                <TableRow><TableHead>SKU</TableHead><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Stock</TableHead><TableHead>Unit price</TableHead><TableHead></TableHead></TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((it) => {
@@ -113,15 +67,10 @@ export default function WarehouseInventory() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span>{it.qty} {it.unit}</span>
-                          {low && <Badge variant="danger" size="sm">Low stock</Badge>}
-                          {low && (
-                            <Button variant="outline" size="sm" disabled={hasDraftReorder(it.id)} onClick={() => reorder(it)}>
-                              <RefreshCw className="w-3.5 h-3.5" /> {hasDraftReorder(it.id) ? 'Reorder requested' : 'Reorder'}
-                            </Button>
-                          )}
+                          {low && <Badge variant="warning">reorder</Badge>}
                         </div>
                       </TableCell>
-                      <TableCell>{money(it.unitPrice)}</TableCell>
+                      <TableCell>₹{it.unitPrice}</TableCell>
                       <TableCell>
                         <div className="flex gap-1 justify-end">
                           <Button variant="ghost" size="icon" onClick={() => openEdit(it)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
@@ -148,7 +97,7 @@ export default function WarehouseInventory() {
             <div><Label>Unit</Label><Input value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div><Label>Qty</Label><Input type="number" value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} /></div>
+            <div><Label>Quantity</Label><Input type="number" value={form.qty} onChange={(e) => setForm({ ...form, qty: e.target.value })} /></div>
             <div><Label>Reorder level</Label><Input type="number" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: e.target.value })} /></div>
             <div><Label>Unit price</Label><Input type="number" value={form.unitPrice} onChange={(e) => setForm({ ...form, unitPrice: e.target.value })} /></div>
           </div>

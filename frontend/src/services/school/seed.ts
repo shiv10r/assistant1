@@ -1,4 +1,4 @@
-import type { Student, SchoolClass, FeeRecord, AttendanceRecord } from './types'
+import type { Student, SchoolClass, FeeRecord, AttendanceRecord, StaffMember, SchoolProject, StockItem } from './types'
 
 export const CLASS_SEED: SchoolClass[] = [
   { id: 'cls-1', name: 'Grade 5', section: 'A', teacher: 'Mrs. Sharma', capacity: 40, studentCount: 32 },
@@ -16,3 +16,17 @@ export const FEE_SEED: FeeRecord[] = [
 ]
 
 export const ATTENDANCE_SEED: AttendanceRecord[] = []
+
+export const STAFF_SEED: StaffMember[] = [
+  { id: 'sstaff-1', name: 'Mrs. Sharma', role: 'Class Teacher', phone: '+91 98111 00011', status: 'active' },
+  { id: 'sstaff-2', name: 'Mr. Verma', role: 'Class Teacher', phone: '+91 98111 00022', status: 'active' },
+]
+
+export const PROJECT_SEED: SchoolProject[] = [
+  { id: 'sproj-1', name: 'Annual Sports Day', incharge: 'Mr. Verma', status: 'planned', startDate: '2026-09-01', budget: 60000 },
+]
+
+export const STOCK_SEED: StockItem[] = [
+  { id: 'sitem-1', sku: 'STK-001', name: 'Notebooks (200pg)', category: 'Stationery', qty: 500, unit: 'pcs', reorderLevel: 100, unitPrice: 40 },
+  { id: 'sitem-2', sku: 'STK-002', name: 'Sports Kit', category: 'Sports', qty: 12, unit: 'set', reorderLevel: 5, unitPrice: 1500 },
+]
