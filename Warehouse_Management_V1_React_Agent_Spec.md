@@ -3418,3 +3418,76 @@ Contracts, milestones, price book, equipment, fuel, snags & contractor ratings. 
 since  most of the places ui pattern same refactor the code base  try to create generic like a industry level application not some school project i in a sngle file we can use multiple features instead of man
 y file do refactor without changing existing functionlity
  remove billing from parties and ledger no use immedietly in warehouse service 
+
+
+ Remove this parties ledger from cutomer and retailer 
+ 🧾 Billing
+Vyapar-style billing
+＋ Add New Party
+YOU'LL GET
+₹0
+YOU'LL GIVE
+-₹0
+THIS MONTH'S SALE
+₹0
+CASH IN HAND
+₹10,00,353
+＋ Sale
+＋ Purchase
+＋ Estimate
+＋ Party
+Bank balance
+HDFC
+₹24,23,23,424
+Total
+₹24,23,23,424
+Transaction Details
+Party Details
+Search parties (name, phone, email)…
+No parties yet — tap "Add New Party".
+
+remove this from the that plcae no use  no use 
+rename customer and suplier  module to different name 
+Here is most important  taks i am assigning u  
+List down the  common   features  that  we are using across all the service  move all them  to  single  folder and use from there  and  the specefic featuresshoud be used in individual  services  
+
+---
+
+## DONE — Shared features inventory & consolidation (2026-08-15)
+
+### Parties ledger removed
+- Removed the Vyapar-style "Parties Ledger" nav item (`/billing/parties`) from the warehouse sidebar's
+  "Customer & Retailer" group — not needed there.
+
+### Renamed modules
+- "Customers" → **Retailers** (nav label + page title + add/edit buttons + empty states + CSV filename)
+- "Suppliers" → **Vendors** (nav label + page title + add/edit buttons + empty states + CSV filename)
+- Sidebar group retitled "Retailers & Vendors".
+
+### Common features — single shared folder (`frontend/src/components/`)
+All cross-service reusable UI now lives in `src/components/` (and `src/components/ui/` for primitives).
+Nothing below is duplicated per-service anymore; pages import them from the shared folder:
+
+| Shared component | Used by |
+|---|---|
+| `AdvancedPanel` + `BarChart`/`DonutChart`/`Sparkline` | Advanced view on every page (26 pages) |
+| `DataTable` (sort, paginate, search, CSV export) | All warehouse + school list pages |
+| `StatusBadge` (status → tone/label map) | All warehouse + school list pages |
+| `KpiCard` (metric card with icon tone) | Warehouse home, school pages |
+| `Drawer` (right slide-over) | Warehouse inventory / products |
+| `Stepper` (workflow progress) | Warehouse transfers / GRN |
+| `WeatherCard` | Layout top bar, interior & warehouse project workspaces |
+| `LocationPicker` (lat/lng, geocode) | Interior/warehouse project forms & site maps |
+| `AttendanceModule` (mark/attendance grid) | School staff, warehouse staff & project attendance |
+| `RecipientPicker` (contact search) | Site map & attendance pages |
+| `BarcodeScanner` | Billing catalog |
+| `crud.tsx` (`CrudLayout`, `StatStrip`, `RowItem`, `CrudToolbar`, `EditDel`, `DatePill`, `toCsv`, `money`) | Business Modules page |
+| `ui/` primitives (`Card`, `Table`, `Badge`, `Modal`, `Form`, `Tabs`, `Switch`, `Toast`, `Empty`, `Button`, `Input`, `Label`, `Select`, `Textarea`) | Every page |
+
+### Service-specific features stay in their service
+- `services/warehouse/` — inventory/PO/GRN/orders/picking/packing/dispatch/returns/stock-count/
+  transfers/warehouses/retailers/vendors pages + `ledger.ts` (stock movements) + `types.ts`/`seed.ts`
+- `services/school/` — students/classes/fees/inventory/attendance/staff/projects pages
+- `services/interior/` — design workspace entry
+- Pages now import shared components via `../../components/…` (previously warehouse pages pulled
+  from a private `services/warehouse/components/` folder — that folder was deleted).

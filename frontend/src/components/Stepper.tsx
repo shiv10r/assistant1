@@ -1,4 +1,4 @@
-import { cn } from '../../../components/ui'
+import { cn } from './ui'
 import { Check } from 'lucide-react'
 
 interface StepperProps {

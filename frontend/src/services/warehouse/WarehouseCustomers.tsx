@@ -7,8 +7,8 @@ import { Users, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Customer } from './types'
 import { CUSTOMER_SEED } from './seed'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/DataTable'
+import { StatusBadge } from '../../components/StatusBadge'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
 
@@ -46,15 +46,15 @@ export default function WarehouseCustomers() {
 
   function save() {
     if (!form.name.trim()) {
-      toast({ title: 'Customer name is required', variant: 'error' })
+      toast({ title: 'Retailer name is required', variant: 'error' })
       return
     }
     if (editing) {
       update(editing.id, form)
-      toast({ title: 'Customer updated', description: form.name })
+      toast({ title: 'Retailer updated', description: form.name })
     } else {
       add({ id: genId(), ...form })
-      toast({ title: 'Customer added', description: form.name })
+      toast({ title: 'Retailer added', description: form.name })
     }
     setModalOpen(false)
   }
@@ -88,9 +88,9 @@ export default function WarehouseCustomers() {
       {isAdvanced && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Customer base mix and activity — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Retailer base mix and activity — toggled via the Simple/Advanced switch in the top bar."
           compare={[
-            { label: 'Total customers', value: String(items.length), delta: `${items.filter((c) => c.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Total retailers', value: String(items.length), delta: `${items.filter((c) => c.status === 'active').length} active`, deltaTone: 'flat' },
             { label: 'Active', value: String(items.filter((c) => c.status === 'active').length), delta: 'engaged accounts', deltaTone: 'up' },
             { label: 'Inactive', value: String(items.filter((c) => c.status === 'inactive').length), delta: 'dormant accounts', deltaTone: 'down' },
           ]}
@@ -110,8 +110,8 @@ export default function WarehouseCustomers() {
       )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Customers</CardTitle>
-          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add customer</Button>
+          <CardTitle>Retailers</CardTitle>
+          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add retailer</Button>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -119,10 +119,10 @@ export default function WarehouseCustomers() {
             rows={filtered}
             rowKey={(c) => c.id}
             pageSize={10}
-            exportFilename="warehouse-customers"
+            exportFilename="warehouse-retailers"
             emptyIcon={<Users className="w-6 h-6" />}
-            emptyTitle="No customers yet"
-            emptyDescription="Add a customer to start creating sales orders."
+            emptyTitle="No retailers yet"
+            emptyDescription="Add a retailer to start creating sales orders."
             actions={(c) => (
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" onClick={() => openEdit(c)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
@@ -146,7 +146,7 @@ export default function WarehouseCustomers() {
         </CardContent>
       </Card>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit customer' : 'Add customer'} size="md">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit retailer' : 'Add retailer'} size="md">
         <div className="space-y-4">
           <div><Label required>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-4">
@@ -174,7 +174,7 @@ export default function WarehouseCustomers() {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editing ? 'Save changes' : 'Add customer'}</Button>
+            <Button onClick={save}>{editing ? 'Save changes' : 'Add retailer'}</Button>
           </div>
         </div>
       </Modal>

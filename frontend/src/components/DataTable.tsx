@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Button, Empty, cn,
-} from '../../../components/ui'
+} from './ui'
 import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react'
 
 export interface DataColumn<T> {

@@ -7,8 +7,8 @@ import { Users, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Supplier } from './types'
 import { SUPPLIER_SEED } from './seed'
-import { DataTable, type DataColumn } from './components/DataTable'
-import { StatusBadge } from './components/StatusBadge'
+import { DataTable, type DataColumn } from '../../components/DataTable'
+import { StatusBadge } from '../../components/StatusBadge'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
 
@@ -46,15 +46,15 @@ export default function WarehouseSuppliers() {
 
   function save() {
     if (!form.name.trim()) {
-      toast({ title: 'Supplier name is required', variant: 'error' })
+      toast({ title: 'Vendor name is required', variant: 'error' })
       return
     }
     if (editing) {
       update(editing.id, form)
-      toast({ title: 'Supplier updated', description: form.name })
+      toast({ title: 'Vendor updated', description: form.name })
     } else {
       add({ id: genId(), ...form })
-      toast({ title: 'Supplier added', description: form.name })
+      toast({ title: 'Vendor added', description: form.name })
     }
     setModalOpen(false)
   }
@@ -89,9 +89,9 @@ export default function WarehouseSuppliers() {
       {isAdvanced && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Supplier base mix and activity — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Vendor base mix and activity — toggled via the Simple/Advanced switch in the top bar."
           compare={[
-            { label: 'Total suppliers', value: String(items.length), delta: `${items.filter((s) => s.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Total vendors', value: String(items.length), delta: `${items.filter((s) => s.status === 'active').length} active`, deltaTone: 'flat' },
             { label: 'Active', value: String(items.filter((s) => s.status === 'active').length), delta: 'engaged vendors', deltaTone: 'up' },
             { label: 'Inactive', value: String(items.filter((s) => s.status === 'inactive').length), delta: 'dormant vendors', deltaTone: 'down' },
           ]}
@@ -111,8 +111,8 @@ export default function WarehouseSuppliers() {
       )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Suppliers</CardTitle>
-          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add supplier</Button>
+          <CardTitle>Vendors</CardTitle>
+          <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add vendor</Button>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -120,10 +120,10 @@ export default function WarehouseSuppliers() {
             rows={filtered}
             rowKey={(s) => s.id}
             pageSize={10}
-            exportFilename="warehouse-suppliers"
+            exportFilename="warehouse-vendors"
             emptyIcon={<Users className="w-6 h-6" />}
-            emptyTitle="No suppliers yet"
-            emptyDescription="Add a supplier to start creating purchase orders."
+            emptyTitle="No vendors yet"
+            emptyDescription="Add a vendor to start creating purchase orders."
             actions={(s) => (
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" onClick={() => openEdit(s)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
@@ -147,7 +147,7 @@ export default function WarehouseSuppliers() {
         </CardContent>
       </Card>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit supplier' : 'Add supplier'} size="md">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit vendor' : 'Add vendor'} size="md">
         <div className="space-y-4">
           <div><Label required>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-4">
@@ -175,7 +175,7 @@ export default function WarehouseSuppliers() {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editing ? 'Save changes' : 'Add supplier'}</Button>
+            <Button onClick={save}>{editing ? 'Save changes' : 'Add vendor'}</Button>
           </div>
         </div>
       </Modal>

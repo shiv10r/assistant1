@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Modal, Empty } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal } from '../../components/ui'
 import { Layers, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SchoolClass } from './types'
 import { CLASS_SEED } from './seed'
+import { DataTable, type DataColumn } from '../../components/DataTable'
 
 const emptyForm = { name: '', section: '', teacher: '', capacity: '40', studentCount: '0' }
 
@@ -18,6 +19,21 @@ export default function SchoolClasses() {
     () => items.filter((c) => `${c.name} ${c.section} ${c.teacher}`.toLowerCase().includes(query.toLowerCase())),
     [items, query]
   )
+
+  const columns: DataColumn<SchoolClass>[] = [
+    { key: 'name', header: 'Class', render: (c) => <span className="font-medium">{c.name}</span>, sortValue: (c) => c.name },
+    { key: 'section', header: 'Section', render: (c) => c.section, sortValue: (c) => c.section },
+    { key: 'teacher', header: 'Teacher', render: (c) => c.teacher },
+    {
+      key: 'strength', header: 'Strength', sortValue: (c) => c.studentCount,
+      render: (c) => (
+        <>
+          {c.studentCount} / {c.capacity}{' '}
+          {c.studentCount >= c.capacity && <Badge variant="warning" size="sm">Full</Badge>}
+        </>
+      ),
+    },
+  ]
 
   function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
   function openEdit(c: SchoolClass) {
@@ -42,38 +58,28 @@ export default function SchoolClasses() {
           <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add class</Button>
         </CardHeader>
         <CardContent>
-          <div className="relative mb-4 max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <Input placeholder="Search class, section or teacher..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
-          </div>
-          {filtered.length === 0 ? (
-            <Empty icon={<Layers className="w-6 h-6" />} title="No classes yet" description="Add a class to start enrolling students." />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow><TableHead>Class</TableHead><TableHead>Section</TableHead><TableHead>Teacher</TableHead><TableHead>Strength</TableHead><TableHead></TableHead></TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell>{c.section}</TableCell>
-                    <TableCell>{c.teacher}</TableCell>
-                    <TableCell>
-                      {c.studentCount} / {c.capacity}{' '}
-                      {c.studentCount >= c.capacity && <Badge variant="warning" size="sm">Full</Badge>}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => remove(c.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <DataTable
+            columns={columns}
+            rows={filtered}
+            rowKey={(c) => c.id}
+            pageSize={10}
+            exportFilename="school-classes"
+            emptyIcon={<Layers className="w-6 h-6" />}
+            emptyTitle="No classes yet"
+            emptyDescription="Add a class to start enrolling students."
+            toolbar={
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                <Input placeholder="Search class, section or teacher..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+              </div>
+            }
+            actions={(c) => (
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" onClick={() => openEdit(c)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => remove(c.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
 

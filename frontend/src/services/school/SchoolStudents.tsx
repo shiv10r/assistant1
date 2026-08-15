@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Select, Modal, Empty } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../components/ui'
 import { GraduationCap, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Student, SchoolClass } from './types'
 import { STUDENT_SEED, CLASS_SEED } from './seed'
+import { DataTable, type DataColumn } from '../../components/DataTable'
 
 export default function SchoolStudents() {
   const { items: classes } = useLocalCollection<SchoolClass>('school:classes', CLASS_SEED)
@@ -17,6 +18,15 @@ export default function SchoolStudents() {
     () => items.filter((s) => `${s.name} ${s.admissionNo} ${s.className}`.toLowerCase().includes(query.toLowerCase())),
     [items, query]
   )
+
+  const columns: DataColumn<Student>[] = [
+    { key: 'admissionNo', header: 'Admission No', render: (s) => <span className="font-mono text-xs">{s.admissionNo}</span> },
+    { key: 'name', header: 'Name', render: (s) => <span className="font-medium">{s.name}</span>, sortValue: (s) => s.name },
+    { key: 'className', header: 'Class', render: (s) => s.className, sortValue: (s) => s.className },
+    { key: 'guardianName', header: 'Guardian', render: (s) => s.guardianName },
+    { key: 'phone', header: 'Phone', render: (s) => s.phone },
+    { key: 'status', header: 'Status', render: (s) => <Badge variant={s.status === 'active' ? 'success' : 'outline'} size="sm">{s.status}</Badge>, sortValue: (s) => s.status },
+  ]
 
   function openAdd() {
     setEditing(null)
@@ -47,37 +57,28 @@ export default function SchoolStudents() {
           <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add student</Button>
         </CardHeader>
         <CardContent>
-          <div className="relative mb-4 max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <Input placeholder="Search name, admission no or class..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
-          </div>
-          {filtered.length === 0 ? (
-            <Empty icon={<GraduationCap className="w-6 h-6" />} title="No students yet" description="Add a student to start building the roster." />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow><TableHead>Admission No</TableHead><TableHead>Name</TableHead><TableHead>Class</TableHead><TableHead>Guardian</TableHead><TableHead>Phone</TableHead><TableHead>Status</TableHead><TableHead></TableHead></TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-mono text-xs">{s.admissionNo}</TableCell>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell>{s.className}</TableCell>
-                    <TableCell>{s.guardianName}</TableCell>
-                    <TableCell>{s.phone}</TableCell>
-                    <TableCell><Badge variant={s.status === 'active' ? 'success' : 'outline'} size="sm">{s.status}</Badge></TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(s)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => remove(s.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <DataTable
+            columns={columns}
+            rows={filtered}
+            rowKey={(s) => s.id}
+            pageSize={10}
+            exportFilename="school-students"
+            emptyIcon={<GraduationCap className="w-6 h-6" />}
+            emptyTitle="No students yet"
+            emptyDescription="Add a student to start building the roster."
+            toolbar={
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                <Input placeholder="Search name, admission no or class..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+              </div>
+            }
+            actions={(s) => (
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" onClick={() => openEdit(s)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => remove(s.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
 

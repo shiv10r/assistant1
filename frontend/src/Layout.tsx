@@ -87,10 +87,9 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
     { title: 'Warehouse Store', items: [
       { label: 'Overview', to: '/warehouse/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     ]},
-    { title: 'Customer & Retailer', items: [
-      { label: 'Customers', to: '/warehouse/customers', icon: <Users className="w-5 h-5" /> },
-      { label: 'Customers & Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
-      { label: 'Parties Ledger', to: '/billing/parties', icon: <Users className="w-5 h-5" /> },
+    { title: 'Retailers & Vendors', items: [
+      { label: 'Retailers', to: '/warehouse/customers', icon: <Users className="w-5 h-5" /> },
+      { label: 'Vendors', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
     ]},
     { title: 'Inventory', items: [
       { label: 'Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },

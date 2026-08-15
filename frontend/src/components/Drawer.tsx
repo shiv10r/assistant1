@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
-import { Button, cn } from '../../../components/ui'
+import { Button, cn } from './ui'
 
 interface DrawerProps {
   open: boolean

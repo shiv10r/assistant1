@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Select, Modal, Empty, money, fmtDate, todayISO } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal, money, fmtDate, todayISO } from '../../components/ui'
 import { Wallet, Plus, Search, CheckCircle2, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { FeeRecord, FeeStatus, Student } from './types'
 import { FEE_SEED, STUDENT_SEED } from './seed'
+import { DataTable, type DataColumn } from '../../components/DataTable'
 
 const STATUS_TONE: Record<FeeStatus, 'success' | 'warning' | 'danger'> = { paid: 'success', pending: 'warning', overdue: 'danger' }
 
@@ -20,6 +21,14 @@ export default function SchoolFees() {
     () => items.filter((f) => `${f.studentName} ${f.className}`.toLowerCase().includes(query.toLowerCase())),
     [items, query]
   )
+
+  const columns: DataColumn<FeeRecord>[] = [
+    { key: 'studentName', header: 'Student', render: (f) => <span className="font-medium">{f.studentName}</span>, sortValue: (f) => f.studentName },
+    { key: 'className', header: 'Class', render: (f) => f.className, sortValue: (f) => f.className },
+    { key: 'amount', header: 'Amount', render: (f) => money(f.amount), sortValue: (f) => f.amount },
+    { key: 'dueDate', header: 'Due date', render: (f) => fmtDate(f.dueDate), sortValue: (f) => f.dueDate },
+    { key: 'status', header: 'Status', render: (f) => <Badge variant={STATUS_TONE[f.status]} size="sm">{f.status}</Badge>, sortValue: (f) => f.status },
+  ]
 
   const totalPending = items.filter((f) => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0)
 
@@ -49,41 +58,33 @@ export default function SchoolFees() {
           <Button onClick={openAdd}><Plus className="w-4 h-4" /> Add fee record</Button>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-            <div className="relative max-w-sm flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <Input placeholder="Search student or class..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
-            </div>
-            <div className="text-sm text-muted">Outstanding: <span className="text-text font-semibold">{money(totalPending)}</span></div>
-          </div>
-          {filtered.length === 0 ? (
-            <Empty icon={<Wallet className="w-6 h-6" />} title="No fee records" description="Add a fee record to start tracking collections." />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow><TableHead>Student</TableHead><TableHead>Class</TableHead><TableHead>Amount</TableHead><TableHead>Due date</TableHead><TableHead>Status</TableHead><TableHead></TableHead></TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((f) => (
-                  <TableRow key={f.id}>
-                    <TableCell className="font-medium">{f.studentName}</TableCell>
-                    <TableCell>{f.className}</TableCell>
-                    <TableCell>{money(f.amount)}</TableCell>
-                    <TableCell>{fmtDate(f.dueDate)}</TableCell>
-                    <TableCell><Badge variant={STATUS_TONE[f.status]} size="sm">{f.status}</Badge></TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 justify-end">
-                        {f.status !== 'paid' && (
-                          <Button variant="ghost" size="icon" onClick={() => markPaid(f)} aria-label="Mark paid"><CheckCircle2 className="w-4 h-4" /></Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => remove(f.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <DataTable
+            columns={columns}
+            rows={filtered}
+            rowKey={(f) => f.id}
+            pageSize={10}
+            exportFilename="school-fees"
+            emptyIcon={<Wallet className="w-6 h-6" />}
+            emptyTitle="No fee records"
+            emptyDescription="Add a fee record to start tracking collections."
+            toolbar={
+              <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+                <div className="relative w-full sm:w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <Input placeholder="Search student or class..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+                </div>
+                <div className="text-sm text-muted">Outstanding: <span className="text-text font-semibold">{money(totalPending)}</span></div>
+              </div>
+            }
+            actions={(f) => (
+              <div className="flex gap-1 justify-end">
+                {f.status !== 'paid' && (
+                  <Button variant="ghost" size="icon" onClick={() => markPaid(f)} aria-label="Mark paid"><CheckCircle2 className="w-4 h-4" /></Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={() => remove(f.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
 

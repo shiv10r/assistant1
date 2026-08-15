@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Card, CardContent, cn } from '../../../components/ui'
+import { Card, CardContent, cn } from './ui'
 
 type Tone = 'default' | 'success' | 'warning' | 'danger' | 'info'
 
