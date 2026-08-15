@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { ActivityItem, AnalyticsData, ContractMilestone, ModuleSummary, Snag } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Empty, money, cn } from '../components/ui'
+import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib/services'
 import {
   Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel,
   ArrowRight, Map, ClipboardList, Activity as ActivityIcon, Package, AlarmClock,
+  Building2, Warehouse, GraduationCap,
 } from 'lucide-react'
 
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
@@ -33,9 +35,22 @@ const empty: DashboardData = {
   credit: null, stock: null, labour: null, activity: null, procurementPending: null,
 }
 
+const SERVICE_ICONS: Record<ServiceId, typeof Building2> = {
+  interior: Building2,
+  warehouse: Warehouse,
+  school: GraduationCap,
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData>(empty)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  function enterService(id: ServiceId) {
+    setLastService(id)
+    const svc = SERVICES.find((s) => s.id === id)
+    if (svc) navigate(svc.home)
+  }
 
   useEffect(() => {
     let alive = true
@@ -108,6 +123,38 @@ export default function Dashboard() {
           <Link to="/map" className="dashboard-action-link"><Map className="w-4 h-4" /> Site map</Link>
         </div>
       </header>
+
+      {/* Service navigation */}
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+        {SERVICES.map((svc) => {
+          const Icon = SERVICE_ICONS[svc.id]
+          const active = svc.id === getLastService()?.id
+          return (
+            <button
+              key={svc.id}
+              onClick={() => enterService(svc.id)}
+              className={cn(
+                'group flex items-center gap-4 rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5',
+                active
+                  ? 'border-primary bg-primary/10 shadow-[0_0_24px_rgba(255,150,56,0.15)]'
+                  : 'border-border bg-surface hover:border-primary/50'
+              )}
+            >
+              <span className={cn(
+                'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0',
+                active ? 'bg-primary text-white' : 'bg-primary/10 text-primary'
+              )}>
+                <Icon className="w-5 h-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-text">{svc.label}</span>
+                <span className="block text-xs text-muted truncate">{svc.tagline}</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors flex-shrink-0" />
+            </button>
+          )
+        })}
+      </div>
 
       {/* Row 1 — Executive KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
