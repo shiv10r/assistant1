@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Empty, fmtDate, Modal, money, num, PageHead } from '../ui'
+import { Empty, Modal, PageHead } from './ui'
 import { useLocalCollection, genId } from '../lib/localStore'
-import { todayISO } from '../lib/utils'
+import { fmtDate, money, num, todayISO } from '../lib/utils'
 
 /** Minimal worker shape — any service's staff record satisfies it. */
 export interface AttendanceWorker {
@@ -228,7 +228,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
       </div>
 
       {workers.items.length === 0 ? (
-        <Empty>No workers added yet. Use "＋ Add Worker" to start tracking attendance.</Empty>
+        <Empty title={'No workers added yet. Use "＋ Add Worker" to start tracking attendance.'} />
       ) : (
         <div className="card" style={{ padding: 8 }}>
           <table className="main-table">
@@ -371,7 +371,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
       )}
 
       {addOpen && (
-        <Modal title="Add Worker" onClose={() => setAddOpen(false)}>
+        <Modal open={addOpen} title="Add Worker" onClose={() => setAddOpen(false)} size="sm">
           <div className="form-row">
             <input value={wName} placeholder="Name *" onChange={(e) => setWName(e.target.value)} />
             <select value={wRole} onChange={(e) => setWRole(e.target.value)}>
@@ -391,7 +391,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
       )}
 
       {reqOpen && (
-        <Modal title="WFH / Leave Request" onClose={() => setReqOpen(false)}>
+        <Modal open={reqOpen} title="WFH / Leave Request" onClose={() => setReqOpen(false)} size="sm">
           <div className="form-row">
             <select value={reqKind} onChange={(e) => setReqKind(e.target.value)}>
               {REQ_KINDS.map((k) => <option key={k}>{k}</option>)}

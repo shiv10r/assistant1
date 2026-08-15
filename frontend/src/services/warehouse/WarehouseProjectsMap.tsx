@@ -147,7 +147,11 @@ export default function WarehouseProjectsMap() {
       maxZoom: 19,
     }).addTo(map)
     mapRef.current = map
-    return () => { watchRef.current && navigator.geolocation.clearWatch(watchRef.current); map.remove(); mapRef.current = null }
+    return () => {
+      if (watchRef.current !== null) navigator.geolocation.clearWatch(watchRef.current)
+      map.remove()
+      mapRef.current = null
+    }
   }, [])
 
   useEffect(() => {
