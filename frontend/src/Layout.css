@@ -89,7 +89,7 @@
 .plan-pill.is-pro .plan-pill-dot { background: var(--primary); }
 
 .topbar-icon-btn {
-  width: 36px; height: 36px;
+  width: 44px; height: 36px;
   background: var(--surface-hover); color: var(--text);
   border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;

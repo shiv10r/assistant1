@@ -391,7 +391,7 @@ export default function Layout() {
             <circle cx="318" cy="228" r="17" fill="#0F0F1A"/>
           </svg>
         </div>
-        <div className="brand">Lux<span>Infra</span></div>
+        <div className="brand">VSR <span>Systems</span></div>
         <div className="online">● Online</div>
         <NavLink
           to="/plans"
