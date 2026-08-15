@@ -1,23 +1,22 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../components/ui'
 import { GraduationCap, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Student, SchoolClass } from './types'
 import { STUDENT_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
+import { useCollectionSearch } from '../../hooks/useCollectionSearch'
+
+const studentSearchText = (student: Student) =>
+  `${student.name} ${student.admissionNo} ${student.className}`
 
 export default function SchoolStudents() {
   const { items: classes } = useLocalCollection<SchoolClass>('school:classes', CLASS_SEED)
   const { items, add, update, remove } = useLocalCollection<Student>('school:students', STUDENT_SEED)
-  const [query, setQuery] = useState('')
+  const { query, setQuery, filteredItems: filtered } = useCollectionSearch(items, studentSearchText)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
   const [form, setForm] = useState({ admissionNo: '', name: '', classId: classes[0]?.id ?? '', guardianName: '', phone: '', status: 'active' as Student['status'] })
-
-  const filtered = useMemo(
-    () => items.filter((s) => `${s.name} ${s.admissionNo} ${s.className}`.toLowerCase().includes(query.toLowerCase())),
-    [items, query]
-  )
 
   const columns: DataColumn<Student>[] = [
     { key: 'admissionNo', header: 'Admission No', render: (s) => <span className="font-mono text-xs">{s.admissionNo}</span> },

@@ -11,6 +11,7 @@ import { DataTable, type DataColumn } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
+import { useCollectionSearch } from '../../hooks/useCollectionSearch'
 
 const emptyForm = {
   name: '', company: '', gstin: '', phone: '', email: '',
@@ -22,20 +23,16 @@ export default function WarehouseCustomers() {
   const { toast } = useToast()
   const { isAdvanced } = useViewMode()
 
-  const [query, setQuery] = useState('')
+  const { query, setQuery, filteredItems: searchResults } = useCollectionSearch(items, customerSearchText)
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Customer | null>(null)
   const [form, setForm] = useState(emptyForm)
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase()
-    return items.filter((c) => {
-      const matchesQ = `${c.name} ${c.company} ${c.phone} ${c.email} ${c.gstin}`.toLowerCase().includes(q)
-      const matchesStatus = statusFilter === 'all' || c.status === statusFilter
-      return matchesQ && matchesStatus
-    })
-  }, [items, query, statusFilter])
+  const filtered = useMemo(
+    () => searchResults.filter((customer) => statusFilter === 'all' || customer.status === statusFilter),
+    [searchResults, statusFilter],
+  )
 
   function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
   function openEdit(c: Customer) {
@@ -181,3 +178,6 @@ export default function WarehouseCustomers() {
     </div>
   )
 }
+
+const customerSearchText = (customer: Customer) =>
+  `${customer.name} ${customer.company} ${customer.phone} ${customer.email} ${customer.gstin}`
