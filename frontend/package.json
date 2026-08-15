@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "check:chunks": "node check-route-chunks.mjs",
+    "check:legacy-ui": "node check-no-legacy-ui.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
