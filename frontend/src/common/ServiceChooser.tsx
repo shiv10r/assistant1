@@ -36,7 +36,7 @@ export default function ServiceChooser() {
           <span className="chooser-logo">
             <Building2 className="w-6 h-6" />
           </span>
-          <span className="chooser-brand">Lux<span>Infra</span></span>
+          <span className="chooser-brand">VSR <span>Systems</span></span>
         </div>
         <div className="chooser-header-actions">
           <button className="chooser-help" type="button">
@@ -51,7 +51,7 @@ export default function ServiceChooser() {
 
       <main className="chooser-main">
         <div className="chooser-heading">
-          <h1 className="chooser-title">Welcome to Lux<span>Infra</span></h1>
+          <h1 className="chooser-title">Welcome to VSR <span>Systems</span></h1>
           <p className="chooser-sub">Choose the workspace for this session</p>
           <span className="chooser-accent" aria-hidden="true" />
         </div>
