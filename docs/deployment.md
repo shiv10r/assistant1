@@ -95,3 +95,5 @@ branch to **`luxinfra-frontend`** and re-deploying (Deploy → Clear cache & dep
 - **Render free-tier disk wipes on redeploy** — enable `TURSO_URL`/`TURSO_TOKEN` to persist data.
 - **`DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false`** is set in the Dockerfile so ASP.NET doesn't
   crash under Render's low inotify limit.
+
+if architecture is huge break into chns and code dont plan all simultaneously
