@@ -74,6 +74,41 @@
 .online { margin-left: auto; color: var(--accent); font-size: 0.75rem; font-weight: 600; }
 .online::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 0.4rem; }
 
+/* Plan pill + search + view-mode switch (topbar) */
+.plan-pill {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.3rem 0.75rem; border-radius: 999px;
+  background: var(--surface-hover); color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 600; text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.plan-pill:hover { border-color: var(--primary); color: var(--primary); }
+.plan-pill.is-pro { background: color-mix(in srgb, var(--primary) 12%, transparent); border-color: color-mix(in srgb, var(--primary) 35%, transparent); }
+.plan-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.plan-pill.is-pro .plan-pill-dot { background: var(--primary); }
+
+.topbar-icon-btn {
+  width: 36px; height: 36px;
+  background: var(--surface-hover); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.topbar-icon-btn:hover { background: var(--primary); color: white; }
+
+.view-mode-switch {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px; border-radius: 999px;
+  background: var(--surface-hover); border: 1px solid var(--border);
+}
+.view-mode-switch button {
+  padding: 0.25rem 0.6rem; border: none; border-radius: 999px;
+  background: transparent; color: var(--muted); font-size: 0.7rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s, color 0.2s;
+}
+.view-mode-switch button.active { background: var(--primary); color: white; }
+
 /* Body */
 .body-row { display: flex; flex: 1 1 auto; min-height: 0; }
 

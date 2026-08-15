@@ -1,11 +1,11 @@
 import { PageHead } from '../ui'
-import { Card, CardContent, Badge, Button } from '../components/ui'
+import { Card, CardContent, Badge, Button, cn } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
 
 const PLANS = [
-  { key: 'free', name: 'Starter', price: 0, period: 'forever', blurb: 'For single-site freelancers', features: ['1 active project', 'Unlimited expenses', 'Assistant chat', 'Excel / PDF / PNG reports'] },
-  { key: 'pro', name: 'Pro', price: 499, period: '/month', blurb: 'For growing interior firms', features: ['Unlimited projects', 'Billing (sales, purchases, parties)', 'Cloud backup & restore', 'Advanced analytics & charts', 'Low-stock alerts'] },
-  { key: 'business', name: 'Business', price: 999, period: '/month', blurb: 'For multi-branch studios', features: ['Everything in Pro', 'Multi-user access', 'Custom invoice templates', 'Priority support', 'API access'] },
+  { key: 'free', name: 'Starter', price: 0, period: 'forever', blurb: 'For single-site freelancers', highlight: false, features: ['1 active project', 'Unlimited expenses', 'Assistant chat', 'Excel / PDF / PNG reports'] },
+  { key: 'pro', name: 'Pro', price: 1500, period: '/month', blurb: 'For growing interior firms', highlight: true, features: ['Unlimited projects', 'Billing (sales, purchases, parties)', 'Cloud backup & restore', 'Advanced analytics & charts', 'Low-stock alerts', 'Project site map & weather'] },
+  { key: 'business', name: 'Business', price: 2500, period: '/month', blurb: 'For multi-branch studios', highlight: false, features: ['Everything in Pro', 'Multi-user access', 'Custom invoice templates', 'Priority support', 'API access', 'Global search'] },
 ]
 
 export default function Plans() {
@@ -31,7 +31,13 @@ export default function Plans() {
         {PLANS.map((p) => {
           const current = plan === p.key
           return (
-            <Card key={p.key} className={current ? 'border-primary ring-2 ring-primary/30' : ''}>
+            <Card key={p.key} className={cn(
+              current ? 'border-primary ring-2 ring-primary/30' : '',
+              p.highlight && !current ? 'relative border-primary/60' : ''
+            )}>
+              {p.highlight && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-white text-xs font-semibold shadow-lg">Most Popular</span>
+              )}
               <CardContent className="p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-text">{p.name}</span>
@@ -41,6 +47,7 @@ export default function Plans() {
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-text">₹{p.price}</span>
                   <span className="text-sm text-muted">{p.period}</span>
+                  {p.key === 'free' && <span className="text-xs text-muted ml-auto">No card needed</span>}
                 </div>
                 <ul className="space-y-2 flex-1">
                   {p.features.map((f) => (
@@ -51,7 +58,7 @@ export default function Plans() {
                   ))}
                 </ul>
                 <Button
-                  variant={current ? 'outline' : 'default'}
+                  variant={current ? 'outline' : p.highlight ? 'default' : 'outline'}
                   disabled={current}
                   onClick={() => setPlan(p.key as 'free' | 'pro' | 'business')}
                 >

@@ -349,4 +349,7 @@ export interface ProjectRecord {
   status: ProjectStatus
   startDate: string
   budget: number
+  address?: string
+  latitude?: number
+  longitude?: number
 }

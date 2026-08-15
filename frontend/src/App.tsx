@@ -49,6 +49,8 @@ import WarehouseGrn from './services/warehouse/WarehouseGrn'
 import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
 import WarehouseStaff from './services/warehouse/WarehouseStaff'
 import WarehouseProjects from './services/warehouse/WarehouseProjects'
+import WarehouseProjectWorkspace from './services/warehouse/WarehouseProjectWorkspace'
+import WarehouseProjectAttendance from './services/warehouse/WarehouseProjectAttendance'
 import WarehouseProducts from './services/warehouse/WarehouseProducts'
 import WarehouseCustomers from './services/warehouse/WarehouseCustomers'
 import WarehouseWarehouses from './services/warehouse/WarehouseWarehouses'
@@ -148,6 +150,8 @@ export default function App() {
           <Route path="/warehouse/suppliers" element={<WarehouseSuppliers />} />
           <Route path="/warehouse/staff" element={<WarehouseStaff />} />
           <Route path="/warehouse/projects" element={<WarehouseProjects />} />
+          <Route path="/warehouse/projects/:id" element={<WarehouseProjectWorkspace />} />
+          <Route path="/warehouse/projects/:id/attendance" element={<WarehouseProjectAttendance />} />
           <Route path="/warehouse/products" element={<WarehouseProducts />} />
           <Route path="/warehouse/customers" element={<WarehouseCustomers />} />
           <Route path="/warehouse/warehouses" element={<WarehouseWarehouses />} />

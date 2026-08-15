@@ -7,6 +7,8 @@ import { useToast } from '../../components/ui/Toast'
 import LocationPicker from '../../components/LocationPicker'
 import { Plus, Search, FolderKanban, Trash2, ArrowRight, Calendar } from 'lucide-react'
 import { cn, fmtDate } from '../../lib/utils'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const STATUSES = ['In Discussion', 'Not Started', 'Ongoing', 'On Hold', 'Completed']
 
@@ -20,6 +22,7 @@ const STATUS_TONE: Record<string, 'default' | 'info' | 'warning' | 'danger' | 's
 
 export default function ProjectsList() {
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
   const [projects, setProjects] = useState<Project[]>([])
   const [err, setErr] = useState('')
   const [open, setOpen] = useState(false)
@@ -91,6 +94,41 @@ export default function ProjectsList() {
         <Kpi label="Ongoing" value={String(counts.ongoing)} />
         <Kpi label="Completed" value={String(counts.completed)} />
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Portfolio pipeline · contract value by status — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total contract value', value: money(counts.totalValue), delta: `${counts.total} project(s)`, deltaTone: 'flat' },
+            { label: 'In discussion', value: String(counts.discussion), delta: `${counts.total ? Math.round((counts.discussion / counts.total) * 100) : 0}% of portfolio`, deltaTone: 'flat' },
+            { label: 'Ongoing', value: String(counts.ongoing), delta: `${counts.total ? Math.round((counts.ongoing / counts.total) * 100) : 0}% of portfolio`, deltaTone: 'up' },
+            { label: 'Completed', value: String(counts.completed), delta: `${counts.total ? Math.round((counts.completed / counts.total) * 100) : 0}% of portfolio`, deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Contract value by status</p>
+              <BarChart
+                data={STATUSES
+                  .map((s) => ({ label: s, value: projects.filter((p) => p.status === s).reduce((sum, p) => sum + p.value, 0) }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Pipeline breakdown</p>
+              <DonutChart
+                data={[
+                  { label: 'Ongoing', value: counts.ongoing, color: 'var(--primary)' },
+                  { label: 'In Discussion', value: counts.discussion, color: '#38bdf8' },
+                  { label: 'On Hold', value: projects.filter((p) => p.status === 'On Hold').length, color: '#f59e0b' },
+                  { label: 'Completed', value: counts.completed, color: '#10b981' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Toolbar */}
       <Card className="mb-6">

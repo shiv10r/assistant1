@@ -3342,3 +3342,63 @@ ok
 Resolve
 
 
+
+update pricing model chek refrence of image and steps told
+ pro 1500 business 2500 update the cards ui 
+  what ever verssion selected same should come in top  bar in this ● Online row like if its free then all acroass all the three services 
+
+ in the same row give serch icon with global search feature where anything in the application could be searched 
+ 
+
+
+ i want project feature to be common across all the 2 service interior and warehouse  along with site map feature  it should come in project management section of warehouse eveything under one card 
+
+ l
+In Discussion
+l
+Set location
+Edit Project
+Contract Value
+
+₹0
+
+Received
+
+₹0
+
+Spent
+
+₹5,467
+
+Task Progress
+
+36465%
+
+Weather is unavailable because this project has no location set.
+
+Set project location
+Party
+Site staff & vendors
+Transaction
+Payments in & out
+Site
+Daily progress logs
+Task
+Task management
+Attendance
+Daily attendance
+Material
+Material & stock
+MOM
+Meeting minutes
+Design
+Drawings & designs
+Files
+Folders & docs
+Payroll
+Salary computation
+Daily Progress Reports
+Add DPR
+No daily progress reports yet.
+
+ i am very ambitious about this project add a toggl button switch b/w simple view and advance view in standard view show current ui in advance view along with current view add charts kpis metrices multiple compare patameters etc for all the feature across the application

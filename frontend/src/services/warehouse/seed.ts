@@ -220,5 +220,5 @@ export const STAFF_SEED: StaffMember[] = [
 ]
 
 export const PROJECT_SEED: ProjectRecord[] = [
-  { id: 'wproj-1', name: 'Warehouse Expansion - Bay 3', client: 'Internal', status: 'active', startDate: '2026-07-01', budget: 850000 },
+  { id: 'wproj-1', name: 'Warehouse Expansion - Bay 3', client: 'Internal', status: 'active', startDate: '2026-07-01', budget: 850000, address: 'Plot 14, Sector 8, IMT Manesar, Gurgaon', latitude: 28.4139, longitude: 76.9829 },
 ]

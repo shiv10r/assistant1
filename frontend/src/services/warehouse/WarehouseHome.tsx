@@ -10,9 +10,12 @@ import { KpiCard } from './components/KpiCard'
 import { StatusBadge } from './components/StatusBadge'
 import { useStockLedger } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 export default function WarehouseHome() {
   const navigate = useNavigate()
+  const { isAdvanced } = useViewMode()
   const { items: inventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { items: pos } = useLocalCollection<PurchaseOrder>('warehouse:pos', PO_SEED)
   const { items: grns } = useLocalCollection<GrnRecord>('warehouse:grn', GRN_SEED)
@@ -45,6 +48,40 @@ export default function WarehouseHome() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Inventory value by category · stock health · order pipeline — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Stock value', value: money(stockValue), delta: `${inventory.length} SKUs`, deltaTone: 'flat' },
+            { label: 'Stock fill rate', value: `${inventory.length === 0 ? 0 : Math.round((inventory.length - lowStock.length - outOfStock.length) / inventory.length * 100)}%`, delta: 'healthy / total', deltaTone: 'flat' },
+            { label: 'Orders in pipeline', value: String(activeOrders.length), delta: `${pendingPicking} ready to pick`, deltaTone: 'up' },
+            { label: 'Awaiting dispatch', value: String(pendingDispatch), delta: `${inTransit} transfers in transit`, deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock value by product</p>
+              <BarChart
+                data={[...inventory]
+                  .sort((a, b) => b.qty * b.unitPrice - a.qty * a.unitPrice)
+                  .slice(0, 6)
+                  .map((i) => ({ label: i.name.length > 10 ? i.name.slice(0, 10) + '…' : i.name, value: i.qty * i.unitPrice }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock health</p>
+              <DonutChart
+                data={[
+                  { label: 'In stock', value: Math.max(0, inventory.length - lowStock.length - outOfStock.length), color: 'var(--primary)' },
+                  { label: 'Low stock', value: lowStock.length, color: '#f59e0b' },
+                  { label: 'Out of stock', value: outOfStock.length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((k) => (
           <KpiCard key={k.label} label={k.label} value={k.value} sub={k.sub} icon={k.icon} tone={k.tone} onClick={() => navigate(k.to)} />

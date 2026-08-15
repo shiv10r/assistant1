@@ -52,11 +52,14 @@ import {
   ListChecks,
   PackageCheck,
   RotateCcw,
+  Search,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
+import GlobalSearch from './components/GlobalSearch'
 import { Modal } from './components/ui'
 import { usePlan } from './hooks/usePlan'
+import { useViewMode } from './hooks/useViewMode'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
@@ -216,7 +219,9 @@ export default function Layout() {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
   const [weatherOpen, setWeatherOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const { plan } = usePlan()
+  const { mode, setMode } = useViewMode()
   const isAdmin = getRole() === 'admin' || !getRole()
   const weather = useWeather()
 
@@ -273,6 +278,17 @@ export default function Layout() {
   const service = serviceFromPath(location.pathname) ?? getLastService()
   const groups = navGroupsFor(service?.id)
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <div className="app">
       <header className="topbar">
@@ -300,6 +316,33 @@ export default function Layout() {
         </div>
         <div className="brand">Lux<span>Infra</span></div>
         <div className="online">● Online</div>
+        <NavLink
+          to="/plans"
+          className={`plan-pill ${plan === 'free' ? '' : 'is-pro'}`}
+          title={`Current plan: ${PLAN_LABEL[plan] ?? 'Free'}`}
+        >
+          <span className="plan-pill-dot" />
+          <span>{PLAN_LABEL[plan] ?? 'Free'}</span>
+        </NavLink>
+        <button className="topbar-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
+          <Search className="w-5 h-5" />
+        </button>
+        <div className="view-mode-switch" title="Simple / Advanced view">
+          <button
+            className={mode === 'simple' ? 'active' : ''}
+            onClick={() => setMode('simple')}
+            aria-label="Simple view"
+          >
+            Simple
+          </button>
+          <button
+            className={mode === 'advanced' ? 'active' : ''}
+            onClick={() => setMode('advanced')}
+            aria-label="Advanced view"
+          >
+            Advanced
+          </button>
+        </div>
         <Button
           variant="ghost"
           size="icon"
@@ -374,6 +417,7 @@ export default function Layout() {
         <main className="content"><Outlet /></main>
       </div>
       <AiWidget />
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
         <div className="space-y-4">

@@ -4,6 +4,8 @@ import { api } from '../api'
 import type { ActivityItem, AnalyticsData, ContractMilestone, ModuleSummary, Snag } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Empty, money, cn } from '../components/ui'
 import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib/services'
+import { useViewMode } from '../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 import {
   Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel,
   ArrowRight, Map, ClipboardList, Activity as ActivityIcon, Package, AlarmClock,
@@ -45,6 +47,7 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData>(empty)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { isAdvanced } = useViewMode()
 
   function enterService(id: ServiceId) {
     setLastService(id)
@@ -171,6 +174,39 @@ export default function Dashboard() {
         <Kpi icon={<Users className="w-5 h-5" />} label="Workforce On Site" value={String(labour?.totalWorkers ?? 0)} sub={labour?.totalPresentLabel ? `${labour.totalPresentLabel} present` : undefined} tone="bg-sky-500/10 text-sky-500" />
         <Kpi icon={<Fuel className="w-5 h-5" />} label="Fuel Expense" value={mods?.fuelSpendMonthLabel ?? '—'} sub="This month" tone="bg-rose-500/10 text-rose-500" />
       </div>
+
+      {isAdvanced && projects.length > 0 && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Cross-project financials & pipeline health — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total received', value: money(grandReceived), delta: `${grandEntries} entries`, deltaTone: 'up' },
+            { label: 'Total spent', value: money(grandSpent), delta: grandReceived > 0 ? `${Math.round((grandSpent / grandReceived) * 100)}% of received` : '—', deltaTone: 'flat' },
+            { label: 'Margin', value: money(grandReceived - grandSpent), delta: grandReceived - grandSpent >= 0 ? 'positive' : 'negative', deltaTone: grandReceived - grandSpent >= 0 ? 'up' : 'down' },
+            { label: 'Avg completion', value: `${projects.length ? Math.round(projects.reduce((s, p) => s + p.taskPct, 0) / projects.length) : 0}%`, delta: `${activeSites} active site(s)`, deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Revenue vs budget spent per site</p>
+              <BarChart
+                data={projects.slice(0, 6).map((p) => ({ label: p.name.length > 12 ? p.name.slice(0, 12) + '…' : p.name, value: p.received || 0 }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Portfolio status</p>
+              <DonutChart
+                data={[
+                  { label: 'Ongoing', value: projects.filter((p) => p.status === 'Ongoing').length, color: 'var(--primary)' },
+                  { label: 'Completed', value: projects.filter((p) => p.status === 'Completed').length, color: '#10b981' },
+                  { label: 'On Hold', value: projects.filter((p) => p.status === 'On Hold').length, color: '#f59e0b' },
+                  { label: 'Other', value: projects.filter((p) => !['Ongoing', 'Completed', 'On Hold'].includes(p.status)).length, color: '#94a3b8' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Mid-page grid */}
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
