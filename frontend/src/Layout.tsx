@@ -7,7 +7,7 @@ import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
 import { conditionMeta } from './lib/weather'
-import { serviceFromPath, type ServiceId } from './lib/services'
+import { serviceFromPath, getLastService, type ServiceId } from './lib/services'
 import {
   LayoutDashboard,
   BarChart3,
@@ -270,7 +270,7 @@ export default function Layout() {
 
   const location = useLocation()
   const navigate = useNavigate()
-  const service = serviceFromPath(location.pathname)
+  const service = serviceFromPath(location.pathname) ?? getLastService()
   const groups = navGroupsFor(service?.id)
 
   return (
