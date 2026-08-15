@@ -42,8 +42,8 @@ export default function SchoolAttendance() {
         <CardContent>
           <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
             <div className="relative max-w-sm flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <Input placeholder="Search students..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <Input placeholder="Search students..." className="pl-12" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
             <div className="text-sm text-muted">Present: <span className="text-text font-semibold">{presentCount}/{todays.length}</span></div>
           </div>

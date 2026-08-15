@@ -478,14 +478,16 @@ h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
 .f-label { font-size: 12px; font-weight: 600; color: var(--dim); margin-bottom: 4px; display: block; }
 .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
 .form-row > * { flex: 1 1 0; min-width: 120px; }
-input, select, textarea {
-  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none; width: 100%;
-  transition: border-color .15s ease, box-shadow .15s ease;
+@layer base {
+  input, select, textarea {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none; width: 100%;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+  input::placeholder, textarea::placeholder { color: var(--dim); }
+  textarea { resize: vertical; min-height: 64px; }
 }
-input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
-input::placeholder, textarea::placeholder { color: var(--dim); }
-textarea { resize: vertical; min-height: 64px; }
 
 /* ---------- Modal ---------- */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(8,10,16,.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }

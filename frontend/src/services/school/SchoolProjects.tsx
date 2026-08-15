@@ -47,8 +47,8 @@ export default function SchoolProjects() {
         </CardHeader>
         <CardContent>
           <div className="relative mb-4 max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <Input placeholder="Search projects..." className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+            <Input placeholder="Search projects..." className="pl-12" value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
           {filtered.length === 0 ? (
             <Empty icon={<Briefcase className="w-6 h-6" />} title="No projects yet" description="Add a school project or event to track it here." />
