@@ -1,52 +1,112 @@
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '../../components/ui'
-import { Boxes, ClipboardList, Truck, Users, Package, AlertTriangle } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button } from '../../components/ui'
+import { Boxes, ClipboardList, Truck, Users, Package, AlertTriangle, PackageX, IndianRupee, ArrowRight, History } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
-import type { InventoryItem, PurchaseOrder, GrnRecord, Supplier } from './types'
-import { INVENTORY_SEED, SUPPLIER_SEED, PO_SEED, GRN_SEED } from './seed'
+import type { InventoryItem, PurchaseOrder, GrnRecord } from './types'
+import { availableOf, stockStatusOf } from './types'
+import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED } from './seed'
+import { money, fmtDate } from '../../lib/utils'
+import { KpiCard } from './components/KpiCard'
+import { StatusBadge } from './components/StatusBadge'
+import { useStockLedger } from './ledger'
+import { MOVEMENT_LABEL } from './ledger'
 
 export default function WarehouseHome() {
   const navigate = useNavigate()
   const { items: inventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
-  const { items: suppliers } = useLocalCollection<Supplier>('warehouse:suppliers', SUPPLIER_SEED)
   const { items: pos } = useLocalCollection<PurchaseOrder>('warehouse:pos', PO_SEED)
   const { items: grns } = useLocalCollection<GrnRecord>('warehouse:grn', GRN_SEED)
+  const { movements } = useStockLedger()
 
-  const lowStock = inventory.filter((i) => i.qty <= i.reorderLevel)
-  const openPOs = pos.filter((p) => p.status === 'sent' || p.status === 'draft')
+  const lowStock = inventory.filter((i) => stockStatusOf(i) === 'low_stock')
+  const outOfStock = inventory.filter((i) => stockStatusOf(i) === 'out_of_stock')
+  const openPOs = pos.filter((p) => p.status === 'submitted' || p.status === 'approved' || p.status === 'partial' || p.status === 'draft')
+  const pendingReceiving = pos.filter((p) => p.status === 'approved')
+  const totalQty = inventory.reduce((sum, i) => sum + i.qty, 0)
   const stockValue = inventory.reduce((sum, i) => sum + i.qty * i.unitPrice, 0)
+  const warehouses = WAREHOUSE_SEED.length
 
   const kpis = [
-    { label: 'SKUs tracked', value: inventory.length, icon: <Boxes className="w-5 h-5" />, to: '/warehouse/inventory' },
-    { label: 'Low stock alerts', value: lowStock.length, icon: <AlertTriangle className="w-5 h-5" />, to: '/warehouse/inventory' },
-    { label: 'Open purchase orders', value: openPOs.length, icon: <ClipboardList className="w-5 h-5" />, to: '/warehouse/purchase-orders' },
-    { label: 'Suppliers', value: suppliers.length, icon: <Users className="w-5 h-5" />, to: '/warehouse/suppliers' },
+    { label: 'SKUs tracked', value: inventory.length, icon: <Boxes className="w-5 h-5" />, tone: 'default' as const, to: '/warehouse/inventory' },
+    { label: 'Total stock qty', value: totalQty.toLocaleString('en-IN'), sub: `${warehouses} warehouse(s)`, icon: <Package className="w-5 h-5" />, tone: 'info' as const, to: '/warehouse/inventory' },
+    { label: 'Stock value', value: money(stockValue), icon: <IndianRupee className="w-5 h-5" />, tone: 'success' as const, to: '/warehouse/inventory' },
+    { label: 'Low stock', value: lowStock.length, icon: <AlertTriangle className="w-5 h-5" />, tone: 'warning' as const, to: '/warehouse/inventory' },
+    { label: 'Out of stock', value: outOfStock.length, icon: <PackageX className="w-5 h-5" />, tone: 'danger' as const, to: '/warehouse/inventory' },
+    { label: 'Open purchase orders', value: openPOs.length, sub: `${pendingReceiving.length} awaiting receipt`, icon: <ClipboardList className="w-5 h-5" />, tone: 'default' as const, to: '/warehouse/purchase-orders' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((k) => (
-          <Card key={k.label} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate(k.to)}>
-            <CardContent className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-muted">{k.label}</div>
-                <div className="text-2xl font-semibold text-text mt-1">{k.value}</div>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-surface2 border border-border flex items-center justify-center text-primary">{k.icon}</div>
-            </CardContent>
-          </Card>
+          <KpiCard key={k.label} label={k.label} value={k.value} sub={k.sub} icon={k.icon} tone={k.tone} onClick={() => navigate(k.to)} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle>Stock value</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Low stock</span>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/warehouse/inventory')}>
+                View all <ArrowRight className="w-4 h-4" />
+              </Button>
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-text">₹{stockValue.toLocaleString('en-IN')}</div>
-            <p className="text-sm text-muted mt-1">Estimated value of current inventory on hand.</p>
+            {lowStock.length === 0 && outOfStock.length === 0 ? (
+              <p className="text-sm text-muted">All items are sufficiently stocked.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow><TableHead>Product</TableHead><TableHead>On hand</TableHead><TableHead>Available</TableHead><TableHead>Reorder</TableHead><TableHead>Status</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[...lowStock, ...outOfStock].slice(0, 6).map((i) => (
+                    <TableRow key={i.id}>
+                      <TableCell className="font-medium">{i.name}</TableCell>
+                      <TableCell>{i.qty} {i.unit}</TableCell>
+                      <TableCell>{availableOf(i)}</TableCell>
+                      <TableCell>{i.reorderLevel}</TableCell>
+                      <TableCell><StatusBadge status={stockStatusOf(i)} /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Recent stock movements</span>
+              <History className="w-4 h-4 text-muted" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {movements.length === 0 ? (
+              <p className="text-sm text-muted">No stock movements recorded yet. Receive goods or adjust stock to see activity here.</p>
+            ) : (
+              <ul className="space-y-2">
+                {movements.slice(0, 6).map((m) => (
+                  <li key={m.id} className="flex items-center justify-between text-sm rounded-lg border border-border bg-surface2/40 p-3">
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{m.itemName}</div>
+                      <div className="text-xs text-muted mt-0.5">
+                        {MOVEMENT_LABEL[m.type]} · {m.from || '—'} → {m.to || '—'} · {m.date.slice(0, 10)}
+                      </div>
+                    </div>
+                    <Badge variant={m.qty >= 0 ? 'success' : 'danger'} size="sm">{m.qty >= 0 ? '+' : ''}{m.qty}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader><CardTitle>Recent goods received</CardTitle></CardHeader>
           <CardContent>
@@ -56,8 +116,26 @@ export default function WarehouseHome() {
               <ul className="space-y-2">
                 {grns.slice(0, 5).map((g) => (
                   <li key={g.id} className="flex items-center justify-between text-sm">
-                    <span>{g.grnNumber} · {g.poNumber}</span>
+                    <span><span className="font-mono text-xs">{g.grnNumber}</span> · {g.poNumber} · {fmtDate(g.date)}</span>
                     <Badge variant="success" size="sm">{g.lines.length} item(s)</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Purchase order pipeline</CardTitle></CardHeader>
+          <CardContent>
+            {pos.length === 0 ? (
+              <p className="text-sm text-muted">No purchase orders yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {pos.slice(0, 5).map((po) => (
+                  <li key={po.id} className="flex items-center justify-between text-sm">
+                    <span><span className="font-mono text-xs">{po.poNumber}</span> · {po.supplierName}</span>
+                    <StatusBadge status={po.status} />
                   </li>
                 ))}
               </ul>
