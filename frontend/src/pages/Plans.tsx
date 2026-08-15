@@ -1,5 +1,4 @@
-import { PageHead } from '../ui'
-import { Card, CardContent, Badge, Button, cn } from '../components/ui'
+import { Card, CardContent, Badge, Button, PageHead, cn } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
 
 const PLANS = [
@@ -72,7 +71,7 @@ export default function Plans() {
 
       <Card className="mt-6">
         <h2>Need something custom?</h2>
-        <p className="muted">Contact the LuxInfra team for enterprise pricing, dedicated hosting or white-label versions.</p>
+        <p className="muted">Contact the VSR Systems team for enterprise pricing, dedicated hosting or white-label versions.</p>
       </Card>
     </>
   )

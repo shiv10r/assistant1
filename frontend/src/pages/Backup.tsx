@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { BackupStatus, BackupResult, FirebaseVersion, DriveStatus } from '../api'
-import { btnStyle } from '../ui'
+import { Button } from '../components/ui'
 import { subscribePush, onPushMessage, ensureServiceWorker } from '../firebase'
 
 export default function Backup() {
@@ -17,7 +17,7 @@ export default function Backup() {
     api.backupStatus().then(setStatus).catch(() => {})
     api.firebaseVersion().then(setFb).catch(() => {})
     api.integrations.driveStatus().then(setDrive).catch(() => {})
-    onPushMessage((p) => setToast(`${p.title ?? 'LuxInfra'} — ${p.body ?? ''}`))
+    onPushMessage((p) => setToast(`${p.title ?? 'VSR Systems'} — ${p.body ?? ''}`))
   }, [])
 
   async function runDrive() {
@@ -109,9 +109,9 @@ export default function Backup() {
         <h2>Manual sync (Turso)</h2>
         <p className="muted">Push writes your local data to the cloud. Pull restores from the cloud to this server.</p>
         <div className="row-gap">
-          <button style={btnStyle} onClick={() => run('push')} disabled={busy !== null || !status?.enabled}>
+          <Button onClick={() => run('push')} disabled={busy !== null || !status?.enabled}>
             {busy === 'push' ? 'Pushing…' : 'Sync to cloud'}
-          </button>
+          </Button>
           <button className="ghost-btn" onClick={() => run('pull')} disabled={busy !== null || !status?.enabled}>
             {busy === 'pull' ? 'Restoring…' : 'Restore from cloud'}
           </button>
@@ -143,9 +143,9 @@ export default function Backup() {
           </>
         )}
         <div className="row-gap" style={{ marginTop: 12 }}>
-          <button style={btnStyle} onClick={() => runFb('push')} disabled={busy !== null || !fb?.enabled}>
+          <Button onClick={() => runFb('push')} disabled={busy !== null || !fb?.enabled}>
             {busy === 'fb-push' ? 'Uploading…' : 'Upload to Firebase'}
-          </button>
+          </Button>
           <button className="ghost-btn" onClick={() => runFb('pull')} disabled={busy !== null || !fb?.enabled}>
             {busy === 'fb-pull' ? 'Restoring…' : 'Restore from Firebase'}
           </button>
@@ -176,9 +176,9 @@ export default function Backup() {
           </>
         )}
         <div className="row-gap" style={{ marginTop: 12 }}>
-          <button style={btnStyle} onClick={runDrive} disabled={busy !== null || !drive?.configured}>
+          <Button onClick={runDrive} disabled={busy !== null || !drive?.configured}>
             {busy === 'drive' ? 'Uploading…' : 'Back up to Drive'}
-          </button>
+          </Button>
           {drive?.hasCredentials && !drive.configured && (
             <button className="ghost-btn" onClick={connectDrive} disabled={busy !== null}>
               {busy === 'drive-connect' ? 'Opening…' : 'Connect Google Drive'}
@@ -192,9 +192,9 @@ export default function Backup() {
         <h2>Push notifications (FCM)</h2>
         <p className="muted">Enable browser notifications to get alerts on the phone/app when attendance is marked, site progress is logged, or material is issued. Works on the free Spark plan.</p>
         <div className="row-gap">
-          <button style={btnStyle} onClick={enablePush} disabled={busy !== null}>
+          <Button onClick={enablePush} disabled={busy !== null}>
             {busy === 'push' ? 'Enabling…' : 'Enable notifications on this device'}
-          </button>
+          </Button>
           <button className="ghost-btn" onClick={sendTest} disabled={busy !== null}>
             {busy === 'test' ? 'Sending…' : 'Send test notification'}
           </button>

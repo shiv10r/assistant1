@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { applyTheme, getTheme } from '../theme'
-import { PageHead } from '../ui'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button, Switch } from '../components/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button, Switch, PageHead } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
 import { useToast } from '../components/ui/Toast'
 import { Moon, Sun, Bell, Database, Shield, Crown, Info } from 'lucide-react'
@@ -44,7 +43,7 @@ export default function Settings() {
   }
 
   const backup = () => {
-    const blob = new Blob([JSON.stringify({ note: 'LuxInfra data is stored on the backend (SQLite). Download the app DB from the Render service dashboard for a full backup. A cloud mirror syncs to Turso every 30 seconds when configured.', plan }, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify({ note: 'VSR Systems data is stored on the backend (SQLite). Download the app DB from the Render service dashboard for a full backup. A cloud mirror syncs to Turso every 30 seconds when configured.', plan }, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'luxinfra-backup-note.json'
@@ -142,7 +141,7 @@ export default function Settings() {
           <CardTitle className="flex items-center gap-2"><Info className="w-5 h-5 text-primary" /> About</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="muted">LuxInfra · v1.1 · React + .NET backend · data stays on your device's server</div>
+          <div className="muted">VSR Systems · v1.1 · React + .NET backend · data stays on your device's server</div>
         </CardContent>
       </Card>
     </>
