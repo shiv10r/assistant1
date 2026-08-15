@@ -45,6 +45,13 @@ import {
   Wallet,
   CalendarCheck,
   Clock,
+  ArrowLeftRight,
+  ClipboardCheck,
+  Building2,
+  ShoppingCart,
+  ListChecks,
+  PackageCheck,
+  RotateCcw,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -78,14 +85,26 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Overview', to: '/warehouse/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     ]},
     { title: 'Customer & Retailer', items: [
+      { label: 'Customers', to: '/warehouse/customers', icon: <Users className="w-5 h-5" /> },
       { label: 'Customers & Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
       { label: 'Parties Ledger', to: '/billing/parties', icon: <Users className="w-5 h-5" /> },
     ]},
     { title: 'Inventory', items: [
       { label: 'Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
+      { label: 'Products', to: '/warehouse/products', icon: <Boxes className="w-5 h-5" /> },
+      { label: 'Warehouses & Locations', to: '/warehouse/warehouses', icon: <Building2 className="w-5 h-5" /> },
       { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <ClipboardList className="w-5 h-5" /> },
       { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
+      { label: 'Stock Transfer', to: '/warehouse/transfers', icon: <ArrowLeftRight className="w-5 h-5" /> },
+      { label: 'Stock Count', to: '/warehouse/stock-count', icon: <ClipboardCheck className="w-5 h-5" /> },
       { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
+    ]},
+    { title: 'Outbound', items: [
+      { label: 'Sales Orders', to: '/warehouse/orders', icon: <ShoppingCart className="w-5 h-5" /> },
+      { label: 'Picking', to: '/warehouse/picking', icon: <ListChecks className="w-5 h-5" /> },
+      { label: 'Packing', to: '/warehouse/packing', icon: <PackageCheck className="w-5 h-5" /> },
+      { label: 'Dispatch', to: '/warehouse/dispatch', icon: <Truck className="w-5 h-5" /> },
+      { label: 'Returns', to: '/warehouse/returns', icon: <RotateCcw className="w-5 h-5" /> },
     ]},
     { title: 'Transactions', items: [
       { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },

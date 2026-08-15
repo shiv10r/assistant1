@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button } from '../../components/ui'
-import { Boxes, ClipboardList, Truck, Users, Package, AlertTriangle, PackageX, IndianRupee, ArrowRight, History } from 'lucide-react'
+import { Boxes, ClipboardList, Truck, Users, Package, AlertTriangle, PackageX, IndianRupee, ArrowRight, History, ShoppingCart, ArrowLeftRight } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
-import type { InventoryItem, PurchaseOrder, GrnRecord } from './types'
+import type { InventoryItem, PurchaseOrder, GrnRecord, SalesOrder, StockTransfer } from './types'
 import { availableOf, stockStatusOf } from './types'
-import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED } from './seed'
+import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED, ORDER_SEED, TRANSFER_SEED } from './seed'
 import { money, fmtDate } from '../../lib/utils'
 import { KpiCard } from './components/KpiCard'
 import { StatusBadge } from './components/StatusBadge'
@@ -16,6 +16,8 @@ export default function WarehouseHome() {
   const { items: inventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { items: pos } = useLocalCollection<PurchaseOrder>('warehouse:pos', PO_SEED)
   const { items: grns } = useLocalCollection<GrnRecord>('warehouse:grn', GRN_SEED)
+  const { items: orders } = useLocalCollection<SalesOrder>('warehouse:orders', ORDER_SEED)
+  const { items: transfers } = useLocalCollection<StockTransfer>('warehouse:transfers', TRANSFER_SEED)
   const { movements } = useStockLedger()
 
   const lowStock = inventory.filter((i) => stockStatusOf(i) === 'low_stock')
@@ -25,11 +27,17 @@ export default function WarehouseHome() {
   const totalQty = inventory.reduce((sum, i) => sum + i.qty, 0)
   const stockValue = inventory.reduce((sum, i) => sum + i.qty * i.unitPrice, 0)
   const warehouses = WAREHOUSE_SEED.length
+  const activeOrders = orders.filter((o) => o.status === 'created' || o.status === 'confirmed' || o.status === 'reserved' || o.status === 'picking' || o.status === 'packed' || o.status === 'dispatched')
+  const pendingPicking = orders.filter((o) => o.status === 'reserved').length
+  const pendingDispatch = orders.filter((o) => o.status === 'dispatched').length
+  const inTransit = transfers.filter((t) => t.status === 'created' || t.status === 'dispatched').length
 
   const kpis = [
     { label: 'SKUs tracked', value: inventory.length, icon: <Boxes className="w-5 h-5" />, tone: 'default' as const, to: '/warehouse/inventory' },
     { label: 'Total stock qty', value: totalQty.toLocaleString('en-IN'), sub: `${warehouses} warehouse(s)`, icon: <Package className="w-5 h-5" />, tone: 'info' as const, to: '/warehouse/inventory' },
     { label: 'Stock value', value: money(stockValue), icon: <IndianRupee className="w-5 h-5" />, tone: 'success' as const, to: '/warehouse/inventory' },
+    { label: 'Active orders', value: activeOrders.length, sub: `${pendingPicking} ready to pick`, icon: <ShoppingCart className="w-5 h-5" />, tone: 'default' as const, to: '/warehouse/orders' },
+    { label: 'Awaiting dispatch', value: pendingDispatch, sub: `${inTransit} transfer(s) in transit`, icon: <ArrowLeftRight className="w-5 h-5" />, tone: 'info' as const, to: '/warehouse/dispatch' },
     { label: 'Low stock', value: lowStock.length, icon: <AlertTriangle className="w-5 h-5" />, tone: 'warning' as const, to: '/warehouse/inventory' },
     { label: 'Out of stock', value: outOfStock.length, icon: <PackageX className="w-5 h-5" />, tone: 'danger' as const, to: '/warehouse/inventory' },
     { label: 'Open purchase orders', value: openPOs.length, sub: `${pendingReceiving.length} awaiting receipt`, icon: <ClipboardList className="w-5 h-5" />, tone: 'default' as const, to: '/warehouse/purchase-orders' },
@@ -150,9 +158,13 @@ export default function WarehouseHome() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Inventory', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
+              { label: 'Products', to: '/warehouse/products', icon: <Boxes className="w-5 h-5" /> },
               { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <ClipboardList className="w-5 h-5" /> },
               { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
-              { label: 'Suppliers', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
+              { label: 'Sales Orders', to: '/warehouse/orders', icon: <ShoppingCart className="w-5 h-5" /> },
+              { label: 'Stock Transfer', to: '/warehouse/transfers', icon: <ArrowLeftRight className="w-5 h-5" /> },
+              { label: 'Stock Count', to: '/warehouse/stock-count', icon: <ClipboardList className="w-5 h-5" /> },
+              { label: 'Customers', to: '/warehouse/customers', icon: <Users className="w-5 h-5" /> },
             ].map((l) => (
               <button key={l.to} onClick={() => navigate(l.to)} className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors">
                 <span className="text-primary">{l.icon}</span>

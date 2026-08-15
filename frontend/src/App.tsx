@@ -49,6 +49,16 @@ import WarehouseGrn from './services/warehouse/WarehouseGrn'
 import WarehouseSuppliers from './services/warehouse/WarehouseSuppliers'
 import WarehouseStaff from './services/warehouse/WarehouseStaff'
 import WarehouseProjects from './services/warehouse/WarehouseProjects'
+import WarehouseProducts from './services/warehouse/WarehouseProducts'
+import WarehouseCustomers from './services/warehouse/WarehouseCustomers'
+import WarehouseWarehouses from './services/warehouse/WarehouseWarehouses'
+import WarehouseTransfers from './services/warehouse/WarehouseTransfers'
+import WarehouseOrders from './services/warehouse/WarehouseOrders'
+import WarehousePicking from './services/warehouse/WarehousePicking'
+import WarehousePacking from './services/warehouse/WarehousePacking'
+import WarehouseDispatch from './services/warehouse/WarehouseDispatch'
+import WarehouseReturns from './services/warehouse/WarehouseReturns'
+import WarehouseStockCount from './services/warehouse/WarehouseStockCount'
 import SchoolHome from './services/school/SchoolHome'
 import SchoolStudents from './services/school/SchoolStudents'
 import SchoolClasses from './services/school/SchoolClasses'
@@ -138,6 +148,16 @@ export default function App() {
           <Route path="/warehouse/suppliers" element={<WarehouseSuppliers />} />
           <Route path="/warehouse/staff" element={<WarehouseStaff />} />
           <Route path="/warehouse/projects" element={<WarehouseProjects />} />
+          <Route path="/warehouse/products" element={<WarehouseProducts />} />
+          <Route path="/warehouse/customers" element={<WarehouseCustomers />} />
+          <Route path="/warehouse/warehouses" element={<WarehouseWarehouses />} />
+          <Route path="/warehouse/transfers" element={<WarehouseTransfers />} />
+          <Route path="/warehouse/orders" element={<WarehouseOrders />} />
+          <Route path="/warehouse/picking" element={<WarehousePicking />} />
+          <Route path="/warehouse/packing" element={<WarehousePacking />} />
+          <Route path="/warehouse/dispatch" element={<WarehouseDispatch />} />
+          <Route path="/warehouse/returns" element={<WarehouseReturns />} />
+          <Route path="/warehouse/stock-count" element={<WarehouseStockCount />} />
 
           {/* School service */}
           <Route path="/school" element={<SchoolHome />} />
