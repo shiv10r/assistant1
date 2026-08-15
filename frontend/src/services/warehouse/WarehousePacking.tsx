@@ -9,11 +9,14 @@ import type { Package as Pkg, SalesOrder } from './types'
 import { PACK_SEED, ORDER_SEED } from './seed'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 export default function WarehousePacking() {
   const { items: packages, add, update } = useLocalCollection<Pkg>('warehouse:packages', PACK_SEED)
   const { items: orders, update: updateOrder } = useLocalCollection<SalesOrder>('warehouse:orders', ORDER_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -71,6 +74,42 @@ export default function WarehousePacking() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Packing throughput and box mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Packages', value: String(packages.length), delta: `${packages.filter((p) => p.status === 'ready').length} ready`, deltaTone: 'flat' },
+            { label: 'Boxes packed', value: packages.reduce((s, p) => s + p.packageCount, 0).toLocaleString('en-IN'), delta: 'total boxes', deltaTone: 'flat' },
+            { label: 'Total weight', value: `${packages.reduce((s, p) => s + (Number(p.totalWeight) || 0), 0).toLocaleString('en-IN')} kg`, delta: 'across packages', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Packages by status</p>
+              <BarChart
+                data={[
+                  { label: 'Pending', value: packages.filter((p) => p.status === 'pending').length },
+                  { label: 'Packing', value: packages.filter((p) => p.status === 'packing').length },
+                  { label: 'Packed', value: packages.filter((p) => p.status === 'packed').length },
+                  { label: 'Ready', value: packages.filter((p) => p.status === 'ready').length },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Status mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Ready', value: packages.filter((p) => p.status === 'ready').length, color: 'var(--primary)' },
+                  { label: 'Packed', value: packages.filter((p) => p.status === 'packed').length, color: '#f59e0b' },
+                  { label: 'In progress', value: packages.filter((p) => p.status === 'packing').length, color: '#3b82f6' },
+                  { label: 'Pending', value: packages.filter((p) => p.status === 'pending').length, color: '#a78bfa' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Packing</CardTitle>

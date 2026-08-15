@@ -14,6 +14,8 @@ import { StatusBadge } from './components/StatusBadge'
 import { Drawer } from './components/Drawer'
 import { useStockLedger } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const emptyForm = {
   name: '', sku: '', category: '', brand: '', description: '', unit: 'pcs',
@@ -27,6 +29,7 @@ export default function WarehouseProducts() {
   const { items, add, update, remove } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { movements } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
@@ -117,6 +120,37 @@ export default function WarehouseProducts() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Product catalog value, pricing spread and category mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Products', value: String(items.length), delta: `${categories.length} categories`, deltaTone: 'flat' },
+            { label: 'Catalog value', value: money(items.reduce((s, i) => s + i.sellingPrice * i.qty, 0)), delta: 'at selling price', deltaTone: 'flat' },
+            { label: 'Avg selling price', value: items.length ? money(Math.round(items.reduce((s, i) => s + i.sellingPrice, 0) / items.length)) : '—', delta: 'per product', deltaTone: 'flat' },
+            { label: 'Inactive', value: String(items.filter((i) => !i.isActive).length), delta: 'not selling', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Products by category</p>
+              <BarChart
+                data={categories.map((c) => ({ label: c, value: items.filter((i) => i.category === c).length }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock health</p>
+              <DonutChart
+                data={[
+                  { label: 'In stock', value: items.filter((i) => stockStatusOf(i) === 'in_stock').length, color: 'var(--primary)' },
+                  { label: 'Low stock', value: items.filter((i) => stockStatusOf(i) === 'low_stock').length, color: '#f59e0b' },
+                  { label: 'Out of stock', value: items.filter((i) => stockStatusOf(i) === 'out_of_stock').length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Products</CardTitle>

@@ -10,6 +10,8 @@ import { PICK_SEED, ORDER_SEED, INVENTORY_SEED } from './seed'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { useStockLedger } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 export default function WarehousePicking() {
   const { items: picks, add, update } = useLocalCollection<PickList>('warehouse:picks', PICK_SEED)
@@ -17,6 +19,7 @@ export default function WarehousePicking() {
   const { items: inventory, update: updateInventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { logMovement } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [generateOpen, setGenerateOpen] = useState(false)
@@ -83,6 +86,41 @@ export default function WarehousePicking() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Picking throughput and progress — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Pick lists', value: String(picks.length), delta: `${picks.filter((p) => p.status === 'picked').length} picked`, deltaTone: 'flat' },
+            { label: 'In progress', value: String(picks.filter((p) => p.status === 'picking').length), delta: 'being picked', deltaTone: 'flat' },
+            { label: 'Pending', value: String(picks.filter((p) => p.status === 'pending').length), delta: 'not started', deltaTone: 'flat' },
+            { label: 'Units to pick', value: picks.reduce((s, p) => s + p.items.reduce((a, i) => a + (i.requiredQty - i.pickedQty), 0), 0).toLocaleString('en-IN'), delta: 'remaining', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Pick lists by status</p>
+              <BarChart
+                data={[
+                  { label: 'Pending', value: picks.filter((p) => p.status === 'pending').length },
+                  { label: 'Picking', value: picks.filter((p) => p.status === 'picking').length },
+                  { label: 'Picked', value: picks.filter((p) => p.status === 'picked').length },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Progress mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Picked', value: picks.filter((p) => p.status === 'picked').length, color: 'var(--primary)' },
+                  { label: 'Picking', value: picks.filter((p) => p.status === 'picking').length, color: '#f59e0b' },
+                  { label: 'Pending', value: picks.filter((p) => p.status === 'pending').length, color: '#3b82f6' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Picking</CardTitle>

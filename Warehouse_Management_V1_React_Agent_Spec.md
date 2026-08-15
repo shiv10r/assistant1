@@ -3402,3 +3402,19 @@ Add DPR
 No daily progress reports yet.
 
  i am very ambitious about this project add a toggl button switch b/w simple view and advance view in standard view show current ui in advance view along with current view add charts kpis metrices multiple compare patameters etc for all the feature across the application
+
+u understood wrong i want more kpis and charts in advance view across the application
+ in advance view  i see only  2 charts why i asked it should be across the application for all the options wgerr ever applicable in options from tasskbar  start adding on other options 
+the features which RE SHARED in all  the services are not correctly used
+
+ review the analytic option for  warehouse which  is not required remove that 
+ Site Map
+Project locations on the map — locate yourself to plan visits
+u have not added this in ware house add in project section  improvise for this 
+
+Business Modules
+Contracts, milestones, price book, equipment, fuel, snags & contractor ratings. if its required add in ware house 
+
+since  most of the places ui pattern same refactor the code base  try to create generic like a industry level application not some school project i in a sngle file we can use multiple features instead of man
+y file do refactor without changing existing functionlity
+ remove billing from parties and ledger no use immedietly in warehouse service 

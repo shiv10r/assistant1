@@ -12,6 +12,8 @@ import { fmtDate, todayISO } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { Stepper } from './components/Stepper'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 import { useStockLedger } from './ledger'
 
 const STEPS = ['Purchase Order', 'Receive Items', 'Inspection', 'Put-away', 'Complete']
@@ -22,6 +24,7 @@ export default function WarehouseGrn() {
   const { items: grns, add, remove } = useLocalCollection<GrnRecord>('warehouse:grn', GRN_SEED)
   const { logMovement } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -164,6 +167,40 @@ export default function WarehouseGrn() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Goods receiving volume and quality — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total GRNs', value: String(grns.length), delta: 'receipts recorded', deltaTone: 'flat' },
+            { label: 'Units received', value: grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.receivedQty, 0), 0).toLocaleString('en-IN'), delta: 'across all GRNs', deltaTone: 'flat' },
+            { label: 'Damaged units', value: String(grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.damagedQty, 0), 0)), delta: 'quality issues', deltaTone: 'down' },
+            { label: 'Rejected units', value: String(grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.rejectedQty, 0), 0)), delta: 'not accepted', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Received vs rejected by GRN</p>
+              <BarChart
+                data={grns.slice(0, 8).map((g) => ({
+                  label: g.grnNumber,
+                  value: g.lines.reduce((s, l) => s + l.acceptedQty, 0),
+                }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Receipt quality mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Accepted', value: grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.acceptedQty, 0), 0), color: 'var(--primary)' },
+                  { label: 'Damaged', value: grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.damagedQty, 0), 0), color: '#f59e0b' },
+                  { label: 'Rejected', value: grns.reduce((s, g) => s + g.lines.reduce((a, l) => a + l.rejectedQty, 0), 0), color: '#ef4444' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Goods Received Notes</CardTitle>

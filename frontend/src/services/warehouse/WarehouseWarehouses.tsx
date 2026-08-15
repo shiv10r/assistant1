@@ -9,6 +9,8 @@ import type { Warehouse, LocationBin } from './types'
 import { WAREHOUSE_SEED, LOCATION_SEED } from './seed'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const emptyWh = { name: '', code: '', address: '', contactPerson: '', phone: '', status: 'active' as 'active' | 'inactive' }
 const emptyLoc = { warehouseId: 'wh-1', code: '', zone: '', rack: '', bin: '', capacity: '0', status: 'active' as 'active' | 'inactive' }
@@ -17,6 +19,7 @@ export default function WarehouseWarehouses() {
   const { items: warehouses, add: addWh, update: updateWh, remove: removeWh } = useLocalCollection<Warehouse>('warehouse:warehouses', WAREHOUSE_SEED)
   const { items: locations, add: addLoc, update: updateLoc, remove: removeLoc } = useLocalCollection<LocationBin>('warehouse:locations', LOCATION_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [whQuery, setWhQuery] = useState('')
   const [locQuery, setLocQuery] = useState('')
@@ -134,6 +137,35 @@ export default function WarehouseWarehouses() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Warehouse and location-bin footprint — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Warehouses', value: String(warehouses.length), delta: `${warehouses.filter((w) => w.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Location bins', value: String(locations.length), delta: `${locations.filter((l) => l.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Capacity (units)', value: locations.reduce((s, l) => s + Number(l.capacity || 0), 0).toLocaleString('en-IN'), delta: 'total bin capacity', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Bins per warehouse</p>
+              <BarChart
+                data={warehouses.map((w) => ({ label: w.code || w.name.slice(0, 8), value: locations.filter((l) => l.warehouseId === w.id).length }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Warehouse status</p>
+              <DonutChart
+                data={[
+                  { label: 'Active', value: warehouses.filter((w) => w.status === 'active').length, color: 'var(--primary)' },
+                  { label: 'Inactive', value: warehouses.filter((w) => w.status === 'inactive').length, color: '#ef4444' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Warehouses</CardTitle>

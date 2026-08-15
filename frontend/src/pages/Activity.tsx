@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Activity as ActivityIcon,
 } from 'lucide-react'
+import { useViewMode } from '../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 
 type FilterType = 'all' | 'billing' | 'projects' | 'assistant'
 
@@ -23,6 +25,7 @@ export default function Activity() {
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('week')
+  const { isAdvanced } = useViewMode()
 
   useEffect(() => {
     setLoading(true)
@@ -133,6 +136,37 @@ const getActionIcon = (action: string) => {
         <StatCard label="Assistant" value={stats.assistant} icon={<MessageSquare className="w-5 h-5" />} color="indigo" />
         <StatCard label="Today" value={stats.today} icon={<Clock className="w-5 h-5" />} color="emerald" />
       </div>
+
+      {isAdvanced && items && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Activity mix and daily volume — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total actions', value: String(stats.total), delta: 'all time', deltaTone: 'flat' },
+            { label: 'Billing', value: String(stats.billing), delta: 'billing actions', deltaTone: 'flat' },
+            { label: 'Projects', value: String(stats.projects), delta: 'project actions', deltaTone: 'flat' },
+            { label: 'Today', value: String(stats.today), delta: 'last 24h', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Activity by source</p>
+              <BarChart
+                data={Array.from(new Set(items.map((a) => a.source)))
+                  .map((s) => ({ label: s, value: items.filter((a) => a.source === s).length }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Source mix</p>
+              <DonutChart
+                data={Array.from(new Set(items.map((a) => a.source)))
+                  .map((s, i) => ({ label: s, value: items.filter((a) => a.source === s).length, color: ['var(--primary)', '#f59e0b', '#3b82f6', '#a78bfa', '#10b981', '#ef4444'][i] }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-surface/50 rounded-xl border border-border">

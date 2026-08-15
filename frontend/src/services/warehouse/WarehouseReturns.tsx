@@ -12,6 +12,8 @@ import { todayISO } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { useStockLedger } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 interface DraftLine { itemId: string; qty: string; reason: string; condition: 'good' | 'damaged'; action: 'restock' | 'quarantine' | 'return_to_supplier' }
 
@@ -22,6 +24,7 @@ export default function WarehouseReturns() {
   const { items: inventory, update: updateInventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { logMovement } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<'customer' | 'supplier'>('customer')
@@ -107,6 +110,36 @@ export default function WarehouseReturns() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Returns pipeline and reason mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total returns', value: String(returns.length), delta: `${returns.filter((r) => r.status === 'completed').length} completed`, deltaTone: 'flat' },
+            { label: 'Customer', value: String(returns.filter((r) => r.type === 'customer').length), delta: 'customer returns', deltaTone: 'flat' },
+            { label: 'Supplier', value: String(returns.filter((r) => r.type === 'supplier').length), delta: 'supplier returns', deltaTone: 'flat' },
+            { label: 'Units returned', value: returns.reduce((s, r) => s + r.items.reduce((a, i) => a + i.qty, 0), 0).toLocaleString('en-IN'), delta: 'across all returns', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Returns by status</p>
+              <BarChart
+                data={RETURN_FLOW.map((s) => ({ label: s, value: returns.filter((r) => r.status === s).length })).filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Return type mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Customer', value: returns.filter((r) => r.type === 'customer').length, color: 'var(--primary)' },
+                  { label: 'Supplier', value: returns.filter((r) => r.type === 'supplier').length, color: '#f59e0b' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Returns</CardTitle>

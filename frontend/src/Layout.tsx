@@ -63,7 +63,7 @@ import { useViewMode } from './hooks/useViewMode'
 import { cn, Button } from './components/ui'
 import './Layout.css'
 
-type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean; premium?: boolean }
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
 /** Groups shown only while inside a given service's workspace — everything service-specific lives here. */
@@ -120,6 +120,8 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
     ]},
     { title: 'Project Management', items: [
       { label: 'Projects', to: '/warehouse/projects', icon: <Briefcase className="w-5 h-5" /> },
+      { label: 'Site Map', to: '/warehouse/map', icon: <Map className="w-5 h-5" /> },
+      { label: 'Business Modules', to: '/warehouse/modules', icon: <Boxes className="w-5 h-5" /> },
     ]},
   ],
   school: [
@@ -154,7 +156,7 @@ const COMMON_GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
     { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
-    { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" /> },
+    { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" />, hideFor: ['warehouse'] },
     { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },
     { label: 'Activity', to: '/activity', icon: <Activity className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <Settings className="w-5 h-5" /> },
@@ -381,7 +383,7 @@ export default function Layout() {
                 </button>
                 {!isCollapsed && (
                   <div className="nav-items">
-                    {g.items.filter((it) => (!it.adminOnly || isAdmin) && (!it.premium || plan !== 'free')).map((it) => (
+                    {g.items.filter((it) => (!it.adminOnly || isAdmin) && (!it.premium || plan !== 'free') && (!it.hideFor || !service || !it.hideFor.includes(service.id))).map((it) => (
                       <NavLink
                         key={it.to}
                         to={it.to}

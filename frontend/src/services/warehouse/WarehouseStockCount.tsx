@@ -11,6 +11,8 @@ import { todayISO } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { useStockLedger, useAdjustments } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 interface DraftLine { itemId: string; physicalQty: string; reason: string }
 
@@ -20,6 +22,7 @@ export default function WarehouseStockCount() {
   const { logMovement } = useStockLedger()
   const { recordAdjustment } = useAdjustments()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -85,6 +88,39 @@ export default function WarehouseStockCount() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Counting cycles and variance health — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total counts', value: String(counts.length), delta: `${counts.filter((c) => c.status === 'approved').length} approved`, deltaTone: 'flat' },
+            { label: 'Open counts', value: String(counts.filter((c) => c.status === 'open').length), delta: 'pending approval', deltaTone: 'flat' },
+            { label: 'Lines counted', value: counts.reduce((s, c) => s + c.items.length, 0).toLocaleString('en-IN'), delta: 'across all counts', deltaTone: 'flat' },
+            { label: 'Variance lines', value: String(counts.reduce((s, c) => s + c.items.filter((i) => i.difference !== 0).length, 0)), delta: 'differ from system', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Counts by status</p>
+              <BarChart
+                data={[
+                  { label: 'Open', value: counts.filter((c) => c.status === 'open').length },
+                  { label: 'Approved', value: counts.filter((c) => c.status === 'approved').length },
+                ]}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Status mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Open', value: counts.filter((c) => c.status === 'open').length, color: '#f59e0b' },
+                  { label: 'Approved', value: counts.filter((c) => c.status === 'approved').length, color: 'var(--primary)' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Stock Counts</CardTitle>

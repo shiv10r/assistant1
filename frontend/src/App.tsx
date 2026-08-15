@@ -51,6 +51,8 @@ import WarehouseStaff from './services/warehouse/WarehouseStaff'
 import WarehouseProjects from './services/warehouse/WarehouseProjects'
 import WarehouseProjectWorkspace from './services/warehouse/WarehouseProjectWorkspace'
 import WarehouseProjectAttendance from './services/warehouse/WarehouseProjectAttendance'
+import WarehouseProjectsMap from './services/warehouse/WarehouseProjectsMap'
+import WarehouseModules from './services/warehouse/WarehouseModules'
 import WarehouseProducts from './services/warehouse/WarehouseProducts'
 import WarehouseCustomers from './services/warehouse/WarehouseCustomers'
 import WarehouseWarehouses from './services/warehouse/WarehouseWarehouses'
@@ -152,6 +154,8 @@ export default function App() {
           <Route path="/warehouse/projects" element={<WarehouseProjects />} />
           <Route path="/warehouse/projects/:id" element={<WarehouseProjectWorkspace />} />
           <Route path="/warehouse/projects/:id/attendance" element={<WarehouseProjectAttendance />} />
+          <Route path="/warehouse/map" element={<WarehouseProjectsMap />} />
+          <Route path="/warehouse/modules" element={<WarehouseModules />} />
           <Route path="/warehouse/products" element={<WarehouseProducts />} />
           <Route path="/warehouse/customers" element={<WarehouseCustomers />} />
           <Route path="/warehouse/warehouses" element={<WarehouseWarehouses />} />

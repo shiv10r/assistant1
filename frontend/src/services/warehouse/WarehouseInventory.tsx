@@ -8,12 +8,14 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { InventoryItem, PurchaseOrder, StockStatus } from './types'
 import { availableOf, stockStatusOf } from './types'
 import { INVENTORY_SEED, PO_SEED, WAREHOUSE_SEED, LOCATION_SEED } from './seed'
-import { todayISO } from '../../lib/utils'
+import { todayISO, money } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { Drawer } from './components/Drawer'
 import { useStockLedger, useAdjustments } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const emptyForm = {
   sku: '', name: '', category: '', brand: '', description: '', unit: 'pcs',
@@ -30,6 +32,7 @@ export default function WarehouseInventory() {
   const { movements, logMovement } = useStockLedger()
   const { recordAdjustment } = useAdjustments()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
@@ -203,6 +206,39 @@ export default function WarehouseInventory() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Stock value, health and category mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total stock value', value: money(items.reduce((s, i) => s + i.qty * i.unitPrice, 0)), delta: `${items.length} SKUs`, deltaTone: 'flat' },
+            { label: 'Total qty on hand', value: items.reduce((s, i) => s + i.qty, 0).toLocaleString('en-IN'), delta: 'across all items', deltaTone: 'flat' },
+            { label: 'Low stock', value: String(items.filter((i) => stockStatusOf(i) === 'low_stock').length), delta: 'reorder soon', deltaTone: 'down' },
+            { label: 'Out of stock', value: String(items.filter((i) => stockStatusOf(i) === 'out_of_stock').length), delta: 'restock needed', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock value by category</p>
+              <BarChart
+                data={Array.from(new Set(items.map((i) => i.category)))
+                  .map((c) => ({ label: c, value: items.filter((i) => i.category === c).reduce((s, i) => s + i.qty * i.unitPrice, 0) }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock health</p>
+              <DonutChart
+                data={[
+                  { label: 'In stock', value: items.filter((i) => stockStatusOf(i) === 'in_stock').length, color: 'var(--primary)' },
+                  { label: 'Low stock', value: items.filter((i) => stockStatusOf(i) === 'low_stock').length, color: '#f59e0b' },
+                  { label: 'Out of stock', value: items.filter((i) => stockStatusOf(i) === 'out_of_stock').length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Inventory & Stock</CardTitle>

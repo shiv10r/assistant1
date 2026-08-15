@@ -5,6 +5,8 @@ import { Card, CardContent, Badge, Button, Input, Textarea, Label, Modal, Empty,
 import { useToast } from '../../components/ui/Toast'
 import { Banknote, Landmark, Plus, Minus, Pencil, Trash2, Wallet, PiggyBank, CreditCard, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 function blankBank(): BankAccount {
   return { id: 0, name: '', accNo: '', ifsc: '', upiId: '', openingBalance: 0, asOf: todayISO() }
@@ -12,6 +14,7 @@ function blankBank(): BankAccount {
 
 export default function CashBank() {
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
   const [balance, setBalance] = useState(0)
   const [entries, setEntries] = useState<CashEntry[]>([])
   const [banks, setBanks] = useState<BankAccount[]>([])
@@ -97,6 +100,37 @@ export default function CashBank() {
         <Kpi label="Bank Balance" value={money(totalBank)} icon={<Landmark className="w-5 h-5" />} tone="indigo" />
         <Kpi label="Bank Accounts" value={String(banks.length)} icon={<PiggyBank className="w-5 h-5" />} tone="cyan" />
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Cash and bank position movement — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Cash in hand', value: money(balance), delta: 'register balance', deltaTone: balance >= 0 ? 'up' : 'down' },
+            { label: 'Bank balance', value: money(totalBank), delta: `${banks.length} accounts`, deltaTone: 'flat' },
+            { label: 'Cash added', value: money(entries.filter((e) => e.kind === 'add').reduce((s, e) => s + e.amount, 0)), delta: 'total inflows', deltaTone: 'flat' },
+            { label: 'Cash reduced', value: money(entries.filter((e) => e.kind === 'reduce').reduce((s, e) => s + e.amount, 0)), delta: 'total outflows', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Cash activity</p>
+              <BarChart
+                data={entries.slice(0, 8).map((e) => ({ label: e.kind === 'add' ? '+' : '−', value: e.amount }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Add vs reduce</p>
+              <DonutChart
+                data={[
+                  { label: 'Added', value: entries.filter((e) => e.kind === 'add').reduce((s, e) => s + e.amount, 0), color: 'var(--primary)' },
+                  { label: 'Reduced', value: entries.filter((e) => e.kind === 'reduce').reduce((s, e) => s + e.amount, 0), color: '#ef4444' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Cash */}

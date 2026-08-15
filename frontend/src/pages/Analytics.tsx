@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Empty, money }
 import { usePlan } from '../hooks/usePlan'
 import { TrendingUp, TrendingDown, BarChart3, Wallet, Lock, Crown } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useViewMode } from '../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
   'In Discussion': 'info',
@@ -19,6 +21,7 @@ export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [error, setError] = useState('')
   const { isPremium, plan, setPlan } = usePlan()
+  const { isAdvanced } = useViewMode()
 
   useEffect(() => {
     api.analytics().then(setData).catch((e) => setError(String(e)))
@@ -60,6 +63,35 @@ export default function Analytics() {
         <Kpi label="You'll Give" value={money(data.billing.youllGive)} tone="red" icon={<TrendingDown className="w-5 h-5" />} />
         <Kpi label="This Month's Sales" value={money(data.billing.monthSale)} tone="indigo" icon={<Wallet className="w-5 h-5" />} />
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Project portfolio and revenue mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: "You'll get", value: money(data.billing.youllGet), delta: 'receivables', deltaTone: 'flat' },
+            { label: "You'll give", value: money(data.billing.youllGive), delta: 'payables', deltaTone: 'flat' },
+            { label: 'Month sales', value: money(data.billing.monthSale), delta: 'this month', deltaTone: 'flat' },
+            { label: 'Projects', value: String(data.projects.length), delta: 'portfolio', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Projects by status</p>
+              <BarChart
+                data={Array.from(new Set(data.projects.map((p) => p.status)))
+                  .map((s) => ({ label: s, value: data.projects.filter((p) => p.status === s).length }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Budget used by project</p>
+              <DonutChart
+                data={data.projects.slice(0, 6).map((p, i) => ({ label: p.name.slice(0, 14), value: p.budgetPct, color: ['var(--primary)', '#f59e0b', '#3b82f6', '#a78bfa', '#10b981', '#ef4444'][i] }))}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Project progress & budget */}
       <Card>

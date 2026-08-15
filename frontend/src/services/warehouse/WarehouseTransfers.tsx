@@ -14,6 +14,8 @@ import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { Stepper } from './components/Stepper'
 import { useStockLedger } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const STEPS = ['Details', 'Confirm']
 
@@ -24,6 +26,7 @@ export default function WarehouseTransfers() {
   const { items: inventory, update: updateInventory, add: addInventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { logMovement } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -135,6 +138,36 @@ export default function WarehouseTransfers() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Inter-warehouse movement pipeline — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total transfers', value: String(transfers.length), delta: `${transfers.filter((t) => t.status === 'completed').length} completed`, deltaTone: 'flat' },
+            { label: 'In transit', value: String(transfers.filter((t) => ['dispatched', 'received'].includes(t.status)).length), delta: 'active moves', deltaTone: 'flat' },
+            { label: 'Units moved', value: transfers.reduce((s, t) => s + t.items.reduce((a, i) => a + i.qty, 0), 0).toLocaleString('en-IN'), delta: 'across all transfers', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Transfers by status</p>
+              <BarChart
+                data={TRANSFER_FLOW.map((s) => ({ label: s, value: transfers.filter((t) => t.status === s).length })).filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Movement mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Completed', value: transfers.filter((t) => t.status === 'completed').length, color: 'var(--primary)' },
+                  { label: 'In transit', value: transfers.filter((t) => t.status === 'dispatched' || t.status === 'received').length, color: '#f59e0b' },
+                  { label: 'Created', value: transfers.filter((t) => t.status === 'created').length, color: '#3b82f6' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Stock Transfers</CardTitle>

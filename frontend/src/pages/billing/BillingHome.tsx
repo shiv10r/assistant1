@@ -4,6 +4,8 @@ import { api } from '../../api'
 import type { BizTxn, BillingKpis, Party, CatalogItem, CashData, BankAccount } from '../../api'
 import { Badge, Empty, money, shortDate, PageHead, inputStyle, ghostStyle } from '../../ui'
 import { useToast } from '../../components/ui/Toast'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const TYPE_BADGE: Record<string, 'green' | 'pink' | 'gray' | 'accent'> = {
   SALE: 'green', PURCHASE: 'pink', SALE_RETURN: 'pink', PURCHASE_RETURN: 'green',
@@ -18,6 +20,7 @@ export const txnTypeLabel = (t: string) =>
 
 export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txns' | 'parties' }) {
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
   const [kpis, setKpis] = useState<BillingKpis | null>(null)
   const [tab, setTab] = useState<'txns' | 'parties'>(initialTab)
   const [txns, setTxns] = useState<BizTxn[]>([])
@@ -123,6 +126,41 @@ export default function BillingHome({ initialTab = 'txns' }: { initialTab?: 'txn
         <div className="kpi"><div className="kpi-label">THIS MONTH'S SALE</div><div className="kpi-value accent">{money(kpis?.monthSale)}</div></div>
         <div className="kpi"><div className="kpi-label">CASH IN HAND</div><div className="kpi-value">{money(cash?.balance)}</div></div>
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Cash position, receivables and txn mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: "You'll get", value: money(kpis?.youllGet), delta: 'receivables', deltaTone: 'flat' },
+            { label: "You'll give", value: money(kpis?.youllGive), delta: 'payables', deltaTone: 'flat' },
+            { label: 'Month sale', value: money(kpis?.monthSale), delta: 'this month', deltaTone: 'flat' },
+            { label: 'Cash in hand', value: money(cash?.balance), delta: 'register', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Transactions by type</p>
+              <BarChart
+                data={Array.from(new Set(txns.map((t) => t.type)))
+                  .map((type) => ({ label: txnTypeLabel(type), value: txns.filter((t) => t.type === type).length }))
+                  .sort((a, b) => b.value - a.value)
+                  .slice(0, 8)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Value by txn type</p>
+              <DonutChart
+                data={Array.from(new Set(txns.map((t) => t.type)))
+                  .map((type) => ({ label: txnTypeLabel(type), value: txns.filter((t) => t.type === type).reduce((s, t) => s + t.total, 0) }))
+                  .sort((a, b) => b.value - a.value)
+                  .slice(0, 6)
+                  .map((d, i) => ({ ...d, color: ['var(--primary)', '#f59e0b', '#3b82f6', '#a78bfa', '#10b981', '#ef4444'][i] }))}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       <div className="quick-actions">
         <Link to="/billing/sale" className="qa-btn">＋ Sale</Link>

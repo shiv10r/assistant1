@@ -9,6 +9,8 @@ import type { Supplier } from './types'
 import { SUPPLIER_SEED } from './seed'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
 
 const emptyForm = {
   name: '', company: '', contact: '', phone: '', email: '', gstin: '',
@@ -18,6 +20,7 @@ const emptyForm = {
 export default function WarehouseSuppliers() {
   const { items, add, update, remove } = useLocalCollection<Supplier>('warehouse:suppliers', SUPPLIER_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -83,6 +86,29 @@ export default function WarehouseSuppliers() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Supplier base mix and activity — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total suppliers', value: String(items.length), delta: `${items.filter((s) => s.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Active', value: String(items.filter((s) => s.status === 'active').length), delta: 'engaged vendors', deltaTone: 'up' },
+            { label: 'Inactive', value: String(items.filter((s) => s.status === 'inactive').length), delta: 'dormant vendors', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Active vs inactive</p>
+              <DonutChart
+                data={[
+                  { label: 'Active', value: items.filter((s) => s.status === 'active').length, color: 'var(--primary)' },
+                  { label: 'Inactive', value: items.filter((s) => s.status === 'inactive').length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Suppliers</CardTitle>

@@ -9,6 +9,8 @@ import type { Customer } from './types'
 import { CUSTOMER_SEED } from './seed'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
 
 const emptyForm = {
   name: '', company: '', gstin: '', phone: '', email: '',
@@ -18,6 +20,7 @@ const emptyForm = {
 export default function WarehouseCustomers() {
   const { items, add, update, remove } = useLocalCollection<Customer>('warehouse:customers', CUSTOMER_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -82,6 +85,29 @@ export default function WarehouseCustomers() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Customer base mix and activity — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total customers', value: String(items.length), delta: `${items.filter((c) => c.status === 'active').length} active`, deltaTone: 'flat' },
+            { label: 'Active', value: String(items.filter((c) => c.status === 'active').length), delta: 'engaged accounts', deltaTone: 'up' },
+            { label: 'Inactive', value: String(items.filter((c) => c.status === 'inactive').length), delta: 'dormant accounts', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Active vs inactive</p>
+              <DonutChart
+                data={[
+                  { label: 'Active', value: items.filter((c) => c.status === 'active').length, color: 'var(--primary)' },
+                  { label: 'Inactive', value: items.filter((c) => c.status === 'inactive').length, color: '#ef4444' },
+                ]}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Customers</CardTitle>

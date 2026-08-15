@@ -9,8 +9,11 @@ import type { SalesOrder, SalesOrderLine, SalesOrderStatus, InventoryItem, Custo
 import { ORDER_FLOW, availableOf } from './types'
 import { ORDER_SEED, CUSTOMER_SEED, INVENTORY_SEED, WAREHOUSE_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
+import { money } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 interface DraftLine { itemId: string; qty: string; price: string; taxPct: string; discountPct: string }
 
@@ -19,6 +22,7 @@ export default function WarehouseOrders() {
   const { items: inventory, update: updateInventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { items: customers } = useLocalCollection<Customer>('warehouse:customers', CUSTOMER_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | SalesOrderStatus>('all')
@@ -140,6 +144,35 @@ export default function WarehouseOrders() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Order pipeline, revenue and fulfilment health — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total orders', value: String(orders.length), delta: `${orders.filter((o) => o.status === 'completed').length} completed`, deltaTone: 'flat' },
+            { label: 'Order value', value: money(orders.reduce((s, o) => s + o.grandTotal, 0)), delta: 'gross value', deltaTone: 'flat' },
+            { label: 'In pipeline', value: String(orders.filter((o) => !['completed', 'cancelled'].includes(o.status)).length), delta: 'open orders', deltaTone: 'flat' },
+            { label: 'Cancelled', value: String(orders.filter((o) => o.status === 'cancelled').length), delta: 'cancelled', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Orders by status</p>
+              <BarChart
+                data={ORDER_FLOW.map((s) => ({ label: s, value: orders.filter((o) => o.status === s).length })).filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Revenue share by status</p>
+              <DonutChart
+                data={ORDER_FLOW
+                  .map((s) => ({ label: s, value: orders.filter((o) => o.status === s).reduce((sum, o) => sum + o.grandTotal, 0), color: s === 'completed' ? 'var(--primary)' : s === 'cancelled' ? '#ef4444' : '#f59e0b' }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Sales Orders</CardTitle>

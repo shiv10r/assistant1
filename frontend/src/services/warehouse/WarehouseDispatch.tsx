@@ -11,12 +11,15 @@ import { todayISO } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
 import { useStockLedger } from './ledger'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 export default function WarehouseDispatch() {
   const { items: dispatches, add, update } = useLocalCollection<Dispatch>('warehouse:dispatches', DISPATCH_SEED)
   const { items: orders, update: updateOrder } = useLocalCollection<SalesOrder>('warehouse:orders', ORDER_SEED)
   const { logMovement } = useStockLedger()
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -73,6 +76,40 @@ export default function WarehouseDispatch() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Outbound fulfilment pipeline — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total dispatches', value: String(dispatches.length), delta: `${dispatches.filter((d) => d.status === 'completed').length} completed`, deltaTone: 'flat' },
+            { label: 'In transit', value: String(dispatches.filter((d) => d.status === 'dispatched').length), delta: 'on the road', deltaTone: 'flat' },
+            { label: 'Ready', value: String(dispatches.filter((d) => d.status === 'ready').length), delta: 'awaiting dispatch', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Dispatches by status</p>
+              <BarChart
+                data={[
+                  { label: 'Ready', value: dispatches.filter((d) => d.status === 'ready').length },
+                  { label: 'Dispatched', value: dispatches.filter((d) => d.status === 'dispatched').length },
+                  { label: 'Completed', value: dispatches.filter((d) => d.status === 'completed').length },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Fulfilment mix</p>
+              <DonutChart
+                data={[
+                  { label: 'Completed', value: dispatches.filter((d) => d.status === 'completed').length, color: 'var(--primary)' },
+                  { label: 'Dispatched', value: dispatches.filter((d) => d.status === 'dispatched').length, color: '#f59e0b' },
+                  { label: 'Ready', value: dispatches.filter((d) => d.status === 'ready').length, color: '#3b82f6' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Dispatch</CardTitle>

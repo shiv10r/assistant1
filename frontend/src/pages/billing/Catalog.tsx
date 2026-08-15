@@ -6,6 +6,8 @@ import { useToast } from '../../components/ui/Toast'
 import BarcodeScanner from '../../components/BarcodeScanner'
 import { Plus, Search, Package, Trash2, Edit, Barcode } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 const UNITS = ['Pcs', 'Kg', 'Gm', 'Ltr', 'Mtr', 'Sqft', 'Box', 'Bag', 'Dozen', 'Hour', 'Day', 'Set', 'Pair', 'Piece', 'Roll', 'Sheet', 'Pack', 'Bundle']
 const TAXES = [0, 0.25, 1.5, 3, 5, 12, 18, 28]
@@ -17,6 +19,7 @@ function blank(): CatalogItem {
 
 export default function Catalog() {
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
   const [items, setItems] = useState<CatalogItem[]>([])
   const [settings, setSettings] = useState<Settings>({})
   const [err, setErr] = useState('')
@@ -116,6 +119,37 @@ export default function Catalog() {
           <Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Item</Button>
         </div>
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Catalog value, category mix and stock health — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Items', value: String(items.length), delta: `${categories.length} categories`, deltaTone: 'flat' },
+            { label: 'Stock value', value: money(items.filter((i) => i.type !== 'Service').reduce((s, i) => s + (i.stockQty || 0) * (i.salePrice || 0), 0)), delta: 'at sale price', deltaTone: 'flat' },
+            { label: 'Low stock', value: String(items.filter((i) => i.type !== 'Service' && i.minStock > 0 && i.stockQty <= i.minStock).length), delta: 'reorder soon', deltaTone: 'down' },
+            { label: 'Out of stock', value: String(items.filter((i) => i.type !== 'Service' && i.stockQty <= 0).length), delta: 'unavailable', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Items by category</p>
+              <BarChart
+                data={categories.filter((c): c is string => !!c).map((c) => ({ label: c, value: items.filter((i) => i.category === c).length }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Product vs service</p>
+              <DonutChart
+                data={[
+                  { label: 'Product', value: items.filter((i) => i.type === 'Product').length, color: 'var(--primary)' },
+                  { label: 'Service', value: items.filter((i) => i.type === 'Service').length, color: '#f59e0b' },
+                ].filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Toolbar */}
       <Card className="mb-6">

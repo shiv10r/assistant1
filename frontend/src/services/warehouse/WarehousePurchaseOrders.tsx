@@ -11,6 +11,8 @@ import { SUPPLIER_SEED, PO_SEED, INVENTORY_SEED, WAREHOUSE_SEED } from './seed'
 import { fmtDate, todayISO, money } from '../../lib/utils'
 import { DataTable, type DataColumn } from './components/DataTable'
 import { StatusBadge } from './components/StatusBadge'
+import { useViewMode } from '../../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
 
 type LineDraft = { itemId: string; itemName: string; qty: string; unitPrice: string }
 const emptyLine: LineDraft = { itemId: '', itemName: '', qty: '1', unitPrice: '0' }
@@ -20,6 +22,7 @@ export default function WarehousePurchaseOrders() {
   const { items: inventory } = useLocalCollection<InventoryItem>('warehouse:inventory', INVENTORY_SEED)
   const { items: pos, add, update, remove } = useLocalCollection<PurchaseOrder>('warehouse:pos', PO_SEED)
   const { toast } = useToast()
+  const { isAdvanced } = useViewMode()
 
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | POStatus>('all')
@@ -132,6 +135,35 @@ export default function WarehousePurchaseOrders() {
 
   return (
     <div className="space-y-6">
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle="Procurement pipeline, spend and supplier mix — toggled via the Simple/Advanced switch in the top bar."
+          compare={[
+            { label: 'Total POs', value: String(pos.length), delta: `${pos.filter((p) => ['received', 'closed'].includes(p.status)).length} fulfilled`, deltaTone: 'flat' },
+            { label: 'PO value', value: money(pos.reduce((s, p) => s + p.total, 0)), delta: 'gross spend', deltaTone: 'flat' },
+            { label: 'In pipeline', value: String(pos.filter((p) => !['received', 'closed', 'cancelled'].includes(p.status)).length), delta: 'open POs', deltaTone: 'flat' },
+            { label: 'Cancelled', value: String(pos.filter((p) => p.status === 'cancelled').length), delta: 'cancelled', deltaTone: 'down' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">POs by status</p>
+              <BarChart
+                data={PO_FLOW.map((s) => ({ label: s, value: pos.filter((p) => p.status === s).length })).filter((d) => d.value > 0)}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Spend by status</p>
+              <DonutChart
+                data={PO_FLOW
+                  .map((s) => ({ label: s, value: pos.filter((p) => p.status === s).reduce((sum, p) => sum + p.total, 0), color: ['received', 'closed'].includes(s) ? 'var(--primary)' : s === 'cancelled' ? '#ef4444' : '#f59e0b' }))
+                  .filter((d) => d.value > 0)}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Purchase Orders</CardTitle>

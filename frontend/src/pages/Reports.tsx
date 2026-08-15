@@ -8,6 +8,8 @@ import {
   Wallet, ReceiptText, CalendarClock, TrendingUp, MapPin, Crown, Sparkles,
   Briefcase, Users, Package, FileBarChart, Banknote, Activity, ShieldCheck, CircleDollarSign, ArrowDownToLine,
 } from 'lucide-react'
+import { useViewMode } from '../hooks/useViewMode'
+import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 
 const PERIODS = ['Today', 'Week', 'Month', 'All'] as const
 type P = typeof PERIODS[number]
@@ -39,6 +41,7 @@ export default function Reports() {
   const [kpis, setKpis] = useState<ReportKpis | null>(null)
   const [dlErr, setDlErr] = useState('')
   const { isPremium } = usePlan()
+  const { isAdvanced } = useViewMode()
 
   useEffect(() => {
     api.report(period).then(setData).catch(() => setData(null))
@@ -79,6 +82,34 @@ export default function Reports() {
           <button key={p} className={period === p ? 'active' : ''} onClick={() => setPeriod(p)}>{p}</button>
         ))}
       </div>
+
+      {isAdvanced && (
+        <AdvancedPanel
+          title="Advanced analysis"
+          subtitle={`Spend breakdown for ${data?.periodLabel ?? period} — toggled via the Simple/Advanced switch in the top bar.`}
+          compare={[
+            { label: 'Total spent', value: r?.totalLabel ?? '—', delta: `${r?.count ?? 0} entries`, deltaTone: 'flat' },
+            { label: 'Avg per day', value: r?.avgPerDayLabel ?? '—', delta: 'this period', deltaTone: 'flat' },
+            { label: 'Top category', value: r?.topCategory ?? '—', delta: r?.topCategoryLabel ?? '', deltaTone: 'flat' },
+            { label: 'Top site', value: r?.topSite ?? '—', delta: r?.topSiteLabel ?? '', deltaTone: 'flat' },
+          ]}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Spend by category</p>
+              <BarChart
+                data={(data?.categoryTotals ?? []).map((c) => ({ label: c.category, value: c.total }))}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted uppercase tracking-wide mb-2">Spend by site</p>
+              <DonutChart
+                data={(data?.siteTotals ?? []).slice(0, 6).map((s, i) => ({ label: s.category, value: s.total, color: ['var(--primary)', '#f59e0b', '#3b82f6', '#a78bfa', '#10b981', '#ef4444'][i] }))}
+              />
+            </div>
+          </div>
+        </AdvancedPanel>
+      )}
 
       {/* Spending KPIs */}
       <div className="report-kpi-grid">
