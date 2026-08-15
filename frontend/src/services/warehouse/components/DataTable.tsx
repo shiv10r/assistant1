@@ -157,18 +157,18 @@ export function DataTable<T>({
 
       {sorted.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div className="flex items-center gap-2 text-xs text-muted">
+          <div className="flex items-center gap-2 text-xs text-muted whitespace-nowrap">
             <span>Rows per page</span>
             <select
-              className="bg-surface border border-border rounded-md px-2 py-1 text-xs"
+              className="bg-surface border border-border rounded-md px-2 py-1 text-xs flex-shrink-0"
               value={size}
               onChange={(e) => { setSize(Number(e.target.value)); setPage(1) }}
             >
               {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <span>{sorted.length} row(s)</span>
+            <span className="whitespace-nowrap">{sorted.length} row(s)</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 whitespace-nowrap">
             <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setPage((p) => p - 1)} aria-label="Previous page">
               <ChevronLeft className="w-4 h-4" />
             </Button>

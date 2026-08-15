@@ -50,6 +50,7 @@ export interface StaffMember {
   status: 'active' | 'inactive'
   lastAttendance?: 'present' | 'absent'
   lastAttendanceDate?: string
+  dailyRate?: number
 }
 
 export type SchoolProjectStatus = 'planned' | 'active' | 'completed'
