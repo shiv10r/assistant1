@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Bookmark, BriefcaseBusiness, Building2, ClipboardList, Search } from 'lucide-react'
+import { Bookmark, BriefcaseBusiness, Building2, ClipboardList, Search, User } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import './jobs.css'
@@ -13,6 +13,7 @@ const JOBS_NAV = [
   { to: '/jobs/search', label: 'Search jobs', icon: Search, end: false },
   { to: '/jobs/companies', label: 'Companies', icon: Building2, end: false },
   { to: '/jobs/applications', label: 'Applications', icon: ClipboardList, end: false },
+  { to: '/jobs/profile', label: 'Profile', icon: User, end: false },
   { to: '/jobs/saved', label: 'Saved', icon: Bookmark, end: false },
 ] as const
 

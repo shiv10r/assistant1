@@ -24,7 +24,8 @@ import {
   HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
   TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsCategory, NewsHome,
   NewsLatest, NewsSearch, NewsTrending,
-  CompanyDetail, JobDetail, JobsApplications, JobsCompanies, JobsHome, JobsSaved, JobsSearch,
+CompanyDetail, JobDetail, JobsApplications, JobsCompanies, JobsHome, JobsSaved, JobsSearch,
+  CandidateProfile, JobApplicationFlow,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -214,8 +215,10 @@ export default function App() {
           <Route path="/jobs/search" element={<JobsSearch />} />
           <Route path="/jobs/companies" element={<JobsCompanies />} />
           <Route path="/jobs/companies/:companySlug" element={<CompanyDetail />} />
-          <Route path="/jobs/applications" element={<JobsApplications />} />
+<Route path="/jobs/applications" element={<JobsApplications />} />
           <Route path="/jobs/saved" element={<JobsSaved />} />
+          <Route path="/jobs/profile" element={<CandidateProfile />} />
+          <Route path="/jobs/:slug/apply" element={<JobApplicationFlow />} />
           <Route path="/jobs/:slug" element={<JobDetail />} />
 
           {/* Interior service */}

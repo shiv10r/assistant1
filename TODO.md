@@ -16,6 +16,7 @@ Rarrange the folder and docs and md fiels liek a real repository
 - [x] Add the first VSR Jobs frontend slice: discover page, professional search and work-mode filters, job details, application-start state, saved jobs, responsive cards, and application navigation.
 - [x] Give VSR News a dedicated portal shell by removing generic business navigation, plan controls, weather, and assistant UI; add Trending, Search, category desks, Latest, and Saved navigation.
 - [x] Add the second VSR Jobs frontend slice: company directory, company profiles, open roles, and application status tracking.
+- [x] Add the third VSR Jobs frontend slice: candidate profile, four-step application flow with resume metadata and saved drafts, screening questions, and live application tracking.
 
 ## Next service work
 
@@ -34,3 +35,11 @@ Rarrange the folder and docs and md fiels liek a real repository
 
 - [x] Document current VSR News sourcing: the frontend currently renders typed local fixtures from `frontend/src/services/news/newsData.ts`; it does not fetch live news yet.
 - [ ] Replace News fixtures with the planned ASP.NET Core API plus licensed RSS/API aggregation, attribution, duplicate detection, and editorial review.
+
+
+Here is todo:
+remove dashbaord  analytics activity from assitent section insights  from bunsiness from news app hotel app and job app and hotel travelapp
+
+use your  reasoning abilities remove  the features whihc arre deuplictae in the application across the three apps
+
+workon job app 

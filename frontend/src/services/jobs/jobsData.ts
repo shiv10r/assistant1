@@ -1,3 +1,5 @@
+import type { ScreeningQuestion } from './screeningQuestions'
+
 export type WorkMode = 'Remote' | 'Hybrid' | 'On-site'
 export type EmploymentType = 'Full-time' | 'Internship'
 
@@ -21,6 +23,7 @@ export type JobListing = {
   readonly featured?: boolean
   readonly verified?: boolean
   readonly easyApply?: boolean
+  readonly screeningQuestions?: readonly ScreeningQuestion[]
 }
 
 export const JOB_LISTINGS: readonly JobListing[] = [
@@ -32,6 +35,11 @@ export const JOB_LISTINGS: readonly JobListing[] = [
     responsibilities: ['Design and ship ASP.NET Core services', 'Review architecture and production performance', 'Mentor engineers through delivery'],
     requirements: ['Strong C# and .NET experience', 'Production SQL Server knowledge', 'Experience with cloud delivery and automated testing'],
     benefits: ['Flexible hybrid schedule', 'Learning budget', 'Comprehensive health cover'],
+    screeningQuestions: [
+      { id: 'dotnet-depth', prompt: 'Describe a high-scale ASP.NET Core service you have designed.', type: 'text', required: true },
+      { id: 'notice-period', prompt: 'What is your current notice period?', type: 'text', required: true },
+      { id: 'work-authorisation', prompt: 'Are you legally authorised to work in India?', type: 'yes-no', required: true },
+    ],
   },
   {
     slug: 'frontend-engineer-atlas', title: 'Frontend Engineer - React', company: 'Atlas Commerce', companyInitials: 'AC', industry: 'Retail Technology',
@@ -41,6 +49,11 @@ export const JOB_LISTINGS: readonly JobListing[] = [
     responsibilities: ['Own React features from discovery to release', 'Improve design-system primitives', 'Measure and improve runtime performance'],
     requirements: ['Advanced React and TypeScript', 'Strong CSS and accessibility fundamentals', 'Experience testing user-facing applications'],
     benefits: ['Flexible hours', 'Home-office allowance', 'Quarterly learning days'],
+    screeningQuestions: [
+      { id: 'react-depth', prompt: 'Describe an accessibility improvement you shipped in a React product.', type: 'text', required: true },
+      { id: 'notice-period', prompt: 'What is your current notice period?', type: 'text', required: true },
+      { id: 'work-authorisation', prompt: 'Are you legally authorised to work in India?', type: 'yes-no', required: true },
+    ],
   },
   {
     slug: 'data-analyst-saarthi', title: 'Data Analyst', company: 'Saarthi Mobility', companyInitials: 'SM', industry: 'Mobility',

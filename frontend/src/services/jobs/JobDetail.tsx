@@ -1,20 +1,23 @@
 import { ArrowLeft, Bookmark, BookmarkCheck, Briefcase, CheckCircle2, MapPin, WalletCards } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import JobCard from './JobCard'
 import { JOB_LISTINGS, jobBySlug } from './jobsData'
+import { findApplicationDraft, findCandidateApplication } from './candidateStore'
 import JobsShell from './JobsShell'
+import { useCandidateApplications } from './useCandidateApplications'
 import { useSavedJobs } from './useSavedJobs'
 
 export default function JobDetail() {
   const { slug } = useParams()
   const job = jobBySlug(slug)
   const { savedJobs, toggleSavedJob } = useSavedJobs()
-  const [applied, setApplied] = useState(false)
+  const { state } = useCandidateApplications()
 
   if (!job) return <JobsShell><main className="jobs-main"><section className="jobs-empty"><h1>Job not found</h1><p>This role may have closed or moved.</p><Link to="/jobs/search">Browse current jobs</Link></section></main></JobsShell>
 
   const saved = savedJobs.includes(job.slug)
+  const application = findCandidateApplication(state, job.slug)
+  const draft = findApplicationDraft(state, job.slug)
   const similar = JOB_LISTINGS.filter((item) => item.slug !== job.slug && (item.industry === job.industry || item.workMode === job.workMode)).slice(0, 2)
 
   return (
@@ -33,9 +36,18 @@ export default function JobDetail() {
           </article>
           <aside className="job-apply-panel">
             <p>Posted {job.posted}</p>
-            <button className="job-apply-button" type="button" onClick={() => setApplied(true)} disabled={applied}>{applied ? <><CheckCircle2 aria-hidden="true" /> Application started</> : 'Apply now'}</button>
+            {application ? (
+              <>
+                <Link className="job-apply-button job-apply-button-link" to="/jobs/applications"><CheckCircle2 aria-hidden="true" /> {application.status}</Link>
+                <p className="job-apply-note">You applied on {application.appliedDate}. Track the next hiring step in Applications.</p>
+              </>
+            ) : (
+              <>
+                <Link className="job-apply-button job-apply-button-link" to={`/jobs/${job.slug}/apply`}>{draft ? 'Resume application' : 'Apply now'}</Link>
+                {draft && <p className="job-apply-note">You have a saved draft for this role. Resume where you left off.</p>}
+              </>
+            )}
             <button className="job-detail-save" type="button" onClick={() => toggleSavedJob(job.slug)}>{saved ? <BookmarkCheck aria-hidden="true" /> : <Bookmark aria-hidden="true" />}{saved ? 'Saved' : 'Save job'}</button>
-            {applied && <p className="job-apply-note">Your profile is ready for review. Resume selection and screening questions come in the next Jobs slice.</p>}
           </aside>
         </div>
         {similar.length > 0 && <section className="jobs-section"><header className="jobs-section-head"><div><h2>Similar jobs</h2><p>Related roles worth comparing.</p></div></header><div className="jobs-grid">{similar.map((item) => <JobCard key={item.slug} job={item} saved={savedJobs.includes(item.slug)} onToggleSaved={toggleSavedJob} compact />)}</div></section>}
