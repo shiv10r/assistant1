@@ -38,9 +38,9 @@ Rarrange the folder and docs and md fiels liek a real repository
 - [ ] Replace News fixtures with the planned ASP.NET Core API plus licensed RSS/API aggregation, attribution, duplicate detection, and editorial review.
 
 
-Here is todo:
-remove dashbaord  analytics activity from assitent section insights  from bunsiness from news app hotel app and job app and hotel travelapp
+## Here is todo
 
-use your  reasoning abilities remove  the features whihc arre deuplictae in the application across the three apps
-
-workon job app 
+- [x] Remove dashboard, analytics, activity from assistant section and insights from business, in the news app, hotel app, job app, and hotel travel app.
+- [x] Restore all previous features for the hotel service (sidebar groups, topbar controls, assistant, weather, broadcast, plans, search) — hotel is a full workspace again, not a stripped portal shell.
+- [x] Fix the workspace chooser on mobile: cards were invisible because the reduced-motion override disabled the entrance animation but left the cards at opacity 0; cards now always render visible.
+- [ ] Enhance the VSR Travel, VSR News, and VSR Jobs portal UIs so each is customized to its purpose instead of sharing the same generic layout.

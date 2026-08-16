@@ -42,7 +42,6 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'var(--grad)',
     home: '/hotel',
-    shell: 'portal',
   },
   {
     id: 'travel',

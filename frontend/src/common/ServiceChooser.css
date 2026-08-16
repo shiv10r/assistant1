@@ -181,9 +181,10 @@
   text-align: left;
   overflow: hidden;
   isolation: isolate;
-  opacity: 0;
-  transform: translateY(24px);
-  animation: chooser-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 1;
+  transform: none;
+  animation: chooser-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--chooser-delay, 0ms);
   transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.24s ease, background 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 .chooser-workspace::before {
@@ -202,7 +203,7 @@
   filter: saturate(.72);
   transform: scale(.975);
 }
-@keyframes chooser-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes chooser-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes chooser-fade { from { opacity: 0; } to { opacity: 1; } }
 
 .chooser-workspace:hover:not(.chooser-disabled),
@@ -374,6 +375,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chooser-workspace, .chooser-workspace::before, .chooser-enter svg { animation: none; transition: none; }
+  .chooser-workspace { opacity: 1; transform: none; }
   .chooser-grid:has(.chooser-workspace:is(:hover, :focus-visible)) .chooser-workspace:not(:hover):not(:focus-visible) { opacity: 1; filter: none; transform: none; }
   .chooser-workspace:hover:not(.chooser-disabled), .chooser-workspace:focus-visible:not(.chooser-disabled) { transform: none; }
 }
