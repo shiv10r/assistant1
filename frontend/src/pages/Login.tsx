@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
 import { login, register, api } from '../api'
 import { firebaseEnabled, signInWithEmail, signInWithGoogle } from '../firebase'
-import { Sparkles, Eye, EyeOff, Lock } from 'lucide-react'
+import { Bot, Eye, EyeOff, FolderKanban, Lock, ScanFace, Sparkles, WalletCards } from 'lucide-react'
 import { VsrLogo } from '../components/VsrLogo'
 
 const USER_KEY = 'lux_user'
+
+const LOGIN_FEATURES = [
+  { icon: FolderKanban, label: 'Projects, teams and service operations' },
+  { icon: WalletCards, label: 'Payments, payroll and expenses together' },
+  { icon: ScanFace, label: 'Secure attendance and workforce tools' },
+  { icon: Bot, label: 'Context-aware assistance where it belongs' },
+] as const
 
 export default function Login({ onAuthed }: { onAuthed: () => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -94,19 +101,16 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
         <div className="intro-line l2"><span className="grad-text">VSR Systems</span></div>
         <div className="intro-line l3">Your business, one dashboard away</div>
         <div className="intro-feats">
-          <div className="int-feat"><span>🗂️</span> Projects, parties & site operations</div>
-          <div className="int-feat"><span>💸</span> Payments, payroll & expenses in one place</div>
-          <div className="int-feat"><span>⏱️</span> Biometric & geofenced attendance</div>
-          <div className="int-feat"><span>🤖</span> AI assistant & instant push alerts</div>
+          {LOGIN_FEATURES.map((feature) => <div className="int-feat" key={feature.label}><span><feature.icon aria-hidden="true" /></span>{feature.label}</div>)}
         </div>
       </div>
 
       <form className="login-card" onSubmit={submit}>
         <div className="login-logo">
-          <VsrLogo size={72} />
+          <VsrLogo size={76} wordmark />
         </div>
 
-        <h1 className="login-title">VSR<span>Systems</span></h1>
+        <h1 className="login-title">VSR <span>Systems</span></h1>
         <p className="login-sub">
           {mode === 'login'
             ? 'Sign in to manage your business, projects & expenses'

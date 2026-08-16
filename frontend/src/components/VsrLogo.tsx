@@ -21,7 +21,8 @@ export function VsrLogo({ size = 40, wordmark = false, compact = false, classNam
             <stop offset="1" stopColor="var(--accent)" />
           </linearGradient>
         </defs>
-        <rect x="3" y="3" width="58" height="58" rx="17" fill={`url(#${gradientId})`} />
+        <rect x="2" y="2" width="60" height="60" rx="18" fill={`url(#${gradientId})`} stroke="rgba(255,255,255,.72)" strokeWidth="1.5" />
+        <rect x="7" y="7" width="50" height="50" rx="14" fill="rgba(5,10,18,.16)" stroke="rgba(255,255,255,.2)" />
         <path d="M17 18.5 31.8 48 47 18.5" fill="none" stroke="white" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M23 28.5h18" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.88" />
         <circle cx="47" cy="18.5" r="4.2" fill="var(--bg)" stroke="white" strokeWidth="2" />
