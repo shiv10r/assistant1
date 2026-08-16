@@ -7,7 +7,7 @@ import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 import {
-  Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel, ShoppingBag,
+  Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel, ShoppingBag, Landmark,
   ArrowRight, Map, ClipboardList, Activity as ActivityIcon, Package, AlarmClock,
   Building2, Warehouse, GraduationCap, Plane, Newspaper,
 } from 'lucide-react'
@@ -46,6 +46,7 @@ const SERVICE_ICONS: Record<ServiceId, typeof Building2> = {
   news: Newspaper,
 jobs: Briefcase,
   commerce: ShoppingBag,
+  bank: Landmark,
 }
 
 export default function Dashboard() {

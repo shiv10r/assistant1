@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank'
 
 export type ServiceDef = {
   id: ServiceId
@@ -77,6 +77,15 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)',
     home: '/commerce',
+    shell: 'portal',
+  },
+  {
+    id: 'bank',
+    label: 'VSR Bank',
+    tagline: 'Accounts, transfers, cards & secure banking',
+    icon: '',
+    gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0E7490 100%)',
+    home: '/bank',
     shell: 'portal',
   },
 ]

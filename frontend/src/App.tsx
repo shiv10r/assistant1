@@ -28,6 +28,9 @@ import {
   CandidateProfile, JobApplicationFlow,
   CommerceBrands, CommerceCart, CommerceCategories, CommerceCheckout, CommerceHome,
   CommerceOffers, CommerceProductDetail, CommerceProducts, CommerceSearch, CommerceWishlist,
+  BankAccountDetail, BankAccounts, BankAdmin, BankBeneficiaries, BankBills, BankCards,
+  BankDeposits, BankDocuments, BankHome, BankLoans, BankNotifications, BankProfile,
+  BankStatements, BankTransfers, BankTransactions,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -233,6 +236,22 @@ export default function App() {
           <Route path="/commerce/offers" element={<CommerceOffers />} />
           <Route path="/commerce/brands" element={<CommerceBrands />} />
           <Route path="/commerce/search" element={<CommerceSearch />} />
+
+          <Route path="/bank" element={<BankHome />} />
+          <Route path="/bank/accounts" element={<BankAccounts />} />
+          <Route path="/bank/accounts/:accountId" element={<BankAccountDetail />} />
+          <Route path="/bank/transactions" element={<BankTransactions />} />
+          <Route path="/bank/transfers" element={<BankTransfers />} />
+          <Route path="/bank/beneficiaries" element={<BankBeneficiaries />} />
+          <Route path="/bank/cards" element={<BankCards />} />
+          <Route path="/bank/deposits" element={<BankDeposits />} />
+          <Route path="/bank/loans" element={<BankLoans />} />
+          <Route path="/bank/statements" element={<BankStatements />} />
+          <Route path="/bank/bills" element={<BankBills />} />
+          <Route path="/bank/notifications" element={<BankNotifications />} />
+          <Route path="/bank/documents" element={<BankDocuments />} />
+          <Route path="/bank/profile" element={<BankProfile />} />
+          <Route path="/bank/admin" element={<BankAdmin />} />
 
 
           {/* Interior service */}

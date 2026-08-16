@@ -70,6 +70,11 @@ import {
   BadgePercent,
   LayoutGrid,
   Heart,
+  Landmark,
+  Send,
+  PiggyBank,
+  FileDown,
+  Receipt,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -283,6 +288,24 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Brands', to: '/commerce/brands', icon: <Building2 className="w-5 h-5" /> },
       { label: 'Wishlist', to: '/commerce/wishlist', icon: <Heart className="w-5 h-5" /> },
       { label: 'Cart', to: '/commerce/cart', icon: <ShoppingCart className="w-5 h-5" /> },
+    ]},
+  ],
+  bank: [
+    { title: 'VSR Bank', items: [
+      { label: 'Dashboard', to: '/bank', icon: <Landmark className="w-5 h-5" />, end: true },
+      { label: 'Accounts', to: '/bank/accounts', icon: <Wallet className="w-5 h-5" /> },
+      { label: 'Transactions', to: '/bank/transactions', icon: <ArrowLeftRight className="w-5 h-5" /> },
+      { label: 'Transfers', to: '/bank/transfers', icon: <Send className="w-5 h-5" /> },
+      { label: 'Beneficiaries', to: '/bank/beneficiaries', icon: <Users className="w-5 h-5" /> },
+      { label: 'Cards', to: '/bank/cards', icon: <CreditCard className="w-5 h-5" /> },
+      { label: 'Deposits', to: '/bank/deposits', icon: <PiggyBank className="w-5 h-5" /> },
+      { label: 'Loans', to: '/bank/loans', icon: <Landmark className="w-5 h-5" /> },
+      { label: 'Statements', to: '/bank/statements', icon: <FileDown className="w-5 h-5" /> },
+      { label: 'Bills', to: '/bank/bills', icon: <Receipt className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/bank/notifications', icon: <Bell className="w-5 h-5" /> },
+      { label: 'Documents', to: '/bank/documents', icon: <FileText className="w-5 h-5" /> },
+      { label: 'Profile & Security', to: '/bank/profile', icon: <ShieldCheck className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/bank/admin', icon: <Monitor className="w-5 h-5" /> },
     ]},
   ],
 }
