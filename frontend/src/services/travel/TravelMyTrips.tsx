@@ -1,15 +1,16 @@
 import { CalendarCheck, Heart, ReceiptText, Users } from 'lucide-react'
-import { Badge, PageHead, money } from '../../components/ui'
+import { money } from '../../components/ui'
 import { useLocalCollection } from '../../lib/localStore'
 import { BOOKING_SEED, PACKAGE_SEED } from './seed'
 import { TravelPackageCard } from './TravelPackageCard'
+import TravelShell from './TravelShell'
 import type { TravelBooking } from './types'
 import { useTravelWishlist } from './useTravelWishlist'
 
 const STATUS_TONE = {
-  Upcoming: 'info',
-  Completed: 'success',
-  Cancelled: 'danger',
+  Upcoming: 'bg-[var(--travel-lagoon)] text-white',
+  Completed: 'bg-[var(--travel-ocean)] text-white',
+  Cancelled: 'bg-[var(--travel-coral)] text-white',
 } as const
 
 export default function TravelMyTrips() {
@@ -18,23 +19,40 @@ export default function TravelMyTrips() {
   const savedPackages = PACKAGE_SEED.filter((item) => savedIds.has(item.id))
 
   return (
-    <div className="space-y-8">
-      <PageHead icon={<CalendarCheck className="h-6 w-6" />} title="My trips" sub="Track bookings, balances, travel dates, and saved ideas." />
-      <section aria-labelledby="booking-list">
-        <h2 id="booking-list" className="mb-4 text-lg font-bold text-text">Bookings</h2>
-        <div className="grid gap-5 lg:grid-cols-2">
-          {bookings.map((booking) => (
-            <article key={booking.id} className="grid overflow-hidden rounded-xl border border-border bg-surface sm:grid-cols-[190px_1fr]">
-              <img src={booking.image} alt={booking.destination} width="560" height="420" className="h-48 w-full object-cover sm:h-full" />
-              <div className="p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-mono text-xs text-primary">{booking.bookingNumber}</p><h3 className="mt-1 text-lg font-bold text-text">{booking.packageTitle}</h3><p className="text-sm text-muted">{booking.destination} · {booking.dateLabel}</p></div><Badge variant={STATUS_TONE[booking.status]} size="sm">{booking.status}</Badge></div><div className="mt-5 grid grid-cols-3 gap-3 border-y border-border py-4"><div><Users className="h-4 w-4 text-primary" /><p className="mt-1 text-xs text-muted">Travelers</p><strong className="text-sm text-text">{booking.travelers}</strong></div><div><ReceiptText className="h-4 w-4 text-primary" /><p className="mt-1 text-xs text-muted">Total</p><strong className="text-sm text-text">{money(booking.total)}</strong></div><div><CalendarCheck className="h-4 w-4 text-primary" /><p className="mt-1 text-xs text-muted">Balance</p><strong className="text-sm text-text">{money(booking.total - booking.paid)}</strong></div></div><button type="button" className="mt-4 text-sm font-semibold text-primary hover:underline">View trip details</button></div>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section aria-labelledby="saved-trips">
-        <div className="mb-4 flex items-center gap-2"><Heart className="h-5 w-5 text-primary" /><h2 id="saved-trips" className="text-lg font-bold text-text">Wishlist</h2><Badge variant="outline" size="sm">{savedPackages.length}</Badge></div>
-        {savedPackages.length > 0 ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{savedPackages.map((item) => <TravelPackageCard key={item.id} packageItem={item} saved onToggleSaved={toggleSaved} />)}</div> : <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center"><Heart className="mx-auto h-7 w-7 text-muted" /><p className="mt-3 font-semibold text-text">Your wishlist is empty</p><p className="mt-1 text-sm text-muted">Save package cards to compare them here.</p></div>}
-      </section>
-    </div>
+    <TravelShell>
+      <div className="travel-main">
+        <div className="travel-page-head"><h1>My trips</h1><p>Track bookings, balances, travel dates, and saved ideas.</p></div>
+
+        <section className="travel-section" aria-labelledby="booking-list">
+          <div className="travel-section-head"><div><h2 id="booking-list">Bookings</h2><p>Your upcoming and past travel.</p></div></div>
+          <div className="travel-cards">
+            {bookings.map((booking) => (
+              <article key={booking.id} className="travel-card">
+                <div className="travel-card-media"><img src={booking.image} alt={booking.destination} width="560" height="420" loading="lazy" /></div>
+                <div className="travel-card-body">
+                  <p className="travel-ref">{booking.bookingNumber}</p>
+                  <h3>{booking.packageTitle}</h3>
+                  <p className="travel-booking-dest">{booking.destination} · {booking.dateLabel}</p>
+                  <span className={`mt-2 w-fit rounded-full px-3 py-1 text-[11px] font-bold ${STATUS_TONE[booking.status]}`}>{booking.status}</span>
+                  <div className="travel-booking-stats">
+                    <div><Users aria-hidden="true" /><p>Travelers</p><strong>{booking.travelers}</strong></div>
+                    <div><ReceiptText aria-hidden="true" /><p>Total</p><strong>{money(booking.total)}</strong></div>
+                    <div><CalendarCheck aria-hidden="true" /><p>Balance</p><strong>{money(booking.total - booking.paid)}</strong></div>
+                  </div>
+                  <button type="button" className="travel-card-cta" style={{ alignSelf: 'flex-start' }}>View trip details</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="travel-section" aria-labelledby="saved-trips">
+          <div className="travel-section-head"><div><h2 id="saved-trips">Wishlist</h2><p>{savedPackages.length} saved ideas</p></div></div>
+          {savedPackages.length > 0
+            ? <div className="travel-cards">{savedPackages.map((item) => <TravelPackageCard key={item.id} packageItem={item} saved onToggleSaved={toggleSaved} />)}</div>
+            : <div className="travel-empty"><Heart aria-hidden="true" /><h2>Your wishlist is empty</h2><p>Save package cards to compare them here.</p></div>}
+        </section>
+      </div>
+    </TravelShell>
   )
 }
