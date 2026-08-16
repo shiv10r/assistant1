@@ -24,8 +24,10 @@ import {
   HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
   TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsCategory, NewsHome,
   NewsLatest, NewsSearch, NewsTrending,
-CompanyDetail, JobDetail, JobsApplications, JobsCompanies, JobsHome, JobsSaved, JobsSearch,
+  CompanyDetail, JobDetail, JobsApplications, JobsCompanies, JobsHome, JobsSaved, JobsSearch,
   CandidateProfile, JobApplicationFlow,
+  CommerceBrands, CommerceCart, CommerceCategories, CommerceCheckout, CommerceHome,
+  CommerceOffers, CommerceProductDetail, CommerceProducts, CommerceSearch, CommerceWishlist,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -220,6 +222,18 @@ export default function App() {
           <Route path="/jobs/profile" element={<CandidateProfile />} />
           <Route path="/jobs/:slug/apply" element={<JobApplicationFlow />} />
           <Route path="/jobs/:slug" element={<JobDetail />} />
+
+          <Route path="/commerce" element={<CommerceHome />} />
+          <Route path="/commerce/categories" element={<CommerceCategories />} />
+          <Route path="/commerce/products" element={<CommerceProducts />} />
+          <Route path="/commerce/product/:slug" element={<CommerceProductDetail />} />
+          <Route path="/commerce/cart" element={<CommerceCart />} />
+          <Route path="/commerce/checkout" element={<CommerceCheckout />} />
+          <Route path="/commerce/wishlist" element={<CommerceWishlist />} />
+          <Route path="/commerce/offers" element={<CommerceOffers />} />
+          <Route path="/commerce/brands" element={<CommerceBrands />} />
+          <Route path="/commerce/search" element={<CommerceSearch />} />
+
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

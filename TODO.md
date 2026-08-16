@@ -16,7 +16,6 @@ Rarrange the folder and docs and md fiels liek a real repository
 - [x] Add the first VSR Jobs frontend slice: discover page, professional search and work-mode filters, job details, application-start state, saved jobs, responsive cards, and application navigation.
 - [x] Give VSR News a dedicated portal shell by removing generic business navigation, plan controls, weather, and assistant UI; add Trending, Search, category desks, Latest, and Saved navigation.
 - [x] Add the second VSR Jobs frontend slice: company directory, company profiles, open roles, and application status tracking.
-- [x] Add the third VSR Jobs frontend slice: candidate profile, four-step application flow with resume metadata and saved drafts, screening questions, and live application tracking.
 
 ## Next service work
 
@@ -26,7 +25,6 @@ Rarrange the folder and docs and md fiels liek a real repository
 ## Service-specific UX
 
 - [x] Remove generic Assistant, Business, More, Plan, weather, and business-dashboard UI from News, Travel, Hotel, and Jobs portal workspaces.
-- [x] Remove Dashboard, Analytics, Activity (Assistant group) and Insights (Business group) from the sidebar of every workspace; the News, Hotel, Jobs, and Travel portals never rendered them, and the shared sidebar no longer shows them in business workspaces either.
 - [x] Add streaming-style focus, scale, glow, and sibling de-emphasis to workspace cards with keyboard and reduced-motion support.
 - [x] Redesign the VSR logo and luxury login presentation for stronger white/gold contrast, real icons, and staggered entrance motion.
 - [x] Keep the shared assistant available only in business workspaces where it currently supports operational data: Interiors, Warehouse, and School.
@@ -38,9 +36,59 @@ Rarrange the folder and docs and md fiels liek a real repository
 - [ ] Replace News fixtures with the planned ASP.NET Core API plus licensed RSS/API aggregation, attribution, duplicate detection, and editorial review.
 
 
-## Here is todo
+Here is todo:
+remove dashbaord  analytics activity from assitent section insights  from bunsiness from news app hotel app and job app and hotel travelapp
 
-- [x] Remove dashboard, analytics, activity from assistant section and insights from business, in the news app, hotel app, job app, and hotel travel app.
-- [x] Restore all previous features for the hotel service (sidebar groups, topbar controls, assistant, weather, broadcast, plans, search) — hotel is a full workspace again, not a stripped portal shell.
-- [x] Fix the workspace chooser on mobile: cards were invisible because the reduced-motion override disabled the entrance animation but left the cards at opacity 0; cards now always render visible.
-- [x] Enhance the VSR Travel, VSR News, and VSR Jobs portal UIs so each is customized to its purpose instead of sharing the same generic layout.
+use your  reasoning abilities remove  the features whihc arre deuplictae in the application across the three apps
+
+workon job app frommd file
+
+VSR
+SYSTEMS
+Help
+
+A
+Admin
+Welcome to VSR Systems
+Choose the workspace for this session
+
+
+VSR Interiors
+Spaces, projects, AI designs & estimates
+Open workspace
+
+VSR Warehouse
+Inventory, suppliers, orders & fulfilment
+Open workspace
+
+VSR School
+Students, academics, fees & attendance
+Open workspace
+
+VSR Hotels
+Reservations, rooms, guests & housekeeping
+Open workspace
+
+VSR Travel
+Destinations, packages, group trips & custom journeys
+Open workspace
+
+VSR News
+Breaking stories, trusted reporting & saved reads
+Open workspace
+
+VSR Jobs
+Search roles, compare employers & save opportunities
+Open 
+these are cards not accessible in mobile device i cant see them  only footer i am seeing 
+i want  all the previous features resotred for hotel  service i ncer told u u od why u  did 
+travel news and job services are fine for now 
+
+Work on  ecommerseapp now architecture added 
+
+## New app workspaces (pending)
+
+- [x] Build the VSR Commerce frontend slice per `docs/services/VSR_Ecommerce_Application_Architecture_React_DotNet_SQL.md` — registered launcher workspace with a purpose-customized storefront shell, card-heavy home (hero, categories, trending, deals, offers, new arrivals, featured, brands), category/brand/offer pages, filterable product listing, product detail with gallery + variants + reviews, localStorage cart with coupons and checkout flow (address → shipping → payment simulator → confirmation), and wishlist.
+- [ ] Connect VSR Commerce to the planned ASP.NET Core API and SQL Server data model (catalog, cart, checkout, orders, payments, inventory).
+- [ ] Build the VSR Baking frontend slice.
+- [ ] Build the VSR Medical frontend slice. 

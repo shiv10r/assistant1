@@ -67,6 +67,9 @@ import {
   Siren,
   Newspaper,
   Bookmark,
+  BadgePercent,
+  LayoutGrid,
+  Heart,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -269,6 +272,17 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
 { label: 'Applications', to: '/jobs/applications', icon: <ClipboardList className="w-5 h-5" /> },
       { label: 'Profile', to: '/jobs/profile', icon: <User className="w-5 h-5" /> },
       { label: 'Saved Jobs', to: '/jobs/saved', icon: <Bookmark className="w-5 h-5" /> },
+    ]},
+  ],
+  commerce: [
+    { title: 'VSR Commerce', items: [
+      { label: 'Home', to: '/commerce', icon: <ShoppingCart className="w-5 h-5" />, end: true },
+      { label: 'Categories', to: '/commerce/categories', icon: <LayoutGrid className="w-5 h-5" /> },
+      { label: 'Products', to: '/commerce/products', icon: <Package className="w-5 h-5" /> },
+      { label: 'Offers', to: '/commerce/offers', icon: <BadgePercent className="w-5 h-5" /> },
+      { label: 'Brands', to: '/commerce/brands', icon: <Building2 className="w-5 h-5" /> },
+      { label: 'Wishlist', to: '/commerce/wishlist', icon: <Heart className="w-5 h-5" /> },
+      { label: 'Cart', to: '/commerce/cart', icon: <ShoppingCart className="w-5 h-5" /> },
     ]},
   ],
 }

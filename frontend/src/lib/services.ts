@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce'
 
 export type ServiceDef = {
   id: ServiceId
@@ -68,6 +68,15 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #175EAA 0%, #087B70 100%)',
     home: '/jobs',
+    shell: 'portal',
+  },
+  {
+    id: 'commerce',
+    label: 'VSR Commerce',
+    tagline: 'Discover, compare & shop quality products',
+    icon: '',
+    gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)',
+    home: '/commerce',
     shell: 'portal',
   },
 ]
