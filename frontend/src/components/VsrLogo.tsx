@@ -10,22 +10,27 @@ type VsrLogoProps = {
 
 export function VsrLogo({ size = 40, wordmark = false, compact = false, className }: VsrLogoProps) {
   const gradientId = useId()
+  const sheenId = `${gradientId}-sheen`
 
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)} aria-label="VSR Systems">
       <svg width={size} height={size} viewBox="0 0 64 64" role="img" aria-hidden="true" className="shrink-0 drop-shadow-sm">
         <defs>
-          <linearGradient id={gradientId} x1="8" y1="6" x2="57" y2="59" gradientUnits="userSpaceOnUse">
+          <linearGradient id={gradientId} x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
             <stop stopColor="var(--primary-soft)" />
             <stop offset="0.55" stopColor="var(--primary)" />
             <stop offset="1" stopColor="var(--accent)" />
           </linearGradient>
+          <linearGradient id={sheenId} x1="4" y1="2" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#fff" stopOpacity="0.32" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
         </defs>
-        <rect x="2" y="2" width="60" height="60" rx="18" fill={`url(#${gradientId})`} stroke="rgba(255,255,255,.72)" strokeWidth="1.5" />
-        <rect x="7" y="7" width="50" height="50" rx="14" fill="rgba(5,10,18,.16)" stroke="rgba(255,255,255,.2)" />
-        <path d="M17 18.5 31.8 48 47 18.5" fill="none" stroke="white" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M23 28.5h18" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.88" />
-        <circle cx="47" cy="18.5" r="4.2" fill="var(--bg)" stroke="white" strokeWidth="2" />
+        <rect x="2" y="2" width="60" height="60" rx="19" fill={`url(#${gradientId})`} />
+        <rect x="2" y="2" width="60" height="60" rx="19" fill={`url(#${sheenId})`} />
+        <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="18.25" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.5" />
+        <path d="M16.5 15.5 32 45 47.5 15.5" fill="none" stroke="white" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="32" cy="51" r="4.4" fill="white" />
       </svg>
       {wordmark && (
         <span className="flex min-w-0 flex-col leading-none">
