@@ -42,6 +42,7 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'var(--grad)',
     home: '/hotel',
+    shell: 'portal',
   },
   {
     id: 'travel',
@@ -50,6 +51,7 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'var(--grad)',
     home: '/travel',
+    shell: 'portal',
   },
   {
     id: 'news',
@@ -67,6 +69,7 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #175EAA 0%, #087B70 100%)',
     home: '/jobs',
+    shell: 'portal',
   },
 ]
 
