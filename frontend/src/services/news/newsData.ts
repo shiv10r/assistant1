@@ -15,6 +15,8 @@ export type NewsStory = {
   readonly body: readonly string[]
 }
 
+export const NEWS_CATEGORIES: readonly NewsCategory[] = ['India', 'World', 'Business', 'Technology', 'Sports', 'Entertainment']
+
 export const NEWS_STORIES: readonly NewsStory[] = [
   {
     slug: 'india-clean-energy-corridor-expands',
@@ -97,4 +99,23 @@ export const NEWS_STORIES: readonly NewsStory[] = [
 
 export function storyBySlug(slug: string | undefined): NewsStory | null {
   return NEWS_STORIES.find((story) => story.slug === slug) ?? null
+}
+
+export function categoryFromSlug(slug: string | undefined): NewsCategory | null {
+  if (!slug) return null
+  return NEWS_CATEGORIES.find((category) => category.toLowerCase() === slug.toLowerCase()) ?? null
+}
+
+export function storiesByCategory(category: NewsCategory): readonly NewsStory[] {
+  return NEWS_STORIES.filter((story) => story.category === category)
+}
+
+export function trendingStories(): readonly NewsStory[] {
+  return NEWS_STORIES.filter((story) => story.trending || story.breaking)
+}
+
+export function searchStories(query: string): readonly NewsStory[] {
+  const normalized = query.trim().toLowerCase()
+  if (!normalized) return NEWS_STORIES
+  return NEWS_STORIES.filter((story) => `${story.headline} ${story.summary} ${story.category} ${story.author}`.toLowerCase().includes(normalized))
 }
