@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { Bookmark, Clock3, Home, Newspaper } from 'lucide-react'
+import { Bookmark, Clock3, Flame, Home, Newspaper, Search } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
+import { NEWS_CATEGORIES } from './newsData'
 import './news.css'
 
 type NewsShellProps = {
@@ -11,6 +12,8 @@ type NewsShellProps = {
 const NEWS_NAV = [
   { to: '/news', label: 'Home', icon: Home, end: true },
   { to: '/news/latest', label: 'Latest', icon: Clock3, end: false },
+  { to: '/news/trending', label: 'Trending', icon: Flame, end: false },
+  { to: '/news/search', label: 'Search', icon: Search, end: false },
   { to: '/news/bookmarks', label: 'Saved', icon: Bookmark, end: false },
 ] as const
 
@@ -27,6 +30,9 @@ export default function NewsShell({ children }: NewsShellProps) {
           ))}
         </nav>
       </header>
+      <nav className="news-category-nav" aria-label="News categories">
+        {NEWS_CATEGORIES.map((category) => <NavLink key={category} to={`/news/category/${category.toLowerCase()}`} className={({ isActive }) => isActive ? 'is-active' : undefined}>{category}</NavLink>)}
+      </nav>
       {children}
     </div>
   )
