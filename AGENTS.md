@@ -17,3 +17,4 @@
 
 - At the end of each work session, add any durable process lesson to this file so future sessions improve.
 - Record only reusable rules that prevent a repeated failure or improve delivery; do not add temporary task details or duplicate existing rules.
+- When the user provides an architecture document and explicitly says to implement it, treat that document as the approved scope contract and move directly to the first coding chunk instead of recreating the design process.
