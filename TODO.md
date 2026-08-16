@@ -15,38 +15,22 @@ Rarrange the folder and docs and md fiels liek a real repository
 - [x] Standardize workspace names as VSR Interiors, VSR Warehouse, VSR School, VSR Hotels, VSR Travel, and VSR News; remove the incorrect School coming-soon state.
 - [x] Add the first VSR Jobs frontend slice: discover page, professional search and work-mode filters, job details, application-start state, saved jobs, responsive cards, and application navigation.
 - [x] Give VSR News a dedicated portal shell by removing generic business navigation, plan controls, weather, and assistant UI; add Trending, Search, category desks, Latest, and Saved navigation.
+- [x] Add the second VSR Jobs frontend slice: company directory, company profiles, open roles, and application status tracking.
 
 ## Next service work
 
 - [ ] Connect VSR News to the planned ASP.NET Core API, SQL Server data model, authentication, search, and editorial workflow.
 - [ ] Connect VSR Jobs to the planned ASP.NET Core API, SQL Server data model, profiles, resumes, applications, recruiter workflows, and administration.
-similarly travel has no use of the features what mentioned in news apprelated with dahbaord it should be specifc t o travel app only same applies on hotel servecie
-we want animation cards like amazon prime or netflix
-how are you fetching n ews here
-VSRSystems systems not visible white redesign the vsrlogo and login page color  add more anomation on login page athe page we choose the services
-Secure sign in
-Welcome to
-VSR Systems
-Your business, one dashboard away
-🗂️
-Projects, parties & site operations
-💸
-Payments, payroll & expenses in one place
-⏱️
-Biometric & geofenced attendance
-🤖
-AI assistant & instant push alerts
-VSRSystems
-Sign in to manage your business, projects & expenses
 
-Sign in
-Register
-Username
-admin
-Password
-••••••••
+## Service-specific UX
 
-Forgot password?
-Sign in
-redesign th eui
-i want u to think about theuses of assitant tab across all the servecises use it correctly wher it srerquired wherenot cutomize ot for thstservice
+- [x] Remove generic Assistant, Business, More, Plan, weather, and business-dashboard UI from News, Travel, Hotel, and Jobs portal workspaces.
+- [x] Add streaming-style focus, scale, glow, and sibling de-emphasis to workspace cards with keyboard and reduced-motion support.
+- [x] Redesign the VSR logo and luxury login presentation for stronger white/gold contrast, real icons, and staggered entrance motion.
+- [x] Keep the shared assistant available only in business workspaces where it currently supports operational data: Interiors, Warehouse, and School.
+- [ ] Customize assistant context and suggested actions separately for Interiors, Warehouse, and School instead of serving identical prompts.
+
+## Data sourcing
+
+- [x] Document current VSR News sourcing: the frontend currently renders typed local fixtures from `frontend/src/services/news/newsData.ts`; it does not fetch live news yet.
+- [ ] Replace News fixtures with the planned ASP.NET Core API plus licensed RSS/API aggregation, attribution, duplicate detection, and editorial review.
