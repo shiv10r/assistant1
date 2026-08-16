@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel'
 
 export type ServiceDef = {
   id: ServiceId
@@ -41,6 +41,14 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'var(--grad)',
     home: '/hotel',
+  },
+  {
+    id: 'travel',
+    label: 'Travel & Tours',
+    tagline: 'Destinations, packages, group trips & custom holidays',
+    icon: '',
+    gradient: 'var(--grad)',
+    home: '/travel',
   },
 ]
 

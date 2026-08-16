@@ -117,3 +117,10 @@ export const HotelReservations = lazy(() => import('../services/hotel/HotelReser
 export const HotelRooms = lazy(() => import('../services/hotel/HotelRooms'))
 export const HotelGuests = lazy(() => import('../services/hotel/HotelGuests'))
 export const HotelHousekeeping = lazy(() => import('../services/hotel/HotelHousekeeping'))
+
+export const TravelHome = lazy(() => import('../services/travel/TravelHome'))
+export const TravelDestinations = lazy(() => import('../services/travel/TravelDestinations'))
+export const TravelPackages = lazy(() => import('../services/travel/TravelPackages'))
+export const TravelGroupTrips = lazy(() => import('../services/travel/TravelGroupTrips'))
+export const TravelCustomize = lazy(() => import('../services/travel/TravelCustomize'))
+export const TravelMyTrips = lazy(() => import('../services/travel/TravelMyTrips'))
