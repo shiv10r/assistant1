@@ -1,3 +1,4 @@
+// test commit: verifying push workflow
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initTheme, initWeatherTheme } from './theme'
