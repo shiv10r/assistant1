@@ -26,6 +26,7 @@ Rarrange the folder and docs and md fiels liek a real repository
 ## Service-specific UX
 
 - [x] Remove generic Assistant, Business, More, Plan, weather, and business-dashboard UI from News, Travel, Hotel, and Jobs portal workspaces.
+- [x] Remove Dashboard, Analytics, Activity (Assistant group) and Insights (Business group) from the sidebar of every workspace; the News, Hotel, Jobs, and Travel portals never rendered them, and the shared sidebar no longer shows them in business workspaces either.
 - [x] Add streaming-style focus, scale, glow, and sibling de-emphasis to workspace cards with keyboard and reduced-motion support.
 - [x] Redesign the VSR logo and luxury login presentation for stronger white/gold contrast, real icons, and staggered entrance motion.
 - [x] Keep the shared assistant available only in business workspaces where it currently supports operational data: Interiors, Warehouse, and School.

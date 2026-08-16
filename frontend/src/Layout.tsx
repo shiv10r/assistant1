@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   BarChart3,
   Database,
-  Activity,
   Settings,
   ReceiptText,
   Package,
@@ -33,7 +32,6 @@ import {
   ScanBarcode,
   Sparkles,
   ShieldCheck,
-  ChartSpline,
   Boxes,
   Video,
   CloudSun,
@@ -278,15 +276,11 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
 /** Groups shared across every service — kept to the fixed global feature set only. */
 const COMMON_GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
-    { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
     { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
-    { label: 'Analytics', to: '/analytics', icon: <BarChart3 className="w-5 h-5" />, hideFor: ['warehouse'] },
     { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },
-    { label: 'Activity', to: '/activity', icon: <Activity className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <Settings className="w-5 h-5" /> },
   ]},
   { title: 'Business', items: [
-    { label: 'Insights', to: '/insights', icon: <ChartSpline className="w-5 h-5" /> },
     { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
   ]},
   { title: 'More', items: [
