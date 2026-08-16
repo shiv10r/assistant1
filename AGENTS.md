@@ -20,4 +20,5 @@
 - At the end of each work session, add any durable process lesson to this file so future sessions improve.
 - Record only reusable rules that prevent a repeated failure or improve delivery; do not add temporary task details or duplicate existing rules.
 - When the user provides an architecture document and explicitly says to implement it, treat that document as the approved scope contract and move directly to the first coding chunk instead of recreating the design process.
+- Treat `frontend/src/lib/services.ts` as the source of truth for workspace names, taglines, home routes, and availability; chooser, dashboard, and navigation consumers must not hard-code disabled or coming-soon states.
 - At session completion, include all changed TODO and Markdown files in the commit instead of leaving them pending, unless the user explicitly excludes them.
