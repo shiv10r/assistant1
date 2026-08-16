@@ -67,6 +67,8 @@ import {
   LifeBuoy,
   Scale,
   Siren,
+  Newspaper,
+  Bookmark,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -242,6 +244,13 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Group Trips', to: '/travel/group-trips', icon: <Users className="w-5 h-5" /> },
       { label: 'Customize Trip', to: '/travel/customize', icon: <Sparkles className="w-5 h-5" /> },
       { label: 'My Trips', to: '/travel/my-trips', icon: <CalendarCheck className="w-5 h-5" /> },
+    ]},
+  ],
+  news: [
+    { title: 'VSR News', items: [
+      { label: 'Top Stories', to: '/news', icon: <Newspaper className="w-5 h-5" />, end: true },
+      { label: 'Latest', to: '/news/latest', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Saved Stories', to: '/news/bookmarks', icon: <Bookmark className="w-5 h-5" /> },
     ]},
   ],
 }

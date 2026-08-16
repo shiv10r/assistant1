@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news'
 
 export type ServiceDef = {
   id: ServiceId
@@ -12,43 +12,51 @@ export type ServiceDef = {
 export const SERVICES: ServiceDef[] = [
   {
     id: 'interior',
-    label: 'Interior Design',
-    tagline: 'Projects, rooms, AI designs, products & cost estimates',
+    label: 'VSR Interiors',
+    tagline: 'Spaces, projects, AI designs & estimates',
     icon: '🏠',
     gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)',
     home: '/interior/dashboard',
   },
   {
     id: 'warehouse',
-    label: 'Warehouse Store',
-    tagline: 'Inventory, stock levels, suppliers & purchase orders',
+    label: 'VSR Warehouse',
+    tagline: 'Inventory, suppliers, orders & fulfilment',
     icon: '📦',
     gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
     home: '/warehouse/dashboard',
   },
   {
     id: 'school',
-    label: 'School Management',
-    tagline: 'Students, classes, fees & attendance (coming soon)',
+    label: 'VSR School',
+    tagline: 'Students, academics, fees & attendance',
     icon: '🎓',
     gradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
     home: '/school',
   },
   {
     id: 'hotel',
-    label: 'Hotel Management',
-    tagline: 'Reservations, front desk, rooms, guests & housekeeping',
+    label: 'VSR Hotels',
+    tagline: 'Reservations, rooms, guests & housekeeping',
     icon: '',
     gradient: 'var(--grad)',
     home: '/hotel',
   },
   {
     id: 'travel',
-    label: 'Travel & Tours',
-    tagline: 'Destinations, packages, group trips & custom holidays',
+    label: 'VSR Travel',
+    tagline: 'Destinations, packages, group trips & custom journeys',
     icon: '',
     gradient: 'var(--grad)',
     home: '/travel',
+  },
+  {
+    id: 'news',
+    label: 'VSR News',
+    tagline: 'Breaking stories, trusted reporting & saved reads',
+    icon: '',
+    gradient: 'linear-gradient(135deg, #A62421 0%, #6F1715 100%)',
+    home: '/news',
   },
 ]
 

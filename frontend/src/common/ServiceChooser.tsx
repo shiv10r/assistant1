@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICES, getLastService, setLastService, type ServiceDef } from '../lib/services'
 import { cn } from '../lib/utils'
-import { ArrowRight, ArrowLeft, Building2, Warehouse, GraduationCap, Plane, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Building2, Warehouse, GraduationCap, Plane, Newspaper, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown } from 'lucide-react'
 import './ServiceChooser.css'
 import { VsrLogo } from '../components/VsrLogo'
 
@@ -12,6 +12,7 @@ const WORKSPACE_ICONS: Record<string, typeof Building2> = {
   school: GraduationCap,
   hotel: Building2,
   travel: Plane,
+  news: Newspaper,
 }
 
 const FEATURES = [
@@ -60,12 +61,11 @@ export default function ServiceChooser() {
           {SERVICES.map((svc, i) => {
             const Icon = WORKSPACE_ICONS[svc.id] ?? Building2
             const active = svc.id === last?.id
-            const disabled = svc.id === 'school'
             return (
               <button
                 key={svc.id}
                 type="button"
-                className={cn('chooser-workspace', active && 'chooser-active', disabled && 'chooser-disabled')}
+                className={cn('chooser-workspace', active && 'chooser-active')}
                 style={{ animationDelay: `${200 + i * 120}ms` }}
                 onClick={() => enter(svc)}
                 aria-label={`Enter ${svc.label}`}
@@ -75,7 +75,6 @@ export default function ServiceChooser() {
                 </span>
                 <span className="chooser-name">{svc.label}</span>
                 <span className="chooser-tag">{svc.tagline}</span>
-                {disabled && <span className="chooser-badge">Coming Soon</span>}
                 <span className="chooser-enter">
                   Open workspace <ArrowRight className="w-4 h-4" />
                 </span>
