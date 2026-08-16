@@ -13,6 +13,8 @@
   overflow: hidden;
   z-index: 50;
   font-family: "Segoe UI", system-ui, -apple-system, "Inter", sans-serif;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ---- Subtle background decoration (low contrast) ---- */
@@ -129,6 +131,8 @@
   width: 100%;
   margin: 0 auto;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* ---- Heading ---- */
@@ -156,14 +160,17 @@
   background: #FF9638;
 }
 
-/* ---- Workspace cards ---- */
+/* ---- Workspace cards ----
+   Flexbox (not CSS grid) so a partial last row centers its cards instead of
+   sticking to the left with empty track space beside it. */
 .chooser-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   width: 100%;
   max-width: 1240px;
   justify-content: center;
+  padding-bottom: 1rem;
 }
 .chooser-workspace {
   position: relative;
@@ -171,6 +178,8 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0.75rem;
+  flex: 1 1 200px;
+  max-width: 260px;
   min-height: 250px;
   padding: 1.35rem;
   border-radius: 16px;
@@ -243,7 +252,10 @@
   background: rgba(255, 150, 56, 0.14);
   color: #FF9638;
   border: 1px solid rgba(255, 150, 56, 0.22);
+  animation: chooser-float 3.2s ease-in-out infinite;
+  animation-delay: var(--chooser-delay, 0ms);
 }
+@keyframes chooser-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .chooser-name { font-size: 1.2rem; font-weight: 700; }
 .chooser-tag {
   font-size: 0.85rem;
@@ -359,22 +371,44 @@
 
 /* ---- Responsive ---- */
 @media (max-width: 1020px) {
-  .chooser-grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-  .chooser-workspace { min-height: 230px; }
+  .chooser-workspace { flex-basis: 210px; min-height: 230px; }
 }
 
 @media (max-width: 700px) {
-  .chooser-header { padding: 0 1.25rem; }
-  .chooser-grid { grid-template-columns: 1fr; max-width: 400px; }
-  .chooser-workspace { min-height: 0; padding: 1.75rem; }
-  .chooser-features { grid-template-columns: repeat(2, 1fr); gap: 0.75rem 0; }
-  .chooser-feature:nth-child(2) { border-right: none; }
-  .chooser-main { padding-top: 2rem; }
-  .chooser-return { flex-direction: column; }
+  .chooser-header { padding: 0 1.25rem; height: 56px; }
+  .chooser-help span, .chooser-help { font-size: 0.8rem; }
+  .chooser-grid { max-width: 480px; gap: 0.8rem; }
+  .chooser-workspace { flex-basis: 100%; max-width: 100%; min-height: 0; padding: 1.5rem; }
+  .chooser-tag { min-height: 0; }
+  /* Marketing footer competes with the workspace cards for scarce mobile
+     viewport height, hiding cards below the fold — drop it here so the
+     primary task (picking a workspace) always gets the space. */
+  .chooser-features { display: none; }
+  .chooser-main { padding: 1.25rem 1.1rem 1rem; }
+  .chooser-heading { margin-bottom: 1rem; }
+  .chooser-return { flex-direction: column; margin-top: 1rem; }
+}
+
+@media (max-width: 380px) {
+  .chooser-title { font-size: 1.6rem; }
+  .chooser-sub { font-size: 0.95rem; }
+  .chooser-workspace { padding: 1.25rem; }
+}
+
+/* Touch devices get no hover state, so give a tap-down press animation instead */
+@media (hover: none) {
+  .chooser-workspace:active:not(.chooser-disabled) {
+    transform: scale(0.97);
+    border-color: rgba(255, 150, 56, 0.5);
+    transition: transform 0.12s ease;
+  }
+  .chooser-grid:has(.chooser-workspace:is(:hover, :focus-visible)) .chooser-workspace:not(:hover):not(:focus-visible) {
+    opacity: 1; filter: none; transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chooser-workspace, .chooser-workspace::before, .chooser-enter svg { animation: none; transition: none; }
+  .chooser-workspace, .chooser-workspace::before, .chooser-enter svg, .chooser-icon { animation: none; transition: none; }
   .chooser-workspace { opacity: 1; transform: none; }
   .chooser-grid:has(.chooser-workspace:is(:hover, :focus-visible)) .chooser-workspace:not(:hover):not(:focus-visible) { opacity: 1; filter: none; transform: none; }
   .chooser-workspace:hover:not(.chooser-disabled), .chooser-workspace:focus-visible:not(.chooser-disabled) { transform: none; }
