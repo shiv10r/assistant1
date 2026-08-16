@@ -23,6 +23,7 @@ import {
   SchoolTransport, SchoolUsers, SchoolVisitors, HotelGuests, HotelHome, HotelHousekeeping,
   HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
   TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsHome, NewsLatest,
+  JobDetail, JobsHome, JobsSaved, JobsSearch,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -204,6 +205,11 @@ export default function App() {
           <Route path="/news/latest" element={<NewsLatest />} />
           <Route path="/news/bookmarks" element={<NewsBookmarks />} />
           <Route path="/news/:slug" element={<NewsArticle />} />
+
+          <Route path="/jobs" element={<JobsHome />} />
+          <Route path="/jobs/search" element={<JobsSearch />} />
+          <Route path="/jobs/saved" element={<JobsSaved />} />
+          <Route path="/jobs/:slug" element={<JobDetail />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

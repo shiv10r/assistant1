@@ -129,3 +129,8 @@ export const NewsHome = lazy(() => import('../services/news/NewsHome'))
 export const NewsLatest = lazy(() => import('../services/news/NewsLatest'))
 export const NewsBookmarks = lazy(() => import('../services/news/NewsBookmarks'))
 export const NewsArticle = lazy(() => import('../services/news/NewsArticle'))
+
+export const JobsHome = lazy(() => import('../services/jobs/JobsHome'))
+export const JobsSearch = lazy(() => import('../services/jobs/JobsSearch'))
+export const JobsSaved = lazy(() => import('../services/jobs/JobsSaved'))
+export const JobDetail = lazy(() => import('../services/jobs/JobDetail'))
