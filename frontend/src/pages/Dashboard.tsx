@@ -9,7 +9,7 @@ import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel
 import {
   Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel,
   ArrowRight, Map, ClipboardList, Activity as ActivityIcon, Package, AlarmClock,
-  Building2, Warehouse, GraduationCap,
+  Building2, Warehouse, GraduationCap, Plane,
 } from 'lucide-react'
 
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
@@ -42,6 +42,7 @@ const SERVICE_ICONS: Record<ServiceId, typeof Building2> = {
   warehouse: Warehouse,
   school: GraduationCap,
   hotel: Building2,
+  travel: Plane,
 }
 
 export default function Dashboard() {
@@ -129,7 +130,7 @@ export default function Dashboard() {
       </header>
 
       {/* Service navigation */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-6">
         {SERVICES.map((svc) => {
           const Icon = SERVICE_ICONS[svc.id]
           const active = svc.id === getLastService()?.id

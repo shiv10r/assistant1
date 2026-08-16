@@ -71,6 +71,7 @@ import {
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
 import GlobalSearch from './components/GlobalSearch'
+import { VsrLogo } from './components/VsrLogo'
 import { Modal } from './components/ui'
 import { usePlan } from './hooks/usePlan'
 import { useViewMode } from './hooks/useViewMode'
@@ -233,6 +234,16 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <Sparkles className="w-5 h-5" /> },
     ]},
   ],
+  travel: [
+    { title: 'Travel & Tours', items: [
+      { label: 'Discover', to: '/travel', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'Destinations', to: '/travel/destinations', icon: <Map className="w-5 h-5" /> },
+      { label: 'Holiday Packages', to: '/travel/packages', icon: <Package className="w-5 h-5" /> },
+      { label: 'Group Trips', to: '/travel/group-trips', icon: <Users className="w-5 h-5" /> },
+      { label: 'Customize Trip', to: '/travel/customize', icon: <Sparkles className="w-5 h-5" /> },
+      { label: 'My Trips', to: '/travel/my-trips', icon: <CalendarCheck className="w-5 h-5" /> },
+    ]},
+  ],
 }
 
 /** Groups shared across every service — kept to the fixed global feature set only. */
@@ -387,20 +398,7 @@ export default function Layout() {
             <span className="pill-switch">Switch service</span>
           </button>
         )}
-        <div className="logo-mark">
-          <svg viewBox="0 0 456 456" width="32" height="32">
-            <defs>
-              <linearGradient id="lux" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#7C4DFF"/><stop offset="0.6" stopColor="#00B8D9"/><stop offset="1" stopColor="#00E5C3"/>
-              </linearGradient>
-            </defs>
-            <rect width="456" height="456" rx="100" fill="url(#lux)"/>
-            <path d="M120 210 L228 120 L336 210" fill="none" stroke="#FFF" strokeWidth="30" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M178 206 V330 H300" fill="none" stroke="#FFF" strokeWidth="38" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="318" cy="228" r="17" fill="#0F0F1A"/>
-          </svg>
-        </div>
-        <div className="brand">VSR <span>Systems</span></div>
+        <VsrLogo size={38} wordmark className="logo-mark" />
         <div className="online">● Online</div>
         <NavLink
           to="/plans"

@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICES, getLastService, setLastService, type ServiceDef } from '../lib/services'
 import { cn } from '../lib/utils'
-import { ArrowRight, ArrowLeft, Building2, Warehouse, GraduationCap, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Building2, Warehouse, GraduationCap, Plane, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown } from 'lucide-react'
 import './ServiceChooser.css'
+import { VsrLogo } from '../components/VsrLogo'
 
 const WORKSPACE_ICONS: Record<string, typeof Building2> = {
   interior: Building2,
   warehouse: Warehouse,
   school: GraduationCap,
   hotel: Building2,
+  travel: Plane,
 }
 
 const FEATURES = [
@@ -34,10 +36,7 @@ export default function ServiceChooser() {
     <div className="chooser">
       <header className="chooser-header">
         <div className="chooser-brand-row">
-          <span className="chooser-logo">
-            <Building2 className="w-6 h-6" />
-          </span>
-          <span className="chooser-brand">VSR <span>Systems</span></span>
+          <VsrLogo size={42} wordmark />
         </div>
         <div className="chooser-header-actions">
           <button className="chooser-help" type="button">
