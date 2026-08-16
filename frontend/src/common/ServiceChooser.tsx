@@ -9,6 +9,7 @@ const WORKSPACE_ICONS: Record<string, typeof Building2> = {
   interior: Building2,
   warehouse: Warehouse,
   school: GraduationCap,
+  hotel: Building2,
 }
 
 const FEATURES = [

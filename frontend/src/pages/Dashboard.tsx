@@ -41,6 +41,7 @@ const SERVICE_ICONS: Record<ServiceId, typeof Building2> = {
   interior: Building2,
   warehouse: Warehouse,
   school: GraduationCap,
+  hotel: Building2,
 }
 
 export default function Dashboard() {
@@ -128,7 +129,7 @@ export default function Dashboard() {
       </header>
 
       {/* Service navigation */}
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         {SERVICES.map((svc) => {
           const Icon = SERVICE_ICONS[svc.id]
           const active = svc.id === getLastService()?.id

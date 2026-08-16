@@ -224,6 +224,15 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Projects', to: '/school/projects', icon: <Briefcase className="w-5 h-5" /> },
     ]},
   ],
+  hotel: [
+    { title: 'Hotel Operations', items: [
+      { label: 'Overview', to: '/hotel', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'Reservations', to: '/hotel/reservations', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Rooms', to: '/hotel/rooms', icon: <Building2 className="w-5 h-5" /> },
+      { label: 'Guests', to: '/hotel/guests', icon: <Users className="w-5 h-5" /> },
+      { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <Sparkles className="w-5 h-5" /> },
+    ]},
+  ],
 }
 
 /** Groups shared across every service — kept to the fixed global feature set only. */
