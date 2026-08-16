@@ -179,21 +179,42 @@
   color: #F5F7FA;
   cursor: pointer;
   text-align: left;
+  overflow: hidden;
+  isolation: isolate;
   opacity: 0;
   transform: translateY(24px);
   animation: chooser-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.24s ease, background 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+}
+.chooser-workspace::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(118deg, transparent 12%, rgba(255,255,255,.075) 44%, transparent 68%);
+  opacity: 0;
+  transform: translateX(-45%);
+  transition: opacity .22s ease, transform .45s cubic-bezier(.22,1,.36,1);
+}
+.chooser-grid:has(.chooser-workspace:is(:hover, :focus-visible)) .chooser-workspace:not(:hover):not(:focus-visible) {
+  opacity: .68;
+  filter: saturate(.72);
+  transform: scale(.975);
 }
 @keyframes chooser-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes chooser-fade { from { opacity: 0; } to { opacity: 1; } }
 
 .chooser-workspace:hover:not(.chooser-disabled),
 .chooser-workspace:focus-visible:not(.chooser-disabled) {
-  transform: translateY(-2px);
+  z-index: 3;
+  transform: translateY(-8px) scale(1.035);
   border-color: rgba(255, 150, 56, 0.5);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.52), 0 0 34px rgba(255, 150, 56, 0.14);
   outline: none;
 }
+.chooser-workspace:hover::before,
+.chooser-workspace:focus-visible::before { opacity: 1; transform: translateX(35%); }
 
 /* Active (primary) workspace — Warehouse Store */
 .chooser-active {
@@ -349,4 +370,10 @@
   .chooser-feature:nth-child(2) { border-right: none; }
   .chooser-main { padding-top: 2rem; }
   .chooser-return { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chooser-workspace, .chooser-workspace::before, .chooser-enter svg { animation: none; transition: none; }
+  .chooser-grid:has(.chooser-workspace:is(:hover, :focus-visible)) .chooser-workspace:not(:hover):not(:focus-visible) { opacity: 1; filter: none; transform: none; }
+  .chooser-workspace:hover:not(.chooser-disabled), .chooser-workspace:focus-visible:not(.chooser-disabled) { transform: none; }
 }
