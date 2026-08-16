@@ -22,7 +22,8 @@ import {
   SchoolStudents, SchoolSubjects, SchoolSurveys, SchoolTasks, SchoolTimetable, SchoolTraining,
   SchoolTransport, SchoolUsers, SchoolVisitors, HotelGuests, HotelHome, HotelHousekeeping,
   HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
-  TravelHome, TravelMyTrips, TravelPackages, Layout, Login, ServiceChooser,
+  TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsHome, NewsLatest,
+  Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
 /** Redirect old top-level paths to their owning service so nothing breaks. */
@@ -198,6 +199,11 @@ export default function App() {
           <Route path="/travel/group-trips" element={<TravelGroupTrips />} />
           <Route path="/travel/customize" element={<TravelCustomize />} />
           <Route path="/travel/my-trips" element={<TravelMyTrips />} />
+
+          <Route path="/news" element={<NewsHome />} />
+          <Route path="/news/latest" element={<NewsLatest />} />
+          <Route path="/news/bookmarks" element={<NewsBookmarks />} />
+          <Route path="/news/:slug" element={<NewsArticle />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

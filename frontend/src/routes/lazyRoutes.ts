@@ -124,3 +124,8 @@ export const TravelPackages = lazy(() => import('../services/travel/TravelPackag
 export const TravelGroupTrips = lazy(() => import('../services/travel/TravelGroupTrips'))
 export const TravelCustomize = lazy(() => import('../services/travel/TravelCustomize'))
 export const TravelMyTrips = lazy(() => import('../services/travel/TravelMyTrips'))
+
+export const NewsHome = lazy(() => import('../services/news/NewsHome'))
+export const NewsLatest = lazy(() => import('../services/news/NewsLatest'))
+export const NewsBookmarks = lazy(() => import('../services/news/NewsBookmarks'))
+export const NewsArticle = lazy(() => import('../services/news/NewsArticle'))
