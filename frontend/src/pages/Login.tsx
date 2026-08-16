@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { login, register, api } from '../api'
 import { firebaseEnabled, signInWithEmail, signInWithGoogle } from '../firebase'
 import { Sparkles, Eye, EyeOff, Lock } from 'lucide-react'
+import { VsrLogo } from '../components/VsrLogo'
 
 const USER_KEY = 'lux_user'
 
@@ -90,7 +91,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
       <div className="login-intro">
         <div className="login-badge"><Lock size={13} /> Secure sign in</div>
         <div className="intro-line l1">Welcome to</div>
-        <div className="intro-line l2"><span className="grad-text">Lux Infra</span></div>
+        <div className="intro-line l2"><span className="grad-text">VSR Systems</span></div>
         <div className="intro-line l3">Your business, one dashboard away</div>
         <div className="intro-feats">
           <div className="int-feat"><span>🗂️</span> Projects, parties & site operations</div>
@@ -102,20 +103,10 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
 
       <form className="login-card" onSubmit={submit}>
         <div className="login-logo">
-          <svg viewBox="0 0 456 456" width="64" height="64">
-            <defs>
-              <linearGradient id="lux-login" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#4F6BED" /><stop offset="0.6" stopColor="#6E4FED" /><stop offset="1" stopColor="#10B981" />
-              </linearGradient>
-            </defs>
-            <rect width="456" height="456" rx="100" fill="url(#lux-login)" />
-            <path d="M120 210 L228 120 L336 210" fill="none" stroke="#FFF" strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M178 206 V330 H300" fill="none" stroke="#FFF" strokeWidth="38" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="318" cy="228" r="17" fill="#0F0F1A" />
-          </svg>
+          <VsrLogo size={72} />
         </div>
 
-        <h1 className="login-title">Lux<span>Infra</span></h1>
+        <h1 className="login-title">VSR<span>Systems</span></h1>
         <p className="login-sub">
           {mode === 'login'
             ? 'Sign in to manage your business, projects & expenses'
