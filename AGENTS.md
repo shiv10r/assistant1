@@ -12,6 +12,8 @@
 - Ask a question only when missing information materially changes the implementation or the action is irreversible.
 - For frontend requests, write code directly against the existing `DESIGN.md` and shared component system; do not pause for unsolicited design artifacts.
 - If an implementation agent or coding tool aborts once, switch immediately to direct coding in a small verified chunk instead of restarting planning.
+- For continuation work with approved architecture and a concrete next step, do not invoke planning agents, reload workflow guidance, or repeat repository mapping; make the first code edit after at most three focused lookups.
+- Do not launch local browser sessions, preview servers, Playwright/MCP checks, screenshot capture, or visual-QA agents unless the user explicitly requests them; run repository CLI checks and leave manual UI testing to the user.
 
 ## Session Learning
 
