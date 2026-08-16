@@ -7,7 +7,7 @@ import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
 import { conditionMeta } from './lib/weather'
-import { serviceFromPath, getLastService, type ServiceId } from './lib/services'
+import { serviceFromPath, getLastService, type ServiceDef, type ServiceId } from './lib/services'
 import {
   LayoutDashboard,
   BarChart3,
@@ -250,7 +250,17 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
     { title: 'VSR News', items: [
       { label: 'Top Stories', to: '/news', icon: <Newspaper className="w-5 h-5" />, end: true },
       { label: 'Latest', to: '/news/latest', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Trending', to: '/news/trending', icon: <BarChart3 className="w-5 h-5" /> },
+      { label: 'Search', to: '/news/search', icon: <Search className="w-5 h-5" /> },
       { label: 'Saved Stories', to: '/news/bookmarks', icon: <Bookmark className="w-5 h-5" /> },
+    ]},
+    { title: 'News Desks', items: [
+      { label: 'India', to: '/news/category/india', icon: <Flag className="w-5 h-5" /> },
+      { label: 'World', to: '/news/category/world', icon: <Map className="w-5 h-5" /> },
+      { label: 'Business', to: '/news/category/business', icon: <Banknote className="w-5 h-5" /> },
+      { label: 'Technology', to: '/news/category/technology', icon: <Monitor className="w-5 h-5" /> },
+      { label: 'Sports', to: '/news/category/sports', icon: <Trophy className="w-5 h-5" /> },
+      { label: 'Entertainment', to: '/news/category/entertainment', icon: <Video className="w-5 h-5" /> },
     ]},
   ],
   jobs: [
@@ -288,9 +298,9 @@ const COMMON_GROUPS: NavGroup[] = [
 ]
 
 /** Service-specific groups first, then the groups common to every workspace. */
-function navGroupsFor(serviceId: ServiceId | undefined): NavGroup[] {
-  const serviceGroups = serviceId ? SERVICE_GROUPS[serviceId] : []
-  return [...serviceGroups, ...COMMON_GROUPS]
+function navGroupsFor(service: ServiceDef | null): NavGroup[] {
+  const serviceGroups = service ? SERVICE_GROUPS[service.id] : []
+  return service?.shell === 'portal' ? serviceGroups : [...serviceGroups, ...COMMON_GROUPS]
 }
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
@@ -389,7 +399,8 @@ export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const service = serviceFromPath(location.pathname) ?? getLastService()
-  const groups = navGroupsFor(service?.id)
+  const groups = navGroupsFor(service)
+  const isPortal = service?.shell === 'portal'
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -415,46 +426,36 @@ export default function Layout() {
           </button>
         )}
         <VsrLogo size={38} wordmark className="logo-mark" />
-        <div className="online">● Online</div>
-        <NavLink
-          to="/plans"
-          className={`plan-pill ${plan === 'free' ? '' : 'is-pro'}`}
-          title={`Current plan: ${PLAN_LABEL[plan] ?? 'Free'}`}
-        >
-          <span className="plan-pill-dot" />
-          <span>{PLAN_LABEL[plan] ?? 'Free'}</span>
-        </NavLink>
-        <button className="topbar-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
-          <Search className="w-5 h-5" />
-        </button>
-        <div className="view-mode-switch" title="Simple / Advanced view">
-          <button
-            className={mode === 'simple' ? 'active' : ''}
-            onClick={() => setMode('simple')}
-            aria-label="Simple view"
+        {!isPortal && <>
+          <div className="online">● Online</div>
+          <NavLink
+            to="/plans"
+            className={`plan-pill ${plan === 'free' ? '' : 'is-pro'}`}
+            title={`Current plan: ${PLAN_LABEL[plan] ?? 'Free'}`}
           >
-            Simple
+            <span className="plan-pill-dot" />
+            <span>{PLAN_LABEL[plan] ?? 'Free'}</span>
+          </NavLink>
+          <button className="topbar-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
+            <Search className="w-5 h-5" />
           </button>
-          <button
-            className={mode === 'advanced' ? 'active' : ''}
-            onClick={() => setMode('advanced')}
-            aria-label="Advanced view"
+          <div className="view-mode-switch" title="Simple / Advanced view">
+            <button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')} aria-label="Simple view">Simple</button>
+            <button className={mode === 'advanced' ? 'active' : ''} onClick={() => setMode('advanced')} aria-label="Advanced view">Advanced</button>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setWeatherOpen(true)}
+            aria-label="Weather"
+            title={weatherOn ? `Weather: ${weather.weather?.condition ?? 'loading…'}` : 'Weather'}
+            className={weatherOn ? '!text-amber-400 !border !border-amber-400/40 rounded-lg' : ''}
           >
-            Advanced
-          </button>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setWeatherOpen(true)}
-          aria-label="Weather"
-          title={weatherOn ? `Weather: ${weather.weather?.condition ?? 'loading…'}` : 'Weather'}
-          className={weatherOn ? '!text-amber-400 !border !border-amber-400/40 rounded-lg' : ''}
-        >
-          {weatherOn && weather.weather
-            ? <span className="text-base leading-none">{conditionMeta(weather.weather.weatherCode, weather.weather.isDay).icon}</span>
-            : <CloudSun className="w-5 h-5" />}
-        </Button>
+            {weatherOn && weather.weather
+              ? <span className="text-base leading-none">{conditionMeta(weather.weather.weatherCode, weather.weather.isDay).icon}</span>
+              : <CloudSun className="w-5 h-5" />}
+          </Button>
+        </>}
         <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
@@ -463,7 +464,7 @@ export default function Layout() {
         </Button>
       </header>
 
-      <BroadcastTicker />
+      {!isPortal && <BroadcastTicker />}
 
       <div className="body-row">
         <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
@@ -504,22 +505,22 @@ export default function Layout() {
               </div>
             )
           })}
-          <div className="sidebar-plan">
+          {!isPortal && <div className="sidebar-plan">
             <NavLink to="/plans" className="sidebar-plan-link">
               <span className={`sidebar-plan-dot ${plan === 'free' ? '' : 'is-pro'}`} />
               <span className="sidebar-plan-name">{PLAN_LABEL[plan] ?? 'Free'}</span>
               <span className="sidebar-plan-cta">{plan === 'free' ? 'Upgrade' : 'Manage'}</span>
             </NavLink>
-          </div>
+          </div>}
         </nav>
         {open && isMobile() && <div className="backdrop" onClick={() => setOpen(false)} />}
 
         <main className="content"><Outlet /></main>
       </div>
-      <AiWidget />
-      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
-
-      <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
+      {!isPortal && <>
+        <AiWidget />
+        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+        <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
         <div className="space-y-4">
           <WeatherCard useMyLocation siteName="Your location" className="w-full" />
           <div className="flex items-center gap-2 text-xs text-muted">
@@ -530,7 +531,8 @@ export default function Layout() {
           </div>
           <p className="text-[11px] text-muted">Weather data by <a className="text-primary hover:underline" href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> — free &amp; open source, no API key needed.</p>
         </div>
-      </Modal>
+        </Modal>
+      </>}
     </div>
   )
 }

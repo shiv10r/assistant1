@@ -7,6 +7,7 @@ export type ServiceDef = {
   icon: string
   gradient: string
   home: string
+  shell?: 'portal'
 }
 
 export const SERVICES: ServiceDef[] = [
@@ -57,6 +58,7 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #A62421 0%, #6F1715 100%)',
     home: '/news',
+    shell: 'portal',
   },
   {
     id: 'jobs',
