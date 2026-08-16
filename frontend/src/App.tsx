@@ -31,6 +31,9 @@ import {
   BankAccountDetail, BankAccounts, BankAdmin, BankBeneficiaries, BankBills, BankCards,
   BankDeposits, BankDocuments, BankHome, BankLoans, BankNotifications, BankProfile,
   BankStatements, BankTransfers, BankTransactions,
+  MedicalAdmin, MedicalAppointments, MedicalBilling, MedicalDoctors, MedicalHome,
+  MedicalLabs, MedicalNotifications, MedicalPatientDetail, MedicalPatients,
+  MedicalPrescriptions, MedicalRecords,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -252,6 +255,18 @@ export default function App() {
           <Route path="/bank/documents" element={<BankDocuments />} />
           <Route path="/bank/profile" element={<BankProfile />} />
           <Route path="/bank/admin" element={<BankAdmin />} />
+
+          <Route path="/medical" element={<MedicalHome />} />
+          <Route path="/medical/doctors" element={<MedicalDoctors />} />
+          <Route path="/medical/appointments" element={<MedicalAppointments />} />
+          <Route path="/medical/patients" element={<MedicalPatients />} />
+          <Route path="/medical/patients/:patientId" element={<MedicalPatientDetail />} />
+          <Route path="/medical/prescriptions" element={<MedicalPrescriptions />} />
+          <Route path="/medical/labs" element={<MedicalLabs />} />
+          <Route path="/medical/billing" element={<MedicalBilling />} />
+          <Route path="/medical/records" element={<MedicalRecords />} />
+          <Route path="/medical/notifications" element={<MedicalNotifications />} />
+          <Route path="/medical/admin" element={<MedicalAdmin />} />
 
 
           {/* Interior service */}

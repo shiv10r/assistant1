@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICES, getLastService, setLastService, type ServiceDef } from '../lib/services'
 import { cn } from '../lib/utils'
-import { ArrowRight, ArrowLeft, BriefcaseBusiness, Building2, Warehouse, GraduationCap, Plane, Newspaper, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown, ShoppingBag, Landmark } from 'lucide-react'
+import { ArrowRight, ArrowLeft, BriefcaseBusiness, Building2, Warehouse, GraduationCap, Plane, Newspaper, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown, ShoppingBag, Landmark, Stethoscope } from 'lucide-react'
 import './ServiceChooser.css'
 import { VsrLogo } from '../components/VsrLogo'
 
@@ -16,6 +16,7 @@ const WORKSPACE_ICONS: Record<string, typeof Building2> = {
   jobs: BriefcaseBusiness,
   commerce: ShoppingBag,
   bank: Landmark,
+  medical: Stethoscope,
 }
 
 const FEATURES = [

@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank' | 'medical'
 
 export type ServiceDef = {
   id: ServiceId
@@ -86,6 +86,15 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0E7490 100%)',
     home: '/bank',
+    shell: 'portal',
+  },
+  {
+    id: 'medical',
+    label: 'VSR Medical',
+    tagline: 'Doctors, appointments, records & prescriptions',
+    icon: '',
+    gradient: 'linear-gradient(135deg, #047857 0%, #0E7490 100%)',
+    home: '/medical',
     shell: 'portal',
   },
 ]

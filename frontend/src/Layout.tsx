@@ -75,6 +75,10 @@ import {
   PiggyBank,
   FileDown,
   Receipt,
+  Stethoscope,
+  Pill,
+  FlaskConical,
+  Activity,
 } from 'lucide-react'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
@@ -306,6 +310,20 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Documents', to: '/bank/documents', icon: <FileText className="w-5 h-5" /> },
       { label: 'Profile & Security', to: '/bank/profile', icon: <ShieldCheck className="w-5 h-5" /> },
       { label: 'Admin Console', to: '/bank/admin', icon: <Monitor className="w-5 h-5" /> },
+    ]},
+  ],
+  medical: [
+    { title: 'VSR Health', items: [
+      { label: 'Dashboard', to: '/medical', icon: <Stethoscope className="w-5 h-5" />, end: true },
+      { label: 'Doctors', to: '/medical/doctors', icon: <Stethoscope className="w-5 h-5" /> },
+      { label: 'Appointments', to: '/medical/appointments', icon: <CalendarDays className="w-5 h-5" /> },
+      { label: 'Patients', to: '/medical/patients', icon: <Users className="w-5 h-5" /> },
+      { label: 'Prescriptions', to: '/medical/prescriptions', icon: <Pill className="w-5 h-5" /> },
+      { label: 'Lab Results', to: '/medical/labs', icon: <FlaskConical className="w-5 h-5" /> },
+      { label: 'Billing', to: '/medical/billing', icon: <Receipt className="w-5 h-5" /> },
+      { label: 'Clinical Records', to: '/medical/records', icon: <ClipboardList className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/medical/notifications', icon: <Bell className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/medical/admin', icon: <Activity className="w-5 h-5" /> },
     ]},
   ],
 }
