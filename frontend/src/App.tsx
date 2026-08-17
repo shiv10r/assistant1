@@ -34,6 +34,12 @@ import {
   MedicalAdmin, MedicalAppointments, MedicalBilling, MedicalDoctors, MedicalHome,
   MedicalLabs, MedicalNotifications, MedicalPatientDetail, MedicalPatients,
   MedicalPrescriptions, MedicalRecords,
+  HomeServicesHome, HomeServicesCategories, HomeServicesCategoryDetail, HomeServicesServiceDetail,
+  HomeServicesSearch, HomeServicesBookingFlow, HomeServicesBookings, HomeServicesBookingDetail,
+  HomeServicesOffers, HomeServicesAccount, HomeServicesProDashboard, HomeServicesProRequests,
+  HomeServicesProJobs, HomeServicesProJobDetail, HomeServicesProEarnings, HomeServicesProProfile,
+  HomeServicesAdminDashboard, HomeServicesAdminLiveOps, HomeServicesAdminBookings,
+  HomeServicesAdminProfessionals, HomeServicesAdminFinance,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -266,8 +272,30 @@ export default function App() {
           <Route path="/medical/billing" element={<MedicalBilling />} />
           <Route path="/medical/records" element={<MedicalRecords />} />
           <Route path="/medical/notifications" element={<MedicalNotifications />} />
-          <Route path="/medical/admin" element={<MedicalAdmin />} />
+<Route path="/medical/admin" element={<MedicalAdmin />} />
 
+          {/* Home Services service */}
+          <Route path="/home-services" element={<HomeServicesHome />} />
+          <Route path="/home-services/categories" element={<HomeServicesCategories />} />
+          <Route path="/home-services/categories/:slug" element={<HomeServicesCategoryDetail />} />
+          <Route path="/home-services/services/:slug" element={<HomeServicesServiceDetail />} />
+          <Route path="/home-services/search" element={<HomeServicesSearch />} />
+          <Route path="/home-services/book" element={<HomeServicesBookingFlow />} />
+          <Route path="/home-services/bookings" element={<HomeServicesBookings />} />
+          <Route path="/home-services/bookings/:bookingId" element={<HomeServicesBookingDetail />} />
+          <Route path="/home-services/offers" element={<HomeServicesOffers />} />
+          <Route path="/home-services/account" element={<HomeServicesAccount />} />
+          <Route path="/home-services/pro" element={<HomeServicesProDashboard />} />
+          <Route path="/home-services/pro/requests" element={<HomeServicesProRequests />} />
+          <Route path="/home-services/pro/jobs" element={<HomeServicesProJobs />} />
+          <Route path="/home-services/pro/jobs/:jobId" element={<HomeServicesProJobDetail />} />
+          <Route path="/home-services/pro/earnings" element={<HomeServicesProEarnings />} />
+          <Route path="/home-services/pro/profile" element={<HomeServicesProProfile />} />
+          <Route path="/home-services/admin" element={<HomeServicesAdminDashboard />} />
+          <Route path="/home-services/admin/live" element={<HomeServicesAdminLiveOps />} />
+          <Route path="/home-services/admin/bookings" element={<HomeServicesAdminBookings />} />
+          <Route path="/home-services/admin/professionals" element={<HomeServicesAdminProfessionals />} />
+          <Route path="/home-services/admin/finance" element={<HomeServicesAdminFinance />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

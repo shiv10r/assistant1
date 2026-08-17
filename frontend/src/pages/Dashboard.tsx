@@ -68,6 +68,7 @@ const SERVICE_ICONS: Record<ServiceId, React.ComponentType<{ className?: string 
   commerce: MdShoppingCart,
   bank: MdLocationOn,
   medical: MdLocalHospital,
+  'home-services': MdHandyman,
 }
 
 export default function Dashboard() {

@@ -335,6 +335,17 @@ hotel: [
       { label: 'Admin Console', to: '/medical/admin', icon: <MdSettings className="w-5 h-5" /> },
     ]},
   ],
+  'home-services': [
+    { title: 'Home Services', items: [
+      { label: 'Marketplace', to: '/home-services', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Services', to: '/home-services/categories', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Bookings', to: '/home-services/bookings', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Offers', to: '/home-services/offers', icon: <FiTag className="w-5 h-5" /> },
+      { label: 'Account', to: '/home-services/account', icon: <FiUser className="w-5 h-5" /> },
+      { label: 'Pro Workspace', to: '/home-services/pro', icon: <MdWork className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/home-services/admin', icon: <MdMonitor className="w-5 h-5" /> },
+    ]},
+  ],
 }
 
 /** Groups shared across every service — kept to the fixed global feature set only. */
