@@ -3,7 +3,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Button, Empty, cn,
 } from './ui'
-import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react'
+import { FiArrowUp, FiArrowDown, FiChevronLeft, FiChevronRight, FiDownload, FiLoader } from 'react-icons/fi'
 
 export interface DataColumn<T> {
   key: string
@@ -118,19 +118,19 @@ export function DataTable<T>({
                   key={c.key}
                   className={cn(c.headerClassName, c.hideOnMobile && 'hidden md:table-cell')}
                 >
-                  {c.sortValue ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleSort(c.key)}
-                      className="inline-flex items-center gap-1 hover:text-text transition-colors"
-                    >
-                      {c.header}
-                      {sortKey === c.key &&
-                        (sortDir === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />)}
-                    </button>
-                  ) : (
-                    c.header
-                  )}
+{c.sortValue ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleSort(c.key)}
+                    className="inline-flex items-center gap-1 hover:text-text transition-colors"
+                  >
+                    {c.header}
+                    {sortKey === c.key &&
+                      (sortDir === 'asc' ? <FiArrowUp className="w-3.5 h-3.5" /> : <FiArrowDown className="w-3.5 h-3.5" />)}
+                  </button>
+                ) : (
+                  c.header
+                )}
                 </TableHead>
               ))}
               {actions && <TableHead className="text-right">Actions</TableHead>}

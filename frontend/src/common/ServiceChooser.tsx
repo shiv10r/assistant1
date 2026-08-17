@@ -2,28 +2,29 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICES, getLastService, setLastService, type ServiceDef } from '../lib/services'
 import { cn } from '../lib/utils'
-import { ArrowRight, ArrowLeft, BriefcaseBusiness, Building2, Warehouse, GraduationCap, Plane, Newspaper, ShieldCheck, Clock, Zap, Users, HelpCircle, ChevronDown, ShoppingBag, Landmark, Stethoscope } from 'lucide-react'
+import { FiArrowRight, FiArrowLeft, FiBriefcase, FiBuilding, FiWarehouse, FiGraduationCap, FiPlane, FiNewspaper, FiShield, FiClock, FiZap, FiUsers, FiHelpCircle, FiChevronDown, FiShoppingBag, FiLandmark, FiStethoscope } from 'react-icons/fi'
+import { MdShield, MdAccessTime, MdFlashOn, MdPeople } from 'react-icons/md'
 import './ServiceChooser.css'
 import { VsrLogo } from '../components/VsrLogo'
 
-const WORKSPACE_ICONS: Record<string, typeof Building2> = {
-  interior: Building2,
-  warehouse: Warehouse,
-  school: GraduationCap,
-  hotel: Building2,
-  travel: Plane,
-  news: Newspaper,
-  jobs: BriefcaseBusiness,
-  commerce: ShoppingBag,
-  bank: Landmark,
-  medical: Stethoscope,
+const WORKSPACE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  interior: FiBuilding,
+  warehouse: FiWarehouse,
+  school: FiGraduationCap,
+  hotel: FiBuilding,
+  travel: FiPlane,
+  news: FiNewspaper,
+  jobs: FiBriefcase,
+  commerce: FiShoppingBag,
+  bank: FiLandmark,
+  medical: FiStethoscope,
 }
 
 const FEATURES = [
-  { icon: ShieldCheck, title: 'Secure & Reliable', sub: 'Your data is protected' },
-  { icon: Clock, title: 'Always Available', sub: '24/7 access from anywhere' },
-  { icon: Zap, title: 'Fast & Efficient', sub: 'Built for your productivity' },
-  { icon: Users, title: 'Role Based Access', sub: 'Right access, right people' },
+  { icon: MdShield, title: 'Secure & Reliable', sub: 'Your data is protected' },
+  { icon: MdAccessTime, title: 'Always Available', sub: '24/7 access from anywhere' },
+  { icon: MdFlashOn, title: 'Fast & Efficient', sub: 'Built for your productivity' },
+  { icon: MdPeople, title: 'Role Based Access', sub: 'Right access, right people' },
 ]
 
 export default function ServiceChooser() {

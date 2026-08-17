@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, Modal, Label } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Barcode, ScanLine, X } from 'lucide-react'
+import { FiBarcode, FiScanLine, FiX } from 'react-icons/fi'
 
 interface BarcodeScannerProps {
   open: boolean
