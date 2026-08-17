@@ -35,9 +35,6 @@ export function VsrLogo({
     );
   }
 
-  const gradientId = useId();
-  const sheenId = `${gradientId}-sheen`;
-
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)} aria-label="VSR Systems">
       <svg width={size} height={size} viewBox="0 0 64 64" role="img" aria-hidden="true" className="shrink-0 drop-shadow-sm">

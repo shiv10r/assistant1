@@ -1,5 +1,6 @@
-import { Player } from 'lottie-react';
-import { cn } from '../../lib/utils';
+import React from 'react';
+import { Lottie } from 'lottie-react';
+import { cn } from '../lib/utils';
 
 interface LottieAnimationProps {
   animation: object;
@@ -26,15 +27,16 @@ export function LottieAnimation({
 }: LottieAnimationProps) {
   return (
     <div className="lottie-container" style={{ width, height }}>
-      <Player
-        animationData={animation}
+      <Lottie
+        src={animation}
         loop={loop}
         autoplay={autoplay}
         speed={speed}
         className={cn('lottie-player', className)}
-        onComplete={onComplete}
-        onError={onError}
-        renderer="svg"
+        subscriptions={{
+          complete: onComplete,
+          error: onError ? (e) => onError(e.error) : undefined,
+        }}
       />
     </div>
   );
@@ -59,5 +61,3 @@ export function LottieAnimationWithFallback({
     />
   );
 }
-
-import React from 'react';

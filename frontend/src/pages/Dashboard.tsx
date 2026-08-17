@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { ActivityItem, AnalyticsData, ContractMilestone, ModuleSummary, Snag } from '../api'
@@ -6,239 +6,32 @@ import { Card, CardHeader, CardTitle, CardContent, Badge, Empty, money, cn } fro
 import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib/services'
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
-import { LoadingSpinner, SuccessAnimation } from '../components/AnimationComponents'
 import {
-  FiWallet,
   FiTrendingUp,
-  FiClipboardList,
-  FiHardHat,
-  FiFileCheck2,
-  FiWrench,
   FiUsers,
-  FiFuel,
-  FiShoppingBag,
-  FiLandmark,
-  FiStethoscope,
-  FiArrowRight,
-  FiMap,
-  FiClipboardList,
-  FiActivity,
-  FiPackage,
-  FiAlarmClock,
-  FiBuilding2,
-  FiWarehouse,
-  FiGraduationCap,
-  FiPlane,
-  FiNewspaper,
   FiBriefcase,
-  FiTrendingUp as FiTrendingUp2,
-  FiWallet as FiWallet2,
-  FiClipboardList as FiClipboardList2,
-  FiFileCheck2 as FiFileCheck2_2,
-  FiWrench as FiWrench2,
-  FiUsers as FiUsers2,
-  FiFuel as FiFuel2,
-  FiShoppingBag as FiShoppingBag2,
-  FiLandmark as FiLandmark2,
-  FiArrowRight as FiArrowRight2,
-  FiMap as FiMap2,
-  FiClipboardList as FiClipboardList3,
-  FiActivity as FiActivity2,
-  FiPackage as FiPackage2,
-  FiAlarmClock as FiAlarmClock2,
-  FiBuilding2 as FiBuilding2_2,
-  FiWarehouse as FiWarehouse2,
-  FiGraduationCap as FiGraduationCap2,
-  FiPlane as FiPlane2,
-  FiNewspaper as FiNewspaper2,
-  FiBriefcase as FiBriefcase2,
-  FiShoppingBag as FiShoppingBag2,
-  FiLandmark as FiLandmark2,
-  FiStethoscope as FiStethoscope2,
+  FiArrowRight,
+  FiPackage,
+  FiActivity,
+  FiClipboard,
 } from 'react-icons/fi'
 import {
-  MdDashboard,
-  MdBarChart,
-  MdDatabase,
-  MdSettings,
-  MdReceipt,
-  MdInventory,
-  MdAccountBalance,
-  MdPeople,
-  MdWork,
-  MdMessage,
-  MdCreditCard,
-  MdPerson,
-  MdMenu,
-  MdWbSunny,
-  MdBrightness3,
-  MdLogout,
-  MdKeyboardArrowDown,
-  MdKeyboardArrowRight,
-  MdMap,
-  MdExtension,
-  MdQrCodeScanner,
-  MdAutoAwesome,
-  MdVerified,
-  MdCategory,
-  MdVideoLibrary,
-  MdWbCloudy,
-  MdAnnouncement,
-  MdContentPaste,
-  MdLocalShipping,
-  MdSchool,
-  MdLayers,
-  MdAccountBalanceWallet,
-  MdCalendarToday,
-  MdAccessTime,
-  MdSwapHoriz,
-  MdAssignment,
-  MdBuilding,
+  MdBuild,
   MdShoppingCart,
-  MdChecklist,
-  MdInventory2,
-  MdRotateLeft,
-  MdSearch,
-  MdPersonAdd,
-  MdMenuBook,
-  MdCalendarMonth,
-  MdMonitor,
-  MdEmojiEvents,
-  MdDescription,
-  MdUtensils,
-  MdFlag,
-  MdVerifiedUser,
-  MdNotifications,
-  MdScale,
-  MdWarning,
-  MdArticle,
-  MdBookmarkBorder,
-  MdViewModule,
-  MdFavorite,
-  MdLandmark,
-  MdSend,
-  MdPiggyBank,
-  MdFileDownload,
-  MdReceipt,
+  MdWarehouse,
+  MdSchool,
+  MdFlight,
+  MdNewspaper,
+  MdWork,
+  MdLocationOn,
   MdLocalHospital,
-  MdMedication,
-  MdLocalActivity,
+  MdConstruction,
+  MdVerified,
+  MdHandyman,
+  MdLocalGasStation,
+  MdAlarm,
 } from 'react-icons/md'
-import {
-  BiChart,
-  BiBox,
-  BiTruck,
-  BiBuilding,
-  BiShoppingBag,
-  BiCheckSquare,
-  BiShoppingCart,
-  BiListCheck,
-  BiPackage,
-  BiRotateLeft,
-  BiSearch,
-  BiUserPlus,
-  BiBookOpen,
-  BiCalendar,
-  BiTime,
-  BiArrowLeftRight,
-  BiClipboard,
-  BiBuildingHouse,
-  BiShoppingCart as BiShoppingCart2,
-  BiListUl,
-  BiPackage2,
-  BiRotateLeft as BiRotateLeft2,
-  BiSearchAlt,
-  BiUserPlus as BiUserPlus2,
-  BiBookOpen as BiBookOpen2,
-  BiCalendar as BiCalendar2,
-  BiTime2,
-  BiArrowLeftRight as BiArrowLeftRight2,
-  BiClipboardList,
-  BiBuildingHouse,
-  BiShoppingCart as BiShoppingCart3,
-  BiListCheck as BiListCheck2,
-  BiPackage2 as BiPackage2_2,
-  BiRotateLeft as BiRotateLeft3,
-  BiSearchAlt as BiSearchAlt2,
-  BiUserPlus as BiUserPlus3,
-  BiBookOpen as BiBookOpen3,
-  BiCalendar as BiCalendar2,
-  BiTime2 as BiTime3,
-} from 'react-icons/bi'
-import {
-  IoIosHome,
-  IoIosBarChart,
-  IoIosDatabase,
-  IoIosSettings,
-  IoIosReceipt,
-  IoIosCube,
-  IoIosCard,
-  IoIosPeople,
-  IoIosBriefcase,
-  IoIosChatbubbles,
-  IoIosCard2,
-  IoIosPerson,
-  IoIosMenu,
-  IoIosSunny,
-  IoIosMoon,
-  IoIosLogOut,
-  IoIosArrowDown,
-  IoIosArrowForward,
-  IoIosMap,
-  IoIosPuzzle,
-  IoIosQrScanner,
-  IoIosSparkles,
-  IoIosShield,
-  IoIosGrid,
-  IoIosVideocam,
-  IoIosPartlySunny,
-  IoIosMegaphone,
-  IoIosClipboard,
-  IoIosCar,
-  IoIosGraduationCap,
-  IoIosLayers,
-  IoIosWallet,
-  IoIosCalendar,
-  IoIosTime,
-  IoIosSwap,
-  IoIosList,
-  IoIosBuild,
-  IoIosCart,
-  IoIosCheckboxOutline,
-  IoIosCube as IoIosCube2,
-  IoIosRotateLeft,
-  IoIosSearch,
-  IoIosPersonAdd,
-  IoIosBook,
-  IoIosCalendar,
-  IoIosTime,
-  IoIosSwap,
-  IoIosList,
-  IoIosBuild,
-  IoIosCart,
-  IoIosCheckboxOutline,
-  IoIosCube as IoIosCube2,
-  IoIosRotateLeft,
-  IoIosSearch,
-  IoIosPersonAdd,
-  IoIosBook,
-  IoIosCalendar,
-  IoIosTime as IoIosTime2,
-  IoIosSwap as IoIosSwap2,
-  IoIosClipboard as IoIosClipboard2,
-  IoIosBuild as IoIosBuild2,
-  IoIosCart as IoIosCart2,
-  IoIosCheckboxOutline as IoIosCheckboxOutline2,
-  IoIosRotateLeft as IoIosRotateLeft2,
-  IoIosSearch as IoIosSearch2,
-  IoIosPersonAdd as IoIosPersonAdd2,
-  IoIosBook as IoIosBook2,
-  IoIosCalendar as IoIosCalendar2,
-  IoIosTime as IoIosTime3,
-} from 'react-icons/io5'
-import { LoadingSpinner, SuccessAnimation } from '../components/AnimationComponents'
-import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
-
+import { IoWallet, IoMap } from 'react-icons/io5'
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
   'In Discussion': 'info',
   'Not Started': 'outline',
@@ -265,16 +58,16 @@ const empty: DashboardData = {
 }
 
 const SERVICE_ICONS: Record<ServiceId, React.ComponentType<{ className?: string }>> = {
-  interior: FiBuilding2_2,
-  warehouse: FiWarehouse2,
-  school: FiGraduationCap2,
-  hotel: FiBuilding2_2,
-  travel: FiPlane2,
-  news: FiNewspaper2,
-  jobs: FiBriefcase2,
-  commerce: FiShoppingBag2,
-  bank: FiLandmark2,
-  medical: FiStethoscope2,
+  interior: MdBuild,
+  warehouse: MdWarehouse,
+  school: MdSchool,
+  hotel: MdBuild,
+  travel: MdFlight,
+  news: MdNewspaper,
+  jobs: MdWork,
+  commerce: MdShoppingCart,
+  bank: MdLocationOn,
+  medical: MdLocalHospital,
 }
 
 export default function Dashboard() {
@@ -319,7 +112,7 @@ export default function Dashboard() {
     return () => { alive = false }
   }, [])
 
-  if (loading) return <div className="empty">Loading…</div>
+  if (loading) return <div className="empty">Loadingâ€¦</div>
 
   const { analytics, mods, snags, milestones, credit, stock, labour, activity, procurementPending } = data
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -355,9 +148,9 @@ export default function Dashboard() {
           <p className="text-sm text-muted mt-1">{today}</p>
         </div>
         <div className="dashboard-command-actions">
-          <div className="dashboard-total"><span>Contract value</span><strong>{mods?.contractValueLabel ?? '—'}</strong></div>
-          <Link to="/projects" className="dashboard-action-link"><Briefcase className="w-4 h-4" /> Projects</Link>
-          <Link to="/map" className="dashboard-action-link"><Map className="w-4 h-4" /> Site map</Link>
+          <div className="dashboard-total"><span>Contract value</span><strong>{mods?.contractValueLabel ?? 'â€”'}</strong></div>
+          <Link to="/projects" className="dashboard-action-link"><FiBriefcase className="w-4 h-4" /> Projects</Link>
+          <Link to="/map" className="dashboard-action-link"><IoMap className="w-4 h-4" /> Site map</Link>
         </div>
       </header>
 
@@ -387,35 +180,35 @@ export default function Dashboard() {
                 <span className="block text-sm font-semibold text-text">{svc.label}</span>
                 <span className="block text-xs text-muted truncate">{svc.tagline}</span>
               </span>
-              <ArrowRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors flex-shrink-0" />
+              <FiArrowRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors flex-shrink-0" />
             </button>
           )
         })}
       </div>
 
-      {/* Row 1 — Executive KPIs */}
+      {/* Row 1 â€” Executive KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-        <Kpi icon={<FiWallet className="w-5 h-5" />} label="Total Contract Value" value={mods?.contractValueLabel ?? '—'} tone="bg-indigo-500/10 text-indigo-500" />
+        <Kpi icon={<IoWallet className="w-5 h-5" />} label="Total Contract Value" value={mods?.contractValueLabel ?? 'â€”'} tone="bg-indigo-500/10 text-indigo-500" />
         <Kpi icon={<FiTrendingUp className="w-5 h-5" />} label="Revenue This Month" value={money(analytics?.billing.monthSale)} sub={monthDelta !== null ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}%` : undefined} subTone={monthDelta !== null && monthDelta < 0 ? 'text-red-500' : 'text-emerald-500'} tone="bg-emerald-500/10 text-emerald-500" />
-        <Kpi icon={<FiClipboardList className="w-5 h-5" />} label="Pending Receivables" value={credit?.receivableLabel ?? '—'} sub={credit ? `(${credit.overdue.length} invoices)` : undefined} tone="bg-amber-500/10 text-amber-500" />
-        <Kpi icon={<FiHardHat className="w-5 h-5" />} label="Active Sites" value={String(activeSites)} sub={`${analytics?.projects.length ?? 0} total`} tone="bg-cyan-500/10 text-cyan-500" />
+        <Kpi icon={<FiClipboard className="w-5 h-5" />} label="Pending Receivables" value={credit?.receivableLabel ?? 'â€”'} sub={credit ? `(${credit.overdue.length} invoices)` : undefined} tone="bg-amber-500/10 text-amber-500" />
+        <Kpi icon={<MdConstruction className="w-5 h-5" />} label="Active Sites" value={String(activeSites)} sub={`${analytics?.projects.length ?? 0} total`} tone="bg-cyan-500/10 text-cyan-500" />
       </div>
 
-      {/* Row 2 — Operational KPIs */}
+      {/* Row 2 â€” Operational KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Kpi icon={<FiFileCheck2 className="w-5 h-5" />} label="Active Contracts" value={mods ? `${mods.activeContracts} / ${mods.contracts}` : '—'} sub="Running" tone="bg-violet-500/10 text-violet-500" />
-        <Kpi icon={<FiWrench className="w-5 h-5" />} label="Punch List / Touch-ups" value={String(openSnags)} sub={clearedSnags !== null ? `${clearedSnags} cleared` : undefined} tone="bg-orange-500/10 text-orange-500" />
+        <Kpi icon={<MdVerified className="w-5 h-5" />} label="Active Contracts" value={mods ? `${mods.activeContracts} / ${mods.contracts}` : 'â€”'} sub="Running" tone="bg-violet-500/10 text-violet-500" />
+        <Kpi icon={<MdHandyman className="w-5 h-5" />} label="Punch List / Touch-ups" value={String(openSnags)} sub={clearedSnags !== null ? `${clearedSnags} cleared` : undefined} tone="bg-orange-500/10 text-orange-500" />
         <Kpi icon={<FiUsers className="w-5 h-5" />} label="Workforce On Site" value={String(labour?.totalWorkers ?? 0)} sub={labour?.totalPresentLabel ? `${labour.totalPresentLabel} present` : undefined} tone="bg-sky-500/10 text-sky-500" />
-        <Kpi icon={<FiFuel className="w-5 h-5" />} label="Fuel Expense" value={mods?.fuelSpendMonthLabel ?? '—'} sub="This month" tone="bg-rose-500/10 text-rose-500" />
+        <Kpi icon={<MdLocalGasStation className="w-5 h-5" />} label="Fuel Expense" value={mods?.fuelSpendMonthLabel ?? 'â€”'} sub="This month" tone="bg-rose-500/10 text-rose-500" />
       </div>
 
       {isAdvanced && projects.length > 0 && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Cross-project financials & pipeline health — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Cross-project financials & pipeline health â€” toggled via the Simple/Advanced switch in the top bar."
           compare={[
             { label: 'Total received', value: money(grandReceived), delta: `${grandEntries} entries`, deltaTone: 'up' },
-            { label: 'Total spent', value: money(grandSpent), delta: grandReceived > 0 ? `${Math.round((grandSpent / grandReceived) * 100)}% of received` : '—', deltaTone: 'flat' },
+            { label: 'Total spent', value: money(grandSpent), delta: grandReceived > 0 ? `${Math.round((grandSpent / grandReceived) * 100)}% of received` : 'â€”', deltaTone: 'flat' },
             { label: 'Margin', value: money(grandReceived - grandSpent), delta: grandReceived - grandSpent >= 0 ? 'positive' : 'negative', deltaTone: grandReceived - grandSpent >= 0 ? 'up' : 'down' },
             { label: 'Avg completion', value: `${projects.length ? Math.round(projects.reduce((s, p) => s + p.taskPct, 0) / projects.length) : 0}%`, delta: `${activeSites} active site(s)`, deltaTone: 'flat' },
           ]}
@@ -424,7 +217,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Revenue vs budget spent per site</p>
               <BarChart
-                data={projects.slice(0, 6).map((p) => ({ label: p.name.length > 12 ? p.name.slice(0, 12) + '…' : p.name, value: p.received || 0 }))}
+                data={projects.slice(0, 6).map((p) => ({ label: p.name.length > 12 ? p.name.slice(0, 12) + 'â€¦' : p.name, value: p.received || 0 }))}
               />
             </div>
             <div>
@@ -444,7 +237,7 @@ export default function Dashboard() {
                 data={saleTotals.map((s) => ({
                   label: s.period,
                   value: s.total,
-                  valueLabel: `S ${money(s.total)}${expTotals.find((e) => e.period === s.period) ? ` · E ${money(expTotals.find((e) => e.period === s.period)!.total)}` : ''}`,
+                  valueLabel: `S ${money(s.total)}${expTotals.find((e) => e.period === s.period) ? ` Â· E ${money(expTotals.find((e) => e.period === s.period)!.total)}` : ''}`,
                 }))}
               />
             </div>
@@ -459,13 +252,13 @@ export default function Dashboard() {
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Milestone amounts (upcoming)</p>
               <BarChart
-                data={upcomingMilestones.map((m) => ({ label: m.title.length > 10 ? m.title.slice(0, 10) + '…' : m.title, value: m.amount }))}
+                data={upcomingMilestones.map((m) => ({ label: m.title.length > 10 ? m.title.slice(0, 10) + 'â€¦' : m.title, value: m.amount }))}
               />
             </div>
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock alerts</p>
               <BarChart
-                data={lowStockRows.map((r) => ({ label: r.name.length > 10 ? r.name.slice(0, 10) + '…' : r.name, value: 1 }))}
+                data={lowStockRows.map((r) => ({ label: r.name.length > 10 ? r.name.slice(0, 10) + 'â€¦' : r.name, value: 1 }))}
               />
             </div>
           </div>
@@ -476,7 +269,7 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         {/* 1. Revenue & cash flow trends */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Revenue &amp; Cash Flow Trends</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiTrendingUp className="w-5 h-5 text-primary" /> Revenue &amp; Cash Flow Trends</CardTitle></CardHeader>
           <CardContent>
             {saleTotals.length === 0 && expTotals.length === 0 ? (
               <Empty title="No monthly data yet" description="Sales and expenses will appear here" />
@@ -488,7 +281,7 @@ export default function Dashboard() {
 
         {/* 2. Material & stock alerts */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Package className="w-5 h-5 text-primary" /> Material &amp; Stock Alerts</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiPackage className="w-5 h-5 text-primary" /> Material &amp; Stock Alerts</CardTitle></CardHeader>
           <CardContent>
             {lowStockRows.length === 0 && (procurementPending ?? 0) === 0 ? (
               <Empty title="No stock alerts" description="Low-stock items and pending orders will appear here" />
@@ -515,7 +308,7 @@ export default function Dashboard() {
 
         {/* 3. Upcoming milestones */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><AlarmClock className="w-5 h-5 text-primary" /> Upcoming Milestones &amp; Deliverables</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><MdAlarm className="w-5 h-5 text-primary" /> Upcoming Milestones &amp; Deliverables</CardTitle></CardHeader>
           <CardContent>
             {upcomingMilestones.length === 0 ? (
               <Empty title="No upcoming milestones" />
@@ -542,7 +335,7 @@ export default function Dashboard() {
 
         {/* 4. Live site activity feed */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><ActivityIcon className="w-5 h-5 text-primary" /> Live Site Activity Feed</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiActivity className="w-5 h-5 text-primary" /> Live Site Activity Feed</CardTitle></CardHeader>
           <CardContent>
             {!activity || activity.length === 0 ? (
               <Empty title="No recent activity" />
@@ -569,7 +362,7 @@ export default function Dashboard() {
       {/* Main data table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" /> Site Breakdown &amp; Detailed Financials</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiBriefcase className="w-5 h-5 text-primary" /> Site Breakdown &amp; Detailed Financials</CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           {projects.length === 0 ? (
@@ -592,7 +385,7 @@ export default function Dashboard() {
                   <tr key={p.id} className="hover:bg-surface/50 transition-colors">
                     <td className="px-4 py-3">
                       <Link to={`/projects/${p.id}`} className="font-medium text-primary hover:underline inline-flex items-center gap-1">
-                        {p.name} <ArrowRight className="w-3 h-3" />
+                        {p.name} <FiArrowRight className="w-3 h-3" />
                       </Link>
                       <p className="text-xs text-muted">{p.valueLabel}</p>
                     </td>
@@ -607,7 +400,7 @@ export default function Dashboard() {
                         <span className="text-xs text-muted w-10 text-right">{p.pctLabel}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted">{p.lead || '—'}</td>
+                    <td className="px-4 py-3 text-muted">{p.lead || 'â€”'}</td>
                     <td className="px-4 py-3"><Badge variant={STATUS_TONE[p.status] || 'outline'} size="sm">{p.status}</Badge></td>
                   </tr>
                 ))}

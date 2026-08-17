@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+﻿import { useMemo, useState, type ReactNode } from 'react'
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Button, Empty, cn,
@@ -95,7 +95,7 @@ export function DataTable<T>({
           {toolbar}
           {exportFilename && (
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={sorted.length === 0}>
-              <Download className="w-4 h-4" /> Export CSV
+              <FiDownload className="w-4 h-4" /> Export CSV
             </Button>
           )}
         </div>
@@ -105,7 +105,7 @@ export function DataTable<T>({
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-4 text-sm text-red-500">{error}</div>
       ) : loading ? (
         <div className="flex items-center justify-center py-16 text-muted">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading…
+          <FiLoader className="w-6 h-6 animate-spin mr-2" /> Loadingâ€¦
         </div>
       ) : sorted.length === 0 ? (
         <Empty icon={emptyIcon} title={emptyTitle} description={emptyDescription} />
@@ -170,11 +170,11 @@ export function DataTable<T>({
           </div>
           <div className="flex items-center gap-1 whitespace-nowrap">
             <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setPage((p) => p - 1)} aria-label="Previous page">
-              <ChevronLeft className="w-4 h-4" />
+              <FiChevronLeft className="w-4 h-4" />
             </Button>
             <span className="text-xs text-muted px-2">Page {safePage} / {totalPages}</span>
             <Button variant="outline" size="sm" disabled={safePage >= totalPages} onClick={() => setPage((p) => p + 1)} aria-label="Next page">
-              <ChevronRight className="w-4 h-4" />
+              <FiChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

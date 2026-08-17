@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Broadcast } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, PageHead } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
-import { Crown, Megaphone, Send, Square, History, BellRing, Lock, Trash2 } from 'lucide-react'
+import { FiSend, FiSquare, FiBell, FiLock, FiTrash2 } from 'react-icons/fi'
+import { IoMegaphone } from 'react-icons/io5'
+import { MdWorkspacePremium, MdHistory } from 'react-icons/md'
 
 export default function BroadcastPage() {
   const { isPremium, plan, setPlan } = usePlan()
@@ -32,7 +34,7 @@ export default function BroadcastPage() {
       const r = await api.modules.broadcastPublish(msg.trim())
       setMsg('')
       load()
-      setPushNote(r.enabled ? `Sent to ${r.sent} registered device(s) via push.` : 'Saved as marquee — FCM not configured so no push was sent.')
+      setPushNote(r.enabled ? `Sent to ${r.sent} registered device(s) via push.` : 'Saved as marquee â€” FCM not configured so no push was sent.')
     } catch (e) { setPushNote(String(e)) }
     setBusy(false)
   }
@@ -46,7 +48,7 @@ export default function BroadcastPage() {
   return (
     <>
       <PageHead
-        icon="📢"
+        icon="ðŸ“¢"
         title="Broadcast"
         sub="Send a scrolling announcement to the whole app + push notification to every device"
         right={<Badge variant={isPremium ? 'success' : 'outline'}>{isPremium ? `${plan} plan` : 'Free plan'}</Badge>}
@@ -56,13 +58,13 @@ export default function BroadcastPage() {
         <Card className="mb-6 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent">
           <CardContent className="p-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><Lock className="w-5 h-5" /></div>
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><FiLock className="w-5 h-5" /></div>
               <div>
                 <p className="font-semibold text-text">Broadcast is a premium feature</p>
                 <p className="text-sm text-muted">Upgrade to publish marquee announcements that scroll across the app and ping every device.</p>
               </div>
             </div>
-            <Button onClick={() => setPlan('pro')}><Crown className="w-4 h-4" /> Activate Pro (free trial)</Button>
+            <Button onClick={() => setPlan('pro')}><MdWorkspacePremium className="w-4 h-4" /> Activate Pro (free trial)</Button>
           </CardContent>
         </Card>
       )}
@@ -70,7 +72,7 @@ export default function BroadcastPage() {
       {!isPremium ? (
         <Card>
           <CardContent className="p-10 text-center text-muted">
-            <Megaphone className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <IoMegaphone className="w-12 h-12 mx-auto mb-3 opacity-40" />
             <p className="font-semibold text-text">Broadcast composer is locked</p>
             <p className="text-sm mt-1">Activate Pro to compose and publish announcements.</p>
           </CardContent>
@@ -83,7 +85,7 @@ export default function BroadcastPage() {
                 <div className="marquee-anim inline-flex items-center gap-8 pl-4">
                   {[0, 1, 2, 3].map((i) => (
                     <span key={i} className="inline-flex items-center gap-2 text-sm font-semibold">
-                      <Megaphone className="w-4 h-4 text-primary shrink-0" /> {active.message}
+                      <IoMegaphone className="w-4 h-4 text-primary shrink-0" /> {active.message}
                     </span>
                   ))}
                 </div>
@@ -93,21 +95,21 @@ export default function BroadcastPage() {
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Megaphone className="w-5 h-5 text-primary" /> Compose announcement</CardTitle>
+              <CardTitle className="flex items-center gap-2"><IoMegaphone className="w-5 h-5 text-primary" /> Compose announcement</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
                 value={msg}
                 onChange={(e) => setMsg(e.target.value)}
-                placeholder="Type anything you want to broadcast — e.g. 'Meeting at 6 PM in office ⏰'"
+                placeholder="Type anything you want to broadcast â€” e.g. 'Meeting at 6 PM in office â°'"
               />
               <p className="text-xs text-muted">Preview:</p>
               <div className="rounded-lg border border-dashed border-border bg-surface px-3 py-2.5 overflow-hidden whitespace-nowrap">
-                <span className="text-sm text-text/80">{msg.trim() || 'Your marquee text appears here…'}</span>
+                <span className="text-sm text-text/80">{msg.trim() || 'Your marquee text appears hereâ€¦'}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button onClick={publish} disabled={busy || !msg.trim()}><Send className="w-4 h-4" /> Publish to all</Button>
-                {active && <Button variant="outline" onClick={stop} disabled={busy}><Square className="w-4 h-4" /> Stop marquee</Button>}
+                <Button onClick={publish} disabled={busy || !msg.trim()}><FiSend className="w-4 h-4" /> Publish to all</Button>
+                {active && <Button variant="outline" onClick={stop} disabled={busy}><FiSquare className="w-4 h-4" /> Stop marquee</Button>}
               </div>
               {pushNote && <p className="text-sm text-muted">{pushNote}</p>}
             </CardContent>
@@ -116,11 +118,11 @@ export default function BroadcastPage() {
           {history.length > 0 && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2"><History className="w-5 h-5 text-primary" /> Published</CardTitle>
+                <CardTitle className="flex items-center gap-2"><MdHistory className="w-5 h-5 text-primary" /> Published</CardTitle>
                 <Badge variant="outline">{history.length}</Badge>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Input placeholder="Search announcements…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <Input placeholder="Search announcementsâ€¦" value={q} onChange={(e) => setQ(e.target.value)} />
                 {filteredHistory.length === 0 ? (
                   <p className="text-sm text-muted py-2">{history.length === 0 ? 'Nothing published yet.' : `No announcements match "${q}".`}</p>
                 ) : filteredHistory.map((b) => (
@@ -130,9 +132,9 @@ export default function BroadcastPage() {
                       <p className="text-xs text-muted mt-0.5">{b.publishedLabel}</p>
                     </div>
                     <Badge variant={b.isActive ? 'success' : 'outline'}>{b.isActive ? 'Live' : 'Stopped'}</Badge>
-                    <BellRing className="w-4 h-4 text-muted shrink-0" />
+                    <FiBell className="w-4 h-4 text-muted shrink-0" />
                     <button className="text-muted hover:text-red-500 transition-colors" title="Delete" onClick={async () => { try { await api.modules.broadcastDelete(b.id); load() } catch { /* ignore */ } }}>
-                      <Trash2 className="w-4 h-4" />
+                      <FiTrash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}

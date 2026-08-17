@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
 import { login, register, api } from '../api'
 import { firebaseEnabled, signInWithEmail, signInWithGoogle } from '../firebase'
-import { Bot, Eye, EyeOff, FolderKanban, Lock, ScanFace, Sparkles, WalletCards } from 'lucide-react'
+import { FiEye, FiEyeOff, FiLock } from 'react-icons/fi'
+import { IoSparkles, IoWallet, IoScan, IoHardwareChip } from 'react-icons/io5'
+import { MdFolderShared } from 'react-icons/md'
 import { VsrLogo } from '../components/VsrLogo'
 
 const USER_KEY = 'lux_user'
 
 const LOGIN_FEATURES = [
-  { icon: FolderKanban, label: 'Projects, teams and service operations' },
-  { icon: WalletCards, label: 'Payments, payroll and expenses together' },
-  { icon: ScanFace, label: 'Secure attendance and workforce tools' },
-  { icon: Bot, label: 'Context-aware assistance where it belongs' },
+{ icon: MdFolderShared, label: 'Projects, teams and service operations' },
+  { icon: IoWallet, label: 'Payments, payroll and expenses together' },
+  { icon: IoScan, label: 'Secure attendance and workforce tools' },
+  { icon: IoHardwareChip, label: 'Context-aware assistance where it belongs' },
 ] as const
 
 export default function Login({ onAuthed }: { onAuthed: () => void }) {
@@ -96,7 +98,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
       </div>
 
       <div className="login-intro">
-        <div className="login-badge"><Lock size={13} /> Secure sign in</div>
+        <div className="login-badge"><FiLock size={13} /> Secure sign in</div>
         <div className="intro-line l1">Welcome to</div>
         <div className="intro-line l2"><span className="grad-text">VSR Systems</span></div>
         <div className="intro-line l3">Your business, one dashboard away</div>
@@ -120,7 +122,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
         <div className="login-mode">
           <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}>Sign in</button>
           <button type="button" className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>
-            <Sparkles className="w-3.5 h-3.5" /> Register
+            <IoSparkles className="w-3.5 h-3.5" /> Register
           </button>
         </div>
 
@@ -149,7 +151,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
               placeholder="••••••••"
             />
             <button type="button" className="pw-toggle" onClick={() => setShowPw((s) => !s)} aria-label={showPw ? 'Hide password' : 'Show password'}>
-              {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+              {showPw ? <FiEyeOff size={17} /> : <FiEye size={17} />}
             </button>
           </div>
         </div>

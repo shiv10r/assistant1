@@ -1,23 +1,23 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICES, getLastService, setLastService, type ServiceDef } from '../lib/services'
 import { cn } from '../lib/utils'
-import { FiArrowRight, FiArrowLeft, FiBriefcase, FiBuilding, FiWarehouse, FiGraduationCap, FiPlane, FiNewspaper, FiShield, FiClock, FiZap, FiUsers, FiHelpCircle, FiChevronDown, FiShoppingBag, FiLandmark, FiStethoscope } from 'react-icons/fi'
-import { MdShield, MdAccessTime, MdFlashOn, MdPeople } from 'react-icons/md'
+import { FiArrowRight, FiArrowLeft, FiBriefcase, FiHelpCircle, FiChevronDown, FiShoppingBag } from 'react-icons/fi'
+import { MdShield, MdAccessTime, MdFlashOn, MdPeople, MdApartment, MdWarehouse, MdSchool, MdFlight, MdNewspaper, MdAccountBalance, MdLocalHospital } from 'react-icons/md'
 import './ServiceChooser.css'
 import { VsrLogo } from '../components/VsrLogo'
 
 const WORKSPACE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  interior: FiBuilding,
-  warehouse: FiWarehouse,
-  school: FiGraduationCap,
-  hotel: FiBuilding,
-  travel: FiPlane,
-  news: FiNewspaper,
+  interior: MdApartment,
+  warehouse: MdWarehouse,
+  school: MdSchool,
+  hotel: MdApartment,
+  travel: MdFlight,
+  news: MdNewspaper,
   jobs: FiBriefcase,
   commerce: FiShoppingBag,
-  bank: FiLandmark,
-  medical: FiStethoscope,
+  bank: MdAccountBalance,
+  medical: MdLocalHospital,
 }
 
 const FEATURES = [
@@ -46,11 +46,11 @@ export default function ServiceChooser() {
         </div>
         <div className="chooser-header-actions">
           <button className="chooser-help" type="button">
-            <HelpCircle className="w-4 h-4" /> Help
+            <FiHelpCircle className="w-4 h-4" /> Help
           </button>
           <button className="chooser-admin" type="button">
             <span className="chooser-admin-avatar">A</span>
-            Admin <ChevronDown className="w-3.5 h-3.5" />
+            Admin <FiChevronDown className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
@@ -64,7 +64,7 @@ export default function ServiceChooser() {
 
         <div className={cn('chooser-grid', entering && 'chooser-exiting')}>
           {SERVICES.map((svc, i) => {
-            const Icon = WORKSPACE_ICONS[svc.id] ?? Building2
+            const Icon = WORKSPACE_ICONS[svc.id] ?? MdApartment
             const active = svc.id === last?.id
             return (
               <button
@@ -81,7 +81,7 @@ export default function ServiceChooser() {
                 <span className="chooser-name">{svc.label}</span>
                 <span className="chooser-tag">{svc.tagline}</span>
                 <span className="chooser-enter">
-                  Open workspace <ArrowRight className="w-4 h-4" />
+                  Open workspace <FiArrowRight className="w-4 h-4" />
                 </span>
               </button>
             )
@@ -92,7 +92,7 @@ export default function ServiceChooser() {
           <footer className="chooser-return">
             <span className="chooser-return-q">Want to switch back?</span>
             <button className="chooser-return-btn" onClick={() => enter(last)}>
-              <ArrowLeft className="w-4 h-4" /> Return to <b>{last.label}</b>
+              <FiArrowLeft className="w-4 h-4" /> Return to <b>{last.label}</b>
             </button>
           </footer>
         )}

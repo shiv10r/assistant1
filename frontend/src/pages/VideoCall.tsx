@@ -3,7 +3,7 @@ import { api } from '../api'
 import type { Project } from '../api'
 import { Card, CardContent, Button, Badge, Empty } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Video, Link2, Copy, Check, RefreshCw, Briefcase, ExternalLink } from 'lucide-react'
+import { FiVideo, FiLink2, FiCopy, FiCheck, FiRefreshCw, FiBriefcase, FiExternalLink } from 'react-icons/fi'
 
 const PROVIDERS = [
   { v: 'meet', l: 'Google Meet', desc: 'Open a new Meet room link', icon: '🟢' },
@@ -57,7 +57,7 @@ export default function VideoCall() {
         </div>
         {room && (
           <Button onClick={copy} variant="outline">
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
             {copied ? 'Copied' : 'Copy invite link'}
           </Button>
         )}
@@ -67,7 +67,7 @@ export default function VideoCall() {
         <Card>
           <CardContent className="p-6 space-y-4">
             <Empty
-              icon={<Video className="w-8 h-8" />}
+              icon={<FiVideo className="w-8 h-8" />}
               title="Start a call"
               description="Pick a provider and share the link with your team or clients."
             />
@@ -103,12 +103,12 @@ export default function VideoCall() {
                 </div>
               </div>
               <Button onClick={start} disabled={loading}>
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
+                {loading ? <FiRefreshCw className="w-4 h-4 animate-spin" /> : <FiVideo className="w-4 h-4" />}
                 {loading ? 'Starting…' : 'Start video call'}
               </Button>
             </div>
             <p className="text-xs text-text/50 flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" />
+              <FiLink2 className="w-3.5 h-3.5" />
               Google Meet / Teams open a link — joiners click it in their browser or app. Jitsi embeds right here.
             </p>
           </CardContent>
@@ -122,7 +122,7 @@ export default function VideoCall() {
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
               Live — {room}
             </Badge>
-            {projectId && <Badge><Briefcase className="w-3 h-3" /> Project #{projectId}</Badge>}
+            {projectId && <Badge><FiBriefcase className="w-3 h-3" /> Project #{projectId}</Badge>}
           </div>
           <div className="rounded-2xl overflow-hidden border bg-surface shadow-sm">
             <iframe
@@ -134,7 +134,7 @@ export default function VideoCall() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={copy} variant="outline"><Copy className="w-4 h-4" /> Copy invite link</Button>
+            <Button onClick={copy} variant="outline"><FiCopy className="w-4 h-4" /> Copy invite link</Button>
             <Button onClick={() => { setRoom(''); setUrl('') }} variant="ghost">Leave / new call</Button>
           </div>
         </div>
@@ -147,17 +147,17 @@ export default function VideoCall() {
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
               {provider === 'teams' ? 'Microsoft Teams' : 'Google Meet'} — {room}
             </Badge>
-            {projectId && <Badge><Briefcase className="w-3 h-3" /> Project #{projectId}</Badge>}
+            {projectId && <Badge><FiBriefcase className="w-3 h-3" /> Project #{projectId}</Badge>}
           </div>
           <Card>
             <CardContent className="p-8 text-center space-y-4">
               <div className="text-5xl">{provider === 'teams' ? '🔵' : '🟢'}</div>
               <p className="text-text">Your {provider === 'teams' ? 'Teams' : 'Meet'} room link is ready.</p>
               <Button size="lg" onClick={() => window.open(url, '_blank')}>
-                <ExternalLink className="w-4 h-4" /> Open {provider === 'teams' ? 'Microsoft Teams' : 'Google Meet'} meeting
+                <FiExternalLink className="w-4 h-4" /> Open {provider === 'teams' ? 'Microsoft Teams' : 'Google Meet'} meeting
               </Button>
               <Button onClick={copy} variant="outline">
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
                 {copied ? 'Copied' : 'Copy invite link'}
               </Button>
               <p className="text-xs text-muted break-all">{url}</p>

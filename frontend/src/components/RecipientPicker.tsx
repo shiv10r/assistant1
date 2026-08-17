@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, BellRing, BellOff, Check } from 'lucide-react'
+import { FiLoader, FiBell, FiBellOff, FiCheck } from 'react-icons/fi'
 import { api } from '../api'
 import type { AppUser } from '../api'
 import { Modal, Button } from './ui'
@@ -67,7 +67,7 @@ export default function RecipientPicker({
       <div className="space-y-3">
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted py-8 justify-center">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading users…
+            <FiLoader className="w-4 h-4 animate-spin" /> Loading users…
           </div>
         )}
 
@@ -97,7 +97,7 @@ export default function RecipientPicker({
                           : 'border-border bg-surface'
                       }`}
                     >
-                      {selected.has(u.username) && <Check className="w-3.5 h-3.5" />}
+                      {selected.has(u.username) && <FiCheck className="w-3.5 h-3.5" />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium text-text truncate">{u.username}</span>
@@ -105,11 +105,11 @@ export default function RecipientPicker({
                     </span>
                     {hasDevice ? (
                       <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600" title="Has a registered device">
-                        <BellRing className="w-3.5 h-3.5" /> reachable
+                        <FiBell className="w-3.5 h-3.5" /> reachable
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[11px] text-muted" title="No device registered for push">
-                        <BellOff className="w-3.5 h-3.5" /> no device
+                        <FiBellOff className="w-3.5 h-3.5" /> no device
                       </span>
                     )}
                   </button>

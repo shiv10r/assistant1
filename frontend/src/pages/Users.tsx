@@ -4,7 +4,10 @@ import type { AppUser, UserSessionInfo } from '../api'
 import { isAdmin } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Empty } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Users as UsersIcon, UserPlus, Shield, ShieldCheck, ShieldOff, Trash2, KeyRound, Search } from 'lucide-react'
+import {
+  FiUsers, FiUserPlus, FiShield, FiShieldOff, FiTrash2, FiKey, FiSearch
+} from 'react-icons/fi'
+import { MdVerifiedUser } from 'react-icons/md'
 import { cn } from '../lib/utils'
 
 const ROLE_LABEL: Record<string, string> = { admin: 'Admin', accountant: 'Accountant', supervisor: 'Site Supervisor' }
@@ -67,7 +70,7 @@ export default function UsersPage() {
     return (
       <Card>
         <CardContent className="py-16">
-          <Empty icon={<ShieldOff className="w-12 h-12" />} title="Admins only" description="Only the admin role can manage staff accounts." />
+          <Empty icon={<FiShieldOff className="w-12 h-12" />} title="Admins only" description="Only the admin role can manage staff accounts." />
         </CardContent>
       </Card>
     )
@@ -81,16 +84,16 @@ export default function UsersPage() {
           <div className="muted">Create staff logins with scoped access — admin, accountant or site supervisor</div>
         </div>
         <Button onClick={() => { setEditing({ id: 0, username: '', role: 'supervisor', isActive: true, password: '' }); setErr(''); setOpen(true) }}>
-          <UserPlus className="w-4 h-4" /> Add User
+          <FiUserPlus className="w-4 h-4" /> Add User
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UsersIcon className="w-5 h-5 text-primary" /> Staff accounts</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiUsers className="w-5 h-5 text-primary" /> Staff accounts</CardTitle>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 className="pl-9 pr-3 py-2 w-56 rounded-lg border border-border bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="Search users…"
@@ -102,7 +105,7 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent className="p-0">
           {filteredUsers.length === 0 ? (
-            <CardContent><Empty icon={<UsersIcon className="w-12 h-12" />} title={q ? `No users match "${q}"` : 'No staff users'} description="Add an accountant or supervisor to share access safely." /></CardContent>
+            <CardContent><Empty icon={<FiUsers className="w-12 h-12" />} title={q ? `No users match "${q}"` : 'No staff users'} description="Add an accountant or supervisor to share access safely." /></CardContent>
           ) : (
             <Table>
               <TableHeader>
@@ -122,7 +125,7 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={u.role === 'admin' ? 'default' : u.role === 'accountant' ? 'info' : 'warning'} size="sm">
-                        <Shield className="w-3 h-3" /> {ROLE_LABEL[u.role] || u.role}
+                        <FiShield className="w-3 h-3" /> {ROLE_LABEL[u.role] || u.role}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -131,10 +134,10 @@ export default function UsersPage() {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => toggle(u)} aria-label="Toggle active" title={u.isActive ? 'Deactivate' : 'Activate'}>
-                          {u.isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                          {u.isActive ? <FiShieldOff className="w-4 h-4" /> : <MdVerifiedUser className="w-4 h-4" />}
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => remove(u)} aria-label="Delete" className="text-red-500 hover:bg-red-500/10">
-                          <Trash2 className="w-4 h-4" />
+                          <FiTrash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -149,7 +152,7 @@ export default function UsersPage() {
       {sessions.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><KeyRound className="w-5 h-5 text-primary" /> Active sessions</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FiKey className="w-5 h-5 text-primary" /> Active sessions</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>

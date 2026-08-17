@@ -7,23 +7,24 @@ import { Card, CardContent, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsConte
 import { useToast } from '../components/ui/Toast'
 import { cn } from '../lib/utils'
 import {
-  Wallet, ReceiptText, Landmark, TrendingUp, Package, Users, AlarmClock,
-  HandCoins, FileText, HeartPulse, Send, Download, RefreshCw,
-} from 'lucide-react'
+  FiTrendingUp, FiPackage, FiUsers, FiFileText, FiSend, FiDownload, FiRefreshCw
+} from 'react-icons/fi'
+import { IoWallet } from 'react-icons/io5'
+import { MdAccountBalance, MdAlarm, MdPayments, MdMonitorHeart } from 'react-icons/md'
 
 type TabId = 'pl' | 'gstr1' | 'credit' | 'forecast' | 'stock' | 'labour' | 'delayed' | 'advances' | 'digest' | 'health'
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: 'pl', label: 'P&L', icon: <Wallet className="w-4 h-4" /> },
-  { id: 'gstr1', label: 'GSTR-1', icon: <ReceiptText className="w-4 h-4" /> },
-  { id: 'credit', label: 'Credit', icon: <Landmark className="w-4 h-4" /> },
-  { id: 'forecast', label: 'Forecast', icon: <TrendingUp className="w-4 h-4" /> },
-  { id: 'stock', label: 'Stock', icon: <Package className="w-4 h-4" /> },
-  { id: 'labour', label: 'Labour', icon: <Users className="w-4 h-4" /> },
-  { id: 'delayed', label: 'Delayed', icon: <AlarmClock className="w-4 h-4" /> },
-  { id: 'advances', label: 'Advances', icon: <HandCoins className="w-4 h-4" /> },
-  { id: 'digest', label: 'Digest', icon: <FileText className="w-4 h-4" /> },
-  { id: 'health', label: 'AI Health', icon: <HeartPulse className="w-4 h-4" /> },
+  { id: 'pl', label: 'P&L', icon: <IoWallet className="w-4 h-4" /> },
+  { id: 'gstr1', label: 'GSTR-1', icon: <FiFileText className="w-4 h-4" /> },
+  { id: 'credit', label: 'Credit', icon: <MdAccountBalance className="w-4 h-4" /> },
+  { id: 'forecast', label: 'Forecast', icon: <FiTrendingUp className="w-4 h-4" /> },
+  { id: 'stock', label: 'Stock', icon: <FiPackage className="w-4 h-4" /> },
+  { id: 'labour', label: 'Labour', icon: <FiUsers className="w-4 h-4" /> },
+  { id: 'delayed', label: 'Delayed', icon: <MdAlarm className="w-4 h-4" /> },
+  { id: 'advances', label: 'Advances', icon: <MdPayments className="w-4 h-4" /> },
+  { id: 'digest', label: 'Digest', icon: <FiFileText className="w-4 h-4" /> },
+  { id: 'health', label: 'AI Health', icon: <MdMonitorHeart className="w-4 h-4" /> },
 ]
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'green' | 'red' | 'gold' }) {
@@ -381,7 +382,7 @@ function Digest() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-sm text-text/60">Daily cash book &amp; sales summary for today.</p>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}><RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} /> Refresh</Button>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading}><FiRefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} /> Refresh</Button>
       </div>
       <Card><CardContent className="p-5"><pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{text || '…'}</pre></CardContent></Card>
     </div>
@@ -398,7 +399,7 @@ function Health() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Badge variant={data?.configured ? 'success' : 'warning'}>{data?.configured ? 'AI enabled' : 'Rule-based mode'}</Badge>
         {data?.model && <span className="text-xs text-text/40">model: {data.model}</span>}
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}><RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} /> Re-analyse</Button>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading}><FiRefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} /> Re-analyse</Button>
       </div>
       <Card><CardContent className="p-5"><pre className="whitespace-pre-wrap text-sm leading-relaxed">{data?.text || '…'}</pre></CardContent></Card>
     </div>
@@ -420,8 +421,8 @@ function ActionPanel() {
   return (
     <Card className="mb-0">
       <CardContent className="p-4 flex flex-wrap items-center gap-3">
-        <Button onClick={() => run('reminders')} disabled={!!busy}><Send className="w-4 h-4" /> Send due reminders</Button>
-        <Button variant="outline" onClick={() => run('backup')} disabled={!!busy}><Download className="w-4 h-4" /> Email DB backup</Button>
+<Button onClick={() => run('reminders')} disabled={!!busy}><FiSend className="w-4 h-4" /> Send due reminders</Button>
+<Button variant="outline" onClick={() => run('backup')} disabled={!!busy}><FiDownload className="w-4 h-4" /> Email DB backup</Button>
         <span className="text-xs text-text/50">Reminders email overdue invoices; backup attaches the full database.</span>
       </CardContent>
     </Card>

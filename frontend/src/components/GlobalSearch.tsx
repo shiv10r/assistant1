@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { AssistantSearch } from '../api'
 import { Modal, Input, Badge, money, cn } from './ui'
-import { Search, FolderKanban, ReceiptText, Users, ArrowRight, Boxes, GraduationCap, Clock, Briefcase } from 'lucide-react'
+import { FiSearch, FiUsers, FiArrowRight, FiClock, FiBriefcase, FiFileText, FiBox, FiFolder } from 'react-icons/fi'
+import { MdSchool } from 'react-icons/md'
 
 /** A row a global search can jump to. */
 export interface SearchResult {
@@ -15,26 +16,26 @@ export interface SearchResult {
 }
 
 const GROUP_ICON: Record<string, React.ReactNode> = {
-  Projects: <Briefcase className="w-4 h-4" />,
-  Transactions: <ReceiptText className="w-4 h-4" />,
-  Items: <Boxes className="w-4 h-4" />,
-  Rooms: <Boxes className="w-4 h-4" />,
-  Expenses: <ReceiptText className="w-4 h-4" />,
-  'Interior Projects': <Briefcase className="w-4 h-4" />,
-  'Interior Products': <Boxes className="w-4 h-4" />,
-  'Warehouse Products': <Boxes className="w-4 h-4" />,
-  'Warehouse Customers': <Users className="w-4 h-4" />,
-  'Warehouse Suppliers': <Users className="w-4 h-4" />,
-  'Warehouse Projects': <Briefcase className="w-4 h-4" />,
-  'Warehouse Staff': <Clock className="w-4 h-4" />,
-  'School Students': <GraduationCap className="w-4 h-4" />,
-  'School Classes': <GraduationCap className="w-4 h-4" />,
-  'School Staff': <Clock className="w-4 h-4" />,
-  'School Projects': <Briefcase className="w-4 h-4" />,
+  Projects: <FiBriefcase className="w-4 h-4" />,
+  Transactions: <FiFileText className="w-4 h-4" />,
+  Items: <FiBox className="w-4 h-4" />,
+  Rooms: <FiBox className="w-4 h-4" />,
+  Expenses: <FiFileText className="w-4 h-4" />,
+  'Interior Projects': <FiBriefcase className="w-4 h-4" />,
+  'Interior Products': <FiBox className="w-4 h-4" />,
+  'Warehouse Products': <FiBox className="w-4 h-4" />,
+  'Warehouse Customers': <FiUsers className="w-4 h-4" />,
+  'Warehouse Suppliers': <FiUsers className="w-4 h-4" />,
+  'Warehouse Projects': <FiBriefcase className="w-4 h-4" />,
+  'Warehouse Staff': <FiClock className="w-4 h-4" />,
+  'School Students': <MdSchool className="w-4 h-4" />,
+  'School Classes': <MdSchool className="w-4 h-4" />,
+  'School Staff': <FiClock className="w-4 h-4" />,
+  'School Projects': <FiBriefcase className="w-4 h-4" />,
 }
 
 /**
- * Global application search — hits the backend `/api/assistant/search` endpoint
+ * Global application search â€” hits the backend `/api/assistant/search` endpoint
  * (projects, parties, txns, items, rooms, expenses) and scans every frontend
  * localStorage collection (warehouse, school), then navigates to the result.
  */
@@ -70,21 +71,21 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
     if (!q.trim()) return out
     if (remote?.projects?.length) remote.projects.forEach((p) => out.push({
       label: p.name,
-      sub: p.type === 'interior' ? 'Interior project' : p.address ? `${p.type} · ${p.address}` : p.type,
+      sub: p.type === 'interior' ? 'Interior project' : p.address ? `${p.type} Â· ${p.address}` : p.type,
       to: `/projects/${p.id}`,
       group: 'Projects',
       icon: GROUP_ICON.Projects,
     }))
     if (remote?.txns?.length) remote.txns.slice(0, 15).forEach((t) => out.push({
-      label: `${t.refLabel} — ${t.partyName}`,
-      sub: `${t.type} · ${money(t.total)} · ${t.date}`,
+      label: `${t.refLabel} â€” ${t.partyName}`,
+      sub: `${t.type} Â· ${money(t.total)} Â· ${t.date}`,
       to: `/billing`,
       group: 'Transactions',
       icon: GROUP_ICON.Transactions,
     }))
     if (remote?.items?.length) remote.items.forEach((i) => out.push({
       label: i.name,
-      sub: `${i.category} · sale ${money(i.salePrice)}`,
+      sub: `${i.category} Â· sale ${money(i.salePrice)}`,
       to: `/billing/items`,
       group: 'Items',
       icon: GROUP_ICON.Items,
@@ -97,8 +98,8 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
       icon: GROUP_ICON.Rooms,
     }))
     if (remote?.expenses?.length) remote.expenses.slice(0, 10).forEach((e) => out.push({
-      label: `${e.client} — ${e.category}`,
-      sub: `${e.site} · ${money(e.amount)} · ${e.date}`,
+      label: `${e.client} â€” ${e.category}`,
+      sub: `${e.site} Â· ${money(e.amount)} Â· ${e.date}`,
       to: `/reports`,
       group: 'Expenses',
       icon: GROUP_ICON.Expenses,
@@ -128,15 +129,15 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
   return (
     <Modal open={open} onClose={onClose} title="Global Search" description="Search anything across the application" size="lg">
       <div className="relative mb-4">
-        <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+        <FiSearch className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
         <Input
           ref={inputRef}
           className="pl-12 pr-10 !py-2.5 text-base"
-          placeholder="Search projects, parties, products, students…"
+          placeholder="Search projects, parties, products, studentsâ€¦"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        {searching && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted animate-pulse">searching…</span>}
+        {searching && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted animate-pulse">searchingâ€¦</span>}
       </div>
 
       {!q.trim() ? (
@@ -144,13 +145,13 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
           Type to search projects, billing parties, inventory items, warehouse &amp; school records.
         </p>
       ) : total === 0 && !searching ? (
-        <p className="text-sm text-muted text-center py-10">No results for “{q}”.</p>
+        <p className="text-sm text-muted text-center py-10">No results for â€œ{q}â€.</p>
       ) : (
         <div className="max-h-[60vh] overflow-y-auto space-y-5 pr-1">
           {groups.map((g) => (
             <div key={g.name}>
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted mb-2">
-                <span>{GROUP_ICON[g.name] ?? <FolderKanban className="w-4 h-4" />}</span>
+                <span>{GROUP_ICON[g.name] ?? <FiFolder className="w-4 h-4" />}</span>
                 {g.name}
                 <Badge variant="outline" size="sm">{g.rows.length}</Badge>
               </div>
@@ -169,7 +170,7 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
                       <span className="block text-sm font-medium text-text truncate">{r.label}</span>
                       {r.sub && <span className="block text-xs text-muted truncate">{r.sub}</span>}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-muted flex-shrink-0" />
+                    <FiArrowRight className="w-4 h-4 text-muted flex-shrink-0" />
                   </button>
                 ))}
               </div>
@@ -181,7 +182,7 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
   )
 }
 
-/** Collection metadata: localStorage key prefix → target route + display group. */
+/** Collection metadata: localStorage key prefix â†’ target route + display group. */
 const COLLECTIONS: { key: string; group: string; to: (id: string) => string; nameField: string[] }[] = [
   { key: 'luxinfra:interior:projects', group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
   { key: 'luxinfra:interior:products', group: 'Interior Products', to: () => '/interior/products', nameField: ['name', 'category'] },

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Search, MapPin, LocateFixed, Loader2 } from 'lucide-react'
+import { IoLocate } from 'react-icons/io5'
+import { FiSearch, FiMapPin, FiLoader } from 'react-icons/fi'
 import { Button } from './ui'
 import { cn } from '../lib/utils'
 import { getTheme } from '../theme'
@@ -53,7 +54,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     const dark = getTheme() === 'dark'
     const map = L.map(containerRef.current, { center: [20.5937, 78.9629], zoom: 5 })
     L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`, {
-      attribution: '© OpenStreetMap contributors',
+      attribution: 'Â© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
     mapRef.current = map
@@ -128,12 +129,12 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowResults(false) }}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch() } }}
-          placeholder="Search place, city, area… e.g. Dadar, Mumbai"
+          placeholder="Search place, city, areaâ€¦ e.g. Dadar, Mumbai"
           className="w-full rounded-lg border border-border bg-surface2/60 pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary"
         />
         <button
@@ -142,7 +143,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
           disabled={searching || !query.trim()}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-primary text-white text-xs font-semibold px-3 py-1.5 disabled:opacity-50"
         >
-          {searching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Search'}
+          {searching ? <FiLoader className="w-3.5 h-3.5 animate-spin" /> : 'Search'}
         </button>
 
         {showResults && results.length > 0 && (
@@ -154,7 +155,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
                 onClick={() => pick(r)}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-surface2 flex items-start gap-2"
               >
-                <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <FiMapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <span className="min-w-0">{r.display_name}</span>
               </button>
             ))}
@@ -169,10 +170,10 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
 
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={useMyLocation} disabled={locating}>
-          <LocateFixed className="w-3.5 h-3.5" /> {locating ? 'Locating…' : 'Use my location'}
+          <IoLocate className="w-3.5 h-3.5" /> {locating ? 'Locatingâ€¦' : 'Use my location'}
         </Button>
         <span className={cn('text-xs', hasCoords ? 'text-emerald-600' : 'text-muted')}>
-          {hasCoords ? `📍 ${lat}, ${lng}` : 'No coordinates set — search or click the map'}
+          {hasCoords ? `ðŸ“ ${lat}, ${lng}` : 'No coordinates set â€” search or click the map'}
         </span>
       </div>
     </div>
