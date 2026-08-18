@@ -39,3 +39,7 @@ bakcned 03 branch
 - If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
 - Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
 
+
+there msut be always commit  to both  frotn end backend once branch once current todo  is done 
+once pushed to frontend repo can raise pr  from  
+https://github.com/shiv10r/assistant1/tree/develop01 to  https://github.com/shiv10r/assistant1/tree/luxinfra-frontend   and merge  it in luxinfrafrontend  and merge  it automatically?
