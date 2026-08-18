@@ -44,3 +44,6 @@ bakcned 03 branch
 - `gh` CLI is not installed on this machine. Use the GitHub REST API directly: extract the stored credential via `git credential fill` (protocol=https, host=github.com), then POST `/repos/shiv10r/assistant1/pulls` (head=develop01, base=luxinfra-frontend) and PUT `/repos/shiv10r/assistant1/pulls/{number}/merge` with `merge_method=squash`.
 - If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
 - Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
+
+
+First omplete all the tsk of TodoHomeService.md then  todo.md 

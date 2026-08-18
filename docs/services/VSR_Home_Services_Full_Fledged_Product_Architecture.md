@@ -13,6 +13,22 @@
 
 ---
 
+# 0. Build Directive — Live Product, Not a Static Page
+
+The current `home-services` module in the React frontend (`frontend/src/services/home-services`) is a **static/demo build**: all categories, bookings, professionals, earnings and reviews are hardcoded fixtures (`homeServicesData.ts`) driven by a client-only Zustand store (`homeServicesStore.ts`) with no backend calls. This document supersedes that state. The rebuild must:
+
+- **Reuse and enhance the existing UI**, not discard it. Keep the current shell/routing/page structure (`HomeServicesShell`, `pages/`, `pages/pro/`, `pages/admin/`) and visual design language; extend it with real data, new screens, and missing states (loading/empty/error) instead of a ground-up rewrite.
+- Cover **every service category** already listed in this document (sections 5–34), not just the initial launch subset — the catalog must be fully data-driven from the database so admins can add/edit/reorder categories, services, packages and add-ons without a code deploy.
+- Replace every mocked read/write in the store with real HTTP calls to a **.NET backend** persisted in **PostgreSQL**, following the same layered pattern (Domain → Application → Infrastructure → Api) already used by the Warehouse module in `VSRSystemsBackend`.
+- Add a dedicated **Admin KPI / Analytics screen** with real charts (see §161).
+- Add **earnings/financial APIs for every role** — customer (wallet, refunds, invoices), professional (earnings, payouts), admin (commission, revenue, payouts) — see §162.
+- Backend must be built to the same **industry/production standard** as the platform's other fully-built domains (validation, AutoMapper DTO mapping, repository + service layering, EF Core configurations, migrations, `ApiResponse<T>` envelopes, auth/role checks) — see §163.
+- Ship **complete, column-level database schemas** for every entity needed by Phase 1 — see §161a (replaces the table-name-only list in §116).
+- Sales / Field Agent role and dashboard is specified in a **separate document**: `VSR_Sales_Agent_Dashboard_Architecture.md` (same `docs/services` folder). Admin retains full visibility/control over that module too.
+- Integrate a real **payment gateway** (not just an internal `Payments` table) for checkout, refunds and payouts, with Admin controlling gateway configuration — see §171.
+
+---
+
 # 1. Product Goal
 
 Build a complete marketplace where customers can discover, book, track, pay for, and review home services, while service professionals can onboard, accept jobs, manage availability, complete work, and track earnings.
@@ -3617,3 +3633,428 @@ See every active booking
 ```
 
 This is the baseline for a **full-fledged VSR Home Services marketplace**.
+
+---
+
+# 161a. Complete Database Schemas (Column-Level)
+
+Supersedes the table-name-only list in §116. Types are provider-neutral (PostgreSQL); `id` columns are `uuid` unless noted. All tables include `created_at`, `updated_at` (omitted below for brevity) plus soft-delete via `deleted_at` where the entity can be archived.
+
+```text
+Users
+  id, email (unique), phone (unique), password_hash, full_name,
+  status (active/suspended/blocked), last_login_at
+
+Roles
+  id, name (customer/professional/ops_agent/support_agent/finance_agent/admin), description
+UserRoles
+  id, user_id fk, role_id fk
+Permissions
+  id, code, area, description
+RolePermissions
+  id, role_id fk, permission_id fk
+
+Customers
+  id, user_id fk, display_name, default_address_id fk, wallet_balance,
+  membership_plan_id fk (nullable), referral_code, referred_by_customer_id fk (nullable)
+CustomerAddresses
+  id, customer_id fk, label, line1, line2, city_id fk, zone_id fk, locality_id fk,
+  pincode, lat, lng, is_default
+
+Professionals
+  id, user_id fk, display_name, gender, dob, onboarding_status (draft/submitted/verified/rejected/suspended),
+  quality_score, tier (bronze/silver/gold/platinum), joined_at
+ProfessionalDocuments
+  id, professional_id fk, doc_type (id_proof/address_proof/police_verification/certification),
+  file_url, status (pending/approved/rejected), reviewed_by fk (nullable), reviewed_at
+ProfessionalSkills
+  id, professional_id fk, service_id fk, skill_level (trainee/standard/expert)
+ProfessionalServiceAreas
+  id, professional_id fk, city_id fk, zone_id fk
+ProfessionalAvailabilities
+  id, professional_id fk, day_of_week, start_time, end_time, is_recurring
+ProfessionalTimeOff
+  id, professional_id fk, start_at, end_at, reason
+ProfessionalPerformance
+  id, professional_id fk, period_start, period_end, jobs_completed, jobs_cancelled,
+  avg_rating, on_time_rate, acceptance_rate
+
+ServiceCategories
+  id, name, slug (unique), tagline, image_url, sort_order, is_active
+Services
+  id, category_id fk, name, slug (unique), short_description, long_description, image_url,
+  is_emergency, needs_inspection, inspection_fee, is_active
+ServiceProblems
+  id, service_id fk, name, description, sort_order
+ServicePackages
+  id, service_id fk, name (Basic/Standard/Premium), base_price, duration_mins, is_active
+ServiceAddOns
+  id, service_id fk, name, price, duration_mins
+ServicePackageAddOns
+  id, package_id fk, addon_id fk
+ServiceWarranties
+  id, service_id fk, warranty_days, terms
+
+Cities
+  id, name, is_active, launched_at
+Zones
+  id, city_id fk, name
+Localities
+  id, zone_id fk, name, pincode
+Pincodes
+  id, pincode (unique), city_id fk, is_serviceable
+ServiceAreas
+  id, city_id fk, zone_id fk, is_active
+ServiceAreaServices
+  id, service_area_id fk, service_id fk, is_active
+
+PriceRules
+  id, service_id fk, package_id fk (nullable), city_id fk (nullable), rule_type
+  (surge/discount/seasonal), value, valid_from, valid_to, is_active
+PriceQuotes
+  id, quote_number (unique), customer_id fk, service_id fk, package_id fk,
+  address_id fk, base_price, addons_total, materials_total, fees_total,
+  discount_total, tax_total, grand_total, coupon_id fk (nullable), expires_at, version
+QuoteRevisions
+  id, price_quote_id fk, revision_number, reason, previous_total, new_total, created_by
+
+Bookings
+  id, booking_number (unique), customer_id fk, address_id fk, service_id fk, package_id fk,
+  booking_type (instant/scheduled/emergency/recurring/amc), scheduled_start, expected_end,
+  status (new/searching_provider/awaiting_provider/upcoming/on_the_way/arrived/in_service/
+  waiting_customer_approval/payment_pending/problem/completed/cancelled),
+  assigned_professional_id fk (nullable), price_quote_id fk, current_quote_id fk,
+  payment_status (pending/paid/partial_refund/refunded/failed), customer_notes, ops_notes
+BookingItems
+  id, booking_id fk, description, quantity, unit_price, line_total
+BookingAddOns
+  id, booking_id fk, addon_id fk, price
+BookingMaterials
+  id, booking_id fk, name, quantity, unit_price, approved_by_customer, approved_at
+BookingAssignments
+  id, booking_id fk, professional_id fk, offered_at, responded_at,
+  response (accepted/declined/expired/reassigned), decline_reason
+BookingStatusHistory
+  id, booking_id fk, previous_status, new_status, changed_by fk, changed_at, reason, metadata (jsonb)
+BookingNotes
+  id, booking_id fk, author_id fk, note, visibility (internal/customer)
+
+RecurringBookings
+  id, customer_id fk, service_id fk, package_id fk, address_id fk, frequency (weekly/biweekly/monthly),
+  next_run_at, is_active
+AMCContracts
+  id, customer_id fk, service_id fk, address_id fk, visits_per_year, start_date, end_date,
+  price, status (active/expired/cancelled)
+
+Payments
+  id, booking_id fk, payment_number (unique), amount, method (upi/card/netbanking/wallet/cod),
+  status (initiated/authorized/captured/failed/refunded), gateway_ref, paid_at
+Refunds
+  id, payment_id fk, booking_id fk, amount, reason, status (requested/approved/processed/rejected),
+  processed_by fk (nullable), processed_at
+CreditTransactions
+  id, customer_id fk, amount, type (credit/debit), reason, reference_booking_id fk (nullable), balance_after
+
+CommissionRules
+  id, category_id fk (nullable), service_id fk (nullable), city_id fk (nullable),
+  professional_tier (nullable), rate_percent, flat_fee, valid_from, valid_to, is_active
+ProfessionalEarnings
+  id, professional_id fk, booking_id fk, gross_amount, materials_excluded_amount,
+  commission_amount, adjustment_amount, tax_withheld_amount, net_amount, status (pending/settled), settled_at
+Payouts
+  id, professional_id fk, period_start, period_end, total_amount, status (pending/processing/paid/failed),
+  paid_at, failure_reason
+ProfessionalAdjustments
+  id, professional_id fk, booking_id fk (nullable), amount, reason, created_by fk
+ProfessionalIncentives
+  id, professional_id fk, incentive_type, amount, period_start, period_end, status (accrued/paid)
+
+Coupons
+  id, code (unique), discount_type (flat/percent), value, max_discount, min_order_value,
+  valid_from, valid_to, usage_limit, per_customer_limit, is_active
+CouponRedemptions
+  id, coupon_id fk, customer_id fk, booking_id fk, discount_applied
+Referrals
+  id, referrer_customer_id fk, referee_customer_id fk, reward_amount, status (pending/rewarded)
+
+MembershipPlans
+  id, name, price, duration_days, benefits (jsonb), is_active
+CustomerMemberships
+  id, customer_id fk, plan_id fk, started_at, expires_at, status (active/expired/cancelled)
+
+Reviews
+  id, booking_id fk, customer_id fk, professional_id fk, rating (1-5), comment, tags (jsonb), created_at
+ReviewMedia
+  id, review_id fk, media_url, media_type (image/video)
+
+Conversations
+  id, booking_id fk, customer_id fk, professional_id fk, is_masked
+Messages
+  id, conversation_id fk, sender_id fk, body, sent_at, read_at
+
+SupportTickets
+  id, ticket_number (unique), raised_by fk, role (customer/professional), booking_id fk (nullable),
+  category, subject, status (open/in_progress/escalated/closed), priority, assigned_to fk (nullable)
+Disputes
+  id, ticket_id fk (nullable), booking_id fk, raised_by fk, reason, status (open/investigating/resolved/rejected),
+  resolution, resolved_by fk (nullable), resolved_at
+
+Notifications
+  id, user_id fk, channel (push/sms/email/in_app), template, payload (jsonb), sent_at, read_at
+
+CMSPages
+  id, slug (unique), title, body (jsonb/markdown), is_published
+Banners
+  id, title, image_url, link_url, sort_order, is_active
+FAQs
+  id, category, question, answer, sort_order
+
+AuditLogs
+  id, actor_id fk, action, entity_type, entity_id, before (jsonb), after (jsonb), created_at
+```
+
+---
+
+# 161. Admin KPI & Analytics — Concrete Chart Specification
+
+Replaces the free-text list in §144. Every chart is backed by a real aggregation API (`GET /admin/analytics/...`), never client-computed from raw lists.
+
+```text
+Chart: Bookings Trend
+  Type: line (dual series)
+  Series: bookings_created, bookings_completed
+  Grouping: by day, selectable range (7/30/90 days)
+  Endpoint: /admin/analytics/bookings-trend?from=&to=
+
+Chart: Revenue Trend
+  Type: area/line (stacked)
+  Series: gross_booking_value, commission_revenue, net_platform_revenue
+  Endpoint: /admin/analytics/revenue-trend?from=&to=
+
+Chart: Top Categories / Top Services
+  Type: horizontal bar
+  Metric: booking_count, revenue
+  Endpoint: /admin/analytics/top-categories, /admin/analytics/top-services
+
+Chart: Top Cities
+  Type: bar or map choropleth
+  Metric: booking_count, revenue, active_professionals
+  Endpoint: /admin/analytics/top-cities
+
+Chart: Assignment Success Rate
+  Type: gauge/donut
+  Metric: accepted / (accepted + declined + expired)
+  Endpoint: /admin/analytics/assignment-success
+
+Chart: Cancellation Reasons
+  Type: donut/pie
+  Metric: count by reason (customer/professional/ops/no-show)
+  Endpoint: /admin/analytics/cancellation-reasons
+
+Chart: Customer Repeat Rate
+  Type: line + KPI card
+  Metric: repeat_customers / total_customers per period
+  Endpoint: /admin/analytics/customer-repeat-rate
+
+Chart: Provider Performance Distribution
+  Type: histogram
+  Metric: professionals bucketed by quality_score / rating
+  Endpoint: /admin/analytics/provider-performance
+
+Chart: Refund Rate & Dispute Rate
+  Type: line (dual axis)
+  Metric: refunds/bookings, disputes/bookings per period
+  Endpoint: /admin/analytics/refund-dispute-rate
+
+KPI Summary Cards (single aggregate endpoint /admin/analytics/summary):
+  bookings_today, revenue_today, active_professionals, pending_verifications,
+  open_tickets, critical_disputes, avg_rating_7d, commission_revenue_mtd
+```
+
+Frontend: introduce a chart library (`recharts`) in `frontend/package.json` and a new `pages/admin/Analytics.tsx` screen inside the existing `home-services` admin section, reusing the current admin shell/layout.
+
+---
+
+# 162. Earnings & Financial APIs (All Roles)
+
+Every figure below is server-computed and authoritative; the client only renders it.
+
+```text
+Customer
+  GET  /home-services/customer/wallet                 -> balance, credit history
+  GET  /home-services/customer/invoices/{bookingId}    -> invoice PDF/data
+  GET  /home-services/customer/refunds                 -> refund status list
+  POST /home-services/customer/refunds/{bookingId}     -> raise refund request
+
+Professional
+  GET  /home-services/professional/earnings            -> per-booking gross/commission/net breakdown
+  GET  /home-services/professional/earnings/summary     -> today/week/month totals, pending vs settled
+  GET  /home-services/professional/payouts              -> payout history + next payout date
+  GET  /home-services/professional/incentives            -> accrued/paid incentive list
+
+Admin / Finance
+  GET  /admin/finance/commissions                       -> commission rules + realized commission per period
+  GET  /admin/finance/payouts                            -> all professional payouts, filter by status
+  POST /admin/finance/payouts/{id}/mark-paid              -> settle a payout batch
+  GET  /admin/finance/refunds                            -> all refund requests, approve/reject
+  GET  /admin/finance/revenue-report?from=&to=            -> gross/commission/net/tax export (CSV)
+```
+
+Backing entities: `ProfessionalEarnings`, `Payouts`, `ProfessionalAdjustments`, `ProfessionalIncentives`, `CommissionRules`, `Payments`, `Refunds`, `CreditTransactions` (see §161a).
+
+---
+
+# 163. Industry-Level Backend Standard
+
+The Home Services backend must match the same production conventions already used by the platform's other complete domains (e.g. Warehouse in `VSRSystemsBackend`):
+
+```text
+Layering: Domain entities -> Application (DTOs + repository/service interfaces) ->
+          Infrastructure (EF repositories + IEntityTypeConfiguration<T>) -> Api controllers
+Validation: FluentValidation on all Create/Update DTOs
+Mapping: AutoMapper profiles for entity <-> DTO
+Responses: uniform ApiResponse<T> envelope (success, data, error, pagination)
+Auth: role-based authorization per controller/action (customer/professional/ops/finance/admin)
+Persistence: PostgreSQL via EF Core migrations, one migration per module addition
+Money: store money as decimal(18,2); never compute price/commission/refund/payout in the frontend
+Consistency: full BookingStatusHistory + AuditLogs for every state-changing action
+```
+
+---
+
+# 164. Backend Architecture (Exact Project Mapping)
+
+New module added to the existing `VSRSystemsBackend` solution, mirroring the Warehouse module layout 1:1.
+
+```text
+VSRSystemsBackend.Domain/HomeServices/
+  ServiceCategory.cs, Service.cs, ServiceProblem.cs, ServicePackage.cs, ServiceAddOn.cs, ServiceWarranty.cs
+  City.cs, Zone.cs, Locality.cs, Pincode.cs, ServiceArea.cs
+  Professional.cs, ProfessionalDocument.cs, ProfessionalSkill.cs, ProfessionalServiceArea.cs,
+    ProfessionalAvailability.cs, ProfessionalTimeOff.cs, ProfessionalPerformance.cs
+  Booking.cs, BookingItem.cs, BookingAddOn.cs, BookingMaterial.cs, BookingAssignment.cs,
+    BookingStatusHistory.cs, BookingNote.cs, RecurringBooking.cs, AmcContract.cs
+  PriceRule.cs, PriceQuote.cs, QuoteRevision.cs
+  Payment.cs, Refund.cs, CreditTransaction.cs
+  CommissionRule.cs, ProfessionalEarning.cs, Payout.cs, ProfessionalAdjustment.cs, ProfessionalIncentive.cs
+  Coupon.cs, CouponRedemption.cs, Referral.cs, MembershipPlan.cs, CustomerMembership.cs
+  Review.cs, ReviewMedia.cs, SupportTicket.cs, Dispute.cs
+
+VSRSystemsBackend.Application/HomeServices/
+  DTOs/            ServiceCatalogDtos.cs, ProfessionalDtos.cs, BookingDtos.cs, PriceQuoteDtos.cs,
+                   PaymentDtos.cs, EarningsDtos.cs, AnalyticsDtos.cs, ReviewDtos.cs, SupportDtos.cs
+  Interfaces/      IHomeServicesRepository.cs (catalog/booking/professional/payment repo contracts)
+                   IHomeServicesService.cs (catalog/booking/pricing/assignment/earnings/analytics contracts)
+  Services/        ServiceCatalogService.cs, BookingService.cs, PriceQuoteService.cs, AssignmentService.cs,
+                   PaymentService.cs, EarningsService.cs, PayoutService.cs, AnalyticsService.cs, ReviewService.cs
+
+VSRSystemsBackend.Infrastructure/
+  Repositories/HomeServices/   one file per aggregate (BookingRepository.cs, ProfessionalRepository.cs,
+                               ServiceCatalogRepository.cs, PaymentRepository.cs, EarningsRepository.cs, ...)
+  Data/Configurations/         HomeServicesCatalogConfiguration.cs, HomeServicesBookingConfiguration.cs,
+                               HomeServicesFinanceConfiguration.cs (grouped like WarehouseConfiguration.cs)
+  Data/DbContext/AppDbContext.cs   add one DbSet<T> per entity above
+
+VSRSystemsBackend.Api/Controllers/
+  HomeServiceCategoriesController.cs   /api/home-services/categories, /services, /packages, /add-ons
+  HomeServiceAreasController.cs        /api/home-services/cities, /zones, /service-areas
+  HomeServiceProfessionalsController.cs /api/home-services/professionals (onboarding, skills, areas, availability)
+  HomeServiceBookingsController.cs     /api/home-services/bookings (quote, create, status, assignment)
+  HomeServicePaymentsController.cs     /api/home-services/payments, /refunds
+  HomeServiceEarningsController.cs     /api/home-services/professional/earnings, /payouts  (see §162)
+  HomeServiceAnalyticsController.cs    /api/home-services/admin/analytics/*                (see §161)
+  HomeServiceReviewsController.cs      /api/home-services/reviews
+  HomeServiceSupportController.cs      /api/home-services/support, /disputes
+
+Program.cs:  register every I*Repository/I*Service pair with builder.Services.AddScoped<,>(),
+             same block style already used for the Warehouse module.
+Migration:   dotnet ef migrations add AddHomeServicesModule -p VSRSystemsBackend.Infrastructure -s VSRSystemsBackend.Api
+```
+
+---
+
+# 165. Frontend Architecture (Exact File Mapping)
+
+No rewrite — extend the existing `frontend/src/services/home-services` module and `App.tsx` route table in place.
+
+```text
+frontend/src/services/home-services/
+  homeServicesApi.ts        NEW — fetch/axios client for every endpoint in §120-§122, §161, §162
+                             (replaces direct reads from homeServicesData.ts / homeServicesStore.ts)
+  homeServicesStore.ts      keep as client-side UI/cache state, but hydrate it from homeServicesApi.ts
+                             instead of hardcoded fixtures; keep localStorage only for UI prefs (persona, filters)
+  homeServicesData.ts       demoted to typed fallback/seed used only when API call fails (offline/dev mode)
+  HomeServicesShell.tsx     add an "Analytics" nav entry to ADMIN_NAV (icon: MdInsights or similar)
+
+  pages/admin/AdminDashboard.tsx     KPI summary cards only — bind to GET /admin/analytics/summary (§161)
+  pages/admin/AdminAnalytics.tsx    NEW — full chart suite from §161 (Bookings Trend, Revenue Trend,
+                                    Top Categories/Services/Cities, Assignment Success, Cancellation Reasons,
+                                    Customer Repeat Rate, Provider Performance, Refund/Dispute Rate)
+  pages/admin/AdminFinance.tsx      commission rules + payouts + refunds tables, plus Revenue Trend chart
+                                    and revenue-report CSV export, bound to §162 admin/finance endpoints
+  pages/admin/AdminBookings.tsx     live booking table bound to GET /admin/bookings
+  pages/admin/AdminProfessionals.tsx  verification + professional list bound to GET /admin/professionals
+  pages/admin/AdminLiveOps.tsx      live operations board bound to GET /admin/live
+
+  pages/pro/ProEarnings.tsx         earnings breakdown table + a small earnings trend chart,
+                                    bound to GET /professional/earnings, /earnings/summary, /payouts (§162)
+  pages/pro/ProDashboard.tsx        today/upcoming jobs + mini KPI (acceptance rate, rating) bound to
+                                    GET /professional/requests + /professional/performance
+  pages/pro/ProJobs.tsx, ProJobDetail.tsx, ProRequests.tsx, ProProfile.tsx   wire to /professional/bookings,
+                                    /professional/requests, /professional/profile, /professional/verification
+
+  pages/Home.tsx, Categories.tsx, CategoryDetail.tsx, ServiceDetail.tsx, Search.tsx
+                                    wire to GET /categories, /services, /search, /serviceability
+  pages/BookingFlow.tsx             wire to POST /price-quotes then POST /bookings (server is price-authoritative)
+  pages/Bookings.tsx, BookingDetail.tsx   wire to GET /bookings, GET /bookings/{id}, booking status history
+  pages/Offers.tsx                 wire to GET /coupons or /memberships
+  pages/Account.tsx                wire to /auth/me, /addresses, /customer/wallet (§162)
+
+Routing (frontend/src/App.tsx):  keep all existing /home-services/* routes; add one new route:
+  <Route path="/home-services/admin/analytics" element={<HomeServicesAdminAnalytics />} />
+
+Chart library: add "recharts" to frontend/package.json (none installed today) — use it for every
+  chart in §161/§165; use ResponsiveContainer so charts work in the existing mobile-card layout rules (§147).
+Data fetching: no react-query/SWR currently in this codebase — follow the existing pattern
+  (plain fetch/axios + useState/useEffect, consistent with how other wired-up services in this
+  frontend call the backend) inside homeServicesApi.ts.
+```
+
+---
+
+# 171. Payment Gateway Integration
+
+> Admin retains full, unrestricted visibility/control over payment gateway configuration and every transaction/webhook log, same as every other module in this document (see also the Sales module's admin-oversight rules in `VSR_Sales_Agent_Dashboard_Architecture.md`).
+
+The internal `Payments`/`Refunds` tables (§161a) record platform state; the actual money movement goes through a real gateway.
+
+**Chosen provider:** Razorpay (primary — UPI/cards/netbanking/wallets, matches the launch cities in §33/§152 which are all in India). Stripe can be added later as a secondary provider behind the same interface if the platform expands internationally — no other tech choice is introduced now.
+
+```text
+DB additions (extends §161a):
+  Payments: add gateway_provider (razorpay/stripe), gateway_order_id, gateway_payment_id,
+            gateway_signature, webhook_verified (bool)
+  PaymentGatewayWebhookEvents
+    id, provider, event_type, payload (jsonb), signature_valid, processed_at, booking_id fk (nullable)
+  PaymentGatewaySettings   (admin-configurable, secrets stored in server config/secret store, never in plain DB text)
+    id, provider, is_active, mode (test/live), key_id, webhook_secret_ref
+
+Backend flow:
+  POST /home-services/payments/create-order   -> creates PriceQuote-bound gateway order, returns order_id + key_id
+  Client completes payment via gateway SDK/checkout widget (React) using the returned order_id
+  POST /home-services/payments/webhook        -> gateway webhook (signature-verified server-side),
+                                                  marks Payments.status = captured/failed, updates Booking.payment_status
+  POST /admin/finance/refunds/{id}/process    -> calls gateway refund API, then updates Refunds.status
+
+Frontend:
+  homeServicesApi.ts: createPaymentOrder(), confirmPayment() wrapping the gateway's JS checkout
+  pages/BookingFlow.tsx: final step invokes the gateway checkout widget instead of a mocked "Pay" button
+  pages/admin/AdminFinance.tsx: gateway settings panel (key id / mode / webhook status) — admin-only,
+                                secret values write-only (never rendered back after save)
+
+Rules:
+  never trust client-reported payment success — Booking.payment_status only changes from a verified
+  webhook or a server-side payment-status poll against the gateway API
+  every webhook payload is stored in PaymentGatewayWebhookEvents for audit/replay
+  admin has full visibility into every transaction, webhook event and refund, per §170
+```
