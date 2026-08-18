@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { ActivityItem, AnalyticsData, ContractMilestone, ModuleSummary, Snag } from '../api'
@@ -7,11 +7,31 @@ import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 import {
-  Briefcase, TrendingUp, Wallet, HardHat, FileCheck2, Wrench, Users, Fuel, ShoppingBag, Landmark, Stethoscope,
-  ArrowRight, Map, ClipboardList, Activity as ActivityIcon, Package, AlarmClock,
-  Building2, Warehouse, GraduationCap, Plane, Newspaper,
-} from 'lucide-react'
-
+  FiTrendingUp,
+  FiUsers,
+  FiBriefcase,
+  FiArrowRight,
+  FiPackage,
+  FiActivity,
+  FiClipboard,
+} from 'react-icons/fi'
+import {
+  MdBuild,
+  MdShoppingCart,
+  MdWarehouse,
+  MdSchool,
+  MdFlight,
+  MdNewspaper,
+  MdWork,
+  MdLocationOn,
+  MdLocalHospital,
+  MdConstruction,
+  MdVerified,
+  MdHandyman,
+  MdLocalGasStation,
+  MdAlarm,
+} from 'react-icons/md'
+import { IoWallet, IoMap } from 'react-icons/io5'
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
   'In Discussion': 'info',
   'Not Started': 'outline',
@@ -37,17 +57,18 @@ const empty: DashboardData = {
   credit: null, stock: null, labour: null, activity: null, procurementPending: null,
 }
 
-const SERVICE_ICONS: Record<ServiceId, typeof Building2> = {
-  interior: Building2,
-  warehouse: Warehouse,
-  school: GraduationCap,
-  hotel: Building2,
-  travel: Plane,
-  news: Newspaper,
-jobs: Briefcase,
-  commerce: ShoppingBag,
-  bank: Landmark,
-  medical: Stethoscope,
+const SERVICE_ICONS: Record<ServiceId, React.ComponentType<{ className?: string }>> = {
+  interior: MdBuild,
+  warehouse: MdWarehouse,
+  school: MdSchool,
+  hotel: MdBuild,
+  travel: MdFlight,
+  news: MdNewspaper,
+  jobs: MdWork,
+  commerce: MdShoppingCart,
+  bank: MdLocationOn,
+  medical: MdLocalHospital,
+  'home-services': MdHandyman,
 }
 
 export default function Dashboard() {
@@ -92,7 +113,7 @@ export default function Dashboard() {
     return () => { alive = false }
   }, [])
 
-  if (loading) return <div className="empty">Loading…</div>
+  if (loading) return <div className="empty">Loadingâ€¦</div>
 
   const { analytics, mods, snags, milestones, credit, stock, labour, activity, procurementPending } = data
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -128,9 +149,9 @@ export default function Dashboard() {
           <p className="text-sm text-muted mt-1">{today}</p>
         </div>
         <div className="dashboard-command-actions">
-          <div className="dashboard-total"><span>Contract value</span><strong>{mods?.contractValueLabel ?? '—'}</strong></div>
-          <Link to="/projects" className="dashboard-action-link"><Briefcase className="w-4 h-4" /> Projects</Link>
-          <Link to="/map" className="dashboard-action-link"><Map className="w-4 h-4" /> Site map</Link>
+          <div className="dashboard-total"><span>Contract value</span><strong>{mods?.contractValueLabel ?? 'â€”'}</strong></div>
+          <Link to="/projects" className="dashboard-action-link"><FiBriefcase className="w-4 h-4" /> Projects</Link>
+          <Link to="/map" className="dashboard-action-link"><IoMap className="w-4 h-4" /> Site map</Link>
         </div>
       </header>
 
@@ -160,35 +181,35 @@ export default function Dashboard() {
                 <span className="block text-sm font-semibold text-text">{svc.label}</span>
                 <span className="block text-xs text-muted truncate">{svc.tagline}</span>
               </span>
-              <ArrowRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors flex-shrink-0" />
+              <FiArrowRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors flex-shrink-0" />
             </button>
           )
         })}
       </div>
 
-      {/* Row 1 — Executive KPIs */}
+      {/* Row 1 â€” Executive KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-        <Kpi icon={<Wallet className="w-5 h-5" />} label="Total Contract Value" value={mods?.contractValueLabel ?? '—'} tone="bg-indigo-500/10 text-indigo-500" />
-        <Kpi icon={<TrendingUp className="w-5 h-5" />} label="Revenue This Month" value={money(analytics?.billing.monthSale)} sub={monthDelta !== null ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}%` : undefined} subTone={monthDelta !== null && monthDelta < 0 ? 'text-red-500' : 'text-emerald-500'} tone="bg-emerald-500/10 text-emerald-500" />
-        <Kpi icon={<ClipboardList className="w-5 h-5" />} label="Pending Receivables" value={credit?.receivableLabel ?? '—'} sub={credit ? `(${credit.overdue.length} invoices)` : undefined} tone="bg-amber-500/10 text-amber-500" />
-        <Kpi icon={<HardHat className="w-5 h-5" />} label="Active Sites" value={String(activeSites)} sub={`${analytics?.projects.length ?? 0} total`} tone="bg-cyan-500/10 text-cyan-500" />
+        <Kpi icon={<IoWallet className="w-5 h-5" />} label="Total Contract Value" value={mods?.contractValueLabel ?? 'â€”'} tone="bg-indigo-500/10 text-indigo-500" />
+        <Kpi icon={<FiTrendingUp className="w-5 h-5" />} label="Revenue This Month" value={money(analytics?.billing.monthSale)} sub={monthDelta !== null ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}%` : undefined} subTone={monthDelta !== null && monthDelta < 0 ? 'text-red-500' : 'text-emerald-500'} tone="bg-emerald-500/10 text-emerald-500" />
+        <Kpi icon={<FiClipboard className="w-5 h-5" />} label="Pending Receivables" value={credit?.receivableLabel ?? 'â€”'} sub={credit ? `(${credit.overdue.length} invoices)` : undefined} tone="bg-amber-500/10 text-amber-500" />
+        <Kpi icon={<MdConstruction className="w-5 h-5" />} label="Active Sites" value={String(activeSites)} sub={`${analytics?.projects.length ?? 0} total`} tone="bg-cyan-500/10 text-cyan-500" />
       </div>
 
-      {/* Row 2 — Operational KPIs */}
+      {/* Row 2 â€” Operational KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Kpi icon={<FileCheck2 className="w-5 h-5" />} label="Active Contracts" value={mods ? `${mods.activeContracts} / ${mods.contracts}` : '—'} sub="Running" tone="bg-violet-500/10 text-violet-500" />
-        <Kpi icon={<Wrench className="w-5 h-5" />} label="Punch List / Touch-ups" value={String(openSnags)} sub={clearedSnags !== null ? `${clearedSnags} cleared` : undefined} tone="bg-orange-500/10 text-orange-500" />
-        <Kpi icon={<Users className="w-5 h-5" />} label="Workforce On Site" value={String(labour?.totalWorkers ?? 0)} sub={labour?.totalPresentLabel ? `${labour.totalPresentLabel} present` : undefined} tone="bg-sky-500/10 text-sky-500" />
-        <Kpi icon={<Fuel className="w-5 h-5" />} label="Fuel Expense" value={mods?.fuelSpendMonthLabel ?? '—'} sub="This month" tone="bg-rose-500/10 text-rose-500" />
+        <Kpi icon={<MdVerified className="w-5 h-5" />} label="Active Contracts" value={mods ? `${mods.activeContracts} / ${mods.contracts}` : 'â€”'} sub="Running" tone="bg-violet-500/10 text-violet-500" />
+        <Kpi icon={<MdHandyman className="w-5 h-5" />} label="Punch List / Touch-ups" value={String(openSnags)} sub={clearedSnags !== null ? `${clearedSnags} cleared` : undefined} tone="bg-orange-500/10 text-orange-500" />
+        <Kpi icon={<FiUsers className="w-5 h-5" />} label="Workforce On Site" value={String(labour?.totalWorkers ?? 0)} sub={labour?.totalPresentLabel ? `${labour.totalPresentLabel} present` : undefined} tone="bg-sky-500/10 text-sky-500" />
+        <Kpi icon={<MdLocalGasStation className="w-5 h-5" />} label="Fuel Expense" value={mods?.fuelSpendMonthLabel ?? 'â€”'} sub="This month" tone="bg-rose-500/10 text-rose-500" />
       </div>
 
       {isAdvanced && projects.length > 0 && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Cross-project financials & pipeline health — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Cross-project financials & pipeline health â€” toggled via the Simple/Advanced switch in the top bar."
           compare={[
             { label: 'Total received', value: money(grandReceived), delta: `${grandEntries} entries`, deltaTone: 'up' },
-            { label: 'Total spent', value: money(grandSpent), delta: grandReceived > 0 ? `${Math.round((grandSpent / grandReceived) * 100)}% of received` : '—', deltaTone: 'flat' },
+            { label: 'Total spent', value: money(grandSpent), delta: grandReceived > 0 ? `${Math.round((grandSpent / grandReceived) * 100)}% of received` : 'â€”', deltaTone: 'flat' },
             { label: 'Margin', value: money(grandReceived - grandSpent), delta: grandReceived - grandSpent >= 0 ? 'positive' : 'negative', deltaTone: grandReceived - grandSpent >= 0 ? 'up' : 'down' },
             { label: 'Avg completion', value: `${projects.length ? Math.round(projects.reduce((s, p) => s + p.taskPct, 0) / projects.length) : 0}%`, delta: `${activeSites} active site(s)`, deltaTone: 'flat' },
           ]}
@@ -197,7 +218,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Revenue vs budget spent per site</p>
               <BarChart
-                data={projects.slice(0, 6).map((p) => ({ label: p.name.length > 12 ? p.name.slice(0, 12) + '…' : p.name, value: p.received || 0 }))}
+                data={projects.slice(0, 6).map((p) => ({ label: p.name.length > 12 ? p.name.slice(0, 12) + 'â€¦' : p.name, value: p.received || 0 }))}
               />
             </div>
             <div>
@@ -217,7 +238,7 @@ export default function Dashboard() {
                 data={saleTotals.map((s) => ({
                   label: s.period,
                   value: s.total,
-                  valueLabel: `S ${money(s.total)}${expTotals.find((e) => e.period === s.period) ? ` · E ${money(expTotals.find((e) => e.period === s.period)!.total)}` : ''}`,
+                  valueLabel: `S ${money(s.total)}${expTotals.find((e) => e.period === s.period) ? ` Â· E ${money(expTotals.find((e) => e.period === s.period)!.total)}` : ''}`,
                 }))}
               />
             </div>
@@ -232,13 +253,13 @@ export default function Dashboard() {
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Milestone amounts (upcoming)</p>
               <BarChart
-                data={upcomingMilestones.map((m) => ({ label: m.title.length > 10 ? m.title.slice(0, 10) + '…' : m.title, value: m.amount }))}
+                data={upcomingMilestones.map((m) => ({ label: m.title.length > 10 ? m.title.slice(0, 10) + 'â€¦' : m.title, value: m.amount }))}
               />
             </div>
             <div>
               <p className="text-xs text-muted uppercase tracking-wide mb-2">Stock alerts</p>
               <BarChart
-                data={lowStockRows.map((r) => ({ label: r.name.length > 10 ? r.name.slice(0, 10) + '…' : r.name, value: 1 }))}
+                data={lowStockRows.map((r) => ({ label: r.name.length > 10 ? r.name.slice(0, 10) + 'â€¦' : r.name, value: 1 }))}
               />
             </div>
           </div>
@@ -249,7 +270,7 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         {/* 1. Revenue & cash flow trends */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Revenue &amp; Cash Flow Trends</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiTrendingUp className="w-5 h-5 text-primary" /> Revenue &amp; Cash Flow Trends</CardTitle></CardHeader>
           <CardContent>
             {saleTotals.length === 0 && expTotals.length === 0 ? (
               <Empty title="No monthly data yet" description="Sales and expenses will appear here" />
@@ -261,7 +282,7 @@ export default function Dashboard() {
 
         {/* 2. Material & stock alerts */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Package className="w-5 h-5 text-primary" /> Material &amp; Stock Alerts</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiPackage className="w-5 h-5 text-primary" /> Material &amp; Stock Alerts</CardTitle></CardHeader>
           <CardContent>
             {lowStockRows.length === 0 && (procurementPending ?? 0) === 0 ? (
               <Empty title="No stock alerts" description="Low-stock items and pending orders will appear here" />
@@ -288,7 +309,7 @@ export default function Dashboard() {
 
         {/* 3. Upcoming milestones */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><AlarmClock className="w-5 h-5 text-primary" /> Upcoming Milestones &amp; Deliverables</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><MdAlarm className="w-5 h-5 text-primary" /> Upcoming Milestones &amp; Deliverables</CardTitle></CardHeader>
           <CardContent>
             {upcomingMilestones.length === 0 ? (
               <Empty title="No upcoming milestones" />
@@ -315,7 +336,7 @@ export default function Dashboard() {
 
         {/* 4. Live site activity feed */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><ActivityIcon className="w-5 h-5 text-primary" /> Live Site Activity Feed</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FiActivity className="w-5 h-5 text-primary" /> Live Site Activity Feed</CardTitle></CardHeader>
           <CardContent>
             {!activity || activity.length === 0 ? (
               <Empty title="No recent activity" />
@@ -342,7 +363,7 @@ export default function Dashboard() {
       {/* Main data table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" /> Site Breakdown &amp; Detailed Financials</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiBriefcase className="w-5 h-5 text-primary" /> Site Breakdown &amp; Detailed Financials</CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           {projects.length === 0 ? (
@@ -365,7 +386,7 @@ export default function Dashboard() {
                   <tr key={p.id} className="hover:bg-surface/50 transition-colors">
                     <td className="px-4 py-3">
                       <Link to={`/projects/${p.id}`} className="font-medium text-primary hover:underline inline-flex items-center gap-1">
-                        {p.name} <ArrowRight className="w-3 h-3" />
+                        {p.name} <FiArrowRight className="w-3 h-3" />
                       </Link>
                       <p className="text-xs text-muted">{p.valueLabel}</p>
                     </td>
@@ -380,7 +401,7 @@ export default function Dashboard() {
                         <span className="text-xs text-muted w-10 text-right">{p.pctLabel}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted">{p.lead || '—'}</td>
+                    <td className="px-4 py-3 text-muted">{p.lead || 'â€”'}</td>
                     <td className="px-4 py-3"><Badge variant={STATUS_TONE[p.status] || 'outline'} size="sm">{p.status}</Badge></td>
                   </tr>
                 ))}

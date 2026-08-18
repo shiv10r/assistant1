@@ -1,5 +1,5 @@
 import { cn } from './ui'
-import { Check } from 'lucide-react'
+import { FiCheck } from 'react-icons/fi'
 
 interface StepperProps {
   steps: string[]
@@ -34,7 +34,7 @@ export function Stepper({ steps, current, onStepClick }: StepperProps) {
                 done && 'bg-primary text-white',
                 !active && !done && 'bg-surface2 text-muted'
               )}>
-                {done ? <Check className="w-3 h-3" /> : i + 1}
+                {done ? <FiCheck className="w-3 h-3" /> : i + 1}
               </span>
               {label}
             </button>

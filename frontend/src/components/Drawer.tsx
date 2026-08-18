@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { FiX } from 'react-icons/fi'
 import { Button, cn } from './ui'
 
 interface DrawerProps {
@@ -38,7 +38,7 @@ export function Drawer({ open, onClose, title, description, children, width = 'l
             {description && <p className="text-sm text-muted mt-0.5">{description}</p>}
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
-            <X className="w-5 h-5" />
+            <FiX className="w-5 h-5" />
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">{children}</div>

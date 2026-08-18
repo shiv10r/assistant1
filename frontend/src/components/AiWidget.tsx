@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
 import type { AiChatTurn } from '../api'
-import { MessageSquare, X } from 'lucide-react'
+import { FiMessageSquare, FiX } from 'react-icons/fi'
 
 interface Msg { text: string; isUser: boolean }
 
@@ -66,7 +66,7 @@ export default function AiWidget() {
         aria-label={open ? 'Close AI chat' : 'Open AI chat'}
         title={model ? `AI · ${model}` : 'AI chat'}
       >
-        {open ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        {open ? <FiX className="w-6 h-6" /> : <FiMessageSquare className="w-6 h-6" />}
       </button>
 
       {open && (

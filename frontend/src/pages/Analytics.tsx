@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { AnalyticsData } from '../api'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Empty, PageHead, money } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
-import { TrendingUp, TrendingDown, BarChart3, Wallet, Lock, Crown } from 'lucide-react'
+import { FiTrendingUp, FiTrendingDown, FiBarChart2, FiLock } from 'react-icons/fi'
+import { IoWallet } from 'react-icons/io5'
+import { MdWorkspacePremium } from 'react-icons/md'
 import { cn } from '../lib/utils'
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
@@ -26,8 +28,8 @@ export default function Analytics() {
     api.analytics().then(setData).catch((e) => setError(String(e)))
   }, [])
 
-  if (error) return <div className="empty">⚠️ Could not load analytics. <br/><span className="muted">{error}</span></div>
-  if (!data) return <div className="empty">Loading…</div>
+  if (error) return <div className="empty">âš ï¸ Could not load analytics. <br/><span className="muted">{error}</span></div>
+  if (!data) return <div className="empty">Loadingâ€¦</div>
 
   const maxSale = Math.max(1, ...data.salesByMonth.map((s) => s.total))
   const maxExp = Math.max(1, ...data.expenseByMonth.map((s) => s.total))
@@ -35,7 +37,7 @@ export default function Analytics() {
   return (
     <>
       <PageHead
-        icon="📊"
+        icon="ðŸ“Š"
         title="Analytics"
         sub="Projects, billing and spend at a glance"
         right={<Badge variant={isPremium ? 'success' : 'outline'}>{isPremium ? `${plan} plan` : 'Free plan'}</Badge>}
@@ -45,28 +47,28 @@ export default function Analytics() {
         <Card className="mb-6 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent">
           <CardContent className="p-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><Lock className="w-5 h-5" /></div>
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><FiLock className="w-5 h-5" /></div>
               <div>
                 <p className="font-semibold text-text">Monthly charts are a Pro feature</p>
                 <p className="text-sm text-muted">Upgrade to unlock month-by-month sales & expense charts.</p>
               </div>
             </div>
-            <Button onClick={() => setPlan('pro')}><Crown className="w-4 h-4" /> Activate Pro (free trial)</Button>
+            <Button onClick={() => setPlan('pro')}><MdWorkspacePremium className="w-4 h-4" /> Activate Pro (free trial)</Button>
           </CardContent>
         </Card>
       )}
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <Kpi label="You'll Get" value={money(data.billing.youllGet)} tone="emerald" icon={<TrendingUp className="w-5 h-5" />} />
-        <Kpi label="You'll Give" value={money(data.billing.youllGive)} tone="red" icon={<TrendingDown className="w-5 h-5" />} />
-        <Kpi label="This Month's Sales" value={money(data.billing.monthSale)} tone="indigo" icon={<Wallet className="w-5 h-5" />} />
+        <Kpi label="You'll Get" value={money(data.billing.youllGet)} tone="emerald" icon={<FiTrendingUp className="w-5 h-5" />} />
+        <Kpi label="You'll Give" value={money(data.billing.youllGive)} tone="red" icon={<FiTrendingDown className="w-5 h-5" />} />
+        <Kpi label="This Month's Sales" value={money(data.billing.monthSale)} tone="indigo" icon={<IoWallet className="w-5 h-5" />} />
       </div>
 
       {isAdvanced && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Project portfolio and revenue mix — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Project portfolio and revenue mix â€” toggled via the Simple/Advanced switch in the top bar."
           compare={[
             { label: "You'll get", value: money(data.billing.youllGet), delta: 'receivables', deltaTone: 'flat' },
             { label: "You'll give", value: money(data.billing.youllGive), delta: 'payables', deltaTone: 'flat' },
@@ -95,7 +97,7 @@ export default function Analytics() {
       {/* Project progress & budget */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" /> Project progress &amp; budget</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiBarChart2 className="w-5 h-5 text-primary" /> Project progress &amp; budget</CardTitle>
         </CardHeader>
         <CardContent>
           {data.projects.length === 0 ? (

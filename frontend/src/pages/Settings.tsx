@@ -3,7 +3,10 @@ import { applyTheme, getTheme } from '../theme'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button, Switch, PageHead } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
 import { useToast } from '../components/ui/Toast'
-import { Moon, Sun, Bell, Database, Shield, Crown, Info } from 'lucide-react'
+import {
+  FiMoon, FiSun, FiBell, FiDatabase, FiShield, FiInfo
+} from 'react-icons/fi'
+import { MdWorkspacePremium } from 'react-icons/md'
 import type { Settings } from '../api'
 import { api } from '../api'
 
@@ -57,14 +60,14 @@ export default function Settings() {
       {/* Appearance */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Moon className="w-5 h-5 text-primary" /> Appearance</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiMoon className="w-5 h-5 text-primary" /> Appearance</CardTitle>
           <CardDescription>Choose how the app looks</CardDescription>
         </CardHeader>
         <CardContent>
           <div style={{ display: 'flex', gap: 8 }}>
             {(['Dark', 'Light'] as const).map((t) => (
               <button key={t} className={theme === t ? 'btn' : 'btn ghost'} onClick={() => pick(t)}>
-                {t === 'Dark' ? <Moon className="w-4 h-4 inline mr-1" /> : <Sun className="w-4 h-4 inline mr-1" />}
+                {t === 'Dark' ? <FiMoon className="w-4 h-4 inline mr-1" /> : <FiSun className="w-4 h-4 inline mr-1" />}
                 {t} Mode
               </button>
             ))}
@@ -76,7 +79,7 @@ export default function Settings() {
       {/* Plan & Billing */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Crown className="w-5 h-5 text-primary" /> Plan &amp; Billing</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MdWorkspacePremium className="w-5 h-5 text-primary" /> Plan &amp; Billing</CardTitle>
           <CardDescription>Which feature set is visible in the app</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
@@ -85,7 +88,7 @@ export default function Settings() {
             <p className="text-sm text-muted mt-1">Pro unlocks analytics charts and premium features.</p>
           </div>
           {plan === 'free'
-            ? <Button onClick={() => setPlan('pro')}><Crown className="w-4 h-4" /> Activate Pro (free trial)</Button>
+            ? <Button onClick={() => setPlan('pro')}><MdWorkspacePremium className="w-4 h-4" /> Activate Pro (free trial)</Button>
             : <Button variant="outline" onClick={() => setPlan('free')}>Switch to Free</Button>}
         </CardContent>
       </Card>
@@ -93,7 +96,7 @@ export default function Settings() {
       {/* Notifications */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-primary" /> Notifications</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiBell className="w-5 h-5 text-primary" /> Notifications</CardTitle>
           <CardDescription>Choose what the app alerts you about</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -112,7 +115,7 @@ export default function Settings() {
       {/* Data & Privacy */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Database className="w-5 h-5 text-primary" /> Data &amp; Privacy</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiDatabase className="w-5 h-5 text-primary" /> Data &amp; Privacy</CardTitle>
           <CardDescription>Where your data lives and how to back it up</CardDescription>
         </CardHeader>
         <CardContent>
@@ -126,7 +129,7 @@ export default function Settings() {
       {/* Security */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-primary" /> Security</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiShield className="w-5 h-5 text-primary" /> Security</CardTitle>
           <CardDescription>Access & protection</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
@@ -138,7 +141,7 @@ export default function Settings() {
       {/* About */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Info className="w-5 h-5 text-primary" /> About</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiInfo className="w-5 h-5 text-primary" /> About</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="muted">VSR Systems · v1.1 · React + .NET backend · data stays on your device's server</div>

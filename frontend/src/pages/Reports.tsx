@@ -5,9 +5,11 @@ import { Card, CardContent, Badge, Empty } from '../components/ui'
 import { usePlan } from '../hooks/usePlan'
 import { cn } from '../lib/utils'
 import {
-  Wallet, ReceiptText, CalendarClock, TrendingUp, MapPin, Crown, Sparkles,
-  Briefcase, Users, Package, FileBarChart, Banknote, Activity, ShieldCheck, CircleDollarSign, ArrowDownToLine,
-} from 'lucide-react'
+  FiTrendingUp, FiMapPin, FiBriefcase, FiUsers, FiPackage, FiActivity, FiDollarSign, FiArrowDown,
+  FiBarChart2
+} from 'react-icons/fi'
+import { IoWallet, IoSparkles } from 'react-icons/io5'
+import { MdCalendarToday, MdWorkspacePremium, MdCurrencyRupee, MdVerifiedUser } from 'react-icons/md'
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 
@@ -113,17 +115,17 @@ export default function Reports() {
 
       {/* Spending KPIs */}
       <div className="report-kpi-grid">
-        <Kpi label="Total spent" value={r?.totalLabel ?? '—'} sub={r ? `${r.count} entries · ${r.siteCount} sites` : undefined} icon={<Wallet className="w-5 h-5" />} />
-        <Kpi label="Avg per day" value={r?.avgPerDayLabel ?? '—'} sub="this period" icon={<CalendarClock className="w-5 h-5" />} />
-        <Kpi label="Top category" value={r?.topCategory ?? '—'} sub={r?.topCategoryLabel} icon={<TrendingUp className="w-5 h-5" />} tone="green" />
-        <Kpi label="Top site" value={r?.topSite ?? '—'} sub={r?.topSiteLabel} icon={<MapPin className="w-5 h-5" />} tone="gold" />
-        <Kpi label="Biggest entry" value={r?.biggestEntry?.label ?? '—'} sub={r?.biggestEntry ? `${r.biggestEntry.site} · ${r.biggestEntry.date}` : undefined} icon={<Crown className="w-5 h-5" />} tone="red" />
-        <Kpi label="Categories" value={String(r?.categoryCount ?? '—')} sub={`in ${r?.siteCount ?? '—'} sites`} icon={<ReceiptText className="w-5 h-5" />} />
+        <Kpi label="Total spent" value={r?.totalLabel ?? '—'} sub={r ? `${r.count} entries · ${r.siteCount} sites` : undefined} icon={<IoWallet className="w-5 h-5" />} />
+        <Kpi label="Avg per day" value={r?.avgPerDayLabel ?? '—'} sub="this period" icon={<MdCalendarToday className="w-5 h-5" />} />
+        <Kpi label="Top category" value={r?.topCategory ?? '—'} sub={r?.topCategoryLabel} icon={<FiTrendingUp className="w-5 h-5" />} tone="green" />
+        <Kpi label="Top site" value={r?.topSite ?? '—'} sub={r?.topSiteLabel} icon={<FiMapPin className="w-5 h-5" />} tone="gold" />
+        <Kpi label="Biggest entry" value={r?.biggestEntry?.label ?? '—'} sub={r?.biggestEntry ? `${r.biggestEntry.site} · ${r.biggestEntry.date}` : undefined} icon={<MdWorkspacePremium className="w-5 h-5" />} tone="red" />
+        <Kpi label="Categories" value={String(r?.categoryCount ?? '—')} sub={`in ${r?.siteCount ?? '—'} sites`} icon={<FiBarChart2 className="w-5 h-5" />} />
       </div>
 
       {!isPremium && r && r.count > 0 && (
         <div className="report-pro-banner">
-          <Sparkles className="w-4 h-4" />
+          <IoSparkles className="w-4 h-4" />
           <span>Charts and month-by-month trends unlock on the <b>Analytics</b> page with Pro.</span>
         </div>
       )}
@@ -210,15 +212,15 @@ export default function Reports() {
             <Empty title="Loading analytics…" />
           ) : (
             <div className="report-app-grid">
-              <AppKpi label="Projects" value={String(a.projectCount)} sub={`${a.ongoingProjects} ongoing · ${a.completedProjects} done`} icon={<Briefcase className="w-4 h-4" />} />
-              <AppKpi label="Parties" value={String(a.partyCount)} sub="clients & suppliers" icon={<Users className="w-4 h-4" />} />
-              <AppKpi label="Catalog items" value={String(a.itemCount)} sub="products & services" icon={<Package className="w-4 h-4" />} />
-              <AppKpi label="Transactions" value={String(a.txnCount)} sub={`sales total ${a.saleTotalLabel}`} icon={<FileBarChart className="w-4 h-4" />} />
-              <AppKpi label="Receivables" value={a.receivableLabel} sub="to collect from sales" icon={<CircleDollarSign className="w-4 h-4" />} />
-              <AppKpi label="Expenses all-time" value={a.expenseTotalLabel} sub={`${a.expenseCount} entries`} icon={<ArrowDownToLine className="w-4 h-4" />} />
-              <AppKpi label="Accounts & users" value={String(a.userCount)} sub={`${a.sessionCount} active sessions`} icon={<ShieldCheck className="w-4 h-4" />} />
-              <AppKpi label="Activity events" value={String(a.activityCount)} sub="recent audit trail" icon={<Activity className="w-4 h-4" />} />
-              <AppKpi label="Cash & bank" value={String('tracked')} sub="ledger is live" icon={<Banknote className="w-4 h-4" />} />
+              <AppKpi label="Projects" value={String(a.projectCount)} sub={`${a.ongoingProjects} ongoing · ${a.completedProjects} done`} icon={<FiBriefcase className="w-4 h-4" />} />
+              <AppKpi label="Parties" value={String(a.partyCount)} sub="clients & suppliers" icon={<FiUsers className="w-4 h-4" />} />
+              <AppKpi label="Catalog items" value={String(a.itemCount)} sub="products & services" icon={<FiPackage className="w-4 h-4" />} />
+              <AppKpi label="Transactions" value={String(a.txnCount)} sub={`sales total ${a.saleTotalLabel}`} icon={<FiBarChart2 className="w-4 h-4" />} />
+              <AppKpi label="Receivables" value={a.receivableLabel} sub="to collect from sales" icon={<FiDollarSign className="w-4 h-4" />} />
+              <AppKpi label="Expenses all-time" value={a.expenseTotalLabel} sub={`${a.expenseCount} entries`} icon={<FiArrowDown className="w-4 h-4" />} />
+              <AppKpi label="Accounts & users" value={String(a.userCount)} sub={`${a.sessionCount} active sessions`} icon={<MdVerifiedUser className="w-4 h-4" />} />
+              <AppKpi label="Activity events" value={String(a.activityCount)} sub="recent audit trail" icon={<FiActivity className="w-4 h-4" />} />
+              <AppKpi label="Cash & bank" value={String('tracked')} sub="ledger is live" icon={<MdCurrencyRupee className="w-4 h-4" />} />
             </div>
           )}
         </CardContent>

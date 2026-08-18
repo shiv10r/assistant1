@@ -4,14 +4,15 @@ import { api } from '../api'
 import type { IntegrationStatus, BizTxn } from '../api'
 import { Card, CardContent, Badge, Button, Label, Input, Select, money } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
-import { Mail, HardDrive, Sparkles, RefreshCw, ExternalLink, CheckCircle2, XCircle, QrCode, Copy, Smartphone } from 'lucide-react'
+import { FiMail, FiHardDrive, FiRefreshCw, FiExternalLink, FiCheckCircle, FiXCircle, FiCopy, FiSmartphone } from 'react-icons/fi'
+import { IoSparkles, IoQrCode } from 'react-icons/io5'
 import { cn } from '../lib/utils'
 import type { UpiLinkResult } from '../api'
 
 function StatusPill({ ok }: { ok: boolean }) {
   return ok
-    ? <Badge variant="success" size="sm"><CheckCircle2 className="w-3 h-3" /> Configured</Badge>
-    : <Badge variant="warning" size="sm"><XCircle className="w-3 h-3" /> Not configured</Badge>
+    ? <Badge variant="success" size="sm"><FiCheckCircle className="w-3 h-3" /> Configured</Badge>
+    : <Badge variant="warning" size="sm"><FiXCircle className="w-3 h-3" /> Not configured</Badge>
 }
 
 export default function Integrations() {
@@ -120,7 +121,7 @@ export default function Integrations() {
       key: 'email' as const,
       title: 'Email Invoices',
       desc: 'Send invoice PDFs to parties with a saved email address.',
-      icon: <Mail className="w-6 h-6" />,
+      icon: <FiMail className="w-6 h-6" />,
       ok: status?.email === 'configured',
       hint: status?.email === 'configured' ? `Provider: ${status.emailProvider}` : 'Add RESEND_API_KEY (or SENDGRID_API_KEY) and redeploy.',
     },
@@ -128,7 +129,7 @@ export default function Integrations() {
       key: 'upi' as const,
       title: 'UPI Payments',
       desc: 'Collect money via PhonePe, GPay & Paytm — 100% free.',
-      icon: <Smartphone className="w-6 h-6" />,
+      icon: <FiSmartphone className="w-6 h-6" />,
       ok: status?.upi === 'configured',
       hint: status?.upi === 'configured' ? `Paying to: ${status.upiId}` : 'Enter your UPI ID below — no account, no KYC needed.',
     },
@@ -136,7 +137,7 @@ export default function Integrations() {
       key: 'drive' as const,
       title: 'Google Drive Backup',
       desc: 'Back up the whole database to Google Drive.',
-      icon: <HardDrive className="w-6 h-6" />,
+      icon: <FiHardDrive className="w-6 h-6" />,
       ok: status?.drive === 'configured',
       hint: status?.drive === 'configured' ? `Folder: ${status.driveFolder}` : (status?.drive === 'needs_connect' ? 'Credentials found — connect your Google account below.' : 'Add GOOGLE_DRIVE_CLIENT_ID + GOOGLE_DRIVE_CLIENT_SECRET and redeploy.'),
     },
@@ -144,7 +145,7 @@ export default function Integrations() {
       key: 'vision' as const,
       title: 'AI Vision Progress',
       desc: 'Estimate site progress % from a photo (OpenRouter).',
-      icon: <Sparkles className="w-6 h-6" />,
+      icon: <IoSparkles className="w-6 h-6" />,
       ok: status?.vision === 'configured',
       hint: status?.vision === 'configured' ? `Model: ${status.visionModel}` : 'Add OPENROUTER_API_KEY and redeploy.',
     },
@@ -157,7 +158,7 @@ export default function Integrations() {
           <h1>Integrations</h1>
           <div className="muted">Email, payments, backups and AI — all optional</div>
         </div>
-        <Button variant="outline" onClick={loadStatus}><RefreshCw className="w-4 h-4" /> Refresh</Button>
+        <Button variant="outline" onClick={loadStatus}><FiRefreshCw className="w-4 h-4" /> Refresh</Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -181,7 +182,7 @@ export default function Integrations() {
           <Card>
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-primary" />
+                <FiMail className="w-4 h-4 text-primary" />
                 <h2 className="text-base font-semibold text-text m-0">Email an invoice</h2>
               </div>
               <div>
@@ -194,7 +195,7 @@ export default function Integrations() {
               <div className="flex gap-2">
                 <Button onClick={sendEmail} disabled={busy === 'email'}>{busy === 'email' ? 'Sending…' : 'Send PDF invoice'}</Button>
                 <Button variant="outline" onClick={fetchEinvoice} disabled={busy === 'einvoice'}>
-                  <ExternalLink className="w-4 h-4" /> {busy === 'einvoice' ? 'Building…' : 'GST e-Invoice JSON'}
+                  <FiExternalLink className="w-4 h-4" /> {busy === 'einvoice' ? 'Building…' : 'GST e-Invoice JSON'}
                 </Button>
               </div>
               {einvoice && (
@@ -208,7 +209,7 @@ export default function Integrations() {
           <Card>
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center gap-2">
-                <Smartphone className="w-4 h-4 text-primary" />
+                <FiSmartphone className="w-4 h-4 text-primary" />
                 <h2 className="text-base font-semibold text-text m-0">Collect a UPI payment</h2>
               </div>
 
@@ -232,7 +233,7 @@ export default function Integrations() {
                 <Input id="unote" type="text" value={upiNote} onChange={(e) => setUpiNote(e.target.value)} placeholder="e.g. Invoice #5 — Dining table" className="mt-1" />
               </div>
               <Button onClick={generateUpi} disabled={upiBusy === 'upi-link'}>
-                <QrCode className="w-4 h-4" /> {upiBusy === 'upi-link' ? 'Generating…' : 'Generate UPI link & QR'}
+                <IoQrCode className="w-4 h-4" /> {upiBusy === 'upi-link' ? 'Generating…' : 'Generate UPI link & QR'}
               </Button>
 
               {upiResult?.ok && upiResult.upiUrl && (
@@ -258,7 +259,7 @@ export default function Integrations() {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" onClick={copyUpi} className="w-full">
-                    <Copy className="w-4 h-4" /> Copy UPI link (send via WhatsApp)
+                    <FiCopy className="w-4 h-4" /> Copy UPI link (send via WhatsApp)
                   </Button>
                   <p className="text-[11px] text-muted">Once paid, record the receipt in Billing → Transactions to update the party balance.</p>
                 </div>
@@ -271,7 +272,7 @@ export default function Integrations() {
       <Card>
         <CardContent className="p-5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <HardDrive className="w-5 h-5 text-muted" />
+            <FiHardDrive className="w-5 h-5 text-muted" />
             <div>
               <div className="font-medium text-text">Back up database to Google Drive</div>
               <div className="text-sm text-muted">
@@ -284,11 +285,11 @@ export default function Integrations() {
           <div className="flex items-center gap-2">
             {status?.drive !== 'configured' && status?.drive === 'needs_connect' && (
               <Button variant="outline" onClick={connectDrive} disabled={busy === 'drive-connect'}>
-                <HardDrive className="w-4 h-4" /> {busy === 'drive-connect' ? 'Opening…' : 'Connect Google Drive'}
+                <FiHardDrive className="w-4 h-4" /> {busy === 'drive-connect' ? 'Opening…' : 'Connect Google Drive'}
               </Button>
             )}
             <Button variant="outline" onClick={runDriveBackup} disabled={driveBusy || status?.drive !== 'configured'} title={status?.drive !== 'configured' ? 'Connect Google Drive first' : undefined}>
-              <HardDrive className="w-4 h-4" /> {driveBusy ? 'Backing up…' : 'Run backup'}
+              <FiHardDrive className="w-4 h-4" /> {driveBusy ? 'Backing up…' : 'Run backup'}
             </Button>
             {status?.drive === 'configured' && (
               <Button variant="ghost" className="text-red-500 hover:bg-red-500/10" onClick={disconnectDrive}>

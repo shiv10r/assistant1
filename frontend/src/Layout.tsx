@@ -9,77 +9,86 @@ import { useWeather } from './hooks/useWeather'
 import { conditionMeta } from './lib/weather'
 import { serviceFromPath, getLastService, type ServiceDef, type ServiceId } from './lib/services'
 import {
-  LayoutDashboard,
-  BarChart3,
-  Database,
-  Settings,
-  ReceiptText,
-  Package,
-  Banknote,
-  Users,
-  Briefcase,
-  MessageSquare,
-  CreditCard,
-  User,
-  Menu,
-  Sun,
-  Moon,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  Map,
-  PlugZap,
-  ScanBarcode,
-  Sparkles,
-  ShieldCheck,
-  Boxes,
-  Video,
-  CloudSun,
-  Megaphone,
-  ClipboardList,
-  Truck,
-  GraduationCap,
-  Layers,
-  Wallet,
-  CalendarCheck,
-  Clock,
-  ArrowLeftRight,
-  ClipboardCheck,
-  Building2,
-  ShoppingCart,
-  ListChecks,
-  PackageCheck,
-  RotateCcw,
-  Search,
-  UserPlus,
-  BookOpen,
-  CalendarDays,
-  Monitor,
-  Trophy,
-  FileText,
-  UtensilsCrossed,
-  Flag,
-  HeartHandshake,
-  Bell,
-  Award,
-  LifeBuoy,
-  Scale,
-  Siren,
-  Newspaper,
-  Bookmark,
-  BadgePercent,
-  LayoutGrid,
-  Heart,
-  Landmark,
-  Send,
-  PiggyBank,
-  FileDown,
-  Receipt,
-  Stethoscope,
-  Pill,
-  FlaskConical,
-  Activity,
-} from 'lucide-react'
+  FiPackage,
+  FiTruck,
+  FiUsers,
+  FiClipboard,
+  FiCheckSquare,
+  FiShoppingCart,
+  FiList,
+  FiRotateCcw,
+  FiSearch,
+  FiUserPlus,
+  FiBookOpen,
+  FiCalendar,
+  FiClock,
+  FiMessageSquare,
+  FiDatabase,
+  FiSettings,
+  FiVideo,
+  FiZap,
+  FiShield,
+  FiCreditCard,
+  FiUser,
+  FiGrid,
+  FiMap,
+  FiTag,
+  FiHeart,
+  FiCloud,
+  FiArrowRight,
+  FiCode,
+} from 'react-icons/fi'
+import {
+  MdDashboard,
+  MdBarChart,
+  MdReceipt,
+  MdInventory,
+  MdAccountBalance,
+  MdWork,
+  MdMenu,
+  MdWbSunny,
+  MdLogout,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowRight,
+  MdMonitor,
+  MdEmojiEvents,
+  MdDescription,
+  MdFlag,
+  MdNotifications,
+  MdScale,
+  MdWarning,
+  MdBookmarkBorder,
+  MdFavorite,
+  MdSend,
+  MdFileDownload,
+  MdMedication,
+  MdHelp,
+  MdScience,
+  MdRestaurant,
+  MdAccountBalanceWallet,
+  MdCalendarToday,
+  MdAccessTime,
+  MdSettings,
+  MdLocalShipping,
+  MdLayers,
+  MdBuild,
+  MdSchool,
+  MdSavings,
+} from 'react-icons/md'
+import {
+  BiBuildingHouse,
+} from 'react-icons/bi'
+import {
+  IoBriefcase,
+  IoWallet,
+  IoShield,
+  IoMegaphone,
+  IoSparkles,
+  IoNewspaper,
+  IoMedical,
+  IoVideocam,
+  IoMoon,
+} from 'react-icons/io5'
 import AiWidget from './components/AiWidget'
 import WeatherCard from './components/WeatherCard'
 import GlobalSearch from './components/GlobalSearch'
@@ -97,233 +106,244 @@ type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   interior: [
     { title: 'Interior Design', items: [
-      { label: 'Overview', to: '/interior/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-      { label: 'Projects', to: '/interior/projects', icon: <Briefcase className="w-5 h-5" /> },
-      { label: 'Products', to: '/interior/products', icon: <Package className="w-5 h-5" /> },
-      { label: 'AI Designs', to: '/interior/projects', icon: <Sparkles className="w-5 h-5" /> },
+      { label: 'Overview', to: '/interior/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Projects', to: '/interior/projects', icon: <MdWork className="w-5 h-5" /> },
+      { label: 'Products', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'AI Designs', to: '/interior/projects', icon: <IoSparkles className="w-5 h-5" /> },
     ]},
     { title: 'Transactions', items: [
-      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
-      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
-      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
-      { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
+      { label: 'Invoices & Billing', to: '/billing', icon: <MdReceipt className="w-5 h-5" /> },
+      { label: 'Catalog & Quotation', to: '/billing/items', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <MdAccountBalance className="w-5 h-5" /> },
+      { label: 'Billing Settings', to: '/billing/settings', icon: <MdSettings className="w-5 h-5" /> },
     ]},
   ],
   warehouse: [
     { title: 'Warehouse Store', items: [
-      { label: 'Overview', to: '/warehouse/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'Overview', to: '/warehouse/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
     ]},
     { title: 'Retailers & Vendors', items: [
-      { label: 'Retailers', to: '/warehouse/customers', icon: <Users className="w-5 h-5" /> },
-      { label: 'Vendors', to: '/warehouse/suppliers', icon: <Users className="w-5 h-5" /> },
+      { label: 'Retailers', to: '/warehouse/customers', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Vendors', to: '/warehouse/suppliers', icon: <MdLocalShipping className="w-5 h-5" /> },
     ]},
     { title: 'Inventory', items: [
-      { label: 'Stock', to: '/warehouse/inventory', icon: <Package className="w-5 h-5" /> },
-      { label: 'Products', to: '/warehouse/products', icon: <Boxes className="w-5 h-5" /> },
-      { label: 'Warehouses & Locations', to: '/warehouse/warehouses', icon: <Building2 className="w-5 h-5" /> },
-      { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'Goods Received', to: '/warehouse/grn', icon: <Truck className="w-5 h-5" /> },
-      { label: 'Stock Transfer', to: '/warehouse/transfers', icon: <ArrowLeftRight className="w-5 h-5" /> },
-      { label: 'Stock Count', to: '/warehouse/stock-count', icon: <ClipboardCheck className="w-5 h-5" /> },
-      { label: 'Scan Barcode / QR', to: '/billing/items', icon: <ScanBarcode className="w-5 h-5" /> },
+      { label: 'Stock', to: '/warehouse/inventory', icon: <MdInventory className="w-5 h-5" /> },
+      { label: 'Products', to: '/warehouse/products', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Warehouses & Locations', to: '/warehouse/warehouses', icon: <MdBuild className="w-5 h-5" /> },
+      { label: 'Purchase Orders', to: '/warehouse/purchase-orders', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'Goods Received', to: '/warehouse/grn', icon: <FiTruck className="w-5 h-5" /> },
+      { label: 'Stock Transfer', to: '/warehouse/transfers', icon: <FiArrowRight className="w-5 h-5" /> },
+      { label: 'Stock Count', to: '/warehouse/stock-count', icon: <FiCheckSquare className="w-5 h-5" /> },
+      { label: 'Scan Barcode / QR', to: '/billing/items', icon: <FiCode className="w-5 h-5" /> },
     ]},
     { title: 'Outbound', items: [
-      { label: 'Sales Orders', to: '/warehouse/orders', icon: <ShoppingCart className="w-5 h-5" /> },
-      { label: 'Picking', to: '/warehouse/picking', icon: <ListChecks className="w-5 h-5" /> },
-      { label: 'Packing', to: '/warehouse/packing', icon: <PackageCheck className="w-5 h-5" /> },
-      { label: 'Dispatch', to: '/warehouse/dispatch', icon: <Truck className="w-5 h-5" /> },
-      { label: 'Returns', to: '/warehouse/returns', icon: <RotateCcw className="w-5 h-5" /> },
+      { label: 'Sales Orders', to: '/warehouse/orders', icon: <FiShoppingCart className="w-5 h-5" /> },
+      { label: 'Picking', to: '/warehouse/picking', icon: <FiList className="w-5 h-5" /> },
+      { label: 'Packing', to: '/warehouse/packing', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Dispatch', to: '/warehouse/dispatch', icon: <MdLocalShipping className="w-5 h-5" /> },
+      { label: 'Returns', to: '/warehouse/returns', icon: <FiRotateCcw className="w-5 h-5" /> },
     ]},
     { title: 'Transactions', items: [
-      { label: 'Invoices & Billing', to: '/billing', icon: <ReceiptText className="w-5 h-5" /> },
-      { label: 'Catalog & Quotation', to: '/billing/items', icon: <Package className="w-5 h-5" /> },
-      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <Banknote className="w-5 h-5" /> },
-      { label: 'Billing Settings', to: '/billing/settings', icon: <Settings className="w-5 h-5" /> },
+      { label: 'Invoices & Billing', to: '/billing', icon: <MdReceipt className="w-5 h-5" /> },
+      { label: 'Catalog & Quotation', to: '/billing/items', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Cash & Bank', to: '/billing/cashbank', icon: <MdAccountBalance className="w-5 h-5" /> },
+      { label: 'Billing Settings', to: '/billing/settings', icon: <MdSettings className="w-5 h-5" /> },
     ]},
     { title: 'Staff Management', items: [
-      { label: 'Staff & Attendance', to: '/warehouse/staff', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Staff & Attendance', to: '/warehouse/staff', icon: <MdAccessTime className="w-5 h-5" /> },
     ]},
     { title: 'Project Management', items: [
-      { label: 'Projects', to: '/warehouse/projects', icon: <Briefcase className="w-5 h-5" /> },
-      { label: 'Site Map', to: '/warehouse/map', icon: <Map className="w-5 h-5" /> },
-      { label: 'Business Modules', to: '/warehouse/modules', icon: <Boxes className="w-5 h-5" /> },
+      { label: 'Projects', to: '/warehouse/projects', icon: <MdWork className="w-5 h-5" /> },
+      { label: 'Site Map', to: '/warehouse/map', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Business Modules', to: '/warehouse/modules', icon: <FiGrid className="w-5 h-5" /> },
     ]},
   ],
-  school: [
+school: [
     { title: 'Command Center', items: [
-      { label: 'Overview', to: '/school', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+      { label: 'Overview', to: '/school', icon: <MdDashboard className="w-5 h-5" />, end: true },
     ]},
     { title: 'People', items: [
-      { label: 'Students', to: '/school/students', icon: <Users className="w-5 h-5" /> },
-      { label: 'Parents', to: '/school/parents', icon: <Users className="w-5 h-5" /> },
-      { label: 'Directory', to: '/school/directory', icon: <Search className="w-5 h-5" /> },
-      { label: 'Staff & Attendance', to: '/school/staff', icon: <Clock className="w-5 h-5" /> },
+      { label: 'Students', to: '/school/students', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Parents', to: '/school/parents', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Directory', to: '/school/directory', icon: <FiSearch className="w-5 h-5" /> },
+      { label: 'Staff & Attendance', to: '/school/staff', icon: <FiClock className="w-5 h-5" /> },
     ]},
     { title: 'Admissions & CRM', items: [
-      { label: 'Admissions Pipeline', to: '/school/admissions', icon: <UserPlus className="w-5 h-5" /> },
+      { label: 'Admissions Pipeline', to: '/school/admissions', icon: <FiUserPlus className="w-5 h-5" /> },
     ]},
     { title: 'Academics', items: [
-      { label: 'Classes', to: '/school/classes', icon: <Layers className="w-5 h-5" /> },
-      { label: 'Sessions', to: '/school/sessions', icon: <CalendarCheck className="w-5 h-5" /> },
-      { label: 'Subjects', to: '/school/subjects', icon: <BookOpen className="w-5 h-5" /> },
-      { label: 'Timetable', to: '/school/timetable', icon: <Clock className="w-5 h-5" /> },
-      { label: 'Homework', to: '/school/homework', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'LMS', to: '/school/lms', icon: <BookOpen className="w-5 h-5" /> },
+      { label: 'Classes', to: '/school/classes', icon: <MdLayers className="w-5 h-5" /> },
+      { label: 'Sessions', to: '/school/sessions', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Subjects', to: '/school/subjects', icon: <FiBookOpen className="w-5 h-5" /> },
+      { label: 'Timetable', to: '/school/timetable', icon: <FiClock className="w-5 h-5" /> },
+      { label: 'Homework', to: '/school/homework', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'LMS', to: '/school/lms', icon: <FiBookOpen className="w-5 h-5" /> },
     ]},
     { title: 'Attendance', items: [
-      { label: 'Student Attendance', to: '/school/attendance', icon: <CalendarCheck className="w-5 h-5" /> },
-      { label: 'Attendance Analytics', to: '/school/attendance-analytics', icon: <BarChart3 className="w-5 h-5" /> },
-      { label: 'Leave Requests', to: '/school/leave', icon: <CalendarDays className="w-5 h-5" /> },
+      { label: 'Student Attendance', to: '/school/attendance', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Attendance Analytics', to: '/school/attendance-analytics', icon: <MdBarChart className="w-5 h-5" /> },
+      { label: 'Leave Requests', to: '/school/leave', icon: <FiCalendar className="w-5 h-5" /> },
     ]},
     { title: 'Examination', items: [
-      { label: 'Question Bank', to: '/school/questions', icon: <ClipboardCheck className="w-5 h-5" /> },
-      { label: 'Exams & Marks', to: '/school/exams', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'Online Exams', to: '/school/online-exams', icon: <Monitor className="w-5 h-5" /> },
-      { label: 'Results', to: '/school/results', icon: <Trophy className="w-5 h-5" /> },
+      { label: 'Question Bank', to: '/school/questions', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'Exams & Marks', to: '/school/exams', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'Online Exams', to: '/school/online-exams', icon: <MdMonitor className="w-5 h-5" /> },
+      { label: 'Results', to: '/school/results', icon: <MdEmojiEvents className="w-5 h-5" /> },
     ]},
     { title: 'Finance', items: [
-      { label: 'Fees', to: '/school/fees', icon: <Wallet className="w-5 h-5" /> },
-      { label: 'Fee Structure', to: '/school/fee-structure', icon: <FileText className="w-5 h-5" /> },
-      { label: 'Receipts', to: '/school/receipts', icon: <ReceiptText className="w-5 h-5" /> },
-      { label: 'Expenses', to: '/school/expenses', icon: <CreditCard className="w-5 h-5" /> },
-      { label: 'Payroll', to: '/school/payroll', icon: <Banknote className="w-5 h-5" /> },
+      { label: 'Fees', to: '/school/fees', icon: <IoWallet className="w-5 h-5" /> },
+      { label: 'Fee Structure', to: '/school/fee-structure', icon: <MdDescription className="w-5 h-5" /> },
+      { label: 'Receipts', to: '/school/receipts', icon: <MdReceipt className="w-5 h-5" /> },
+      { label: 'Expenses', to: '/school/expenses', icon: <FiCreditCard className="w-5 h-5" /> },
+      { label: 'Payroll', to: '/school/payroll', icon: <MdAccountBalanceWallet className="w-5 h-5" /> },
     ]},
     { title: 'HR', items: [
-      { label: 'Recruitment', to: '/school/recruitment', icon: <UserPlus className="w-5 h-5" /> },
-      { label: 'Performance', to: '/school/performance', icon: <BarChart3 className="w-5 h-5" /> },
-      { label: 'Training', to: '/school/training', icon: <GraduationCap className="w-5 h-5" /> },
+      { label: 'Recruitment', to: '/school/recruitment', icon: <FiUserPlus className="w-5 h-5" /> },
+      { label: 'Performance', to: '/school/performance', icon: <MdBarChart className="w-5 h-5" /> },
+      { label: 'Training', to: '/school/training', icon: <MdSchool className="w-5 h-5" /> },
     ]},
     { title: 'Operations', items: [
-      { label: 'Stock', to: '/school/inventory', icon: <Package className="w-5 h-5" /> },
-      { label: 'Transport', to: '/school/transport', icon: <Truck className="w-5 h-5" /> },
-      { label: 'Library', to: '/school/library', icon: <BookOpen className="w-5 h-5" /> },
-      { label: 'Procurement', to: '/school/procurement', icon: <ShoppingCart className="w-5 h-5" /> },
-      { label: 'Assets', to: '/school/assets', icon: <Package className="w-5 h-5" /> },
-      { label: 'Visitors', to: '/school/visitors', icon: <Users className="w-5 h-5" /> },
-      { label: 'Hostel', to: '/school/hostel', icon: <Building2 className="w-5 h-5" /> },
-      { label: 'Cafeteria', to: '/school/cafeteria', icon: <UtensilsCrossed className="w-5 h-5" /> },
+      { label: 'Stock', to: '/school/inventory', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Transport', to: '/school/transport', icon: <FiTruck className="w-5 h-5" /> },
+      { label: 'Library', to: '/school/library', icon: <FiBookOpen className="w-5 h-5" /> },
+      { label: 'Procurement', to: '/school/procurement', icon: <FiShoppingCart className="w-5 h-5" /> },
+      { label: 'Assets', to: '/school/assets', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Visitors', to: '/school/visitors', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Hostel', to: '/school/hostel', icon: <BiBuildingHouse className="w-5 h-5" /> },
+      { label: 'Cafeteria', to: '/school/cafeteria', icon: <MdRestaurant className="w-5 h-5" /> },
     ]},
-    { title: 'Student Life', items: [
-      { label: 'Clubs', to: '/school/clubs', icon: <Sparkles className="w-5 h-5" /> },
-      { label: 'Sports', to: '/school/sports', icon: <Trophy className="w-5 h-5" /> },
-      { label: 'Houses', to: '/school/houses', icon: <Flag className="w-5 h-5" /> },
-      { label: 'Discipline', to: '/school/discipline', icon: <ShieldCheck className="w-5 h-5" /> },
-      { label: 'Counselling', to: '/school/counselling', icon: <HeartHandshake className="w-5 h-5" /> },
+{ title: 'Student Life', items: [
+      { label: 'Clubs', to: '/school/clubs', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'Sports', to: '/school/sports', icon: <MdEmojiEvents className="w-5 h-5" /> },
+      { label: 'Houses', to: '/school/houses', icon: <MdFlag className="w-5 h-5" /> },
+      { label: 'Discipline', to: '/school/discipline', icon: <IoShield className="w-5 h-5" /> },
+      { label: 'Counselling', to: '/school/counselling', icon: <MdFavorite className="w-5 h-5" /> },
     ]},
     { title: 'Communication', items: [
-      { label: 'Notices', to: '/school/notices', icon: <Megaphone className="w-5 h-5" /> },
-      { label: 'Events', to: '/school/events', icon: <CalendarDays className="w-5 h-5" /> },
-      { label: 'Messaging', to: '/school/messaging', icon: <MessageSquare className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/school/notifications', icon: <Bell className="w-5 h-5" /> },
-      { label: 'PTM', to: '/school/ptm', icon: <CalendarCheck className="w-5 h-5" /> },
-      { label: 'Surveys', to: '/school/surveys', icon: <ClipboardCheck className="w-5 h-5" /> },
+      { label: 'Notices', to: '/school/notices', icon: <IoMegaphone className="w-5 h-5" /> },
+      { label: 'Events', to: '/school/events', icon: <FiCalendar className="w-5 h-5" /> },
+      { label: 'Messaging', to: '/school/messaging', icon: <FiMessageSquare className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/school/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'PTM', to: '/school/ptm', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Surveys', to: '/school/surveys', icon: <FiClipboard className="w-5 h-5" /> },
     ]},
     { title: 'Documents', items: [
-      { label: 'Documents', to: '/school/documents', icon: <FileText className="w-5 h-5" /> },
-      { label: 'Certificates', to: '/school/certificates', icon: <Award className="w-5 h-5" /> },
+      { label: 'Documents', to: '/school/documents', icon: <MdDescription className="w-5 h-5" /> },
+      { label: 'Certificates', to: '/school/certificates', icon: <MdEmojiEvents className="w-5 h-5" /> },
     ]},
     { title: 'Service', items: [
-      { label: 'Helpdesk', to: '/school/helpdesk', icon: <LifeBuoy className="w-5 h-5" /> },
-      { label: 'Grievances', to: '/school/grievances', icon: <Scale className="w-5 h-5" /> },
-      { label: 'Incidents', to: '/school/incidents', icon: <Siren className="w-5 h-5" /> },
-      { label: 'Tasks', to: '/school/tasks', icon: <ListChecks className="w-5 h-5" /> },
+      { label: 'Helpdesk', to: '/school/helpdesk', icon: <MdHelp className="w-5 h-5" /> },
+      { label: 'Grievances', to: '/school/grievances', icon: <MdScale className="w-5 h-5" /> },
+      { label: 'Incidents', to: '/school/incidents', icon: <MdWarning className="w-5 h-5" /> },
+      { label: 'Tasks', to: '/school/tasks', icon: <FiList className="w-5 h-5" /> },
     ]},
     { title: 'System', items: [
-      { label: 'Users & Roles', to: '/school/users', icon: <Users className="w-5 h-5" /> },
-      { label: 'Audit Log', to: '/school/audit', icon: <ShieldCheck className="w-5 h-5" /> },
-      { label: 'Settings', to: '/school/settings', icon: <Settings className="w-5 h-5" /> },
+      { label: 'Users & Roles', to: '/school/users', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Audit Log', to: '/school/audit', icon: <IoShield className="w-5 h-5" /> },
+      { label: 'Settings', to: '/school/settings', icon: <MdSettings className="w-5 h-5" /> },
     ]},
     { title: 'Projects & Events', items: [
-      { label: 'Projects', to: '/school/projects', icon: <Briefcase className="w-5 h-5" /> },
+      { label: 'Projects', to: '/school/projects', icon: <IoBriefcase className="w-5 h-5" /> },
     ]},
   ],
-  hotel: [
+hotel: [
     { title: 'Hotel Operations', items: [
-      { label: 'Overview', to: '/hotel', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-      { label: 'Reservations', to: '/hotel/reservations', icon: <CalendarCheck className="w-5 h-5" /> },
-      { label: 'Rooms', to: '/hotel/rooms', icon: <Building2 className="w-5 h-5" /> },
-      { label: 'Guests', to: '/hotel/guests', icon: <Users className="w-5 h-5" /> },
-      { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <Sparkles className="w-5 h-5" /> },
+      { label: 'Overview', to: '/hotel', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Reservations', to: '/hotel/reservations', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Rooms', to: '/hotel/rooms', icon: <BiBuildingHouse className="w-5 h-5" /> },
+      { label: 'Guests', to: '/hotel/guests', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <IoSparkles className="w-5 h-5" /> },
     ]},
   ],
   travel: [
     { title: 'Travel & Tours', items: [
-      { label: 'Discover', to: '/travel', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-      { label: 'Destinations', to: '/travel/destinations', icon: <Map className="w-5 h-5" /> },
-      { label: 'Holiday Packages', to: '/travel/packages', icon: <Package className="w-5 h-5" /> },
-      { label: 'Group Trips', to: '/travel/group-trips', icon: <Users className="w-5 h-5" /> },
-      { label: 'Customize Trip', to: '/travel/customize', icon: <Sparkles className="w-5 h-5" /> },
-      { label: 'My Trips', to: '/travel/my-trips', icon: <CalendarCheck className="w-5 h-5" /> },
+      { label: 'Discover', to: '/travel', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Destinations', to: '/travel/destinations', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Holiday Packages', to: '/travel/packages', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Group Trips', to: '/travel/group-trips', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Customize Trip', to: '/travel/customize', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'My Trips', to: '/travel/my-trips', icon: <MdCalendarToday className="w-5 h-5" /> },
     ]},
   ],
   news: [
     { title: 'VSR News', items: [
-      { label: 'Top Stories', to: '/news', icon: <Newspaper className="w-5 h-5" />, end: true },
-      { label: 'Latest', to: '/news/latest', icon: <Clock className="w-5 h-5" /> },
-      { label: 'Trending', to: '/news/trending', icon: <BarChart3 className="w-5 h-5" /> },
-      { label: 'Search', to: '/news/search', icon: <Search className="w-5 h-5" /> },
-      { label: 'Saved Stories', to: '/news/bookmarks', icon: <Bookmark className="w-5 h-5" /> },
+      { label: 'Top Stories', to: '/news', icon: <IoNewspaper className="w-5 h-5" />, end: true },
+      { label: 'Latest', to: '/news/latest', icon: <FiClock className="w-5 h-5" /> },
+      { label: 'Trending', to: '/news/trending', icon: <MdBarChart className="w-5 h-5" /> },
+      { label: 'Search', to: '/news/search', icon: <FiSearch className="w-5 h-5" /> },
+      { label: 'Saved Stories', to: '/news/bookmarks', icon: <MdBookmarkBorder className="w-5 h-5" /> },
     ]},
     { title: 'News Desks', items: [
-      { label: 'India', to: '/news/category/india', icon: <Flag className="w-5 h-5" /> },
-      { label: 'World', to: '/news/category/world', icon: <Map className="w-5 h-5" /> },
-      { label: 'Business', to: '/news/category/business', icon: <Banknote className="w-5 h-5" /> },
-      { label: 'Technology', to: '/news/category/technology', icon: <Monitor className="w-5 h-5" /> },
-      { label: 'Sports', to: '/news/category/sports', icon: <Trophy className="w-5 h-5" /> },
-      { label: 'Entertainment', to: '/news/category/entertainment', icon: <Video className="w-5 h-5" /> },
+      { label: 'India', to: '/news/category/india', icon: <MdFlag className="w-5 h-5" /> },
+      { label: 'World', to: '/news/category/world', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Business', to: '/news/category/business', icon: <MdAccountBalanceWallet className="w-5 h-5" /> },
+      { label: 'Technology', to: '/news/category/technology', icon: <MdMonitor className="w-5 h-5" /> },
+      { label: 'Sports', to: '/news/category/sports', icon: <MdEmojiEvents className="w-5 h-5" /> },
+      { label: 'Entertainment', to: '/news/category/entertainment', icon: <IoVideocam className="w-5 h-5" /> },
     ]},
   ],
   jobs: [
     { title: 'VSR Jobs', items: [
-      { label: 'Discover Jobs', to: '/jobs', icon: <Briefcase className="w-5 h-5" />, end: true },
-      { label: 'Search Jobs', to: '/jobs/search', icon: <Search className="w-5 h-5" /> },
-      { label: 'Companies', to: '/jobs/companies', icon: <Building2 className="w-5 h-5" /> },
-{ label: 'Applications', to: '/jobs/applications', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'Profile', to: '/jobs/profile', icon: <User className="w-5 h-5" /> },
-      { label: 'Saved Jobs', to: '/jobs/saved', icon: <Bookmark className="w-5 h-5" /> },
+      { label: 'Discover Jobs', to: '/jobs', icon: <IoBriefcase className="w-5 h-5" />, end: true },
+      { label: 'Search Jobs', to: '/jobs/search', icon: <FiSearch className="w-5 h-5" /> },
+      { label: 'Companies', to: '/jobs/companies', icon: <BiBuildingHouse className="w-5 h-5" /> },
+      { label: 'Applications', to: '/jobs/applications', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'Profile', to: '/jobs/profile', icon: <FiUser className="w-5 h-5" /> },
+      { label: 'Saved Jobs', to: '/jobs/saved', icon: <MdBookmarkBorder className="w-5 h-5" /> },
     ]},
   ],
   commerce: [
     { title: 'VSR Commerce', items: [
-      { label: 'Home', to: '/commerce', icon: <ShoppingCart className="w-5 h-5" />, end: true },
-      { label: 'Categories', to: '/commerce/categories', icon: <LayoutGrid className="w-5 h-5" /> },
-      { label: 'Products', to: '/commerce/products', icon: <Package className="w-5 h-5" /> },
-      { label: 'Offers', to: '/commerce/offers', icon: <BadgePercent className="w-5 h-5" /> },
-      { label: 'Brands', to: '/commerce/brands', icon: <Building2 className="w-5 h-5" /> },
-      { label: 'Wishlist', to: '/commerce/wishlist', icon: <Heart className="w-5 h-5" /> },
-      { label: 'Cart', to: '/commerce/cart', icon: <ShoppingCart className="w-5 h-5" /> },
+      { label: 'Home', to: '/commerce', icon: <FiShoppingCart className="w-5 h-5" />, end: true },
+      { label: 'Categories', to: '/commerce/categories', icon: <FiGrid className="w-5 h-5" /> },
+      { label: 'Products', to: '/commerce/products', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Offers', to: '/commerce/offers', icon: <FiTag className="w-5 h-5" /> },
+      { label: 'Brands', to: '/commerce/brands', icon: <MdBuild className="w-5 h-5" /> },
+      { label: 'Wishlist', to: '/commerce/wishlist', icon: <FiHeart className="w-5 h-5" /> },
+      { label: 'Cart', to: '/commerce/cart', icon: <FiShoppingCart className="w-5 h-5" /> },
     ]},
   ],
   bank: [
     { title: 'VSR Bank', items: [
-      { label: 'Dashboard', to: '/bank', icon: <Landmark className="w-5 h-5" />, end: true },
-      { label: 'Accounts', to: '/bank/accounts', icon: <Wallet className="w-5 h-5" /> },
-      { label: 'Transactions', to: '/bank/transactions', icon: <ArrowLeftRight className="w-5 h-5" /> },
-      { label: 'Transfers', to: '/bank/transfers', icon: <Send className="w-5 h-5" /> },
-      { label: 'Beneficiaries', to: '/bank/beneficiaries', icon: <Users className="w-5 h-5" /> },
-      { label: 'Cards', to: '/bank/cards', icon: <CreditCard className="w-5 h-5" /> },
-      { label: 'Deposits', to: '/bank/deposits', icon: <PiggyBank className="w-5 h-5" /> },
-      { label: 'Loans', to: '/bank/loans', icon: <Landmark className="w-5 h-5" /> },
-      { label: 'Statements', to: '/bank/statements', icon: <FileDown className="w-5 h-5" /> },
-      { label: 'Bills', to: '/bank/bills', icon: <Receipt className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/bank/notifications', icon: <Bell className="w-5 h-5" /> },
-      { label: 'Documents', to: '/bank/documents', icon: <FileText className="w-5 h-5" /> },
-      { label: 'Profile & Security', to: '/bank/profile', icon: <ShieldCheck className="w-5 h-5" /> },
-      { label: 'Admin Console', to: '/bank/admin', icon: <Monitor className="w-5 h-5" /> },
+      { label: 'Dashboard', to: '/bank', icon: <MdBuild className="w-5 h-5" />, end: true },
+      { label: 'Accounts', to: '/bank/accounts', icon: <IoWallet className="w-5 h-5" /> },
+      { label: 'Transactions', to: '/bank/transactions', icon: <FiArrowRight className="w-5 h-5" /> },
+      { label: 'Transfers', to: '/bank/transfers', icon: <MdSend className="w-5 h-5" /> },
+      { label: 'Beneficiaries', to: '/bank/beneficiaries', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Cards', to: '/bank/cards', icon: <FiCreditCard className="w-5 h-5" /> },
+      { label: 'Deposits', to: '/bank/deposits', icon: <MdSavings className="w-5 h-5" /> },
+      { label: 'Loans', to: '/bank/loans', icon: <MdBuild className="w-5 h-5" /> },
+      { label: 'Statements', to: '/bank/statements', icon: <MdFileDownload className="w-5 h-5" /> },
+      { label: 'Bills', to: '/bank/bills', icon: <MdReceipt className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/bank/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Documents', to: '/bank/documents', icon: <MdDescription className="w-5 h-5" /> },
+      { label: 'Profile & Security', to: '/bank/profile', icon: <IoShield className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/bank/admin', icon: <MdMonitor className="w-5 h-5" /> },
     ]},
   ],
   medical: [
     { title: 'VSR Health', items: [
-      { label: 'Dashboard', to: '/medical', icon: <Stethoscope className="w-5 h-5" />, end: true },
-      { label: 'Doctors', to: '/medical/doctors', icon: <Stethoscope className="w-5 h-5" /> },
-      { label: 'Appointments', to: '/medical/appointments', icon: <CalendarDays className="w-5 h-5" /> },
-      { label: 'Patients', to: '/medical/patients', icon: <Users className="w-5 h-5" /> },
-      { label: 'Prescriptions', to: '/medical/prescriptions', icon: <Pill className="w-5 h-5" /> },
-      { label: 'Lab Results', to: '/medical/labs', icon: <FlaskConical className="w-5 h-5" /> },
-      { label: 'Billing', to: '/medical/billing', icon: <Receipt className="w-5 h-5" /> },
-      { label: 'Clinical Records', to: '/medical/records', icon: <ClipboardList className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/medical/notifications', icon: <Bell className="w-5 h-5" /> },
-      { label: 'Admin Console', to: '/medical/admin', icon: <Activity className="w-5 h-5" /> },
+      { label: 'Dashboard', to: '/medical', icon: <IoMedical className="w-5 h-5" />, end: true },
+      { label: 'Doctors', to: '/medical/doctors', icon: <IoMedical className="w-5 h-5" /> },
+      { label: 'Appointments', to: '/medical/appointments', icon: <FiCalendar className="w-5 h-5" /> },
+      { label: 'Patients', to: '/medical/patients', icon: <FiUsers className="w-5 h-5" /> },
+      { label: 'Prescriptions', to: '/medical/prescriptions', icon: <MdMedication className="w-5 h-5" /> },
+      { label: 'Lab Results', to: '/medical/labs', icon: <MdScience className="w-5 h-5" /> },
+      { label: 'Billing', to: '/medical/billing', icon: <MdReceipt className="w-5 h-5" /> },
+      { label: 'Clinical Records', to: '/medical/records', icon: <FiClipboard className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/medical/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/medical/admin', icon: <MdSettings className="w-5 h-5" /> },
+    ]},
+  ],
+  'home-services': [
+    { title: 'Home Services', items: [
+      { label: 'Marketplace', to: '/home-services', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Services', to: '/home-services/categories', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Bookings', to: '/home-services/bookings', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Offers', to: '/home-services/offers', icon: <FiTag className="w-5 h-5" /> },
+      { label: 'Account', to: '/home-services/account', icon: <FiUser className="w-5 h-5" /> },
+      { label: 'Pro Workspace', to: '/home-services/pro', icon: <MdWork className="w-5 h-5" /> },
+      { label: 'Admin Console', to: '/home-services/admin', icon: <MdMonitor className="w-5 h-5" /> },
     ]},
   ],
 }
@@ -331,21 +351,21 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
 /** Groups shared across every service — kept to the fixed global feature set only. */
 const COMMON_GROUPS: NavGroup[] = [
   { title: 'Assistant', items: [
-    { label: 'Chat', to: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
-    { label: 'Backup & Sync', to: '/backup', icon: <Database className="w-5 h-5" /> },
-    { label: 'Settings', to: '/settings', icon: <Settings className="w-5 h-5" /> },
+    { label: 'Chat', to: '/assistant', icon: <FiMessageSquare className="w-5 h-5" /> },
+    { label: 'Backup & Sync', to: '/backup', icon: <FiDatabase className="w-5 h-5" /> },
+    { label: 'Settings', to: '/settings', icon: <FiSettings className="w-5 h-5" /> },
   ]},
   { title: 'Business', items: [
-    { label: 'Video Call', to: '/video', icon: <Video className="w-5 h-5" /> },
+    { label: 'Video Call', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
   ]},
   { title: 'More', items: [
-    { label: 'Broadcast', to: '/broadcast', icon: <Megaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
-    { label: 'Upcoming Feature', to: '/integrations', icon: <PlugZap className="w-5 h-5" /> },
-    { label: 'Team & Roles', to: '/users', icon: <ShieldCheck className="w-5 h-5" />, adminOnly: true },
+    { label: 'Broadcast', to: '/broadcast', icon: <IoMegaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
+    { label: 'Upcoming Feature', to: '/integrations', icon: <FiZap className="w-5 h-5" /> },
+    { label: 'Team & Roles', to: '/users', icon: <FiShield className="w-5 h-5" />, adminOnly: true },
   ]},
   { title: 'Account', items: [
-    { label: 'Plans & Billing', to: '/plans', icon: <CreditCard className="w-5 h-5" /> },
-    { label: 'My Profile', to: '/account', icon: <User className="w-5 h-5" /> },
+    { label: 'Plans & Billing', to: '/plans', icon: <FiCreditCard className="w-5 h-5" /> },
+    { label: 'My Profile', to: '/account', icon: <FiUser className="w-5 h-5" /> },
   ]},
 ]
 
@@ -373,10 +393,10 @@ function BroadcastTicker() {
   return (
     <div className="broadcast-ticker">
       <div className="broadcast-ticker-track">
-        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><Megaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
+        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
       </div>
     </div>
   )
@@ -467,9 +487,9 @@ export default function Layout() {
 
   return (
     <div className="app">
-      <header className="topbar">
+<header className="topbar">
         <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
-          <Menu className="w-6 h-6" />
+          <MdMenu className="w-6 h-6" />
         </button>
         {service && (
           <button className="service-pill" onClick={() => navigate('/')} title="Switch service">
@@ -489,7 +509,7 @@ export default function Layout() {
             <span>{PLAN_LABEL[plan] ?? 'Free'}</span>
           </NavLink>
           <button className="topbar-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
-            <Search className="w-5 h-5" />
+            <FiSearch className="w-5 h-5" />
           </button>
           <div className="view-mode-switch" title="Simple / Advanced view">
             <button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')} aria-label="Simple view">Simple</button>
@@ -505,14 +525,14 @@ export default function Layout() {
           >
             {weatherOn && weather.weather
               ? <span className="text-base leading-none">{conditionMeta(weather.weather.weatherCode, weather.weather.isDay).icon}</span>
-              : <CloudSun className="w-5 h-5" />}
+              : <FiCloud className="w-5 h-5" />}
           </Button>
         </>}
         <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {theme === 'dark' ? <MdWbSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
         </Button>
         <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
-          <LogOut className="w-5 h-5" />
+          <MdLogout className="w-5 h-5" />
         </Button>
       </header>
 
@@ -530,7 +550,7 @@ export default function Layout() {
                   aria-expanded={!isCollapsed}
                 >
                   <span>{g.title}</span>
-                  {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {isCollapsed ? <MdKeyboardArrowRight className="w-4 h-4" /> : <MdKeyboardArrowDown className="w-4 h-4" />}
                 </button>
                 {!isCollapsed && (
                   <div className="nav-items">

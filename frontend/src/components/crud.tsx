@@ -1,8 +1,8 @@
-import { Card, CardContent, Button, Input, Label, Empty } from './ui'
-import { Search, Download, Pencil, Trash2, CalendarDays, Plus } from 'lucide-react'
+﻿import { Card, CardContent, Button, Input, Label, Empty } from './ui'
+import { FiSearch, FiDownload, FiEdit2, FiTrash2, FiCalendar, FiPlus } from 'react-icons/fi'
 
 /**
- * Shared generic CRUD primitives — the industry-standard list/form pattern used
+ * Shared generic CRUD primitives â€” the industry-standard list/form pattern used
  * across Business Modules (interior + warehouse). Keeps every module page
  * consistent: a stat strip, a search toolbar, a left-hand form card and a
  * right-hand record list, with CSV export and inline edit/delete on each row.
@@ -41,7 +41,7 @@ export function CrudLayout({ title, subtitle, tint, form, children, actions }: {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-1">
               <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${tint} flex items-center justify-center text-white shadow`}>
-                <Plus className="w-4 h-4" />
+                <FiPlus className="w-4 h-4" />
               </div>
               <h3 className="font-semibold text-[15px]">{title}</h3>
             </div>
@@ -79,7 +79,7 @@ export function RowItem({ tint, icon, title, meta, badges, right }: {
 export function DatePill({ label, date }: { label: string; date: string }) {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-surface2 border border-border text-text/70">
-      <CalendarDays className="w-3 h-3" /> {label} {date.slice(0, 10)}
+      <FiCalendar className="w-3 h-3" /> {label} {date.slice(0, 10)}
     </span>
   )
 }
@@ -90,19 +90,19 @@ export function CrudToolbar({ value, onChange, onCsv, placeholder }: {
   return (
     <div className="flex items-center gap-2 mb-1">
       <div className="relative flex-1 max-w-xs">
-        <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-text/40" />
-        <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? 'Search…'} className="pl-8" />
+        <FiSearch className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-text/40" />
+        <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ?? 'Searchâ€¦'} className="pl-8" />
       </div>
       <div className="flex-1" />
-      <Button variant="outline" size="sm" onClick={onCsv}><Download className="w-4 h-4 mr-1.5" /> CSV</Button>
+      <Button variant="outline" size="sm" onClick={onCsv}><FiDownload className="w-4 h-4 mr-1.5" /> CSV</Button>
     </div>
   )
 }
 
 export function EditDel({ onEdit, onDel }: { onEdit: () => void; onDel: () => void }) {
   return <>
-    <Button variant="ghost" size="sm" title="Edit" onClick={onEdit}><Pencil className="w-4 h-4" /></Button>
-    <Button variant="ghost" size="sm" title="Delete" onClick={onDel}><Trash2 className="w-4 h-4 text-red-500" /></Button>
+    <Button variant="ghost" size="sm" title="Edit" onClick={onEdit}><FiEdit2 className="w-4 h-4" /></Button>
+    <Button variant="ghost" size="sm" title="Delete" onClick={onDel}><FiTrash2 className="w-4 h-4 text-red-500" /></Button>
   </>
 }
 

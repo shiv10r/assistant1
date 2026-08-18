@@ -1,4 +1,4 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank' | 'medical'
+export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank' | 'medical' | 'home-services'
 
 export type ServiceDef = {
   id: ServiceId
@@ -95,6 +95,15 @@ export const SERVICES: ServiceDef[] = [
     icon: '',
     gradient: 'linear-gradient(135deg, #047857 0%, #0E7490 100%)',
     home: '/medical',
+    shell: 'portal',
+  },
+  {
+    id: 'home-services',
+    label: 'VSR Home Services',
+    tagline: 'Verified pros for repairs, cleaning & home care',
+    icon: '',
+    gradient: 'linear-gradient(135deg, #B45309 0%, #DC2626 100%)',
+    home: '/home-services',
     shell: 'portal',
   },
 ]

@@ -22,3 +22,10 @@
 - When the user provides an architecture document and explicitly says to implement it, treat that document as the approved scope contract and move directly to the first coding chunk instead of recreating the design process.
 - Treat `frontend/src/lib/services.ts` as the source of truth for workspace names, taglines, home routes, and availability; chooser, dashboard, and navigation consumers must not hard-code disabled or coming-soon states.
 - At session completion, include all changed TODO and Markdown files in the commit instead of leaving them pending, unless the user explicitly excludes them.
+
+Always  scan  agents.md for new rules  todo.md  for new tasks since it got updates there 
+
+U r not supposed  to  work or do anything outside the project folder i.e outside d drive in current  device stop immediatly if reached there  however u wont  because there is not  work  u work is limited to frontend and backend folder only 
+
+Always commit on respective frontend backend  branch  when  small  todo is done  or after  1 hours of  coding the  resume work so that i  amware  of what changes u have  done and what is the progress
+

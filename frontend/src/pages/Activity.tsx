@@ -1,19 +1,11 @@
-import { useEffect, useState, useMemo } from 'react'
+﻿import { useEffect, useState, useMemo } from 'react'
 import { api } from '../api'
 import type { ActivityItem } from '../api'
 import { Card, CardContent, Badge, cn } from '../components/ui'
 import {
-  TrendingUp,
-  Clock,
-  Filter,
-  Loader2,
-  MoreHorizontal,
-  Users,
-  DollarSign,
-  Briefcase,
-  MessageSquare,
-  Activity as ActivityIcon,
-} from 'lucide-react'
+  FiTrendingUp, FiClock, FiFilter, FiLoader, FiMoreHorizontal,
+  FiUsers, FiDollarSign, FiBriefcase, FiMessageSquare, FiActivity
+} from 'react-icons/fi'
 import { useViewMode } from '../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
 
@@ -94,17 +86,17 @@ export default function Activity() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <FiLoader className="w-8 h-8 animate-spin text-primary" />
       </div>
     )
   }
 
 const getActionIcon = (action: string) => {
-  if (action.includes('Expense')) return <TrendingUp className="w-4 h-4 text-emerald-500" />
-  if (action.includes('Party') || action.includes('Item')) return <Users className="w-4 h-4 text-indigo-500" />
-  if (action.includes('Transaction') || action.includes('Cash') || action.includes('Bank')) return <DollarSign className="w-4 h-4 text-amber-500" />
-  if (action.includes('Project') || action.includes('Task') || action.includes('Material') || action.includes('Site') || action.includes('Meeting') || action.includes('Design')) return <Briefcase className="w-4 h-4 text-cyan-500" />
-  return <ActivityIcon className="w-4 h-4 text-muted" />
+  if (action.includes('Expense')) return <FiTrendingUp className="w-4 h-4 text-emerald-500" />
+  if (action.includes('Party') || action.includes('Item')) return <FiUsers className="w-4 h-4 text-indigo-500" />
+  if (action.includes('Transaction') || action.includes('Cash') || action.includes('Bank')) return <FiDollarSign className="w-4 h-4 text-amber-500" />
+  if (action.includes('Project') || action.includes('Task') || action.includes('Material') || action.includes('Site') || action.includes('Meeting') || action.includes('Design')) return <FiBriefcase className="w-4 h-4 text-cyan-500" />
+  return <FiActivity className="w-4 h-4 text-muted" />
 }
 
   return (
@@ -130,17 +122,17 @@ const getActionIcon = (action: string) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <StatCard label="Total Actions" value={stats.total} icon={<ActivityIcon className="w-5 h-5" />} trend="+12%" trendUp />
-        <StatCard label="Billing" value={stats.billing} icon={<DollarSign className="w-5 h-5" />} color="amber" />
-        <StatCard label="Projects" value={stats.projects} icon={<Briefcase className="w-5 h-5" />} color="cyan" />
-        <StatCard label="Assistant" value={stats.assistant} icon={<MessageSquare className="w-5 h-5" />} color="indigo" />
-        <StatCard label="Today" value={stats.today} icon={<Clock className="w-5 h-5" />} color="emerald" />
+<StatCard label="Total Actions" value={stats.total} icon={<FiActivity className="w-5 h-5" />} trend="+12%" trendUp />
+<StatCard label="Billing" value={stats.billing} icon={<FiDollarSign className="w-5 h-5" />} color="amber" />
+<StatCard label="Projects" value={stats.projects} icon={<FiBriefcase className="w-5 h-5" />} color="cyan" />
+<StatCard label="Assistant" value={stats.assistant} icon={<FiMessageSquare className="w-5 h-5" />} color="indigo" />
+<StatCard label="Today" value={stats.today} icon={<FiClock className="w-5 h-5" />} color="emerald" />
       </div>
 
       {isAdvanced && items && (
         <AdvancedPanel
           title="Advanced analysis"
-          subtitle="Activity mix and daily volume — toggled via the Simple/Advanced switch in the top bar."
+          subtitle="Activity mix and daily volume â€” toggled via the Simple/Advanced switch in the top bar."
           compare={[
             { label: 'Total actions', value: String(stats.total), delta: 'all time', deltaTone: 'flat' },
             { label: 'Billing', value: String(stats.billing), delta: 'billing actions', deltaTone: 'flat' },
@@ -171,7 +163,7 @@ const getActionIcon = (action: string) => {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-surface/50 rounded-xl border border-border">
         <div className="relative flex-1 min-w-[250px] max-w-md">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <FiFilter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Search activity..."
@@ -203,7 +195,7 @@ const getActionIcon = (action: string) => {
         <CardContent className="p-0">
           {filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <ActivityIcon className="w-12 h-12 text-muted mb-4" />
+              <FiActivity className="w-12 h-12 text-muted mb-4" />
               <h3 className="text-lg font-medium text-text mb-1">No activity found</h3>
               <p className="text-muted">Try adjusting your filters or search term</p>
             </div>
@@ -219,13 +211,13 @@ const getActionIcon = (action: string) => {
                       <span className="font-medium text-text">{a.action}</span>
                       <span className="text-xs text-muted whitespace-nowrap">{a.timeLabel}</span>
                     </div>
-                    <p className="text-sm text-muted mt-0.5 truncate">{a.detail || '—'}</p>
+                    <p className="text-sm text-muted mt-0.5 truncate">{a.detail || 'â€”'}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline" size="sm">{a.source}</Badge>
                     </div>
                   </div>
                   <button className="flex-shrink-0 p-1 text-muted hover:text-text" aria-label="More options">
-                    <MoreHorizontal className="w-5 h-5" />
+                    <FiMoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
               ))}
@@ -255,7 +247,7 @@ function StatCard({ label, value, icon, color = 'indigo', trend, trendUp }: {
             <p className="text-2xl font-bold text-text mt-1">{value}</p>
             {trend && (
               <span className={cn('text-xs font-medium mt-1 inline-flex items-center gap-1', trendUp ? 'text-emerald-500' : 'text-red-500')}>
-                <TrendingUp className="w-3 h-3" /> {trend}
+                <FiTrendingUp className="w-3 h-3" /> {trend}
               </span>
             )}
           </div>

@@ -94,3 +94,16 @@ Work on  ecommerseapp now architecture added
 - [ ] Connect VSR Bank to the planned ASP.NET Core API and SQL Server data model (identity, KYC, accounts, ledger, transfers, cards, deposits, loans, audit).
 - [x] Build the VSR Medical frontend slice per `docs/services/VSR_Medical_Healthcare_App_Architecture_React_DotNet_SQL.md` — registered launcher workspace with a health-identity portal shell (VSR Health), dashboard (greeting, outstanding balance card, vitals chips, today's appointments, notifications, care summary, quick actions), doctor directory with specialty search + booking, appointments list with statuses and an in-app booking form persisted to localStorage, patient registry with detail view (visit history, allergies/conditions, encounters with vitals, prescriptions, lab results, invoices), prescription list with dosage/frequency/instructions, lab results with reference ranges and flags, billing with invoice breakdown and pay-simulator, clinical encounter records with vitals grid, notifications with read/unread + mark-all-read, and an admin console (operational stats + audit trail).
 - [ ] Connect VSR Medical to the planned ASP.NET Core API and SQL Server data model (patients, doctors, appointments, encounters, prescriptions, labs, billing, audit). 
+
+
+1 Complete all the frontend related changes  first push the code then
+
+2-Work on frontend and backend of 
+VSR_Home_Services_Marketplace  service  develop  compelte  service i have added md file architecture in  doc folder of frontend repo 
+
+3-then work on this  job  scrapper 
+VSR_Jobs_AI_Job_Portal_Scraper_Architecture i ahve added architecture md file 
+
+4-Work untill all the tasks are compelted 
+
+

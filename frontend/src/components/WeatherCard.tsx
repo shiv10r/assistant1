@@ -3,7 +3,7 @@ import { useWeather } from '../hooks/useWeather'
 import { conditionMeta, weatherBlurb } from '../lib/weather'
 import { cn } from '../lib/utils'
 import { Button } from './ui'
-import { Loader2, MapPin, Download, RefreshCw } from 'lucide-react'
+import { FiLoader, FiMapPin, FiDownload, FiRefreshCw } from 'react-icons/fi'
 
 interface WeatherCardProps {
   latitude?: number
@@ -61,19 +61,19 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
     <div className={cn('weather-card rounded-2xl border border-border bg-surface overflow-hidden', className)}>
       {!hasCoords && !useMyLocation ? (
         <div className="p-6 text-sm text-muted flex items-center gap-4">
-          <MapPin className="w-8 h-8 text-muted flex-shrink-0" />
+          <FiMapPin className="w-8 h-8 text-muted flex-shrink-0" />
           <div>
             <p className="mb-2 text-sm">Weather is unavailable because this project has no location set.</p>
             {onSetLocation && (
               <Button size="sm" onClick={onSetLocation}>
-                <MapPin className="w-4 h-4" /> Set project location
+                <FiMapPin className="w-4 h-4" /> Set project location
               </Button>
             )}
           </div>
         </div>
       ) : w.loading ? (
         <div className="flex items-center gap-2 text-sm text-muted p-6">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading weather…
+          <FiLoader className="w-4 h-4 animate-spin" /> Loading weather…
         </div>
       ) : w.error ? (
         <p className="text-sm text-red-500 p-6">{w.error}</p>
@@ -92,12 +92,12 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
                 <div className="flex items-center gap-2">
                   {w.weather && (
                     <Button size="sm" variant="ghost" onClick={download} title="Download weather report" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
-                      <Download className="w-4 h-4" />
+                      <FiDownload className="w-4 h-4" />
                     </Button>
                   )}
                   {w.weather && (
                     <Button size="sm" variant="ghost" onClick={() => (useMyLocation ? w.enable() : w.refresh(hasCoords ? latitude! : 20.5937, hasCoords ? longitude! : 78.9629))} title="Refresh weather" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
-                      <RefreshCw className="w-4 h-4" />
+                      <FiRefreshCw className="w-4 h-4" />
                     </Button>
                   )}
                 </div>

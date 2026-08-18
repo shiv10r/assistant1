@@ -1,16 +1,39 @@
-import { useId } from 'react'
-import { cn } from '../lib/utils'
+import { useId } from 'react';
+import { cn } from '../lib/utils';
+import { LogoAnimation } from './AnimationComponents';
 
 type VsrLogoProps = {
-  readonly size?: number
-  readonly wordmark?: boolean
-  readonly compact?: boolean
-  readonly className?: string
-}
+  readonly size?: number;
+  readonly wordmark?: boolean;
+  readonly compact?: boolean;
+  readonly className?: string;
+  readonly animated?: boolean;
+};
 
-export function VsrLogo({ size = 40, wordmark = false, compact = false, className }: VsrLogoProps) {
-  const gradientId = useId()
-  const sheenId = `${gradientId}-sheen`
+export function VsrLogo({ 
+  size = 40, 
+  wordmark = false, 
+  compact = false, 
+  className, 
+  animated = false 
+}: VsrLogoProps) {
+  const gradientId = useId();
+  const sheenId = `${gradientId}-sheen`;
+
+  // If animated and size is large enough, use Lottie animation
+  if (animated && size >= 60) {
+    return (
+      <span className={cn('inline-flex items-center gap-2.5', className)} aria-label="VSR Systems">
+        <LogoAnimation size={size} loop={false} />
+        {wordmark && (
+          <span className="flex min-w-0 flex-col leading-none">
+            <span className="truncate text-[0.95rem] font-extrabold tracking-[0.16em] text-text">VSR</span>
+            {!compact && <span className="mt-1 truncate text-[0.58rem] font-semibold tracking-[0.25em] text-muted">SYSTEMS</span>}
+          </span>
+        )}
+      </span>
+    );
+  }
 
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)} aria-label="VSR Systems">
@@ -39,5 +62,5 @@ export function VsrLogo({ size = 40, wordmark = false, compact = false, classNam
         </span>
       )}
     </span>
-  )
+  );
 }

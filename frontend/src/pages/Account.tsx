@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Settings, BackupStatus, FirebaseVersion } from '../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
 import { usePlan } from '../hooks/usePlan'
-import { Building2, Phone, MapPin, Banknote, BadgeIndianRupee, Save, CheckCircle2, XCircle, Loader2, Crown, CreditCard, Settings2, HardDrive, Cloud, Bell, ShieldCheck, Database, Info } from 'lucide-react'
+import {
+  FiPhone, FiMapPin, FiSave, FiCheckCircle, FiXCircle, FiLoader,
+  FiCreditCard, FiSettings, FiHardDrive, FiCloud, FiBell, FiDatabase, FiInfo
+} from 'react-icons/fi'
+import { MdApartment, MdCurrencyRupee, MdWorkspacePremium, MdVerifiedUser } from 'react-icons/md'
 import { cn } from '../lib/utils'
 import { Link } from 'react-router-dom'
 
@@ -30,7 +34,7 @@ function Field({ label, value, onChange, placeholder, type, list }: {
       <Label>{label}</Label>
       {list ? (
         <Select value={value} onValueChange={onChange}>
-          <option value="">Select…</option>
+          <option value="">Selectâ€¦</option>
           {list.map((o) => <option key={o} value={o}>{o}</option>)}
         </Select>
       ) : (
@@ -114,13 +118,13 @@ export default function Account() {
           <div className="muted">Your firm profile, billing, services and data</div>
         </div>
         <Button onClick={saveFirm} disabled={saving}>
-          {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> Save Profile</>}
+          {saving ? <><FiLoader className="w-4 h-4 animate-spin" /> Savingâ€¦</> : <><FiSave className="w-4 h-4" /> Save Profile</>}
         </Button>
       </div>
 
       {msg && (
         <div className={cn('mb-4 flex items-center gap-2 px-4 py-3 rounded-xl text-sm border', msg.ok ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-500')}>
-          {msg.ok ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+          {msg.ok ? <FiCheckCircle className="w-4 h-4" /> : <FiXCircle className="w-4 h-4" />}
           {msg.text}
         </div>
       )}
@@ -135,16 +139,16 @@ export default function Account() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="font-semibold text-lg truncate">{s['general.firm_name'] || 'VSR Systems'}</p>
-                <Badge variant={isPremium ? 'success' : 'outline'}><Crown className="w-3 h-3" /> {PLAN_LABEL[plan] ?? 'Free'}</Badge>
+                <Badge variant={isPremium ? 'success' : 'outline'}><MdWorkspacePremium className="w-3 h-3" /> {PLAN_LABEL[plan] ?? 'Free'}</Badge>
               </div>
               <p className="text-sm text-muted mt-0.5 truncate">
                 {[s['general.firm_city'], s['general.firm_state']].filter(Boolean).join(', ') || 'Set your firm details below'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {!isPremium && <Button size="sm" onClick={() => setPlan('pro')}><Crown className="w-4 h-4" /> Activate Pro</Button>}
-              <Link to="/plans" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg bg-surface border border-border text-text hover:bg-surface-hover"><CreditCard className="w-4 h-4" /> Plans</Link>
-              <Link to="/settings" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg text-text hover:bg-surface"><Settings2 className="w-4 h-4" /> Settings</Link>
+              {!isPremium && <Button size="sm" onClick={() => setPlan('pro')}><MdWorkspacePremium className="w-4 h-4" /> Activate Pro</Button>}
+              <Link to="/plans" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg bg-surface border border-border text-text hover:bg-surface-hover"><FiCreditCard className="w-4 h-4" /> Plans</Link>
+              <Link to="/settings" className="inline-flex items-center gap-2 h-8 px-3 text-xs font-medium rounded-lg text-text hover:bg-surface"><FiSettings className="w-4 h-4" /> Settings</Link>
             </div>
           </div>
         </CardContent>
@@ -153,7 +157,7 @@ export default function Account() {
       {/* Business Identity */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Building2 className="w-5 h-5 text-primary" /> Business Identity</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MdApartment className="w-5 h-5 text-primary" /> Business Identity</CardTitle>
           <CardDescription>These details appear on invoices, quotes and reports</CardDescription>
         </CardHeader>
         <CardContent>
@@ -171,7 +175,7 @@ export default function Account() {
       {/* Contact */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5 text-primary" /> Contact Details</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiPhone className="w-5 h-5 text-primary" /> Contact Details</CardTitle>
           <CardDescription>How clients and vendors reach you</CardDescription>
         </CardHeader>
         <CardContent>
@@ -186,7 +190,7 @@ export default function Account() {
       {/* Address */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5 text-primary" /> Registered Address</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiMapPin className="w-5 h-5 text-primary" /> Registered Address</CardTitle>
           <CardDescription>Used as the bill-to / ship-from address</CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,7 +211,7 @@ export default function Account() {
       {/* Bank Details */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Banknote className="w-5 h-5 text-primary" /> Bank Details</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MdCurrencyRupee className="w-5 h-5 text-primary" /> Bank Details</CardTitle>
           <CardDescription>For receiving payments and reference on invoices</CardDescription>
         </CardHeader>
         <CardContent>
@@ -232,7 +236,7 @@ export default function Account() {
       {/* Preferences */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BadgeIndianRupee className="w-5 h-5 text-primary" /> Invoicing Preferences</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MdWorkspacePremium className="w-5 h-5 text-primary" /> Invoicing Preferences</CardTitle>
           <CardDescription>Invoice-level defaults</CardDescription>
         </CardHeader>
         <CardContent>
@@ -240,7 +244,7 @@ export default function Account() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label>Logo URL</Label>
-                <Input value={s['general.firm_logo'] || ''} onChange={(e) => setS({ ...s, 'general.firm_logo': e.target.value })} placeholder="https://…/logo.png" />
+                <Input value={s['general.firm_logo'] || ''} onChange={(e) => setS({ ...s, 'general.firm_logo': e.target.value })} placeholder="https://â€¦/logo.png" />
               </div>
               <div>
                 <Label>Amount in Words</Label>
@@ -261,32 +265,32 @@ export default function Account() {
       {/* Connected services */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Cloud className="w-5 h-5 text-primary" /> Connected Services</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FiCloud className="w-5 h-5 text-primary" /> Connected Services</CardTitle>
           <CardDescription>Backup, notifications and cloud status</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 sm:grid-cols-2">
           <ServiceRow
-            icon={<HardDrive className="w-4 h-4" />}
+            icon={<FiHardDrive className="w-4 h-4" />}
             title="Google Drive backup"
             state={drive?.configured ? 'ok' : drive?.hasCredentials ? 'warn' : 'off'}
-            note={drive?.configured ? `Backing up to ${drive.folder}${drive.email ? ` · ${drive.email}` : ''}` : drive?.hasCredentials ? 'Credentials set — connect via Integrations' : 'Not configured'}
+            note={drive?.configured ? `Backing up to ${drive.folder}${drive.email ? ` Â· ${drive.email}` : ''}` : drive?.hasCredentials ? 'Credentials set â€” connect via Integrations' : 'Not configured'}
             action={<Link to="/integrations" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Set up</Link>}
           />
           <ServiceRow
-            icon={<Database className="w-4 h-4" />}
+            icon={<FiDatabase className="w-4 h-4" />}
             title="Cloud sync"
             state={backup?.enabled ? 'ok' : 'off'}
             note={backup?.enabled ? `Turso mirror ${backup.localRows ?? 0} local records synced` : 'Turso not configured'}
           />
           <ServiceRow
-            icon={<Cloud className="w-4 h-4" />}
+            icon={<FiCloud className="w-4 h-4" />}
             title="Firebase mirror"
             state={firebase?.enabled ? 'ok' : 'off'}
-            note={firebase?.enabled ? `Auto-restore on redeploy · v${firebase.version ?? 0}` : 'Firebase not configured'}
+            note={firebase?.enabled ? `Auto-restore on redeploy Â· v${firebase.version ?? 0}` : 'Firebase not configured'}
             action={firebase?.enabled ? <Link to="/backup" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Manage</Link> : undefined}
           />
           <ServiceRow
-            icon={<Bell className="w-4 h-4" />}
+            icon={<FiBell className="w-4 h-4" />}
             title="Push notifications"
             state={pushDevices > 0 ? 'ok' : 'warn'}
             note={pushDevices > 0 ? `${pushDevices} device(s) receiving alerts` : 'No device registered yet'}
@@ -299,11 +303,11 @@ export default function Account() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" /> Account Security</CardTitle>
+            <CardTitle className="flex items-center gap-2"><MdVerifiedUser className="w-5 h-5 text-primary" /> Account Security</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><BadgeIndianRupee className="w-5 h-5" /></div>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><MdCurrencyRupee className="w-5 h-5" /></div>
               <div>
                 <p className="text-sm font-medium text-text">Default login is <Badge variant="outline" size="sm">admin</Badge></p>
                 <p className="text-sm text-muted mt-0.5">Password set via <code className="text-primary">AUTH_PASS</code> server env variable.</p>
@@ -314,11 +318,11 @@ export default function Account() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Info className="w-5 h-5 text-primary" /> App &amp; Data</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FiInfo className="w-5 h-5 text-primary" /> App &amp; Data</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><Database className="w-5 h-5" /></div>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><FiDatabase className="w-5 h-5" /></div>
               <div>
                 <p className="text-sm font-medium text-text">Data is stored on the backend (SQLite)</p>
                 <p className="text-sm text-muted mt-0.5">Back up to Trail Tech services in <Link className="text-primary hover:underline" to="/backup">Backup &amp; Sync</Link> or Drive above.</p>
