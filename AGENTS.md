@@ -29,6 +29,12 @@ U r not supposed  to  work or do anything outside the project folder i.e outside
 
 Always commit on respective frontend backend  branch  when  small  todo is done  or after  1 hours of  coding the  resume work so that i  amware  of what changes u have  done and what is the progress
 
+## Commit/PR Policy (user confirmed)
+
+- Do NOT commit or push after every tiny step. Push only when: (a) the complete task list / todo is done, OR (b) a major chunk of work is complete (~2 hours of coding), OR (c) the user asks for a progress push.
+- There must ALWAYS be a commit to both the frontend and backend branch once the current todo/task list is done.
+- After pushing new work to the frontend repo (`develop01`), always raise the PR to `luxinfra-frontend` and auto-merge it (see Frontend Auto-Sync rule below).
+
 https://github.com/shiv10r/VSRSystemsBackend/tree/develop03
 bakcned 03 branch
 
@@ -38,8 +44,3 @@ bakcned 03 branch
 - `gh` CLI is not installed on this machine. Use the GitHub REST API directly: extract the stored credential via `git credential fill` (protocol=https, host=github.com), then POST `/repos/shiv10r/assistant1/pulls` (head=develop01, base=luxinfra-frontend) and PUT `/repos/shiv10r/assistant1/pulls/{number}/merge` with `merge_method=squash`.
 - If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
 - Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
-
-
-there msut be always commit  to both  frotn end backend once branch once current todo  is done 
-once pushed to frontend repo can raise pr  from  
-https://github.com/shiv10r/assistant1/tree/develop01 to  https://github.com/shiv10r/assistant1/tree/luxinfra-frontend   and merge  it in luxinfrafrontend  and merge  it automatically?
