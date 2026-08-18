@@ -29,3 +29,13 @@ U r not supposed  to  work or do anything outside the project folder i.e outside
 
 Always commit on respective frontend backend  branch  when  small  todo is done  or after  1 hours of  coding the  resume work so that i  amware  of what changes u have  done and what is the progress
 
+https://github.com/shiv10r/VSRSystemsBackend/tree/develop03
+bakcned 03 branch
+
+## Frontend Auto-Sync (develop01 -> luxinfra-frontend)
+
+- After pushing new work to `origin/develop01` (repo `shiv10r/assistant1`), automatically raise a PR from `develop01` to `luxinfra-frontend` and merge it (squash) so the luxinfra frontend branch stays in sync.
+- `gh` CLI is not installed on this machine. Use the GitHub REST API directly: extract the stored credential via `git credential fill` (protocol=https, host=github.com), then POST `/repos/shiv10r/assistant1/pulls` (head=develop01, base=luxinfra-frontend) and PUT `/repos/shiv10r/assistant1/pulls/{number}/merge` with `merge_method=squash`.
+- If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
+- Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
+
