@@ -26,6 +26,7 @@ builder.Services.AddSingleton(new DatabaseService(dbPath));
 builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BillingService>();
 builder.Services.AddSingleton<ProjectService>();
+builder.Services.AddSingleton<HomeServicesService>();
 
 // ---- Optional Turso (libSQL) cloud mirror — persists data across Render redeploys.
 // Enable by setting TURSO_URL + TURSO_TOKEN env vars (service no-ops when unset). ----
