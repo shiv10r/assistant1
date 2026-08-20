@@ -422,6 +422,18 @@ export async function getCategories(): Promise<ServiceCategory[]> {
   return request<ServiceCategory[]>('/home-services/categories')
 }
 
+export async function createCategory(data: {
+  name: string
+  slug: string
+  description: string
+  icon: string
+  color: string
+  sortOrder: number
+  isActive: boolean
+}): Promise<ServiceCategory> {
+  return request<ServiceCategory>('/home-services/categories', jsonInit(data))
+}
+
 export async function getServices(): Promise<HomeService[]> {
   return request<HomeService[]>('/home-services/services')
 }
@@ -668,6 +680,7 @@ export async function getNotifications(userId: string, signal?: AbortSignal): Pr
 
 export const homeServicesApi = {
   getCategories,
+  createCategory,
   getServices,
   getServiceById,
   getPackages,
