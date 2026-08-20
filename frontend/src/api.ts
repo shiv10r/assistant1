@@ -2,7 +2,7 @@
 // Prod: default to the deployed Render API so no VITE_API_URL env var is required in Netlify.
 export const BASE =
   (import.meta.env.VITE_API_URL as string | undefined) ??
-  (import.meta.env.PROD ? 'https://assistant1-2.onrender.com' : '')
+  (import.meta.env.PROD ? 'https://vsrsystemsbackend.onrender.com' : '')
 
 // ---------------- types ----------------
 export interface ChatMessage { text: string; isUser: boolean; isReport?: boolean; reportTitle?: string; rows?: ReportRow[]; totalLabel?: string }
