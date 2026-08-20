@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { LeaveRequest, StaffMember, Student } from './types'
 import { LEAVE_SEED, STAFF_SEED, STUDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolLeave() {
@@ -62,9 +62,9 @@ export default function SchoolLeave() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Leave requests" value={items.length} icon={<CalendarCheck className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Pending" value={pending} icon={<CalendarCheck className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Approved" value={approved} icon={<CalendarCheck className="w-5 h-5" />} tone="success" />
+        <KPICard label="Leave requests" value={items.length} icon={<CalendarCheck className="w-5 h-5" />} tone="info" />
+        <KPICard label="Pending" value={pending} icon={<CalendarCheck className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Approved" value={approved} icon={<CalendarCheck className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

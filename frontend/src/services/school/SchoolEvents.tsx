@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { CalendarEvent } from './types'
 import { EVENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolEvents() {
   const { items, add, update, remove } = useLocalCollection<CalendarEvent>('school:events', EVENT_SEED)
@@ -53,9 +53,9 @@ export default function SchoolEvents() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Events" value={items.length} icon={<CalendarDays className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Upcoming" value={upcoming} icon={<CalendarDays className="w-5 h-5" />} tone="success" />
-        <KpiCard label="This month" value={thisMonth} icon={<CalendarDays className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Events" value={items.length} icon={<CalendarDays className="w-5 h-5" />} tone="info" />
+        <KPICard label="Upcoming" value={upcoming} icon={<CalendarDays className="w-5 h-5" />} tone="success" />
+        <KPICard label="This month" value={thisMonth} icon={<CalendarDays className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

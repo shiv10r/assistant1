@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { FeeStructure, SchoolClass } from './types'
 import { FEE_STRUCTURE_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { money } from '../../components/ui'
 
 export default function SchoolFeeStructure() {
@@ -51,9 +51,9 @@ export default function SchoolFeeStructure() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Fee structures" value={items.length} icon={<Wallet className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Monthly revenue" value={money(Math.round(monthlyTotal))} icon={<Wallet className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Yearly projection" value={money(Math.round(monthlyTotal * 12))} icon={<Wallet className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Fee structures" value={items.length} icon={<Wallet className="w-5 h-5" />} tone="info" />
+        <KPICard label="Monthly revenue" value={money(Math.round(monthlyTotal))} icon={<Wallet className="w-5 h-5" />} tone="success" />
+        <KPICard label="Yearly projection" value={money(Math.round(monthlyTotal * 12))} icon={<Wallet className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

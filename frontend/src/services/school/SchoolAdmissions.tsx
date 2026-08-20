@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { AdmissionLead, AdmissionStage } from './types'
 import { ADMISSION_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { todayISO } from '../../lib/utils'
 
@@ -65,9 +65,9 @@ export default function SchoolAdmissions() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total leads" value={items.length} icon={<UserPlus className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Enrolled" value={enrolled} icon={<UserPlus className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Pending follow-ups" value={pendingFollowUps} icon={<UserPlus className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Total leads" value={items.length} icon={<UserPlus className="w-5 h-5" />} tone="info" />
+        <KPICard label="Enrolled" value={enrolled} icon={<UserPlus className="w-5 h-5" />} tone="success" />
+        <KPICard label="Pending follow-ups" value={pendingFollowUps} icon={<UserPlus className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

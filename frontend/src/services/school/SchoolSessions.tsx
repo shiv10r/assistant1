@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { AcademicSession } from './types'
 import { SESSION_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolSessions() {
   const { items, add, update, remove } = useLocalCollection<AcademicSession>('school:sessions', SESSION_SEED)
@@ -56,8 +56,8 @@ export default function SchoolSessions() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Sessions" value={items.length} icon={<Calendar className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Current session" value={current?.name ?? '—'} icon={<Calendar className="w-5 h-5" />} tone="success" />
+        <KPICard label="Sessions" value={items.length} icon={<Calendar className="w-5 h-5" />} tone="info" />
+        <KPICard label="Current session" value={current?.name ?? '—'} icon={<Calendar className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

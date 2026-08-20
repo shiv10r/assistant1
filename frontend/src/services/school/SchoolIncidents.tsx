@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { IncidentRecord } from './types'
 import { INCIDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolIncidents() {
@@ -54,9 +54,9 @@ export default function SchoolIncidents() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Incidents" value={items.length} icon={<Siren className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Reported" value={open} icon={<Siren className="w-5 h-5" />} tone="danger" />
-        <KpiCard label="Critical" value={critical} icon={<Siren className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Incidents" value={items.length} icon={<Siren className="w-5 h-5" />} tone="info" />
+        <KPICard label="Reported" value={open} icon={<Siren className="w-5 h-5" />} tone="danger" />
+        <KPICard label="Critical" value={critical} icon={<Siren className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

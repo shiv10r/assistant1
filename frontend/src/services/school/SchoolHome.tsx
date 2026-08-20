@@ -5,7 +5,7 @@ import { GraduationCap, Layers, Wallet, CalendarCheck, Users, UserPlus, FileQues
 import { useLocalCollection } from '../../lib/localStore'
 import type { Student, SchoolClass, FeeRecord, AttendanceRecord, StaffMember, AdmissionLead, LeaveRequest, Ticket } from './types'
 import { STUDENT_SEED, CLASS_SEED, FEE_SEED, ATTENDANCE_SEED, STAFF_SEED, ADMISSION_SEED, LEAVE_SEED, TICKET_SEED } from './seed'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
 
 const NAV = [
@@ -80,10 +80,10 @@ export default function SchoolHome() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Students" value={num(students.length)} sub={`${num(classes.length)} classes`} icon={<Users className="w-5 h-5" />} tone="info" onClick={() => navigate('/school/students')} />
-        <KpiCard label="Staff" value={num(staff.length)} sub="Teachers & staff" icon={<GraduationCap className="w-5 h-5" />} tone="default" onClick={() => navigate('/school/staff')} />
-        <KpiCard label="Fees outstanding" value={money(pendingAmount)} sub={`${num(overdueCount)} overdue`} icon={<Wallet className="w-5 h-5" />} tone="danger" onClick={() => navigate('/school/fees')} />
-        <KpiCard label="Attendance today" value={`${attendancePct}%`} sub={`${num(presentToday)}/${num(todayAttendance.length)} present`} icon={<CalendarCheck className="w-5 h-5" />} tone="success" onClick={() => navigate('/school/attendance')} />
+        <KPICard label="Students" value={num(students.length)} sub={`${num(classes.length)} classes`} icon={<Users className="w-5 h-5" />} tone="info" onClick={() => navigate('/school/students')} />
+        <KPICard label="Staff" value={num(staff.length)} sub="Teachers & staff" icon={<GraduationCap className="w-5 h-5" />} tone="default" onClick={() => navigate('/school/staff')} />
+        <KPICard label="Fees outstanding" value={money(pendingAmount)} sub={`${num(overdueCount)} overdue`} icon={<Wallet className="w-5 h-5" />} tone="danger" onClick={() => navigate('/school/fees')} />
+        <KPICard label="Attendance today" value={`${attendancePct}%`} sub={`${num(presentToday)}/${num(todayAttendance.length)} present`} icon={<CalendarCheck className="w-5 h-5" />} tone="success" onClick={() => navigate('/school/attendance')} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

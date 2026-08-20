@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { TrainingProgram, StaffMember } from './types'
 import { TRAINING_SEED, STAFF_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolTraining() {
@@ -59,9 +59,9 @@ export default function SchoolTraining() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Programs" value={items.length} icon={<GraduationCap className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Planned" value={planned} icon={<GraduationCap className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Completed" value={completed} icon={<GraduationCap className="w-5 h-5" />} tone="success" />
+        <KPICard label="Programs" value={items.length} icon={<GraduationCap className="w-5 h-5" />} tone="info" />
+        <KPICard label="Planned" value={planned} icon={<GraduationCap className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Completed" value={completed} icon={<GraduationCap className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Receipt, Student } from './types'
 import { RECEIPT_SEED, STUDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { money } from '../../components/ui'
 
 export default function SchoolReceipts() {
@@ -62,9 +62,9 @@ export default function SchoolReceipts() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Receipts" value={items.length} icon={<ReceiptText className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Total collected" value={money(totalCollected)} icon={<ReceiptText className="w-5 h-5" />} tone="success" />
-        <KpiCard label="This month" value={money(thisMonth)} icon={<ReceiptText className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Receipts" value={items.length} icon={<ReceiptText className="w-5 h-5" />} tone="info" />
+        <KPICard label="Total collected" value={money(totalCollected)} icon={<ReceiptText className="w-5 h-5" />} tone="success" />
+        <KPICard label="This month" value={money(thisMonth)} icon={<ReceiptText className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

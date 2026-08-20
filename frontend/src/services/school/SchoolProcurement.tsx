@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Vendor, PurchaseOrder } from './types'
 import { VENDOR_SEED, PO_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { money } from '../../components/ui'
 
@@ -81,9 +81,9 @@ export default function SchoolProcurement() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Vendors" value={vendors.length} icon={<ShoppingCart className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Open orders" value={openOrders} icon={<ShoppingCart className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Approved value" value={money(orderValue)} icon={<ShoppingCart className="w-5 h-5" />} tone="success" />
+        <KPICard label="Vendors" value={vendors.length} icon={<ShoppingCart className="w-5 h-5" />} tone="info" />
+        <KPICard label="Open orders" value={openOrders} icon={<ShoppingCart className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Approved value" value={money(orderValue)} icon={<ShoppingCart className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

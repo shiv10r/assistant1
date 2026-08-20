@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { AssetRecord } from './types'
 import { ASSET_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { money } from '../../components/ui'
 
@@ -59,9 +59,9 @@ export default function SchoolAssets() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Assets" value={items.length} icon={<Boxes className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Asset value" value={money(totalValue)} icon={<Boxes className="w-5 h-5" />} tone="success" />
-        <KpiCard label="In maintenance" value={maintenance} icon={<Boxes className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Assets" value={items.length} icon={<Boxes className="w-5 h-5" />} tone="info" />
+        <KPICard label="Asset value" value={money(totalValue)} icon={<Boxes className="w-5 h-5" />} tone="success" />
+        <KPICard label="In maintenance" value={maintenance} icon={<Boxes className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

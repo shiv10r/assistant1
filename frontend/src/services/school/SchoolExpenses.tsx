@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ExpenseRecord } from './types'
 import { EXPENSE_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { money } from '../../components/ui'
 import { AdvancedPanel, type DonutDatum } from '../../components/AdvancedPanel'
 
@@ -67,9 +67,9 @@ export default function SchoolExpenses() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Expenses" value={items.length} icon={<TrendingDown className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Total spent" value={money(total)} icon={<TrendingDown className="w-5 h-5" />} tone="danger" />
-        <KpiCard label="This month" value={money(thisMonth)} icon={<TrendingDown className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Expenses" value={items.length} icon={<TrendingDown className="w-5 h-5" />} tone="info" />
+        <KPICard label="Total spent" value={money(total)} icon={<TrendingDown className="w-5 h-5" />} tone="danger" />
+        <KPICard label="This month" value={money(thisMonth)} icon={<TrendingDown className="w-5 h-5" />} tone="warning" />
       </div>
 
       {donut.length > 0 && (

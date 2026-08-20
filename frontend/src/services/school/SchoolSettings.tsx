@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SchoolSetting } from './types'
 import { SETTING_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolSettings() {
   const { items, add, update, remove } = useLocalCollection<SchoolSetting>('school:settings', SETTING_SEED)
@@ -48,8 +48,8 @@ export default function SchoolSettings() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Settings" value={items.length} icon={<Settings className="w-5 h-5" />} tone="info" />
-        <KpiCard label="School" value={schoolName} icon={<Settings className="w-5 h-5" />} tone="success" />
+        <KPICard label="Settings" value={items.length} icon={<Settings className="w-5 h-5" />} tone="info" />
+        <KPICard label="School" value={schoolName} icon={<Settings className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

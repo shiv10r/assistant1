@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Survey } from './types'
 import { SURVEY_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolSurveys() {
@@ -54,9 +54,9 @@ export default function SchoolSurveys() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Surveys" value={items.length} icon={<ClipboardCheck className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Live" value={live} icon={<ClipboardCheck className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Responses" value={totalResponses} icon={<ClipboardCheck className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Surveys" value={items.length} icon={<ClipboardCheck className="w-5 h-5" />} tone="info" />
+        <KPICard label="Live" value={live} icon={<ClipboardCheck className="w-5 h-5" />} tone="success" />
+        <KPICard label="Responses" value={totalResponses} icon={<ClipboardCheck className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

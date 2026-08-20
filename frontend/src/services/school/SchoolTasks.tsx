@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { TaskItem } from './types'
 import { TASK_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolTasks() {
@@ -58,10 +58,10 @@ export default function SchoolTasks() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Tasks" value={items.length} icon={<CheckSquare className="w-5 h-5" />} tone="info" />
-        <KpiCard label="To do" value={todo} icon={<CheckSquare className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="In progress" value={inprogress} icon={<CheckSquare className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Done" value={done} icon={<CheckSquare className="w-5 h-5" />} tone="success" />
+        <KPICard label="Tasks" value={items.length} icon={<CheckSquare className="w-5 h-5" />} tone="info" />
+        <KPICard label="To do" value={todo} icon={<CheckSquare className="w-5 h-5" />} tone="warning" />
+        <KPICard label="In progress" value={inprogress} icon={<CheckSquare className="w-5 h-5" />} tone="default" />
+        <KPICard label="Done" value={done} icon={<CheckSquare className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

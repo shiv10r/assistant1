@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { MealPlan } from './types'
 import { MEAL_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { money } from '../../components/ui'
 
@@ -49,9 +49,9 @@ export default function SchoolCafeteria() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Meal plans" value={items.length} icon={<UtensilsCrossed className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Active" value={active} icon={<UtensilsCrossed className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Avg cost/meal" value={money(avgCost)} icon={<UtensilsCrossed className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Meal plans" value={items.length} icon={<UtensilsCrossed className="w-5 h-5" />} tone="info" />
+        <KPICard label="Active" value={active} icon={<UtensilsCrossed className="w-5 h-5" />} tone="success" />
+        <KPICard label="Avg cost/meal" value={money(avgCost)} icon={<UtensilsCrossed className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

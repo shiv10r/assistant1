@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { PayrollRecord, StaffMember } from './types'
 import { PAYROLL_SEED, STAFF_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { money } from '../../components/ui'
 
@@ -62,9 +62,9 @@ export default function SchoolPayroll() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Payroll records" value={items.length} icon={<Banknote className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Total net pay" value={money(totalNet)} icon={<Banknote className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Paid" value={paid} icon={<Banknote className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Payroll records" value={items.length} icon={<Banknote className="w-5 h-5" />} tone="info" />
+        <KPICard label="Total net pay" value={money(totalNet)} icon={<Banknote className="w-5 h-5" />} tone="success" />
+        <KPICard label="Paid" value={paid} icon={<Banknote className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

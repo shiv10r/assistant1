@@ -5,6 +5,7 @@ import { DataTable, type DataColumn } from '../../components/DataTable'
 import { useLocalCollection } from '../../lib/localStore'
 import { RESERVATION_SEED } from './seed'
 import type { Reservation, ReservationStatus } from './types'
+import HotelShell from './HotelShell'
 
 const STATUS_TONE = {
   confirmed: 'info',
@@ -44,17 +45,19 @@ export default function HotelReservations() {
   ]
 
   return (
-    <div className="space-y-6">
-      <PageHead icon={<CalendarCheck className="h-6 w-6" />} title="Reservations" sub="Manage upcoming, in-house, and completed stays." />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {(['all', 'confirmed', 'checked-in', 'checked-out'] as const).map((value) => (
-          <button key={value} type="button" onClick={() => setStatus(value)} className={`rounded-lg border px-3 py-3 text-left transition-colors ${status === value ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface text-muted hover:border-primary/50'}`}>
-            <span className="block text-lg font-bold">{value === 'all' ? items.length : items.filter((item) => item.status === value).length}</span>
-            <span className="text-xs">{value === 'all' ? 'All bookings' : STATUS_LABEL[value]}</span>
-          </button>
-        ))}
+    <HotelShell>
+      <div className="hotel-main">
+        <PageHead icon={<CalendarCheck className="h-6 w-6" />} title="Reservations" sub="Manage upcoming, in-house, and completed stays." />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(['all', 'confirmed', 'checked-in', 'checked-out'] as const).map((value) => (
+            <button key={value} type="button" onClick={() => setStatus(value)} className={`rounded-lg border px-3 py-3 text-left transition-colors ${status === value ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface text-muted hover:border-primary/50'}`}>
+              <span className="block text-lg font-bold">{value === 'all' ? items.length : items.filter((item) => item.status === value).length}</span>
+              <span className="text-xs">{value === 'all' ? 'All bookings' : STATUS_LABEL[value]}</span>
+            </button>
+          ))}
+        </div>
+        <Card><CardContent className="pt-6"><DataTable columns={columns} rows={rows} rowKey={(row) => row.id} pageSize={10} exportFilename="hotel-reservations" emptyIcon={<CalendarCheck className="h-6 w-6" />} emptyTitle="No reservations found" toolbar={<div className="relative w-full sm:w-72"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search reservations..." className="pl-9" /></div>} /></CardContent></Card>
       </div>
-      <Card><CardContent className="pt-6"><DataTable columns={columns} rows={rows} rowKey={(row) => row.id} pageSize={10} exportFilename="hotel-reservations" emptyIcon={<CalendarCheck className="h-6 w-6" />} emptyTitle="No reservations found" toolbar={<div className="relative w-full sm:w-72"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search reservations..." className="pl-9" /></div>} /></CardContent></Card>
-    </div>
+    </HotelShell>
   )
 }

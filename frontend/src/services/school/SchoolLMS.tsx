@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Course, Lesson, SchoolClass } from './types'
 import { COURSE_SEED, LESSON_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolLMS() {
@@ -88,9 +88,9 @@ export default function SchoolLMS() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Courses" value={courses.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Published" value={publishedCourses} icon={<BookOpen className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Lessons" value={lessons.length} icon={<BookOpen className="w-5 h-5" />} tone="default" />
+        <KPICard label="Courses" value={courses.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
+        <KPICard label="Published" value={publishedCourses} icon={<BookOpen className="w-5 h-5" />} tone="success" />
+        <KPICard label="Lessons" value={lessons.length} icon={<BookOpen className="w-5 h-5" />} tone="default" />
       </div>
 
       <Card>

@@ -5,7 +5,7 @@ import { Home, Plus, Sparkles, ShoppingBag, FileText, ArrowRight, CheckCircle2, 
 import { useLocalCollection } from '../../lib/localStore'
 import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct } from './types'
 import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED, PRODUCT_SEED } from './seed'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
 
 const NAV = [
@@ -65,10 +65,10 @@ export default function InteriorHome() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Active projects" value={num(activeProjects.length)} sub={`${money(totalBudget)} total budget`} icon={<Home className="w-5 h-5" />} tone="info" onClick={() => navigate('/interior/projects')} />
-        <KpiCard label="AI designs" value={num(savedDesigns.length)} sub={`${num(favorites.length)} favourites`} icon={<Sparkles className="w-5 h-5" />} tone="default" onClick={() => navigate('/interior/projects')} />
-        <KpiCard label="Rooms" value={num(rooms.length)} sub={`${num(roomsWithImage)} with photos`} icon={<Camera className="w-5 h-5" />} tone="success" onClick={() => navigate('/interior/projects')} />
-        <KpiCard label="Products" value={num(products.length)} sub="in the catalogue" icon={<ShoppingBag className="w-5 h-5" />} tone="warning" onClick={() => navigate('/interior/products')} />
+        <KPICard label="Active projects" value={num(activeProjects.length)} sub={`${money(totalBudget)} total budget`} icon={<Home className="w-5 h-5" />} tone="info" onClick={() => navigate('/interior/projects')} />
+        <KPICard label="AI designs" value={num(savedDesigns.length)} sub={`${num(favorites.length)} favourites`} icon={<Sparkles className="w-5 h-5" />} tone="default" onClick={() => navigate('/interior/projects')} />
+        <KPICard label="Rooms" value={num(rooms.length)} sub={`${num(roomsWithImage)} with photos`} icon={<Camera className="w-5 h-5" />} tone="success" onClick={() => navigate('/interior/projects')} />
+        <KPICard label="Products" value={num(products.length)} sub="in the catalogue" icon={<ShoppingBag className="w-5 h-5" />} tone="warning" onClick={() => navigate('/interior/products')} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

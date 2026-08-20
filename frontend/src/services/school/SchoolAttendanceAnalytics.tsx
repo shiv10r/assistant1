@@ -5,7 +5,7 @@ import { useLocalCollection } from '../../lib/localStore'
 import type { AttendanceRecord } from './types'
 import { ATTENDANCE_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
 
@@ -78,10 +78,10 @@ export default function SchoolAttendanceAnalytics() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Records" value={records.length} icon={<CalendarCheck className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Attendance rate" value={`${rate}%`} icon={<CalendarCheck className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Absent" value={absent} icon={<CalendarCheck className="w-5 h-5" />} tone="danger" />
-        <KpiCard label="Late" value={late} icon={<CalendarCheck className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Records" value={records.length} icon={<CalendarCheck className="w-5 h-5" />} tone="info" />
+        <KPICard label="Attendance rate" value={`${rate}%`} icon={<CalendarCheck className="w-5 h-5" />} tone="success" />
+        <KPICard label="Absent" value={absent} icon={<CalendarCheck className="w-5 h-5" />} tone="danger" />
+        <KPICard label="Late" value={late} icon={<CalendarCheck className="w-5 h-5" />} tone="warning" />
       </div>
 
       <AdvancedPanel

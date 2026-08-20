@@ -5,6 +5,7 @@ import { DataTable, type DataColumn } from '../../components/DataTable'
 import { useLocalCollection } from '../../lib/localStore'
 import { GUEST_SEED } from './seed'
 import type { Guest } from './types'
+import HotelShell from './HotelShell'
 
 export default function HotelGuests() {
   const { items } = useLocalCollection<Guest>('hotel:guests', [...GUEST_SEED])
@@ -19,9 +20,11 @@ export default function HotelGuests() {
   ]
 
   return (
-    <div className="space-y-6">
-      <PageHead icon={<Users className="h-6 w-6" />} title="Guests" sub="Guest profiles, contact details, and stay history." />
-      <Card><CardContent className="pt-6"><DataTable columns={columns} rows={rows} rowKey={(guest) => guest.id} pageSize={12} exportFilename="hotel-guests" emptyIcon={<Users className="h-6 w-6" />} emptyTitle="No guests found" toolbar={<div className="relative w-full sm:w-72"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search guests..." className="pl-9" /></div>} /></CardContent></Card>
-    </div>
+    <HotelShell>
+      <div className="hotel-main">
+        <PageHead icon={<Users className="h-6 w-6" />} title="Guests" sub="Guest profiles, contact details, and stay history." />
+        <Card><CardContent className="pt-6"><DataTable columns={columns} rows={rows} rowKey={(guest) => guest.id} pageSize={12} exportFilename="hotel-guests" emptyIcon={<Users className="h-6 w-6" />} emptyTitle="No guests found" toolbar={<div className="relative w-full sm:w-72"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search guests..." className="pl-9" /></div>} /></CardContent></Card>
+      </div>
+    </HotelShell>
   )
 }

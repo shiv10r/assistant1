@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ExamSchedule, MarksEntry, SchoolClass, Student } from './types'
 import { EXAM_SCHEDULE_SEED, MARKS_SEED, CLASS_SEED, STUDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolExams() {
@@ -88,9 +88,9 @@ export default function SchoolExams() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Exams" value={schedules.length} icon={<ClipboardList className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Completed" value={completed} icon={<ClipboardList className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Marks entries" value={marks.length} icon={<ClipboardList className="w-5 h-5" />} tone="default" />
+        <KPICard label="Exams" value={schedules.length} icon={<ClipboardList className="w-5 h-5" />} tone="info" />
+        <KPICard label="Completed" value={completed} icon={<ClipboardList className="w-5 h-5" />} tone="success" />
+        <KPICard label="Marks entries" value={marks.length} icon={<ClipboardList className="w-5 h-5" />} tone="default" />
       </div>
 
       <Card>

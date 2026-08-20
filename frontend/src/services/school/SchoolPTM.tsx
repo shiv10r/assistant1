@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { PTMSession, StaffMember } from './types'
 import { PTM_SEED, STAFF_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolPTM() {
@@ -56,9 +56,9 @@ export default function SchoolPTM() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Slots" value={items.length} icon={<Users className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Open" value={open} icon={<Users className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Booked" value={booked} icon={<Users className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Slots" value={items.length} icon={<Users className="w-5 h-5" />} tone="info" />
+        <KPICard label="Open" value={open} icon={<Users className="w-5 h-5" />} tone="success" />
+        <KPICard label="Booked" value={booked} icon={<Users className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>
