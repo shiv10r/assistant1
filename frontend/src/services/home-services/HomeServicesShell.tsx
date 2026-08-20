@@ -44,7 +44,7 @@ const PERSONAS: readonly { id: HsPersona; label: string }[] = [
 ]
 
 export function personaFromPath(pathname: string): HsPersona {
-  if (pathname.startsWith('/home-services/admin')) return 'admin'
+  if (pathname.startsWith('/home-services/admin') || pathname.startsWith('/home-services/database-check') || pathname.startsWith('/home-services/categories/add')) return 'admin'
   if (pathname.startsWith('/home-services/pro')) return 'professional'
   return 'customer'
 }
