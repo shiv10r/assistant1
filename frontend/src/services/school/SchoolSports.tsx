@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SportsTeam, Fixture } from './types'
 import { TEAM_SEED, FIXTURE_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolSports() {
   const { items: teams, add: addTeam, update: updateTeam, remove: removeTeam } = useLocalCollection<SportsTeam>('school:teams', TEAM_SEED)
@@ -80,10 +80,10 @@ export default function SchoolSports() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Teams" value={teams.length} icon={<Trophy className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Players" value={totalPlayers} icon={<Trophy className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Fixtures" value={fixtures.length} icon={<Trophy className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Wins" value={wins} icon={<Trophy className="w-5 h-5" />} tone="success" />
+        <KPICard label="Teams" value={teams.length} icon={<Trophy className="w-5 h-5" />} tone="info" />
+        <KPICard label="Players" value={totalPlayers} icon={<Trophy className="w-5 h-5" />} tone="default" />
+        <KPICard label="Fixtures" value={fixtures.length} icon={<Trophy className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Wins" value={wins} icon={<Trophy className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

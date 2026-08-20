@@ -4,7 +4,7 @@ import { CalendarClock, Plus, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { TimetableSlot, SchoolClass } from './types'
 import { TIMETABLE_SEED, CLASS_SEED } from './seed'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -33,9 +33,9 @@ export default function SchoolTimetable() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Slots" value={filtered.length} icon={<CalendarClock className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Classes covered" value={classCovered} icon={<CalendarClock className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Rooms in use" value={roomCount} icon={<CalendarClock className="w-5 h-5" />} tone="success" />
+        <KPICard label="Slots" value={filtered.length} icon={<CalendarClock className="w-5 h-5" />} tone="info" />
+        <KPICard label="Classes covered" value={classCovered} icon={<CalendarClock className="w-5 h-5" />} tone="default" />
+        <KPICard label="Rooms in use" value={roomCount} icon={<CalendarClock className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

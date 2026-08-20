@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { JobOpening, Applicant } from './types'
 import { JOB_SEED, APPLICANT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 const STAGES: Applicant['stage'][] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected']
@@ -103,10 +103,10 @@ export default function SchoolRecruitment() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Open jobs" value={openJobs} icon={<Briefcase className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Total jobs" value={jobs.length} icon={<Briefcase className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Applicants" value={applicants.length} icon={<Briefcase className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Hired" value={hired} icon={<Briefcase className="w-5 h-5" />} tone="success" />
+        <KPICard label="Open jobs" value={openJobs} icon={<Briefcase className="w-5 h-5" />} tone="info" />
+        <KPICard label="Total jobs" value={jobs.length} icon={<Briefcase className="w-5 h-5" />} tone="default" />
+        <KPICard label="Applicants" value={applicants.length} icon={<Briefcase className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Hired" value={hired} icon={<Briefcase className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

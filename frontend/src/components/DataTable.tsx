@@ -14,6 +14,7 @@ export interface DataColumn<T> {
   headerClassName?: string
   cellClassName?: string
   hideOnMobile?: boolean
+  align?: 'left' | 'center' | 'right'
 }
 
 interface DataTableProps<T> {

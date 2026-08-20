@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Notification } from './types'
 import { NOTIFICATION_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolNotifications() {
@@ -55,9 +55,9 @@ export default function SchoolNotifications() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Notifications" value={items.length} icon={<Bell className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Unread" value={unread} icon={<Bell className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Important" value={important} icon={<Bell className="w-5 h-5" />} tone="danger" />
+        <KPICard label="Notifications" value={items.length} icon={<Bell className="w-5 h-5" />} tone="info" />
+        <KPICard label="Unread" value={unread} icon={<Bell className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Important" value={important} icon={<Bell className="w-5 h-5" />} tone="danger" />
       </div>
 
       <Card>

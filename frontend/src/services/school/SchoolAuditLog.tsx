@@ -5,7 +5,7 @@ import { useLocalCollection } from '../../lib/localStore'
 import type { AuditLog } from './types'
 import { AUDIT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolAuditLog() {
   const { items, remove } = useLocalCollection<AuditLog>('school:audit', AUDIT_SEED)
@@ -33,9 +33,9 @@ export default function SchoolAuditLog() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Log entries" value={items.length} icon={<History className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Today" value={todayCount} icon={<History className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Users tracked" value={new Set(items.map((l) => l.user)).size} icon={<History className="w-5 h-5" />} tone="default" />
+        <KPICard label="Log entries" value={items.length} icon={<History className="w-5 h-5" />} tone="info" />
+        <KPICard label="Today" value={todayCount} icon={<History className="w-5 h-5" />} tone="success" />
+        <KPICard label="Users tracked" value={new Set(items.map((l) => l.user)).size} icon={<History className="w-5 h-5" />} tone="default" />
       </div>
 
       <Card>

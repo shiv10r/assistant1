@@ -1,43 +1,70 @@
+import { cn } from '../lib/utils'
 import type { ReactNode } from 'react'
-import { Card, CardContent, cn } from './ui'
 
-type Tone = 'default' | 'success' | 'warning' | 'danger' | 'info'
-
-interface KpiCardProps {
+export type KPICardProps = {
   label: string
-  value: ReactNode
+  value: string | number
   sub?: string
-  icon?: ReactNode
-  tone?: Tone
+  icon: ReactNode
+  tone?: 'default' | 'success' | 'warning' | 'danger' | 'info'
+  trend?: { value: number; label: string; positive?: boolean }
   onClick?: () => void
 }
 
-const ICON_TONE: Record<Tone, string> = {
-  default: 'text-primary bg-primary/10',
-  success: 'text-emerald-500 bg-emerald-500/10',
-  warning: 'text-amber-500 bg-amber-500/10',
-  danger: 'text-red-500 bg-red-500/10',
-  info: 'text-cyan-500 bg-cyan-500/10',
+const TONE_CLASSES = {
+  default: 'border-border bg-surface',
+  success: 'border-emerald-500/30 bg-emerald-500/10',
+  warning: 'border-amber-500/30 bg-amber-500/10',
+  danger: 'border-red-500/30 bg-red-500/10',
+  info: 'border-blue-500/30 bg-blue-500/10'
 }
 
-export function KpiCard({ label, value, sub, icon, tone = 'default', onClick }: KpiCardProps) {
+const ICON_TONES = {
+  default: 'text-muted',
+  success: 'text-emerald-500',
+  warning: 'text-amber-500',
+  danger: 'text-red-500',
+  info: 'text-blue-500'
+}
+
+export function KPICard({
+  label,
+  value,
+  sub,
+  icon,
+  tone = 'default',
+  trend,
+  onClick
+}: KPICardProps) {
+  const isInteractive = typeof onClick === 'function'
+
   return (
-    <Card
-      className={cn(onClick && 'cursor-pointer hover:border-primary/50 transition-colors')}
+    <div
+      className={cn(
+        'rounded-xl border p-5 transition-all duration-200',
+        TONE_CLASSES[tone],
+        isInteractive && 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10'
+      )}
       onClick={onClick}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onKeyDown={isInteractive ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }} : undefined}
     >
-      <CardContent className="flex items-center justify-between">
-        <div className="min-w-0">
-          <div className="text-sm text-muted truncate">{label}</div>
-          <div className="text-2xl font-semibold text-text mt-1">{value}</div>
-          {sub && <div className="text-xs text-muted mt-0.5 truncate">{sub}</div>}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-muted uppercase tracking-wider">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-text truncate">{value}</p>
+          {sub && <p className="mt-0.5 text-xs text-muted truncate">{sub}</p>}
+          {trend && (
+            <p className={cn('mt-2 text-xs font-medium flex items-center gap-1', trend.positive ? 'text-emerald-500' : 'text-red-500')}>
+              {trend.positive ? '↑' : '↓'} {trend.value}{trend.label && ` ${trend.label}`}
+            </p>
+          )}
         </div>
-        {icon && (
-          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', ICON_TONE[tone])}>
-            {icon}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl shrink-0', ICON_TONES[tone])}>
+          {icon}
+        </div>
+      </div>
+    </div>
   )
 }

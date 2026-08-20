@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { HostelRoom, HostelAllocation, Student } from './types'
 import { ROOM_SEED, ALLOCATION_SEED, STUDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolHostel() {
@@ -95,9 +95,9 @@ export default function SchoolHostel() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Rooms" value={rooms.length} icon={<BedDouble className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Beds" value={beds} icon={<BedDouble className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Occupants" value={activeAllocs} icon={<BedDouble className="w-5 h-5" />} tone="success" />
+        <KPICard label="Rooms" value={rooms.length} icon={<BedDouble className="w-5 h-5" />} tone="info" />
+        <KPICard label="Beds" value={beds} icon={<BedDouble className="w-5 h-5" />} tone="default" />
+        <KPICard label="Occupants" value={activeAllocs} icon={<BedDouble className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

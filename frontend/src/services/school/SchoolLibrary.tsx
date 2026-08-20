@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { LibraryBook, LibraryIssue, Student, StaffMember } from './types'
 import { BOOK_SEED, ISSUE_SEED, STUDENT_SEED, STAFF_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolLibrary() {
   const { items: books, add: addBook, update: updateBook, remove: removeBook } = useLocalCollection<LibraryBook>('school:books', BOOK_SEED)
@@ -97,9 +97,9 @@ export default function SchoolLibrary() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Books" value={books.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Total copies" value={totalCopies} icon={<BookOpen className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Checked out" value={out} icon={<BookOpen className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Books" value={books.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
+        <KPICard label="Total copies" value={totalCopies} icon={<BookOpen className="w-5 h-5" />} tone="default" />
+        <KPICard label="Checked out" value={out} icon={<BookOpen className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>

@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Ticket } from './types'
 import { TICKET_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolHelpdesk() {
@@ -56,10 +56,10 @@ export default function SchoolHelpdesk() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Tickets" value={items.length} icon={<LifeBuoy className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Open" value={open} icon={<LifeBuoy className="w-5 h-5" />} tone="danger" />
-        <KpiCard label="In progress" value={inprogress} icon={<LifeBuoy className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Resolved" value={resolved} icon={<LifeBuoy className="w-5 h-5" />} tone="success" />
+        <KPICard label="Tickets" value={items.length} icon={<LifeBuoy className="w-5 h-5" />} tone="info" />
+        <KPICard label="Open" value={open} icon={<LifeBuoy className="w-5 h-5" />} tone="danger" />
+        <KPICard label="In progress" value={inprogress} icon={<LifeBuoy className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Resolved" value={resolved} icon={<LifeBuoy className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

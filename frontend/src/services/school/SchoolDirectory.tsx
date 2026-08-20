@@ -5,7 +5,7 @@ import { useLocalCollection } from '../../lib/localStore'
 import type { Student, StaffMember, ParentRecord } from './types'
 import { STUDENT_SEED, STAFF_SEED, PARENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 type Entry =
   | { kind: 'student'; id: string; name: string; contact: string; detail: string }
@@ -41,10 +41,10 @@ export default function SchoolDirectory() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total people" value={entries.length} icon={<Users className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Students" value={students.length} icon={<UserRound className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Staff" value={staff.length} icon={<Briefcase className="w-5 h-5" />} tone="warning" />
-        <KpiCard label="Parents" value={parents.length} icon={<Users className="w-5 h-5" />} tone="success" />
+        <KPICard label="Total people" value={entries.length} icon={<Users className="w-5 h-5" />} tone="info" />
+        <KPICard label="Students" value={students.length} icon={<UserRound className="w-5 h-5" />} tone="default" />
+        <KPICard label="Staff" value={staff.length} icon={<Briefcase className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Parents" value={parents.length} icon={<Users className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

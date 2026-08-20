@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Question, SchoolClass, QuestionType } from './types'
 import { QUESTION_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolQuestionBank() {
@@ -64,9 +64,9 @@ export default function SchoolQuestionBank() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Questions" value={items.length} icon={<FileQuestion className="w-5 h-5" />} tone="info" />
-        <KpiCard label="MCQ" value={mcqCount} icon={<FileQuestion className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Total marks" value={totalMarks} icon={<FileQuestion className="w-5 h-5" />} tone="success" />
+        <KPICard label="Questions" value={items.length} icon={<FileQuestion className="w-5 h-5" />} tone="info" />
+        <KPICard label="MCQ" value={mcqCount} icon={<FileQuestion className="w-5 h-5" />} tone="default" />
+        <KPICard label="Total marks" value={totalMarks} icon={<FileQuestion className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

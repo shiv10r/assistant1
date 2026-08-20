@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Subject, SchoolClass, StaffMember } from './types'
 import { SUBJECT_SEED, CLASS_SEED, STAFF_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolSubjects() {
   const { items: classes } = useLocalCollection<SchoolClass>('school:classes', CLASS_SEED)
@@ -56,9 +56,9 @@ export default function SchoolSubjects() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Subjects" value={items.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Classes covered" value={classCount} icon={<BookOpen className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Teachers" value={teacherCount} icon={<BookOpen className="w-5 h-5" />} tone="success" />
+        <KPICard label="Subjects" value={items.length} icon={<BookOpen className="w-5 h-5" />} tone="info" />
+        <KPICard label="Classes covered" value={classCount} icon={<BookOpen className="w-5 h-5" />} tone="default" />
+        <KPICard label="Teachers" value={teacherCount} icon={<BookOpen className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

@@ -6,7 +6,7 @@ import type { InventoryItem, PurchaseOrder, GrnRecord, SalesOrder, StockTransfer
 import { availableOf, stockStatusOf } from './types'
 import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED, ORDER_SEED, TRANSFER_SEED } from './seed'
 import { money, fmtDate } from '../../lib/utils'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 import { useStockLedger } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
@@ -130,7 +130,7 @@ export default function WarehouseHome() {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((k) => (
-          <KpiCard key={k.label} label={k.label} value={k.value} sub={k.sub} icon={k.icon} tone={k.tone} onClick={() => navigate(k.to)} />
+          <KPICard key={k.label} label={k.label} value={k.value} sub={k.sub} icon={k.icon} tone={k.tone} onClick={() => navigate(k.to)} />
         ))}
       </div>
 

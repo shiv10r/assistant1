@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { VisitorLog } from './types'
 import { VISITOR_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 
 export default function SchoolVisitors() {
   const { items, add, update, remove } = useLocalCollection<VisitorLog>('school:visitors', VISITOR_SEED)
@@ -53,8 +53,8 @@ export default function SchoolVisitors() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Visitors" value={items.length} icon={<DoorOpen className="w-5 h-5" />} tone="info" />
-        <KpiCard label="On site now" value={onSite} icon={<DoorOpen className="w-5 h-5" />} tone="success" />
+        <KPICard label="Visitors" value={items.length} icon={<DoorOpen className="w-5 h-5" />} tone="info" />
+        <KPICard label="On site now" value={onSite} icon={<DoorOpen className="w-5 h-5" />} tone="success" />
       </div>
 
       <Card>

@@ -5,7 +5,7 @@ import { useLocalCollection, genId } from '../../lib/localStore'
 import type { OnlineExam, TestAttempt, Student, SchoolClass } from './types'
 import { ONLINE_EXAM_SEED, ATTEMPT_SEED, STUDENT_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KpiCard } from '../../components/KpiCard'
+import { KPICard } from '../../components/ui'
 import { StatusBadge } from '../../components/StatusBadge'
 
 export default function SchoolOnlineExams() {
@@ -87,10 +87,10 @@ export default function SchoolOnlineExams() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Online exams" value={exams.length} icon={<Monitor className="w-5 h-5" />} tone="info" />
-        <KpiCard label="Live now" value={live} icon={<Monitor className="w-5 h-5" />} tone="success" />
-        <KpiCard label="Attempts" value={attempts.length} icon={<Monitor className="w-5 h-5" />} tone="default" />
-        <KpiCard label="Avg score" value={`${avgScore}%`} icon={<Monitor className="w-5 h-5" />} tone="warning" />
+        <KPICard label="Online exams" value={exams.length} icon={<Monitor className="w-5 h-5" />} tone="info" />
+        <KPICard label="Live now" value={live} icon={<Monitor className="w-5 h-5" />} tone="success" />
+        <KPICard label="Attempts" value={attempts.length} icon={<Monitor className="w-5 h-5" />} tone="default" />
+        <KPICard label="Avg score" value={`${avgScore}%`} icon={<Monitor className="w-5 h-5" />} tone="warning" />
       </div>
 
       <Card>
