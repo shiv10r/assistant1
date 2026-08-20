@@ -45,5 +45,4 @@ bakcned 03 branch
 - If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
 - Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
 
-
-First omplete all the tsk of TodoHomeService.md then  todo.md 
+First complete all the tasks of TodoHomeService.md then todo.md
