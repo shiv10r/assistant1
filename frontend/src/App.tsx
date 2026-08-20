@@ -40,6 +40,7 @@ import {
   HomeServicesProJobs, HomeServicesProJobDetail, HomeServicesProEarnings, HomeServicesProProfile,
   HomeServicesAdminDashboard, HomeServicesAdminLiveOps, HomeServicesAdminBookings,
   HomeServicesAdminProfessionals, HomeServicesAdminFinance,
+  HomeServicesDatabaseCheck, HomeServicesAddCategory,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -296,6 +297,8 @@ export default function App() {
           <Route path="/home-services/admin/bookings" element={<HomeServicesAdminBookings />} />
           <Route path="/home-services/admin/professionals" element={<HomeServicesAdminProfessionals />} />
           <Route path="/home-services/admin/finance" element={<HomeServicesAdminFinance />} />
+          <Route path="/home-services/database-check" element={<HomeServicesDatabaseCheck />} />
+          <Route path="/home-services/categories/add" element={<HomeServicesAddCategory />} />
 
           {/* Interior service */}
           <Route path="/interior" element={<InteriorHome />} />

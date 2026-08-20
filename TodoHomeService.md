@@ -1,136 +1,129 @@
-# Todos
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create catalog entities ServiceCategory, Service, ServiceProblem, ServicePackage, ServiceAddOn, ServicePackageAddOn, ServiceWarranty - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create location entities City, Zone, Locality, Pincode, ServiceArea, ServiceAreaService - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create professional entities Professional, ProfessionalDocument, ProfessionalSkill, ProfessionalServiceArea, ProfessionalAvailability, ProfessionalTimeOff, ProfessionalPerformance - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create booking entities Booking, BookingItem, BookingAddOn, BookingMaterial, BookingAssignment, BookingStatusHistory, BookingNote, RecurringBooking, AmcContract - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create pricing entities PriceRule, PriceQuote, QuoteRevision - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create finance entities Payment, Refund, CreditTransaction, CommissionRule, ProfessionalEarning, Payout, ProfessionalAdjustment, ProfessionalIncentive - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create commerce entities Coupon, CouponRedemption, Referral, MembershipPlan, CustomerMembership, Review, ReviewMedia - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create support/identity/ops entities SupportTicket, Dispute, Conversation, Message, Notification, Customer, CustomerAddress, CMSPage, Banner, FAQ, AuditLog, User, Role, Permission, UserRole, RolePermission - expect solution builds clean
-[ ] Infrastructure/Data/Configurations/HomeServicesCatalogConfiguration.cs: EF configs for catalog+location entities (uuid ids, decimal(18,2), unique slugs, jsonb columns, soft-delete deleted_at) - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesBookingConfiguration.cs: EF configs for booking/assignment/status-history/recurring/amc entities - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesFinanceConfiguration.cs: EF configs for payments/refunds/earnings/payouts/commission/gateway tables (incl. PaymentGatewayWebhookEvents, PaymentGatewaySettings per 171) - expect configs apply cleanly
-[ ] Infrastructure/Data/DbContext/AppDbContext.cs: Add one DbSet<T> per HomeServices entity + ApplyConfigurationsFromAssembly for new configs - expect migration generates all 60+ tables
-[ ] VSRSystemsBackend.Infrastructure: Run dotnet ef migrations add AddHomeServicesModule -s Api -p Infrastructure - expect migration file with all tables per 161a
-[ ] Application/HomeServices/Services/HomeServicesSeedData.cs: Seed 5 cities (153), 20+ categories, 100+ services, 200+ packages, 80+ add-ons, 150 professionals, 500 customers, 500 bookings, 200 reviews, 30 coupons, membership plans per 152 - expect seed runs at startup
-[ ] Application/HomeServices/DTOs/: Create ServiceCatalogDtos, ProfessionalDtos, BookingDtos, PriceQuoteDtos, PaymentDtos, EarningsDtos, AnalyticsDtos, ReviewDtos, SupportDtos + FluentValidation validators for every Create/Update DTO - expect validation rules compile
-[ ] Application/HomeServices/Interfaces/: Create IHomeServicesRepository (catalog/booking/professional/payment contracts) and IHomeServicesService (catalog/booking/pricing/assignment/earnings/analytics contracts) - expect interfaces compile
-[ ] Application/HomeServices/Services/ServiceCatalogService.cs: Data-driven catalog CRUD (categories/services/problems/packages/add-ons, active-flag, area-aware filtering, search 36, problem routing 37) - expect catalog API returns DB-driven data
-[ ] Application/HomeServices/Services/PriceQuoteService.cs: Server-side quote computation per 88 (base+addons+parts+travel+urgent+platform fee+discount+membership+coupon+tax), quote versions/revisions 89, expiry, server-authoritative totals - expect POST /price-quotes returns grand_total
-[ ] Application/HomeServices/Services/BookingService.cs: Booking wizard (43/44), 19-state machine per 50, BookingStatusHistory per 118, collision prevention 124, cancel/reschedule rules, no-show flows 125-126, additional-work approval 66, completion 67 - expect every transition recorded in history
-[ ] Application/HomeServices/Services/AssignmentService.cs: Eligibility+ranking 52, strategies auto/broadcast/ops/preferred 53, failure fallback 54 (never silently unassigned), capacity/slot checks 49 - expect assignment flow works end-to-end
-[ ] Application/HomeServices/Services/PaymentService.cs: Payment lifecycle 87 (created/pending/success/failed/refunded), Razorpay create-order + signature-verified webhook 171 (store payloads in PaymentGatewayWebhookEvents), refunds, wallet/credits 92, server-only payment status - expect webhook flips booking.payment_status
-[ ] Application/HomeServices/Services/EarningsService.cs: Commission rule engine 93, per-booking gross/commission/net 94, adjustments, incentives 96 - expect correct net earning per booking
-[ ] Application/HomeServices/Services/PayoutService.cs: Payout lifecycle 95 (pending/processing/paid/failed), mark-paid, available/pending/next-payout queries per 162 - expect payout records generated from settled earnings
-[ ] Application/HomeServices/Services/AnalyticsService.cs: 10 server-aggregated endpoints per 161 (bookings-trend, revenue-trend, top-categories, top-services, top-cities, assignment-success, cancellation-reasons, customer-repeat-rate, provider-performance, refund-dispute-rate) + /admin/analytics/summary KPI - expect real aggregation queries
-[ ] Application/HomeServices/Services/ReviewService.cs: Review eligibility (completed bookings only), 7 rating dimensions + tags 76-77, quality score update 78 - expect review persists and updates professional score
-[ ] Application/HomeServices/Services/SupportService.cs: Tickets 80, disputes + resolution 81-82, emergency alerts 83, notifications 85 - expect ticket/dispute lifecycle works
-[ ] Infrastructure/Repositories/HomeServices/: Create per-aggregate repositories BookingRepository, ProfessionalRepository, ServiceCatalogRepository, PaymentRepository, EarningsRepository, SupportRepository with SaveChangesAsync on every mutation - expect repos persist to Postgres
-[ ] VSRSystemsBackend.Api/Controllers/: Create 9 controllers per 164 (HomeServiceCategories, HomeServiceAreas, HomeServiceProfessionals, HomeServiceBookings, HomeServicePayments, HomeServiceEarnings, HomeServiceAnalytics, HomeServiceReviews, HomeServiceSupport) - expect all 120-122/161/162 endpoints exposed
-[ ] VSRSystemsBackend.Api/Program.cs: AddScoped registration block for all HomeServices I*Repository/I*Service pairs, AutoMapper profiles, uniform ApiResponse<T> envelope, role-based auth per action (customer/professional/ops/finance/admin) per 163 - expect build passes + auth enforced
-[ ] frontend/src/services/home-services/homeServicesApi.ts: NEW fetch client for every endpoint in 120-122/161/162 - expect all pages call real API
-[ ] frontend/src/services/home-services/homeServicesStore.ts: Hydrate from homeServicesApi.ts instead of fixtures; keep localStorage only for UI prefs (persona/filters) per 165 - expect store no longer hardcodes data
-[ ] frontend/src/services/home-services/homeServicesData.ts: Demote to typed fallback/seed used only when API fails (offline/dev mode) per 165 - expect no direct store reads
-[ ] frontend/package.json + pages/admin/AdminAnalytics.tsx: Add recharts; build full 161 chart suite (Bookings Trend, Revenue Trend, Top Categories/Services/Cities, Assignment Success, Cancellation Reasons, Repeat Rate, Provider Performance, Refund/Dispute Rate) with ResponsiveContainer - expect charts render from APIs
-[ ] frontend/src/services/home-services/HomeServicesShell.tsx: Add Analytics entry to ADMIN_NAV (MdInsights); wire AdminDashboard KPI cards to /admin/analytics/summary; AdminBookings/AdminProfessionals/AdminLiveOps/AdminFinance to their endpoints per 165 - expect admin screens live
-[ ] frontend/src/services/home-services/pages/pro/: Wire ProDashboard/ProJobs/ProJobDetail/ProRequests/ProProfile/ProEarnings to /professional/* endpoints incl. earnings/payouts per 162 - expect pro app live
-[ ] frontend/src/services/home-services/pages/: Wire Home/Categories/CategoryDetail/ServiceDetail/Search + Serviceability to /categories /services /search /serviceability per 165 - expect catalog live
-[ ] frontend/src/services/home-services/pages/BookingFlow.tsx: Wire to POST /price-quotes then /bookings then Razorpay checkout widget per 44/171 (server price-authoritative) - expect real booking+payment flow
-[ ] frontend/src/services/home-services/pages/Bookings.tsx + BookingDetail.tsx: Wire to /bookings + /bookings/{id}; show status timeline 51/73, cancel/reschedule, review, rebook 74, invoice 133 - expect booking detail live
-[ ] frontend/src/services/home-services/pages/Account.tsx + Offers.tsx: Wire to /auth/me, /addresses, /customer/wallet 162, memberships, coupons - expect account/offers live
-[ ] frontend/src/services/home-services/: Add loading skeletons 149, empty states 150, error handling 151, mobile/WebView polish 147-148 across all pages - expect responsive states everywhere
-[ ] frontend/src/App.tsx: Add single route /home-services/admin/analytics per 165 - expect route resolves with lazy chunk
-[ ] Verification: Backend dotnet build 0 errors + frontend npm run build exit 0 + lint - expect both builds green
-[ ] Verification: End-to-end per 160 (customer book→pay→track→complete→review; professional register→verify→accept→complete→earning; ops live board→assign→refund) - expect full marketplace flow works
+# HomeService - Complete Task List
 
+## Phase 0: Quick Verification UI (IMMEDIATE - This Week)
+- [ ] Create "Database Check" page in frontend to verify Supabase connection and show table counts
+- [ ] Create "Add Category" form → POST /api/home-services/categories → verify in Supabase Table Editor
+- [ ] Create "Add Service" form with category dropdown → POST /api/home-services/services
+- [ ] Create "Add Professional" form with KYC fields → POST /api/home-services/professionals
+- [ ] Create "Create Booking" wizard form → POST /api/home-services/bookings/price-quotes → /bookings
+- [ ] Create "Admin Dashboard" page showing real-time table counts from Supabase
 
+**Data Location:** All new data goes to **Supabase (PostgreSQL)** - connected via `db.qfgozadjsucuoxrxrknc.supabase.co`. No local database.
 
+---
 
-# Todos
-[•] VSRSystemsBackend.Domain/HomeServices/: Create catalog entities ServiceCategory, Service, ServiceProblem, ServicePackage, ServiceAddOn, ServicePackageAddOn, ServiceWarranty - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create location entities City, Zone, Locality, Pincode, ServiceArea, ServiceAreaService - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create professional entities Professional, ProfessionalDocument, ProfessionalSkill, ProfessionalServiceArea, ProfessionalAvailability, ProfessionalTimeOff, ProfessionalPerformance - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create booking entities Booking, BookingItem, BookingAddOn, BookingMaterial, BookingAssignment, BookingStatusHistory, BookingNote, RecurringBooking, AmcContract - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create pricing entities PriceRule, PriceQuote, QuoteRevision - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create finance entities Payment, Refund, CreditTransaction, CommissionRule, ProfessionalEarning, Payout, ProfessionalAdjustment, ProfessionalIncentive - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create commerce entities Coupon, CouponRedemption, Referral, MembershipPlan, CustomerMembership, Review, ReviewMedia - expect solution builds clean
-[ ] VSRSystemsBackend.Domain/HomeServices/: Create support/identity/ops entities SupportTicket, Dispute, Conversation, Message, Notification, Customer, CustomerAddress, CMSPage, Banner, FAQ, AuditLog, User, Role, Permission, UserRole, RolePermission - expect solution builds clean
-[ ] Infrastructure/Data/Configurations/HomeServicesCatalogConfiguration.cs: EF configs for catalog+location entities (uuid ids, decimal(18,2), unique slugs, jsonb columns, soft-delete deleted_at) - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesBookingConfiguration.cs: EF configs for booking/assignment/status-history/recurring/amc entities - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesFinanceConfiguration.cs: EF configs for payments/refunds/earnings/payouts/commission/gateway tables (incl. PaymentGatewayWebhookEvents, PaymentGatewaySettings per 171) - expect configs apply cleanly
-[ ] Infrastructure/Data/DbContext/AppDbContext.cs: Add one DbSet<T> per HomeServices entity + ApplyConfigurationsFromAssembly for new configs - expect migration generates all 60+ tables
-[ ] VSRSystemsBackend.Infrastructure: Run dotnet ef migrations add AddHomeServicesModule -s Api -p Infrastructure - expect migration file with all tables per 161a
-[ ] Application/HomeServices/Services/HomeServicesSeedData.cs: Seed 5 cities (153), 20+ categories, 100+ services, 200+ packages, 80+ add-ons, 150 professionals, 500 customers, 500 bookings, 200 reviews, 30 coupons, membership plans per 152 - expect seed runs at startup
-[ ] Application/HomeServices/DTOs/: Create ServiceCatalogDtos, ProfessionalDtos, BookingDtos, PriceQuoteDtos, PaymentDtos, EarningsDtos, AnalyticsDtos, ReviewDtos, SupportDtos + FluentValidation validators for every Create/Update DTO - expect validation rules compile
-[ ] Application/HomeServices/Interfaces/: Create IHomeServicesRepository (catalog/booking/professional/payment contracts) and IHomeServicesService (catalog/booking/pricing/assignment/earnings/analytics contracts) - expect interfaces compile
-[ ] Application/HomeServices/Services/ServiceCatalogService.cs: Data-driven catalog CRUD (categories/services/problems/packages/add-ons, active-flag, area-aware filtering, search 36, problem routing 37) - expect catalog API returns DB-driven data
-[ ] Application/HomeServices/Services/PriceQuoteService.cs: Server-side quote computation per 88 (base+addons+parts+travel+urgent+platform fee+discount+membership+coupon+tax), quote versions/revisions 89, expiry, server-authoritative totals - expect POST /price-quotes returns grand_total
-[ ] Application/HomeServices/Services/BookingService.cs: Booking wizard (43/44), 19-state machine per 50, BookingStatusHistory per 118, collision prevention 124, cancel/reschedule rules, no-show flows 125-126, additional-work approval 66, completion 67 - expect every transition recorded in history
-[ ] Application/HomeServices/Services/AssignmentService.cs: Eligibility+ranking 52, strategies auto/broadcast/ops/preferred 53, failure fallback 54 (never silently unassigned), capacity/slot checks 49 - expect assignment flow works end-to-end
-[ ] Application/HomeServices/Services/PaymentService.cs: Payment lifecycle 87 (created/pending/success/failed/refunded), Razorpay create-order + signature-verified webhook 171 (store payloads in PaymentGatewayWebhookEvents), refunds, wallet/credits 92, server-only payment status - expect webhook flips booking.payment_status
-[ ] Application/HomeServices/Services/EarningsService.cs: Commission rule engine 93, per-booking gross/commission/net 94, adjustments, incentives 96 - expect correct net earning per booking
-[ ] Application/HomeServices/Services/PayoutService.cs: Payout lifecycle 95 (pending/processing/paid/failed), mark-paid, available/pending/next-payout queries per 162 - expect payout records generated from settled earnings
-[ ] Application/HomeServices/Services/AnalyticsService.cs: 10 server-aggregated endpoints per 161 (bookings-trend, revenue-trend, top-categories, top-services, top-cities, assignment-success, cancellation-reasons, customer-repeat-rate, provider-performance, refund-dispute-rate) + /admin/analytics/summary KPI - expect real aggregation queries
-[ ] Application/HomeServices/Services/ReviewService.cs: Review eligibility (completed bookings only), 7 rating dimensions + tags 76-77, quality score update 78 - expect review persists and updates professional score
-[ ] Application/HomeServices/Services/SupportService.cs: Tickets 80, disputes + resolution 81-82, emergency alerts 83, notifications 85 - expect ticket/dispute lifecycle works
-[ ] Infrastructure/Repositories/HomeServices/: Create per-aggregate repositories BookingRepository, ProfessionalRepository, ServiceCatalogRepository, PaymentRepository, EarningsRepository, SupportRepository with SaveChangesAsync on every mutation - expect repos persist to Postgres
-[ ] VSRSystemsBackend.Api/Controllers/: Create 9 controllers per 164 (HomeServiceCategories, HomeServiceAreas, HomeServiceProfessionals, HomeServiceBookings, HomeServicePayments, HomeServiceEarnings, HomeServiceAnalytics, HomeServiceReviews, HomeServiceSupport) - expect all 120-122/161/162 endpoints exposed
-[ ] VSRSystemsBackend.Api/Program.cs: AddScoped registration block for all HomeServices I*Repository/I*Service pairs, AutoMapper profiles, uniform ApiResponse<T> envelope, role-based auth per action (customer/professional/ops/finance/admin) per 163 - expect build passes + auth enforced
-[ ] frontend/src/services/home-services/homeServicesApi.ts: NEW fetch client for every endpoint in 120-122/161/162 - expect all pages call real API
-[ ] frontend/src/services/home-services/homeServicesStore.ts: Hydrate from homeServicesApi.ts instead of fixtures; keep localStorage only for UI prefs (persona/filters) per 165 - expect store no longer hardcodes data
-[ ] frontend/src/services/home-services/homeServicesData.ts: Demote to typed fallback/seed used only when API fails (offline/dev mode) per 165 - expect no direct store reads
-[ ] frontend/package.json + pages/admin/AdminAnalytics.tsx: Add recharts; build full 161 chart suite (Bookings Trend, Revenue Trend, Top Categories/Services/Cities, Assignment Success, Cancellation Reasons, Repeat Rate, Provider Performance, Refund/Dispute Rate) with ResponsiveContainer - expect charts render from APIs
-[ ] frontend/src/services/home-services/HomeServicesShell.tsx: Add Analytics entry to ADMIN_NAV (MdInsights); wire AdminDashboard KPI cards to /admin/analytics/summary; AdminBookings/AdminProfessionals/AdminLiveOps/AdminFinance to their endpoints per 165 - expect admin screens live
-[ ] frontend/src/services/home-services/pages/pro/: Wire ProDashboard/ProJobs/ProJobDetail/ProRequests/ProProfile/ProEarnings to /professional/* endpoints incl. earnings/payouts per 162 - expect pro app live
-[ ] frontend/src/services/home-services/pages/: Wire Home/Categories/CategoryDetail/ServiceDetail/Search + Serviceability to /categories /services /search /serviceability per 165 - expect catalog live
-[ ] frontend/src/services/home-services/pages/BookingFlow.tsx: Wire to POST /price-quotes then /bookings then Razorpay checkout widget per 44/171 (server price-authoritative) - expect real booking+payment flow
-[ ] frontend/src/services/home-services/pages/Bookings.tsx + BookingDetail.tsx: Wire to /bookings + /bookings/{id}; show status timeline 51/73, cancel/reschedule, review, rebook 74, invoice 133 - expect booking detail live
-[ ] frontend/src/services/home-services/pages/Account.tsx + Offers.tsx: Wire to /auth/me, /addresses, /customer/wallet 162, memberships, coupons - expect account/offers live
-[ ] frontend/src/services/home-services/: Add loading skeletons 149, empty states 150, error handling 151, mobile/WebView polish 147-148 across all pages - expect responsive states everywhere
-[ ] frontend/src/App.tsx: Add single route /home-services/admin/analytics per 165 - expect route resolves with lazy chunk
-[ ] Verification: Backend dotnet build 0 errors + frontend npm run build exit 0 + lint - expect both builds green
-[ ] Verification: End-to-end per 160 (customer book→pay→track→complete→review; professional register→verify→accept→complete→earning; ops live board→assign→refund) - expect full marketplace flow works
-# Todos
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create catalog entities ServiceCategory, Service, ServiceProblem, ServicePackage, ServiceAddOn, ServicePackageAddOn, ServiceWarranty - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create location entities City, Zone, Locality, Pincode, ServiceArea, ServiceAreaService - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create professional entities Professional, ProfessionalDocument, ProfessionalSkill, ProfessionalServiceArea, ProfessionalAvailability, ProfessionalTimeOff, ProfessionalPerformance - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create booking entities Booking, BookingItem, BookingAddOn, BookingMaterial, BookingAssignment, BookingStatusHistory, BookingNote, RecurringBooking, AmcContract - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create pricing entities PriceRule, PriceQuote, QuoteRevision - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create finance entities Payment, Refund, CreditTransaction, CommissionRule, ProfessionalEarning, Payout, ProfessionalAdjustment, ProfessionalIncentive - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create commerce entities Coupon, CouponRedemption, Referral, MembershipPlan, CustomerMembership, Review, ReviewMedia - expect solution builds clean
-[✓] VSRSystemsBackend.Domain/HomeServices/: Create support/identity/ops entities SupportTicket, Dispute, Conversation, Message, Notification, Customer, CustomerAddress, CMSPage, Banner, FAQ, AuditLog, User, Role, Permission, UserRole, RolePermission - expect solution builds clean
-[•] Infrastructure/Data/Configurations/HomeServicesCatalogConfiguration.cs: EF configs for catalog+location entities (uuid ids, decimal(18,2), unique slugs, jsonb columns, soft-delete deleted_at) - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesBookingConfiguration.cs: EF configs for booking/assignment/status-history/recurring/amc entities - expect configs apply cleanly
-[ ] Infrastructure/Data/Configurations/HomeServicesFinanceConfiguration.cs: EF configs for payments/refunds/earnings/payouts/commission/gateway tables (incl. PaymentGatewayWebhookEvents, PaymentGatewaySettings per 171) - expect configs apply cleanly
-[ ] Infrastructure/Data/DbContext/AppDbContext.cs: Add one DbSet<T> per HomeServices entity + ApplyConfigurationsFromAssembly for new configs - expect migration generates all 60+ tables
-[ ] VSRSystemsBackend.Infrastructure: Run dotnet ef migrations add AddHomeServicesModule -s Api -p Infrastructure - expect migration file with all tables per 161a
-[ ] Application/HomeServices/Services/HomeServicesSeedData.cs: Seed 5 cities (153), 20+ categories, 100+ services, 200+ packages, 80+ add-ons, 150 professionals, 500 customers, 500 bookings, 200 reviews, 30 coupons, membership plans per 152 - expect seed runs at startup
-[ ] Application/HomeServices/DTOs/: Create ServiceCatalogDtos, ProfessionalDtos, BookingDtos, PriceQuoteDtos, PaymentDtos, EarningsDtos, AnalyticsDtos, ReviewDtos, SupportDtos + FluentValidation validators for every Create/Update DTO - expect validation rules compile
-[ ] Application/HomeServices/Interfaces/: Create IHomeServicesRepository (catalog/booking/professional/payment contracts) and IHomeServicesService (catalog/booking/pricing/assignment/earnings/analytics contracts) - expect interfaces compile
-[ ] Application/HomeServices/Services/ServiceCatalogService.cs: Data-driven catalog CRUD (categories/services/problems/packages/add-ons, active-flag, area-aware filtering, search 36, problem routing 37) - expect catalog API returns DB-driven data
-[ ] Application/HomeServices/Services/PriceQuoteService.cs: Server-side quote computation per 88 (base+addons+parts+travel+urgent+platform fee+discount+membership+coupon+tax), quote versions/revisions 89, expiry, server-authoritative totals - expect POST /price-quotes returns grand_total
-[ ] Application/HomeServices/Services/BookingService.cs: Booking wizard (43/44), 19-state machine per 50, BookingStatusHistory per 118, collision prevention 124, cancel/reschedule rules, no-show flows 125-126, additional-work approval 66, completion 67 - expect every transition recorded in history
-[ ] Application/HomeServices/Services/AssignmentService.cs: Eligibility+ranking 52, strategies auto/broadcast/ops/preferred 53, failure fallback 54 (never silently unassigned), capacity/slot checks 49 - expect assignment flow works end-to-end
-[ ] Application/HomeServices/Services/PaymentService.cs: Payment lifecycle 87 (created/pending/success/failed/refunded), Razorpay create-order + signature-verified webhook 171 (store payloads in PaymentGatewayWebhookEvents), refunds, wallet/credits 92, server-only payment status - expect webhook flips booking.payment_status
-[ ] Application/HomeServices/Services/EarningsService.cs: Commission rule engine 93, per-booking gross/commission/net 94, adjustments, incentives 96 - expect correct net earning per booking
-[ ] Application/HomeServices/Services/PayoutService.cs: Payout lifecycle 95 (pending/processing/paid/failed), mark-paid, available/pending/next-payout queries per 162 - expect payout records generated from settled earnings
-[ ] Application/HomeServices/Services/AnalyticsService.cs: 10 server-aggregated endpoints per 161 (bookings-trend, revenue-trend, top-categories, top-services, top-cities, assignment-success, cancellation-reasons, customer-repeat-rate, provider-performance, refund-dispute-rate) + /admin/analytics/summary KPI - expect real aggregation queries
-[ ] Application/HomeServices/Services/ReviewService.cs: Review eligibility (completed bookings only), 7 rating dimensions + tags 76-77, quality score update 78 - expect review persists and updates professional score
-[ ] Application/HomeServices/Services/SupportService.cs: Tickets 80, disputes + resolution 81-82, emergency alerts 83, notifications 85 - expect ticket/dispute lifecycle works
-[ ] Infrastructure/Repositories/HomeServices/: Create per-aggregate repositories BookingRepository, ProfessionalRepository, ServiceCatalogRepository, PaymentRepository, EarningsRepository, SupportRepository with SaveChangesAsync on every mutation - expect repos persist to Postgres
-[ ] VSRSystemsBackend.Api/Controllers/: Create 9 controllers per 164 (HomeServiceCategories, HomeServiceAreas, HomeServiceProfessionals, HomeServiceBookings, HomeServicePayments, HomeServiceEarnings, HomeServiceAnalytics, HomeServiceReviews, HomeServiceSupport) - expect all 120-122/161/162 endpoints exposed
-[ ] VSRSystemsBackend.Api/Program.cs: AddScoped registration block for all HomeServices I*Repository/I*Service pairs, AutoMapper profiles, uniform ApiResponse<T> envelope, role-based auth per action (customer/professional/ops/finance/admin) per 163 - expect build passes + auth enforced
-[ ] frontend/src/services/home-services/homeServicesApi.ts: NEW fetch client for every endpoint in 120-122/161/162 - expect all pages call real API
-[ ] frontend/src/services/home-services/homeServicesStore.ts: Hydrate from homeServicesApi.ts instead of fixtures; keep localStorage only for UI prefs (persona/filters) per 165 - expect store no longer hardcodes data
-[ ] frontend/src/services/home-services/homeServicesData.ts: Demote to typed fallback/seed used only when API fails (offline/dev mode) per 165 - expect no direct store reads
-[ ] frontend/package.json + pages/admin/AdminAnalytics.tsx: Add recharts; build full 161 chart suite (Bookings Trend, Revenue Trend, Top Categories/Services/Cities, Assignment Success, Cancellation Reasons, Repeat Rate, Provider Performance, Refund/Dispute Rate) with ResponsiveContainer - expect charts render from APIs
-[ ] frontend/src/services/home-services/HomeServicesShell.tsx: Add Analytics entry to ADMIN_NAV (MdInsights); wire AdminDashboard KPI cards to /admin/analytics/summary; AdminBookings/AdminProfessionals/AdminLiveOps/AdminFinance to their endpoints per 165 - expect admin screens live
-[ ] frontend/src/services/home-services/pages/pro/: Wire ProDashboard/ProJobs/ProJobDetail/ProRequests/ProProfile/ProEarnings to /professional/* endpoints incl. earnings/payouts per 162 - expect pro app live
-[ ] frontend/src/services/home-services/pages/: Wire Home/Categories/CategoryDetail/ServiceDetail/Search + Serviceability to /categories /services /search /serviceability per 165 - expect catalog live
-[ ] frontend/src/services/home-services/pages/BookingFlow.tsx: Wire to POST /price-quotes then /bookings then Razorpay checkout widget per 44/171 (server price-authoritative) - expect real booking+payment flow
-[ ] frontend/src/services/home-services/pages/Bookings.tsx + BookingDetail.tsx: Wire to /bookings + /bookings/{id}; show status timeline 51/73, cancel/reschedule, review, rebook 74, invoice 133 - expect booking detail live
-[ ] frontend/src/services/home-services/pages/Account.tsx + Offers.tsx: Wire to /auth/me, /addresses, /customer/wallet 162, memberships, coupons - expect account/offers live
-[ ] frontend/src/services/home-services/: Add loading skeletons 149, empty states 150, error handling 151, mobile/WebView polish 147-148 across all pages - expect responsive states everywhere
-[ ] frontend/src/App.tsx: Add single route /home-services/admin/analytics per 165 - expect route resolves with lazy chunk
-[ ] Verification: Backend dotnet build 0 errors + frontend npm run build exit 0 + lint - expect both builds green
-[ ] Verification: End-to-end per 160 (customer book→pay→track→complete→review; professional register→verify→accept→complete→earning; ops live board→assign→refund) - expect full marketplace flow works
+## Phase 1: Authentication & Authorization (Critical)
+- [ ] JWT Auth Middleware - Add `AddAuthentication` + `AddJwtBearer` in Program.cs
+- [ ] Role-based policies - `Customer`, `Professional`, `Admin` policies
+- [ ] Current user accessor - `ICurrentUserService` with userId, roles, claims
+- [ ] Authorize attributes on all controllers (`[Authorize]`, `[Authorize(Roles="Professional")]`)
+- [ ] Frontend auth - Login/register pages, token storage, auto-refresh, protected routes
+
+---
+
+## Phase 2: Remove Static/Seeded Data - Real Data Only
+- [ ] Remove HomeServicesSeedData.cs from production (only run in Development)
+- [ ] Customer profiles - Real registration, profile management, addresses
+- [ ] Professional onboarding - KYC verification flow (Aadhaar/PAN upload, bank details)
+- [ ] Service catalog - Admin CRUD for categories, services, packages, add-ons, problems
+- [ ] Location management - Admin CRUD for cities, zones, localities, pincodes, service areas
+- [ ] Professional verification - KYC status, document review, approval/rejection workflow
+
+---
+
+## Phase 3: Booking Flow - End-to-End Real
+- [ ] Price quote - Real pricing engine (base + add-ons + platform fee + tax + discounts)
+- [ ] Booking creation - Real-time availability check, professional assignment logic
+- [ ] Assignment engine - Auto-assign based on location, skills, rating, workload
+- [ ] Status workflow - `Created → Confirmed → Assigned → OnTheWay → InService → Completed`
+- [ ] Reschedule/cancel - With reason tracking, refund rules
+- [ ] Customer notifications - Real-time status updates (SignalR)
+
+---
+
+## Phase 4: Real-time & Communication
+- [ ] SignalR hub - Booking status, chat, notifications
+- [ ] Customer-Pro chat - In-app messaging for booking coordination
+- [ ] Push notifications - Firebase/OneSignal for mobile/web
+- [ ] Email/SMS - Booking confirmations, reminders, OTP
+
+---
+
+## Phase 5: Payments - Real Integration
+- [ ] Razorpay/Stripe integration - Real payment gateway
+- [ ] Payment webhooks - Handle success/failure/refund callbacks
+- [ ] Wallet system - Customer wallet, professional earnings, platform commission
+- [ ] Payouts - Auto/Manual payout to professional bank accounts
+- [ ] Invoices/Receipts - PDF generation, GST compliance
+
+---
+
+## Phase 6: Reviews, Disputes, Support
+- [ ] Review system - Post-completion rating + comment, professional response
+- [ ] Dispute workflow - Customer raises → Admin mediates → Resolution
+- [ ] Support tickets - Customer/Pro can raise, Admin assigns/responds
+- [ ] Admin dashboard - Live board, analytics, user management, verification queue
+
+---
+
+## Phase 7: Frontend - Replace Mock Data
+- [ ] Replace homeServicesData.ts static data with API calls
+- [ ] React Query/TanStack Query - Caching, invalidation, optimistic updates
+- [ ] Auth context - Login state, role-based UI
+- [ ] Real-time UI - SignalR integration for live booking status
+- [ ] Professional dashboard - Earnings, schedule, availability management
+- [ ] Admin panel - User management, verification, analytics, live board
+
+---
+
+## Phase 8: Professional Features
+- [ ] Availability calendar - Weekly recurring + date overrides
+- [ ] Earnings dashboard - Daily/weekly/monthly, payout history
+- [ ] Job management - Accept/reject, start/complete, navigation
+- [ ] Profile management - Skills, service areas, documents, bank details
+- [ ] Verification status - KYC progress, document upload
+
+---
+
+## Phase 9: Admin Panel
+- [ ] User management - Customers, Professionals, Admins
+- [ ] Verification queue - KYC review, approve/reject
+- [ ] Live board - Real-time booking map, professional tracking
+- [ ] Analytics - Revenue, bookings, ratings, assignments, cancellations
+- [ ] Content management - Categories, services, locations, banners, FAQs
+
+---
+
+## Phase 10: Infrastructure & Deployment
+- [ ] File storage - Supabase Storage / S3 for documents, images
+- [ ] Background jobs - Hangfire for payouts, reminders, cleanup
+- [ ] Caching - Redis for sessions, catalog, availability
+- [ ] Logging/Monitoring - Serilog + Seq/Datadog, health checks
+- [ ] CI/CD - GitHub Actions for build, test, deploy to Render
+
+---
+
+## 🎯 **Immediate Next Steps (This Week - Priority Order)**
+
+| Priority | Task | Effort | Status |
+|----------|------|--------|--------|
+| 1 | Add JWT Auth + Role policies | 4h | 🔴 Not Started |
+| 2 | Create "Database Check" UI page | 2h | 🔴 Not Started |
+| 3 | Create "Add Category" form (POST /categories) | 2h | 🔴 Not Started |
+| 4 | Create "Add Service" form | 2h | 🔴 Not Started |
+| 5 | Create "Add Professional" form with KYC | 4h | 🔴 Not Started |
+| 6 | Add SignalR hub + Frontend connection | 6h | 🔴 Not Started |
+| 7 | Professional KYC/Verification API | 8h | 🔴 Not Started |
+| 8 | Real payment webhook (Razorpay test) | 6h | 🔴 Not Started |
+| 9 | Frontend: Replace mock data with React Query | 8h | 🔴 Not Started |
+| 10 | Professional KYC/Verification API | 8h | 🔴 Not Started |
+
+---
+
+## 📍 **Data Location Clarification**
+- **All new data → Supabase (PostgreSQL)**
+- **Host:** `db.qfgozadjsucuoxrxrknc.supabase.co`
+- **Database:** `postgres`
+- **Tables:** 200+ tables already created via migrations
+- **No local database** - everything goes to Supabase cloud
+- **Verify in:** Supabase Dashboard → Table Editor → See real-time row counts

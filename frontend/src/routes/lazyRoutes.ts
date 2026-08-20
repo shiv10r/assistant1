@@ -193,6 +193,8 @@ export const HomeServicesBookings = lazy(() => import('../services/home-services
 export const HomeServicesBookingDetail = lazy(() => import('../services/home-services/pages/BookingDetail'))
 export const HomeServicesOffers = lazy(() => import('../services/home-services/pages/Offers'))
 export const HomeServicesAccount = lazy(() => import('../services/home-services/pages/Account'))
+export const HomeServicesDatabaseCheck = lazy(() => import('../services/home-services/pages/DatabaseCheck'))
+export const HomeServicesAddCategory = lazy(() => import('../services/home-services/pages/AddCategory'))
 export const HomeServicesProDashboard = lazy(() => import('../services/home-services/pages/pro/ProDashboard'))
 export const HomeServicesProRequests = lazy(() => import('../services/home-services/pages/pro/ProRequests'))
 export const HomeServicesProJobs = lazy(() => import('../services/home-services/pages/pro/ProJobs'))
