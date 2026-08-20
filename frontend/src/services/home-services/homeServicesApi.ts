@@ -1,8 +1,9 @@
 // VSR Home Services — typed API client for the .NET backend.
 // Every call unwraps the ApiResponse<T> envelope and returns `data` on success;
-// non-2xx responses and failed envelopes throw ApiError. The `/api` prefix is
-// proxied to the backend by the Vite dev server (vite.config.ts).
+// non-2xx responses and failed envelopes throw ApiError. BASE resolves to the
+// local Vite proxy in dev and the deployed Render API in production.
 
+import { BASE } from '../../api'
 import type {
   AvailabilitySlot,
   Booking,
@@ -375,7 +376,7 @@ export type LiveBoardDto = {
 // ---------------------------------------------------------------------------
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${path}`, init)
+  const response = await fetch(`${BASE}/api${path}`, init)
   let envelope: ApiResponse<T> | null = null
   try {
     envelope = (await response.json()) as ApiResponse<T>

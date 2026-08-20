@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 import {
-  MdAccountBalanceWallet, MdAdminPanelSettings, MdAssignmentTurnedIn, MdBarChart,
+  MdAccountBalanceWallet, MdAddCircle, MdAdminPanelSettings, MdAssignmentTurnedIn, MdBarChart,
   MdBuild, MdDashboard, MdEventAvailable, MdGroups, MdHome, MdInventory, MdPayments,
   MdPendingActions, MdPerson, MdPriceChange, MdRedeem, MdVerifiedUser, MdViewKanban,
   MdWorkspacePremium, MdSupportAgent, MdReportGmailerrorred,
@@ -33,6 +33,8 @@ const ADMIN_NAV = [
   { to: '/home-services/admin/bookings', label: 'Bookings', icon: MdEventAvailable, end: false },
   { to: '/home-services/admin/professionals', label: 'Professionals', icon: MdVerifiedUser, end: false },
   { to: '/home-services/admin/finance', label: 'Finance', icon: MdPayments, end: false },
+  { to: '/home-services/database-check', label: 'Database', icon: MdInventory, end: false },
+  { to: '/home-services/categories/add', label: 'Add Category', icon: MdAddCircle, end: false },
 ] as const
 
 const PERSONAS: readonly { id: HsPersona; label: string }[] = [
