@@ -3,6 +3,9 @@ import {
   type Booking, type BookingStatus, type Customer, type Professional,
   type ProfessionalEarning, type Review, type Payout, type SupportTicket, type Dispute,
   type AvailabilitySlot,
+  SERVICES, SERVICE_CATEGORIES, PROFESSIONALS, CITIES, CUSTOMERS, MEMBERSHIP_PLANS,
+  COUPONS, SERVICE_ADDONS, COMMISSION_RULES, SUPPORT_TICKETS, DISPUTES, NOTIFICATIONS,
+  buildAvailabilitySlots,
 } from './homeServicesData'
 import { homeServicesApi } from './homeServicesApi'
 
@@ -52,18 +55,6 @@ export type AssignedProfessional = {
   declined: boolean
 }
 
-function readJson<T>(key: string, fallback: T): T {
-  const raw = localStorage.getItem(key)
-  if (!raw) return fallback
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    return (parsed as T) ?? fallback
-  } catch (error) {
-    if (error instanceof SyntaxError) return fallback
-    throw error
-  }
-}
-
 function isWeekend(dateKey: string): boolean {
   const [y, m, d] = dateKey.split('-').map(Number)
   const day = new Date(y, m - 1, d).getDay()
@@ -83,7 +74,7 @@ export function useHomeServicesStore() {
   const [readNotifs, setReadNotifs] = useState<readonly string[]>([] as string[])
   const [assigned, setAssigned] = useState<readonly AssignedProfessional[]>([] as readonly AssignedProfessional[])
   const [verifiedIds, setVerifiedIds] = useState<readonly string[]>([] as string[])
-  const [isLoading, setIsLoading] = useState(true)
+  const [, setIsLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
@@ -97,7 +88,7 @@ export function useHomeServicesStore() {
         setBookings(custBookings as readonly Booking[])
         setReviews(custReviews as readonly Review[])
         setEarnings(custEarnings as readonly ProfessionalEarning[])
-        setPayouts(custPayouts as readonly Payout[])
+        setPayouts(custPayouts.payouts ?? [])
       } catch (e) {
         // Keep empty state; UI will show loading until data arrives
       } finally {
