@@ -218,22 +218,22 @@ async function finishLogin(data: { token: string; username: string; role: string
   localStorage.setItem(USER_KEY, data.username)
 }
 
-export async function login(username: string, password: string): Promise<void> {
+export async function login(email: string, password: string): Promise<void> {
   const r = await fetch(BASE + '/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   })
-  if (!r.ok) throw new Error('Invalid username or password')
+  if (!r.ok) throw new Error('Invalid email or password')
   const data = await r.json()
   finishLogin(data)
 }
 
-export async function register(username: string, password: string): Promise<void> {
+export async function register(email: string, password: string): Promise<void> {
   const r = await fetch(BASE + '/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   })
   const data = await r.json()
   if (!r.ok) throw new Error(data?.error || 'Could not create account')
@@ -416,6 +416,7 @@ const auth = {
   toggleUser: (id: number) => post<AppUser>(`/api/auth/users/${id}/toggle`, {}),
   deleteUser: (id: number) => del(`/api/auth/users/${id}`),
   sessions: () => get<UserSessionInfo[]>('/api/auth/sessions'),
+  googleLogin: () => window.location.href = BASE + '/signin-google',
 }
 
 const payroll = {
@@ -637,4 +638,5 @@ export const api = {
   pushTest: (title?: string, body?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/test', { title, body }),
   pushNotify: (recipients: string[], title: string, body: string, url?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/notify', { recipients, title, body, url }),
   activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
+  googleLogin: () => auth.googleLogin(),
 }
