@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   MdArrowForward, MdLocalOffer, MdSearch, MdVerifiedUser, MdFlashOn, MdStar, MdWorkspacePremium,
@@ -6,25 +6,72 @@ import {
 import HomeServicesShell from '../HomeServicesShell'
 import { useHomeServicesStore } from '../homeServicesStore'
 import { money, HsSection } from '../hsShared'
-import { SERVICES, SERVICE_CATEGORIES, COUPONS } from '../homeServicesData'
+import { COUPONS } from '../homeServicesData'
+import { homeServicesApi, type ServiceCategory, type HomeService } from '../homeServicesApi'
 
 export default function Home() {
   const navigate = useNavigate()
   const store = useHomeServicesStore()
   const [query, setQuery] = useState('')
+  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [services, setServices] = useState<HomeService[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        const [cats, svcs] = await Promise.all([
+          homeServicesApi.getCategories(),
+          homeServicesApi.getServices(),
+        ])
+        setCategories(cats)
+        setServices(svcs)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
   const popularServices = useMemo(() => {
-    const byRating = [...SERVICES]
+    const byRating = [...services]
       .map((s) => ({ service: s, rating: store.professionalsForService(s.id, store.activeCustomer.cityId, store.cityById(store.activeCustomer.cityId)?.localities[0]?.id ?? '').length }))
       .sort((a, b) => b.rating - a.rating)
     return byRating.slice(0, 8).map((x) => x.service)
-  }, [store])
+  }, [services, store])
 
   const activeCoupons = COUPONS.filter((c) => c.active).slice(0, 3)
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault()
     if (query.trim()) navigate(`/home-services/search?q=${encodeURIComponent(query.trim())}`)
+  }
+
+  if (loading) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-section" style={{ textAlign: 'center', padding: 48 }}>
+          <div className="hs-spinner" style={{ width: 32, height: 32, margin: '0 auto', border: '3px solid var(--hs-muted)', borderTopColor: 'var(--hs-brand)', borderRadius: '50%', animation: 'hs-spin 1s linear infinite' }} />
+          <p style={{ marginTop: 12, color: 'var(--hs-muted)' }}>Loading services…</p>
+        </div>
+      </HomeServicesShell>
+    )
+  }
+
+  if (error) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-section" style={{ textAlign: 'center', padding: 48 }}>
+          <p style={{ color: 'var(--hs-danger)', marginBottom: 12 }}>Failed to load: {error}</p>
+          <button className="hs-btn hs-btn--primary" onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </HomeServicesShell>
+    )
   }
 
   return (
@@ -57,8 +104,8 @@ export default function Home() {
       <section className="hs-section">
         <HsSection title="What do you need help with?" action={<Link to="/home-services/categories">View all <MdArrowForward aria-hidden="true" /></Link>} />
         <div className="hs-cat-grid">
-          {SERVICE_CATEGORIES.map((cat) => {
-            const count = SERVICES.filter((s) => s.categoryId === cat.id).length
+          {categories.map((cat) => {
+            const count = services.filter((s) => s.categoryId === cat.id).length
             return (
               <Link key={cat.id} to={`/home-services/categories/${cat.slug}`} className="hs-cat-card" style={{ background: cat.gradient }}>
                 <span className="hs-cat-count">{count} services</span>
@@ -93,7 +140,7 @@ export default function Home() {
         <HsSection title="Popular in your city" action={<Link to="/home-services/categories">Browse categories <MdArrowForward aria-hidden="true" /></Link>} />
         <div className="hs-service-grid">
           {popularServices.map((s) => {
-            const cat = SERVICE_CATEGORIES.find((c) => c.id === s.categoryId)
+            const cat = categories.find((c) => c.id === s.categoryId)
             const pkg = s.packages[1] ?? s.packages[0]
             return (
               <Link key={s.id} to={`/home-services/services/${s.slug}`} className="hs-service-card">

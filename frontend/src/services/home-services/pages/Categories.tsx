@@ -1,18 +1,66 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MdArrowForward, MdFlashOn } from 'react-icons/md'
 import HomeServicesShell from '../HomeServicesShell'
-import { SERVICES, SERVICE_CATEGORIES } from '../homeServicesData'
 import { HsSection } from '../hsShared'
+import { homeServicesApi, type ServiceCategory, type HomeService } from '../homeServicesApi'
 
 export default function Categories() {
+  const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [services, setServices] = useState<HomeService[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        const [cats, svcs] = await Promise.all([
+          homeServicesApi.getCategories(),
+          homeServicesApi.getServices(),
+        ])
+        setCategories(cats)
+        setServices(svcs)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  if (loading) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-section" style={{ textAlign: 'center', padding: 48 }}>
+          <div className="hs-spinner" style={{ width: 32, height: 32, margin: '0 auto', border: '3px solid var(--hs-muted)', borderTopColor: 'var(--hs-brand)', borderRadius: '50%', animation: 'hs-spin 1s linear infinite' }} />
+          <p style={{ marginTop: 12, color: 'var(--hs-muted)' }}>Loading categories…</p>
+        </div>
+      </HomeServicesShell>
+    )
+  }
+
+  if (error) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-section" style={{ textAlign: 'center', padding: 48 }}>
+          <p style={{ color: 'var(--hs-danger)', marginBottom: 12 }}>Failed to load: {error}</p>
+          <button className="hs-btn hs-btn--primary" onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </HomeServicesShell>
+    )
+  }
+
   return (
     <HomeServicesShell>
       <section className="hs-section">
         <HsSection title="All services" />
         <div className="hs-cat-grid">
-          {SERVICE_CATEGORIES.map((cat) => {
-            const count = SERVICES.filter((s) => s.categoryId === cat.id).length
-            const emergencyCount = SERVICES.filter((s) => s.categoryId === cat.id && s.isEmergency).length
+          {categories.map((cat) => {
+            const count = services.filter((s) => s.categoryId === cat.id).length
+            const emergencyCount = services.filter((s) => s.categoryId === cat.id && s.isEmergency).length
             return (
               <Link key={cat.id} to={`/home-services/categories/${cat.slug}`} className="hs-cat-card" style={{ background: cat.gradient }}>
                 <span className="hs-cat-count">{count} services</span>
@@ -49,7 +97,7 @@ export default function Categories() {
       <section className="hs-section">
         <HsSection title="Popular right now" />
         <div className="hs-service-grid">
-          {[...SERVICES].sort((a, b) => b.packages[0].basePrice - a.packages[0].basePrice).slice(0, 4).map((s) => (
+          {[...services].sort((a, b) => b.packages[0].basePrice - a.packages[0].basePrice).slice(0, 4).map((s) => (
             <Link key={s.id} to={`/home-services/services/${s.slug}`} className="hs-service-card">
               <img src={s.image} alt={s.name} loading="lazy" />
               <div className="hs-service-card-body">
