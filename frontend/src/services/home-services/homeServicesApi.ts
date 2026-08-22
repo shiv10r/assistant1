@@ -73,30 +73,52 @@ export class ApiError extends Error {
 export type CreatePriceQuoteRequest = {
   serviceId: string
   packageId: string
-  addOnIds: readonly string[]
-  cityId: string
-  localityId: string
-  scheduledStart: string
-  customerId: string
+  addressId: string
+  addOnIds?: readonly string[]
+  bookingType?: 'instant' | 'scheduled' | 'emergency'
   couponCode?: string
-  membershipId?: string
+  membershipPlanId?: string
+}
+
+export type QuoteLineItem = {
+  description: string
+  amount: number
+  type: 'base' | 'addon' | 'material' | 'fee' | 'discount' | 'tax' | string
+}
+
+export type PriceQuoteResult = {
+  id: string
+  quoteNumber: string
+  customerId: string
+  serviceId: string
+  serviceName: string
+  packageId: string
+  packageName: string
+  addressId: string | null
+  basePrice: number
+  addOnsTotal: number
+  materialsTotal: number
+  feesTotal: number
+  travelCharge: number
+  urgentCharge: number
+  platformFee: number
+  discountTotal: number
+  taxTotal: number
+  grandTotal: number
+  couponCode: string | null
+  status: string
+  lineItems: readonly QuoteLineItem[]
 }
 
 export type CreateBookingRequest = {
   serviceId: string
   packageId: string
-  addOnIds: readonly string[]
-  cityId: string
-  localityId: string
-  addressLine: string
-  scheduledStart: string
-  customerId: string
-  customerName: string
-  customerPhone: string
-  notes?: string
-  couponCode?: string
-  membershipId?: string
-  emergency?: boolean
+  addressId: string
+  bookingType?: 'instant' | 'scheduled' | 'emergency'
+  scheduledStart?: string
+  priceQuoteId?: string
+  addOnIds?: readonly string[]
+  customerNotes?: string
 }
 
 export type UpdateBookingStatusRequest = {
@@ -217,21 +239,6 @@ export type SearchResult = {
   services: readonly HomeService[]
   categories: readonly ServiceCategory[]
   professionals: readonly Professional[]
-}
-
-export type PriceQuoteResult = {
-  quoteId: string
-  serviceId: string
-  packageId: string
-  basePrice: number
-  addOnTotal: number
-  platformFee: number
-  discount: number
-  membershipDiscount: number
-  couponDiscount: number
-  tax: number
-  total: number
-  validUntil: string
 }
 
 export type Payment = {

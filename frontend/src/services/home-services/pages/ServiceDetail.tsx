@@ -1,61 +1,109 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { MdArrowForward, MdFlashOn, MdVerifiedUser, MdLocationOn, MdShield, MdCheck, MdHelpOutline } from 'react-icons/md'
+import { MdArrowForward, MdFlashOn, MdVerifiedUser, MdShield, MdCheck, MdHelpOutline, MdErrorOutline } from 'react-icons/md'
 import HomeServicesShell from '../HomeServicesShell'
-import { useHomeServicesStore } from '../homeServicesStore'
 import { money, HsSection } from '../hsShared'
-import { SERVICES, SERVICE_ADDONS, type HomeServicePackage } from '../homeServicesData'
+import { homeServicesApi } from '../homeServicesApi'
+import type { CustomerProfile } from '../homeServicesApi'
+import { getEmail } from '../../../api'
+
+type ApiPackage = {
+  id: string
+  name: string
+  shortDescription: string
+  basePrice: number
+  durationMins: number
+  whatIncluded: string
+  warranty: string
+  isPopular: boolean
+  discountedPrice?: number | null
+}
+
+type ApiAddOn = {
+  id: string
+  name: string
+  price: number
+}
+
+type ApiService = {
+  id: string
+  categoryId: string
+  categoryName: string
+  name: string
+  slug: string
+  shortDescription: string
+  longDescription: string
+  imageUrl: string
+  isEmergency: boolean
+  needsInspection: boolean
+  inspectionFee: number
+  startingPrice: number
+  packages: ApiPackage[]
+  addOns: ApiAddOn[]
+  problems?: { id: string; name: string; description?: string }[]
+}
+
+export type BookingFlowState = {
+  serviceId: string
+  packageId: string
+  addOnIds: readonly string[]
+  emergency: boolean
+  couponCode: string | null
+}
+
+function splitInclusions(text: string): string[] {
+  if (!text) return []
+  return text.split(/\s*[,;\n]\s*/).filter(Boolean)
+}
 
 export default function ServiceDetail() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const store = useHomeServicesStore()
-  const service = SERVICES.find((s) => s.slug === slug)
-  const [selectedPkg, setSelectedPkg] = useState<HomeServicePackage | null>(null)
+  const [service, setService] = useState<ApiService | null>(null)
+  const [profile, setProfile] = useState<CustomerProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [selectedPkgId, setSelectedPkgId] = useState<string>('')
   const [selectedAddOns, setSelectedAddOns] = useState<readonly string[]>([])
   const [emergency, setEmergency] = useState(false)
   const [couponCode, setCouponCode] = useState('')
-  const [couponError, setCouponError] = useState<string | null>(null)
 
-  const prosInCity = useMemo(() => {
-    if (!service) return 0
-    return store.professionalsForService(service.id, store.activeCustomer.cityId, store.cityById(store.activeCustomer.cityId)?.localities[0]?.id ?? '').length
-  }, [service, store])
+  useEffect(() => {
+    if (!slug) return
+    setLoading(true)
+    setError(null)
+    void (async () => {
+      try {
+        const [s, p] = await Promise.all([
+          homeServicesApi.getServiceById(slug),
+          homeServicesApi.ensureCustomer({ email: getEmailSafe() }).catch(() => null),
+        ])
+        setService(s as unknown as ApiService)
+        setProfile(p)
+        const preferred = (s.packages ?? []).find(
+  (x): x is { isPopular: boolean } => 'isPopular' in x,
+) ?? s.packages?.[0]
+        setSelectedPkgId(preferred?.id ?? '')
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not load this service')
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [slug])
 
-  if (!service) {
-    return (
-      <HomeServicesShell>
-        <div className="hs-empty">
-          <h3>Service not found</h3>
-          <p>The service you're looking for does not exist.</p>
-          <Link className="hs-btn hs-btn--primary" to="/home-services/categories">Browse services</Link>
-        </div>
-      </HomeServicesShell>
-    )
-  }
-
-  const activePkg = selectedPkg ?? service.packages[1] ?? service.packages[0]
+  const activePkg = useMemo(
+    () => service?.packages.find((p) => p.id === selectedPkgId) ?? service?.packages[0] ?? null,
+    [service, selectedPkgId],
+  )
 
   function toggleAddOn(id: string) {
     setSelectedAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
-  function applyCoupon() {
-    if (!service) return
-    setCouponError(null)
-    const coupon = store.couponByCode(couponCode)
-    if (!coupon) {
-      setCouponError('This coupon is invalid or inactive.')
-      return
-    }
-    if (activePkg.basePrice < coupon.minOrder) {
-      setCouponError(`This coupon needs a minimum order of ${money(coupon.minOrder)}.`)
-      return
-    }
-  }
-
   function startBooking() {
-    if (!service) return
+    if (!service || !activePkg) return
     navigate('/home-services/book', {
       state: {
         serviceId: service.id,
@@ -63,117 +111,135 @@ export default function ServiceDetail() {
         addOnIds: selectedAddOns,
         emergency: emergency && service.isEmergency,
         couponCode: couponCode || null,
-      },
+      } satisfies BookingFlowState,
     })
+  }
+
+  if (loading) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-card">Loading service…</div>
+      </HomeServicesShell>
+    )
+  }
+
+  if (error || !service) {
+    return (
+      <HomeServicesShell>
+        <div className="hs-empty">
+          <MdErrorOutline aria-hidden="true" />
+          <h3>{error ? 'Something went wrong' : 'Service not found'}</h3>
+          <p>{error ?? "The service you're looking for does not exist."}</p>
+          <Link className="hs-btn hs-btn--primary" to="/home-services/categories">Browse services</Link>
+        </div>
+      </HomeServicesShell>
+    )
   }
 
   return (
     <HomeServicesShell>
       <section className="hs-detail-hero">
-        <img src={service.image} alt={service.name} />
+        <img src={service.imageUrl} alt={service.name} />
         <div className="hs-detail-hero-content">
           <h1>{service.name}</h1>
           <p>{service.shortDescription}</p>
           <div className="hs-tag-row" style={{ marginTop: 8 }}>
             {service.isEmergency && <span className="hs-tag hs-tag--emergency"><MdFlashOn aria-hidden="true" /> Emergency</span>}
-            {service.warranty && <span className="hs-tag hs-tag--warranty"><MdShield aria-hidden="true" /> {service.warranty.label}</span>}
-            <span className="hs-tag" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}><MdVerifiedUser aria-hidden="true" /> Verified pros · {prosInCity} in your city</span>
+            {!!activePkg?.warranty && (
+              <span className="hs-tag hs-tag--warranty"><MdShield aria-hidden="true" /> {activePkg.warranty}</span>
+            )}
+            <span className="hs-tag" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}><MdVerifiedUser aria-hidden="true" /> Verified pros</span>
           </div>
         </div>
       </section>
 
-      <section className="hs-section">
-        <HsSection title="About this service" />
-        <div className="hs-card">
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#44403c' }}>{service.longDescription}</p>
-          {service.needsInspection && (
-            <div className="hs-alert hs-alert--info" style={{ marginTop: 12 }}>
-              <MdHelpOutline aria-hidden="true" style={{ fontSize: 18, flexShrink: 0 }} />
-              <span>This is an inspection-based job. A technician visits first, assesses the work, and shares an exact price before starting — you approve before any charge.</span>
+      <HsSection title="Choose a package" />
+      <div className="hs-package-grid">
+        {service.packages.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            className={`hs-package ${activePkg?.id === p.id ? 'is-selected' : ''}`}
+            onClick={() => setSelectedPkgId(p.id)}
+          >
+            {p.isPopular && <span className="hs-popular">Popular</span>}
+            <b>{p.name}</b>
+            <div className="hs-price-row">
+              <b style={{ color: 'var(--hs-brand)' }}>{money(p.discountedPrice ?? p.basePrice)}</b>
+              <small>~ {p.durationMins} min</small>
             </div>
-          )}
-        </div>
-      </section>
+            <ul>
+              {splitInclusions(p.whatIncluded).slice(0, 4).map((inc) => (
+                <li key={inc}><MdCheck aria-hidden="true" /> {inc}</li>
+              ))}
+            </ul>
+          </button>
+        ))}
+      </div>
 
-      <section className="hs-section">
-        <HsSection title="Choose a package" />
-        <div className="hs-package-grid">
-          {service.packages.map((pkg) => (
-            <button key={pkg.id} type="button" className={`hs-package ${activePkg.id === pkg.id ? 'is-selected' : ''}`} onClick={() => setSelectedPkg(pkg)}>
-              <b>{pkg.name}</b>
-              <div className="hs-price-row">
-                <b style={{ color: 'var(--hs-brand)' }}>{money(pkg.basePrice)}</b>
-                <small>{pkg.durationMins} min</small>
-              </div>
-              <ul>
-                {pkg.inclusions.slice(0, 3).map((inc) => (
-                  <li key={inc}>{inc}</li>
-                ))}
-              </ul>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="hs-section">
-        <HsSection title="Add-ons (optional)" />
-        <div className="hs-list">
-          {SERVICE_ADDONS.filter((a) => a.price > 0).map((addOn) => {
-            const checked = selectedAddOns.includes(addOn.id)
-            return (
-              <button key={addOn.id} type="button" className="hs-list-row" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => toggleAddOn(addOn.id)}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  <span className={`hs-tag ${checked ? 'hs-tag--warranty' : ''}`} style={{ minWidth: 22, justifyContent: 'center' }}>
-                    {checked ? <MdCheck aria-hidden="true" /> : null}
-                  </span>
-                  {addOn.name}
+      {service.addOns.length > 0 && (
+        <>
+          <HsSection title="Add-ons" />
+          <div className="hs-card">
+            {service.addOns.map((a) => (
+              <label key={a.id} className="hs-list-row" style={{ cursor: 'pointer' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedAddOns.includes(a.id)}
+                    onChange={() => toggleAddOn(a.id)}
+                  />
+                  {a.name}
                 </span>
-                <small>{addOn.price > 0 ? money(addOn.price) : 'Included'}</small>
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      {service.isEmergency && (
-        <section className="hs-section">
-          <div className="hs-card" style={{ borderColor: '#fecaca' }}>
-            <label className="hs-field" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, margin: 0 }}>
-              <span>
-                <strong>Emergency service</strong>
-                <small style={{ display: 'block', color: 'var(--hs-muted)', fontWeight: 600 }}>Priority response, fees apply</small>
-              </span>
-              <span className="hs-slot" style={{ padding: '6px 14px', borderRadius: 999 }} onClick={() => setEmergency((v) => !v)} role="switch" aria-checked={emergency}>
-                {emergency ? 'On' : 'Off'}
-              </span>
-            </label>
+                <small>+ {money(a.price)}</small>
+              </label>
+            ))}
           </div>
-        </section>
+        </>
       )}
 
-      <section className="hs-section">
-        <HsSection title="Have a coupon?" />
-        <div className="hs-card" style={{ display: 'flex', gap: 8 }}>
-          <input className="hs-input" placeholder="Enter coupon code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} aria-label="Coupon code" />
-          <button type="button" className="hs-btn hs-btn--secondary" onClick={applyCoupon}>Apply</button>
-        </div>
-        {couponError && <p style={{ color: '#b91c1c', fontSize: 12, marginTop: 8 }}>{couponError}</p>}
-      </section>
+      <HsSection title="Common problems we fix" />
+      <div className="hs-card">
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.9 }}>
+          {(service.problems ?? []).map((pr) => (
+            <li key={pr.id}><MdHelpOutline aria-hidden="true" /> {pr.name}{pr.description ? ` — ${pr.description}` : ''}</li>
+          ))}
+          {(service.problems ?? []).length === 0 && <li>General inspection &amp; fix</li>}
+        </ul>
+      </div>
 
-      <section className="hs-section">
-        <div className="hs-sticky-cta">
-          <div>
-            <small>Starts from</small>
-            <b>{money(activePkg.basePrice)}</b>
-          </div>
-          <button type="button" className="hs-btn hs-btn--primary" onClick={startBooking}>
-            Book now <MdArrowForward aria-hidden="true" />
-          </button>
+      {service.isEmergency && (
+        <label className="hs-list-row" style={{ marginTop: 12, cursor: 'pointer' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={emergency} onChange={(e) => setEmergency(e.target.checked)} />
+            <MdFlashOn aria-hidden="true" /> Book as emergency (priority dispatch)
+          </span>
+        </label>
+      )}
+
+      <div className="hs-field" style={{ marginTop: 12 }}>
+        <label htmlFor="hs-coupon">Coupon code</label>
+        <input id="hs-coupon" className="hs-input" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Optional" />
+      </div>
+
+      <div className="hs-cta-bar">
+        <div>
+          <small>Total from</small>
+          <strong>{money(activePkg ? (activePkg.discountedPrice ?? activePkg.basePrice) : service.startingPrice)}</strong>
+          {profile && <small style={{ display: 'block' }}>{profile.displayName}</small>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--hs-muted)', fontSize: 12 }}>
-          <MdLocationOn aria-hidden="true" /> Serving {store.cityById(store.activeCustomer.cityId)?.name ?? ''} & nearby areas
-        </div>
-      </section>
+        <button type="button" className="hs-btn hs-btn--primary" onClick={startBooking} disabled={!activePkg}>
+          Continue <MdArrowForward aria-hidden="true" />
+        </button>
+      </div>
     </HomeServicesShell>
   )
+}
+
+function getEmailSafe(): string {
+  try {
+    return getEmail() || 'guest@vsrsystems.com'
+  } catch {
+    return 'guest@vsrsystems.com'
+  }
 }
