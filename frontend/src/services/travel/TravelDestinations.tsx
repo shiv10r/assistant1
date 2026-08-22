@@ -1,16 +1,34 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin } from 'lucide-react'
 import { money } from '../../components/ui'
-import { DESTINATION_SEED } from './seed'
+import { getDestinations } from './travelApi'
+import type { Destination } from './types'
 import TravelShell from './TravelShell'
 
 export default function TravelDestinations() {
+  const [destinations, setDestinations] = useState<Destination[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    getDestinations().then((data) => {
+      if (active) {
+        setDestinations(data)
+        setLoaded(true)
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <TravelShell>
       <div className="travel-main">
         <div className="travel-page-head"><h1>Destinations</h1><p>Explore handpicked places for holidays, groups, couples, and families.</p></div>
         <div className="travel-cards">
-          {DESTINATION_SEED.map((destination) => (
+          {destinations.map((destination) => (
             <Link key={destination.id} to={`/travel/packages?q=${encodeURIComponent(destination.name)}`} className="travel-card">
               <div className="travel-card-media"><img src={destination.image} alt={`${destination.name}, ${destination.country}`} width="800" height="500" loading="lazy" /></div>
               <div className="travel-card-body">
@@ -22,6 +40,7 @@ export default function TravelDestinations() {
             </Link>
           ))}
         </div>
+        {loaded && destinations.length === 0 && <p className="travel-empty">No destinations available right now.</p>}
       </div>
     </TravelShell>
   )

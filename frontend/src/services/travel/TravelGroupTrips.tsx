@@ -1,16 +1,34 @@
+import { useEffect, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { money } from '../../components/ui'
-import { DEPARTURE_SEED } from './seed'
+import { getDepartures } from './travelApi'
+import type { GroupDeparture } from './types'
 import TravelShell from './TravelShell'
 
 export default function TravelGroupTrips() {
+  const [departures, setDepartures] = useState<GroupDeparture[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    getDepartures().then((data) => {
+      if (active) {
+        setDepartures(data)
+        setLoaded(true)
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <TravelShell>
       <div className="travel-main">
         <div className="travel-page-head"><h1>Group departures</h1><p>Hosted trips with fixed dates, transparent group sizes, and clear seat availability.</p></div>
         <div className="travel-cards">
-          {DEPARTURE_SEED.map((departure) => {
+          {departures.map((departure) => {
             const booked = departure.totalSeats - departure.seatsLeft
             const fill = Math.round((booked / departure.totalSeats) * 100)
             return (
@@ -30,6 +48,7 @@ export default function TravelGroupTrips() {
             )
           })}
         </div>
+        {loaded && departures.length === 0 && <p className="travel-empty">No departures available right now.</p>}
       </div>
     </TravelShell>
   )
