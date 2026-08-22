@@ -1,13 +1,10 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import {
-  BOOKING_SEED, CITIES, COMMISSION_RULES, COUPONS, CUSTOMERS,
-  EARNINGS_SEED, MEMBERSHIP_PLANS, NOTIFICATIONS, PAYOUTS_SEED, PROFESSIONALS,
-  REVIEWS, SERVICES, SERVICE_CATEGORIES, SERVICE_ADDONS, SUPPORT_TICKETS, DISPUTES,
-  buildAvailabilitySlots,
   type Booking, type BookingStatus, type Customer, type Professional,
   type ProfessionalEarning, type Review, type Payout, type SupportTicket, type Dispute,
   type AvailabilitySlot,
 } from './homeServicesData'
+import { homeServicesApi } from './homeServicesApi'
 
 // VSR Home Services — client-side demo state. In production the .NET backend is
 // authoritative for pricing, availability, booking status, assignment, refunds,
@@ -79,13 +76,37 @@ export function todayKey(): string {
 }
 
 export function useHomeServicesStore() {
-  const [bookings, setBookings] = useState<readonly Booking[]>(() => readJson(BOOKINGS_KEY, BOOKING_SEED))
-  const [reviews, setReviews] = useState<readonly Review[]>(() => readJson(REVIEWS_KEY, REVIEWS))
-  const [earnings, setEarnings] = useState<readonly ProfessionalEarning[]>(() => readJson(EARNINGS_KEY, EARNINGS_SEED))
-  const [payouts, setPayouts] = useState<readonly Payout[]>(() => readJson(PAYOUTS_KEY, PAYOUTS_SEED))
-  const [readNotifs, setReadNotifs] = useState<readonly string[]>(() => readJson(NOTIF_READ_KEY, [] as string[]))
-  const [assigned, setAssigned] = useState<readonly AssignedProfessional[]>(() => readJson(ASSIGNED_KEY, [] as AssignedProfessional[]))
-  const [verifiedIds, setVerifiedIds] = useState<readonly string[]>(() => readJson(VERIFIED_KEY, [] as string[]))
+  const [bookings, setBookings] = useState<readonly Booking[]>([] as readonly Booking[])
+  const [reviews, setReviews] = useState<readonly Review[]>([] as readonly Review[])
+  const [earnings, setEarnings] = useState<readonly ProfessionalEarning[]>([] as readonly ProfessionalEarning[])
+  const [payouts, setPayouts] = useState<readonly Payout[]>([] as readonly Payout[])
+  const [readNotifs, setReadNotifs] = useState<readonly string[]>([] as string[])
+  const [assigned, setAssigned] = useState<readonly AssignedProfessional[]>([] as readonly AssignedProfessional[])
+  const [verifiedIds, setVerifiedIds] = useState<readonly string[]>([] as string[])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const [custBookings, custReviews, custEarnings, custPayouts] = await Promise.all([
+          homeServicesApi.getBookings().then(r => r ?? []),
+          homeServicesApi.getReviews().then(r => r ?? []),
+          homeServicesApi.getProfessionalEarningsSummary('0').then(r => r ?? { totalGross: 0, totalCommission: 0, totalEarnings: 0, paidEarnings: 0, pendingEarnings: 0, eligibleCount: 0, paidCount: 0 }).then(r => r ? [] : r),
+          homeServicesApi.getPayoutStatus('0').then(r => r ?? { pendingAmount: 0, processingAmount: 0, paidAmount: 0, nextPayoutDate: null, payouts: [] }),
+        ])
+        setBookings(custBookings as readonly Booking[])
+        setReviews(custReviews as readonly Review[])
+        setEarnings(custEarnings as readonly ProfessionalEarning[])
+        setPayouts(custPayouts as readonly Payout[])
+      } catch (e) {
+        // Keep empty state; UI will show loading until data arrives
+      } finally {
+        setIsLoading(false)
+      }
+    })()
+  }, [])
+
+  // ... rest of hook stays the same but uses the new loading state
 
   const persist = useCallback((key: string, value: unknown) => {
     localStorage.setItem(key, JSON.stringify(value))

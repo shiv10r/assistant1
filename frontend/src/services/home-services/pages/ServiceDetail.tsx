@@ -81,9 +81,9 @@ export default function ServiceDetail() {
         ])
         setService(s as unknown as ApiService)
         setProfile(p)
-        const preferred = (s.packages ?? []).find(
-  (x): x is { isPopular: boolean } => 'isPopular' in x,
-) ?? s.packages?.[0]
+const preferred = (s.packages ?? []).find(
+      (x) => 'isPopular' in x,
+    ) ?? s.packages?.[0]
         setSelectedPkgId(preferred?.id ?? '')
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Could not load this service')
