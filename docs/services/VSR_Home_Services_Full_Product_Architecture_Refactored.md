@@ -2,6 +2,12 @@
 
 > **Purpose:** Complete product architecture for a real working home-services marketplace.
 >
+> > ## Frontend Refactor Priority
+> > This version contains a major **interactive frontend architecture refactor in §§165–170**.
+> > Those sections supersede the earlier thin frontend file mapping and must be implemented as the primary
+> > frontend source of truth. All original business/domain/backend requirements remain mandatory.
+> >
+>
 > **Technology constraints**
 > - Frontend: React
 > - Backend: .NET
@@ -3973,52 +3979,3225 @@ Migration:   dotnet ef migrations add AddHomeServicesModule -p VSRSystemsBackend
 
 ---
 
-# 165. Frontend Architecture (Exact File Mapping)
+# 165. Frontend Architecture V2 — Interactive Product, Not Decorative UI
 
-No rewrite — extend the existing `frontend/src/services/home-services` module and `App.tsx` route table in place.
+> **This section supersedes the old §165 frontend mapping.**
+>
+> The existing business rules, data model, backend rules, APIs, payment lifecycle, professional workflows,
+> administration requirements and Definition of Done in the rest of this document remain mandatory.
+>
+> The frontend must now be treated as a **complete product application**. A screen is not complete because it
+> renders cards or tables. It is complete only when a user can view data, enter data, submit it, receive useful
+> validation, recover from errors, perform allowed actions, and see the resulting server state reflected back in
+> the interface.
+
+## 165.1 Non-Negotiable Frontend Build Rules
+
+The coding agent MUST follow all of these rules.
+
+1. **No dead UI**
+   - Every visible primary button must perform a real action.
+   - Every icon button must have a real purpose, accessible label and working handler.
+   - Every filter must change the visible result.
+   - Every sort must actually sort.
+   - Every tab must expose meaningful content.
+   - Every form must submit to a backend endpoint or clearly save local draft state where specified.
+   - Every editable admin field must persist.
+   - Every customer/professional action must re-fetch or reconcile with server state after success.
+   - Placeholder buttons such as `Book Now`, `Pay`, `Save`, `Accept`, `Complete`, `Refund`, `Approve`,
+     `Assign`, `Add Service`, `Edit`, `Delete`, `Upload`, `Apply Coupon`, `Raise Ticket` are forbidden.
+
+2. **No hardcoded product data in normal application execution**
+   - Categories, services, packages, add-ons, prices, bookings, professionals, reviews, earnings, payouts,
+     offers, membership plans, slots, notifications and analytics come from APIs.
+   - `homeServicesData.ts` must not silently replace a failed API response.
+   - API failure must show an error/retry state.
+   - Development/demo data must be created through backend seed data so the UI exercises the real application.
+
+3. **Server authority**
+   - React is never authoritative for price, availability, eligibility, booking status, assignment, refunds,
+     commissions, professional earnings, payout totals or payment success.
+   - The UI may calculate presentation-only subtotals for preview, but the server quote is always displayed as
+     the final source of truth.
+   - After critical mutations, the frontend must render the state returned by the backend.
+
+4. **Forms are a first-class product feature**
+   - Login/account flows.
+   - Customer profile.
+   - Address management.
+   - Service issue description.
+   - Booking instructions.
+   - Coupon application.
+   - Cancellation/reschedule.
+   - Review.
+   - Support ticket.
+   - Dispute.
+   - Professional onboarding.
+   - Professional verification.
+   - Skills/services.
+   - Service areas.
+   - Availability/time off.
+   - Job notes.
+   - Before/after evidence.
+   - Additional quotation.
+   - Parts/materials.
+   - Completion report.
+   - Admin create/edit forms for every managed entity.
+   - Finance/refund/payout operations.
+   - CMS forms.
+   - Role/permission forms.
+
+5. **Every async screen has five explicit states**
+   - loading
+   - loaded
+   - empty
+   - error
+   - refreshing/mutating
+
+6. **Every destructive or financially meaningful action requires confirmation**
+   - cancel booking
+   - reject quotation
+   - process refund
+   - suspend professional
+   - delete/deactivate catalog data
+   - change commission/pricing rules
+   - payout adjustment
+   - permission/role changes
+
+7. **Mobile is not a shrunk desktop**
+   - Customer and professional flows use cards, bottom sheets, drawers, sticky action areas and large touch targets.
+   - Complex admin tables may become horizontally scrollable only where necessary, but important mobile admin
+     actions should still have card/detail alternatives.
+   - No hover-only interaction.
+   - No action hidden behind an unlabeled icon without an accessible label.
+
+8. **Do not create new technology decisions**
+   - Frontend remains React.
+   - Backend remains .NET.
+   - Database remains PostgreSQL.
+   - Reuse the existing application's patterns and already-installed capabilities.
+   - Do not add a new state/data/form/UI framework merely to implement this section unless separately approved.
+
+---
+
+## 165.2 Existing Module — Refactor In Place
+
+Keep and expand:
 
 ```text
 frontend/src/services/home-services/
-  homeServicesApi.ts        NEW — fetch/axios client for every endpoint in §120-§122, §161, §162
-                             (replaces direct reads from homeServicesData.ts / homeServicesStore.ts)
-  homeServicesStore.ts      keep as client-side UI/cache state, but hydrate it from homeServicesApi.ts
-                             instead of hardcoded fixtures; keep localStorage only for UI prefs (persona, filters)
-  homeServicesData.ts       demoted to typed fallback/seed used only when API call fails (offline/dev mode)
-  HomeServicesShell.tsx     add an "Analytics" nav entry to ADMIN_NAV (icon: MdInsights or similar)
+  HomeServicesShell.tsx
+  homeServicesApi.ts
+  homeServicesStore.ts
 
-  pages/admin/AdminDashboard.tsx     KPI summary cards only — bind to GET /admin/analytics/summary (§161)
-  pages/admin/AdminAnalytics.tsx    NEW — full chart suite from §161 (Bookings Trend, Revenue Trend,
-                                    Top Categories/Services/Cities, Assignment Success, Cancellation Reasons,
-                                    Customer Repeat Rate, Provider Performance, Refund/Dispute Rate)
-  pages/admin/AdminFinance.tsx      commission rules + payouts + refunds tables, plus Revenue Trend chart
-                                    and revenue-report CSV export, bound to §162 admin/finance endpoints
-  pages/admin/AdminBookings.tsx     live booking table bound to GET /admin/bookings
-  pages/admin/AdminProfessionals.tsx  verification + professional list bound to GET /admin/professionals
-  pages/admin/AdminLiveOps.tsx      live operations board bound to GET /admin/live
-
-  pages/pro/ProEarnings.tsx         earnings breakdown table + a small earnings trend chart,
-                                    bound to GET /professional/earnings, /earnings/summary, /payouts (§162)
-  pages/pro/ProDashboard.tsx        today/upcoming jobs + mini KPI (acceptance rate, rating) bound to
-                                    GET /professional/requests + /professional/performance
-  pages/pro/ProJobs.tsx, ProJobDetail.tsx, ProRequests.tsx, ProProfile.tsx   wire to /professional/bookings,
-                                    /professional/requests, /professional/profile, /professional/verification
-
-  pages/Home.tsx, Categories.tsx, CategoryDetail.tsx, ServiceDetail.tsx, Search.tsx
-                                    wire to GET /categories, /services, /search, /serviceability
-  pages/BookingFlow.tsx             wire to POST /price-quotes then POST /bookings (server is price-authoritative)
-  pages/Bookings.tsx, BookingDetail.tsx   wire to GET /bookings, GET /bookings/{id}, booking status history
-  pages/Offers.tsx                 wire to GET /coupons or /memberships
-  pages/Account.tsx                wire to /auth/me, /addresses, /customer/wallet (§162)
-
-Routing (frontend/src/App.tsx):  keep all existing /home-services/* routes; add one new route:
-  <Route path="/home-services/admin/analytics" element={<HomeServicesAdminAnalytics />} />
-
-Chart library: add "recharts" to frontend/package.json (none installed today) — use it for every
-  chart in §161/§165; use ResponsiveContainer so charts work in the existing mobile-card layout rules (§147).
-Data fetching: no react-query/SWR currently in this codebase — follow the existing pattern
-  (plain fetch/axios + useState/useEffect, consistent with how other wired-up services in this
-  frontend call the backend) inside homeServicesApi.ts.
+  components/
+  hooks/
+  pages/
+  pages/pro/
+  pages/admin/
 ```
+
+The existing visual language should be upgraded, not thrown away.
+
+### Refactor responsibilities
+
+```text
+homeServicesApi.ts
+  - contains all Home Services HTTP calls
+  - typed request/response contracts
+  - one consistent error normalization strategy
+  - no UI rendering logic
+  - no hardcoded successful response fallback
+
+homeServicesStore.ts
+  - UI/session convenience state only
+  - selected location
+  - booking draft identifiers
+  - temporary filters
+  - drawer/sheet state if useful
+  - recently viewed IDs if not server-persisted
+  - never becomes the authoritative booking/payment/pricing database
+
+HomeServicesShell.tsx
+  - persona-aware navigation
+  - route-aware active state
+  - responsive top navigation
+  - customer/professional mobile bottom navigation
+  - notification indicator
+  - account switch/actions
+  - meaningful breadcrumb/header region where appropriate
+```
+
+---
+
+# 166. Product Information Architecture & Route Contract
+
+The coding agent should implement a complete route tree rather than concentrating functionality into a few oversized pages.
+
+## 166.1 Customer Routes
+
+```text
+/home-services
+/home-services/search
+/home-services/categories
+/home-services/categories/:categorySlug
+/home-services/services/:serviceSlug
+/home-services/book/:serviceId
+/home-services/bookings
+/home-services/bookings/:bookingId
+/home-services/addresses
+/home-services/offers
+/home-services/membership
+/home-services/recurring
+/home-services/warranty
+/home-services/favorites
+/home-services/wallet
+/home-services/invoices
+/home-services/invoices/:bookingId
+/home-services/notifications
+/home-services/support
+/home-services/support/new
+/home-services/support/:ticketId
+/home-services/disputes/new
+/home-services/account
+/home-services/account/profile
+/home-services/account/security
+```
+
+If the main application already has authentication routes, reuse them. Do not create a conflicting auth system.
+
+## 166.2 Professional Routes
+
+```text
+/home-services/pro
+/home-services/pro/onboarding
+/home-services/pro/verification
+/home-services/pro/requests
+/home-services/pro/jobs
+/home-services/pro/jobs/:bookingId
+/home-services/pro/calendar
+/home-services/pro/availability
+/home-services/pro/services
+/home-services/pro/areas
+/home-services/pro/earnings
+/home-services/pro/payouts
+/home-services/pro/reviews
+/home-services/pro/performance
+/home-services/pro/notifications
+/home-services/pro/support
+/home-services/pro/support/new
+/home-services/pro/profile
+```
+
+## 166.3 Admin / Operations Routes
+
+```text
+/home-services/admin
+/home-services/admin/analytics
+/home-services/admin/live
+/home-services/admin/bookings
+/home-services/admin/bookings/:bookingId
+/home-services/admin/customers
+/home-services/admin/customers/:customerId
+/home-services/admin/professionals
+/home-services/admin/professionals/:professionalId
+/home-services/admin/verification
+/home-services/admin/catalog
+/home-services/admin/catalog/categories
+/home-services/admin/catalog/services
+/home-services/admin/catalog/packages
+/home-services/admin/catalog/add-ons
+/home-services/admin/catalog/problems
+/home-services/admin/pricing
+/home-services/admin/areas
+/home-services/admin/availability
+/home-services/admin/payments
+/home-services/admin/refunds
+/home-services/admin/commissions
+/home-services/admin/payouts
+/home-services/admin/coupons
+/home-services/admin/memberships
+/home-services/admin/reviews
+/home-services/admin/support
+/home-services/admin/support/:ticketId
+/home-services/admin/disputes
+/home-services/admin/disputes/:disputeId
+/home-services/admin/reports
+/home-services/admin/cms
+/home-services/admin/users
+/home-services/admin/roles
+/home-services/admin/audit
+/home-services/admin/settings
+```
+
+Routes must be permission-aware. An authenticated user must never gain functionality merely by manually typing an admin/professional URL.
+
+---
+
+# 167. Customer Application — Feature-Rich Experience
+
+## 167.1 Customer Home — Make It Feel Alive
+
+The home page must be a working discovery and conversion surface.
+
+### Header / top region
+
+- service location selector
+- current address summary
+- search field with real suggestions
+- notification entry
+- customer account entry
+- active booking indicator when a booking is in progress
+
+### Hero/search interaction
+
+The main search must support problem-first intent.
+
+Examples:
+
+```text
+AC not cooling
+tap leaking
+need fan installed
+deep clean 2BHK
+washing machine not spinning
+```
+
+While typing, show grouped suggestions:
+
+```text
+Problems
+Services
+Categories
+Popular searches
+Recent searches
+```
+
+Selecting a suggestion routes to the appropriate result/service screen.
+
+### Quick problem chips
+
+Examples:
+
+```text
+AC not cooling
+Water leakage
+Power issue
+Deep cleaning
+Appliance repair
+Need installation
+Emergency help
+```
+
+They must be functional shortcuts.
+
+### Dynamic home modules
+
+Render from APIs/configuration:
+
+- continue unfinished booking
+- active booking
+- rebook last service
+- recently viewed
+- popular near selected location
+- recommended for customer
+- categories
+- emergency services
+- seasonal services
+- offers
+- recurring service suggestion
+- membership promotion
+- top-rated professionals
+- recent verified reviews
+- trust and safety
+- support shortcut
+
+### "Wow" interaction rule
+
+If a customer has an active booking, the home page should stop behaving like a generic marketing page and surface
+the active job prominently with:
+
+- current status
+- scheduled time
+- professional assignment state
+- next expected milestone
+- one-tap open booking
+- contextual help
+
+---
+
+## 167.2 Location Selector
+
+Open as responsive modal/drawer/bottom sheet.
+
+### Actions
+
+- use current location
+- choose saved address
+- add new address
+- change city/locality
+- search location
+- select recent location
+
+### Result
+
+After location change:
+
+- refresh serviceability
+- refresh categories/services relevant to location
+- refresh homepage recommendations
+- refresh available emergency services
+- preserve current navigation where sensible
+
+Show an explicit message when a service is unavailable in the newly selected location.
+
+---
+
+## 167.3 Search Results
+
+### Controls
+
+- search input
+- problem/category chips
+- category filter
+- price range where supported by server data
+- service type
+- emergency eligibility
+- rating where professional/service results use it
+- sort
+- clear all filters
+
+### Result cards
+
+Each service card should include the useful subset of:
+
+- image/icon
+- service name
+- category
+- starting price or inspection label
+- expected duration
+- rating/review count where applicable
+- warranty
+- service badge
+- short inclusion summary
+- `View details`
+- `Book`
+
+No fake star ratings or price labels.
+
+### Empty result
+
+Provide:
+
+- corrected search suggestions
+- nearby related categories
+- "not sure what service I need" flow
+- support/contact option when appropriate
+
+---
+
+## 167.4 Category Detail
+
+The category page is not just a grid.
+
+Include:
+
+- category overview
+- common problems
+- service groups/subcategories
+- packages/services
+- emergency option if supported
+- recommended combinations
+- FAQ
+- recent category reviews
+- trust/warranty content
+- related categories
+
+Clicking a common problem should pre-filter the service list.
+
+---
+
+## 167.5 Service Detail
+
+This is a conversion page.
+
+### Main content
+
+- service title
+- category
+- problem(s) solved
+- service description
+- package selector
+- inclusions
+- exclusions
+- duration
+- warranty
+- price/inspection explanation
+- add-ons
+- rating/reviews
+- service checklist preview where configured
+- what the customer should prepare
+- cancellation rule
+- FAQ
+- support link
+
+### Package comparison
+
+When multiple packages exist, allow customers to compare meaningful attributes:
+
+```text
+Price
+Duration
+Included work
+Included units
+Warranty
+Parts/material policy
+Recommended for
+```
+
+### Sticky action
+
+Desktop:
+- sticky booking summary/CTA panel
+
+Mobile:
+- sticky bottom bar showing selected package + server-displayed starting/quoted price + continue/book CTA
+
+---
+
+## 167.6 "Help Me Choose" Problem Wizard
+
+This is important for customers who do not know the correct service.
+
+### Flow
+
+```text
+Choose category or describe issue
+→ select symptoms/problem chips
+→ answer category-specific questions
+→ optionally upload evidence
+→ show recommended service/package(s)
+→ customer chooses
+→ start booking
+```
+
+### Generic fields
+
+- free-text issue description
+- urgency
+- when problem started
+- property type
+- optional images/video
+- "not sure" choice
+
+### Category-specific question examples
+
+AC:
+
+```text
+AC type
+Approximate age
+Problem
+How many units
+Any error code
+```
+
+Cleaning:
+
+```text
+Home size
+Number of bedrooms
+Number of bathrooms
+Furnished/unfurnished
+Occupied/vacant
+Heavy stains?
+```
+
+Electrical:
+
+```text
+Problem type
+Number of points/items
+Whole-house issue?
+Burning smell/sparking?
+Emergency?
+```
+
+Do not invent price from these responses; use them to request the server-side eligible service/quote.
+
+---
+
+## 167.7 Booking Wizard — Full Interactive Contract
+
+The booking flow is a real multi-step form with draft preservation.
+
+### Persistent booking summary
+
+At all steps show an editable summary containing:
+
+- selected service
+- package
+- quantity/units
+- add-ons
+- selected address
+- selected slot
+- instructions
+- latest server quote
+- discount
+- taxes/fees
+- final amount
+
+Customer can jump back to completed steps without losing valid selections.
+
+### Step 1 — Package / Service Configuration
+
+Inputs can include:
+
+- package radio/card selection
+- quantity/unit stepper
+- property/home attributes required by that service
+- service problem selection
+- optional preferred professional
+- "inspection required" acknowledgement
+
+Validation:
+
+- package required
+- quantity in allowed range
+- service-specific required fields
+
+### Step 2 — Add-ons
+
+- selectable add-on cards
+- quantity where allowed
+- description
+- price impact from server quote refresh
+- clear selected state
+- no preselected paid add-on without customer action
+
+### Step 3 — Address
+
+Show saved addresses as selectable cards.
+
+Actions:
+
+- select
+- add address
+- edit address
+- delete address
+- set default
+- use current location
+
+#### Address form fields
+
+```text
+Label
+Flat/House
+Building
+Street
+Landmark
+Pincode
+City
+State
+Latitude
+Longitude
+Contact Person
+Contact Phone
+Access Instructions
+```
+
+After selection call serviceability. If not serviceable, block continuation with a clear reason and alternatives.
+
+### Step 4 — Date & Time
+
+- Today / Tomorrow / Pick date
+- available slot cards
+- unavailable slots disabled
+- emergency booking option where allowed
+- selected date summary
+- provider availability message
+- refresh availability action
+
+If the selected slot becomes unavailable before booking:
+- show conflict message
+- preserve all other draft data
+- return user to slot selection
+- refresh slots automatically
+
+### Step 5 — Instructions & Evidence
+
+Form:
+
+```text
+Problem description
+Access instructions
+Special instructions
+Contact preference
+Photo upload
+Video upload
+```
+
+Uploads show:
+- progress
+- preview
+- remove
+- retry
+- failure reason
+
+### Step 6 — Server Quote
+
+Call price quote API.
+
+Show itemized breakdown:
+
+```text
+Base package
+Add-ons
+Inspection
+Travel/urgent fee
+Platform fee
+Discount
+Membership discount
+Coupon
+Tax
+Final total
+Quote expiry
+```
+
+Actions:
+
+- apply coupon
+- remove coupon
+- choose membership benefit if applicable
+- refresh expired quote
+- go back and edit booking
+
+Coupon field must show:
+- applying state
+- invalid code
+- not eligible reason
+- successful discount
+- removed state
+
+### Step 7 — Payment
+
+Show only payment options allowed for the booking.
+
+States:
+
+```text
+ready
+creating payment
+payment UI open
+processing
+success awaiting verification
+verified success
+failed
+cancelled
+verification delayed
+```
+
+Never mark booking paid only from a client callback.
+
+### Step 8 — Confirmation
+
+Show:
+
+- booking number
+- service
+- date/time
+- address
+- payment status
+- assignment state
+- next step
+- open booking
+- add reminder/calendar only if existing app supports it
+- support shortcut
+
+---
+
+## 167.8 Booking List
+
+Tabs/filters:
+
+```text
+Active
+Upcoming
+Completed
+Cancelled
+Warranty/Rework
+```
+
+Each card:
+
+- booking number
+- service
+- scheduled date/time
+- address/locality
+- status
+- professional if assigned
+- amount/payment status
+- context-aware action
+
+Context-aware actions:
+
+```text
+Track
+Pay
+Approve quote
+Reschedule
+Cancel
+Review
+Rebook
+Download invoice
+Get support
+Raise warranty request
+```
+
+---
+
+## 167.9 Booking Detail — Customer Mission Control
+
+The booking detail screen should be one of the richest pages in the customer product.
+
+### Header
+
+- service
+- booking number
+- current status badge
+- scheduled time
+- amount/payment state
+- context-aware primary CTA
+
+### Timeline
+
+Display real booking status history, not a hardcoded checklist.
+
+### Professional card
+
+When assigned:
+
+- name
+- profile image
+- verified badge
+- rating
+- completed jobs
+- years experience where available
+- service skill
+- contact/chat
+- favorite professional
+- report/support
+
+Before assignment:
+- searching state
+- expected next action
+- fallback/reschedule support if assignment is delayed
+
+### Live action panel
+
+Change by booking status.
+
+Examples:
+
+`Confirmed / SearchingProfessional`
+- searching animation/state
+- support
+- cancel/reschedule if policy allows
+
+`ProviderAccepted`
+- professional details
+- scheduled timing
+
+`ProviderOnTheWay`
+- "professional is on the way"
+- contact
+- booking instructions
+- estimated arrival if backend supports it
+
+`ProviderArrived / AwaitingStartVerification`
+- show service start verification code/mechanism
+- safety reminder
+- do not display code indefinitely after it is consumed
+
+`ServiceInProgress`
+- current service
+- started at
+- contact/support
+- pending additional quote if created
+
+`AwaitingCustomerApproval`
+- prominent quote approval card
+
+`ServiceCompleted`
+- work summary
+- before/after gallery
+- completion confirmation where required
+- remaining payment if any
+
+`Completed`
+- invoice
+- service report
+- warranty
+- review
+- rebook
+
+### Booking details sections
+
+- package
+- add-ons
+- instructions
+- evidence
+- address
+- quote history
+- payment history
+- cancellation/refund information
+- warranty
+- service report
+- invoice
+- support/dispute links
+
+---
+
+## 167.10 Reschedule Flow
+
+Open from booking detail.
+
+Show:
+
+- current appointment
+- policy/fee
+- new available dates
+- new available slots
+- reason field
+- updated quote/fee if server determines one
+- confirm
+
+On success:
+- update booking detail
+- append timeline event
+- show confirmation
+
+---
+
+## 167.11 Cancellation Flow
+
+Do not use a one-click destructive button.
+
+Form:
+
+```text
+Reason
+Optional notes
+Refund/fee summary from server
+Acknowledgement
+```
+
+Show:
+- cancellation policy
+- estimated refund
+- refund destination where relevant
+
+Confirmation requires explicit customer action.
+
+---
+
+## 167.12 Additional Quote Approval
+
+When professional requests extra work, customer gets a blocking/prominent card and notification.
+
+Show:
+
+- reason
+- labor
+- parts/materials
+- quantity
+- images
+- warranty
+- old total
+- added amount
+- revised total
+- notes
+
+Actions:
+
+```text
+Approve
+Reject
+Request clarification
+```
+
+Approval may trigger additional payment if required.
+
+---
+
+## 167.13 Review Form
+
+Only eligible completed bookings.
+
+Fields:
+
+```text
+Overall rating
+Quality
+Professionalism
+Punctuality
+Cleanliness
+Communication
+Value
+Tags
+Comment
+Photo upload
+```
+
+UX:
+
+- rating required
+- optional detailed categories
+- positive/negative tag suggestions based on rating
+- preview uploaded media
+- prevent duplicate review
+- show submitted review state
+
+---
+
+## 167.14 Warranty / Rework
+
+Customer can start from an eligible completed booking.
+
+Flow:
+
+```text
+Choose previous booking
+→ show warranty validity
+→ choose issue
+→ describe problem
+→ upload evidence
+→ choose preferred resolution
+→ submit
+→ track request
+```
+
+If outside warranty:
+- explain why
+- offer regular rebooking
+
+---
+
+## 167.15 Support Center
+
+Home:
+
+- search FAQ
+- active tickets
+- recent bookings needing help
+- support categories
+- emergency/safety entry
+
+### New ticket form
+
+```text
+Booking (optional/required depending category)
+Category
+Subject
+Description
+Priority indication
+Attachments
+Preferred response method if supported
+```
+
+### Ticket detail
+
+- ticket number
+- current status
+- conversation/messages
+- attachments
+- resolution
+- reopen action if policy allows
+
+---
+
+## 167.16 Dispute Form
+
+Use for serious booking-specific disputes.
+
+Inputs:
+
+```text
+Booking
+Dispute type
+Detailed description
+Requested resolution
+Evidence uploads
+Affected amount if relevant
+```
+
+Show:
+- what happens next
+- current investigation status
+- admin resolution
+- financial outcome when applicable
+
+---
+
+## 167.17 Customer Account
+
+Sections:
+
+- profile
+- saved addresses
+- membership
+- wallet/credits
+- favorites
+- recurring services
+- notification preferences if supported by backend
+- invoices
+- support history
+- legal/policy links
+- logout
+
+Profile form must be editable and persist changes.
+
+---
+
+## 167.18 Wallet / Credits
+
+Show:
+
+- available credit
+- ledger
+- source/reason
+- booking reference
+- credit/debit
+- running balance
+
+Do not show a fake balance.
+
+---
+
+## 167.19 Notifications
+
+Filters:
+
+```text
+All
+Bookings
+Payments
+Offers
+Support
+```
+
+Actions:
+
+- open target entity
+- mark read
+- mark all read
+
+Unread counter must reconcile with backend.
+
+---
+
+# 168. Professional Application — Job Execution Product
+
+The professional portal must feel like a field-work application, not an analytics dashboard with cards.
+
+## 168.1 Professional Onboarding Wizard
+
+Persist progress.
+
+Progress steps:
+
+```text
+Account/Profile
+Identity
+Address
+Experience
+Services
+Skills
+Service Areas
+Availability
+Payout Details
+Verification Documents
+Training/Declarations
+Review & Submit
+```
+
+Each step includes:
+- completion indicator
+- save & continue
+- back
+- validation
+- upload status where relevant
+- server save
+- resume later
+
+### Profile form
+
+```text
+Name
+Photo
+Contact details allowed by platform profile
+Date of birth if business process requires it
+Address
+Experience summary
+Years of experience
+Languages
+Emergency service availability
+```
+
+Do not collect fields that are not actually required by the existing product/business process.
+
+### Documents
+
+For every document:
+- document type
+- file upload
+- identifier/metadata if backend requires it
+- expiry if applicable
+- upload progress
+- verification status
+- rejection reason
+- resubmit
+
+### Service/skills selection
+
+- searchable categories
+- selectable services
+- skill level where enabled
+- years/experience per skill if supported
+- requested approval state
+
+### Area selection
+
+- city
+- zone/locality/pincode
+- enable/disable
+- radius where backend supports it
+
+### Availability
+
+Weekly editor:
+- working day toggle
+- start/end
+- breaks
+- maximum jobs/day if professional-controlled
+- save
+
+Time off:
+- date/date range
+- full day / time range
+- reason
+- save/delete
+
+### Payout details
+
+Use only the fields required by the backend/payment process.
+Mask sensitive values after save.
+
+---
+
+## 168.2 Professional Dashboard
+
+Prioritize actions over vanity metrics.
+
+Top action area:
+
+- online/availability status if supported
+- onboarding/verification warning if incomplete
+- new job request count
+- next job
+- active job
+- payout issue warning
+- support alert
+
+Metrics:
+
+- today's jobs
+- upcoming jobs
+- today's earnings
+- weekly earnings
+- rating
+- acceptance rate
+- completion rate
+- on-time rate
+
+Dashboard sections:
+
+- urgent/new requests
+- next job
+- today's route/job list
+- earnings snapshot
+- performance tips from real metrics
+- recent reviews
+
+---
+
+## 168.3 Job Requests
+
+Each request card:
+
+- service/package
+- area/locality
+- scheduled time
+- booking type
+- estimated duration
+- estimated earning
+- important customer instructions
+- emergency badge
+- acceptance deadline
+- accept
+- decline
+
+### Decline interaction
+
+Require reason when business rules require it.
+
+Examples:
+- too far
+- unavailable
+- service mismatch
+- personal emergency
+- other
+
+After decline:
+- card leaves actionable queue
+- server state shown
+- do not allow repeated accept after another professional has won the booking
+
+### Accept conflict
+
+If another professional accepted first:
+- show clear "job no longer available"
+- remove from queue
+- refresh requests
+
+---
+
+## 168.4 Professional Jobs List
+
+Tabs:
+
+```text
+Today
+Upcoming
+In Progress
+Completed
+Cancelled
+```
+
+Filters:
+- date
+- service
+- status
+- area
+
+Cards include:
+- booking number
+- service
+- customer area
+- time
+- status
+- expected earning
+- context action
+
+---
+
+## 168.5 Professional Job Detail — Field Mission Mode
+
+This screen changes its primary action based on booking state.
+
+### Fixed job header
+
+- booking number
+- service
+- date/time
+- customer area
+- status
+- expected earning
+- support
+
+### Customer/service information
+
+- address
+- landmark
+- access instructions
+- issue description
+- photos/video
+- package
+- add-ons
+- service checklist
+- expected duration
+- materials rule
+
+### Action state machine
+
+Example:
+
+```text
+Assigned
+  -> Accept / Decline
+
+ProviderAccepted
+  -> Start Travel
+
+ProviderOnTheWay
+  -> Arrived
+
+ProviderArrived
+  -> Enter/confirm service start verification
+
+ServiceInProgress
+  -> Update checklist
+  -> Add notes
+  -> Add evidence
+  -> Request additional work
+  -> Add approved materials
+  -> Complete service
+
+AwaitingCustomerApproval
+  -> Show pending approval; prevent unapproved charge finalization
+
+ServiceCompleted
+  -> Show completion submitted state
+
+Completed
+  -> Show service report + earning
+```
+
+Buttons must be disabled while mutation is in progress.
+
+---
+
+## 168.6 Start Travel
+
+Confirmation can show:
+- address
+- scheduled time
+- safety reminder
+- start travel
+
+After success:
+- status updates
+- primary action becomes `Arrived`
+
+---
+
+## 168.7 Arrived
+
+Action:
+- mark arrived
+
+After success:
+- store/display arrival state
+- show service start verification input when required
+
+---
+
+## 168.8 Service Start Verification
+
+UI:
+
+```text
+Enter customer verification code
+[code input]
+Verify & Start
+```
+
+States:
+- ready
+- verifying
+- invalid
+- expired
+- too many attempts if backend reports it
+- verified
+
+Never allow client-only transition to `ServiceInProgress`.
+
+---
+
+## 168.9 Before-Service Evidence
+
+If package/category requires it, block completion until required evidence exists.
+
+Inputs:
+
+- before photos
+- condition notes
+- problem evidence
+- checklist items
+
+Upload component:
+- camera/file picker friendly
+- preview
+- retry
+- remove before submission where allowed
+
+---
+
+## 168.10 Service Checklist
+
+Checklist is data-driven.
+
+Each item can support:
+- checkbox
+- required flag
+- note
+- photo-required flag
+
+The professional should see progress such as:
+
+```text
+4 of 6 required checks completed
+```
+
+---
+
+## 168.11 Additional Work / Quote Builder
+
+This must be a proper line-item form.
+
+Fields:
+
+```text
+Reason
+Labor item(s)
+Part/material item(s)
+Additional service item(s)
+Quantity
+Unit price
+Warranty
+Photo
+Notes
+```
+
+Actions:
+
+```text
+Add line
+Remove line
+Preview
+Send for customer approval
+```
+
+After sending:
+- lock submitted revision from casual editing
+- show pending customer approval
+- show customer decision when received
+
+No unapproved charge may be silently added to final payable amount.
+
+---
+
+## 168.12 Parts / Materials
+
+Line item editor:
+
+```text
+Part Name
+Quantity
+Unit Price
+Warranty
+Photo
+Customer Approval Status
+```
+
+Show whether each line is:
+- pending
+- approved
+- rejected
+
+---
+
+## 168.13 Completion Form
+
+Completion should be intentionally structured.
+
+Required/optional based on service configuration:
+
+```text
+Work performed
+Completion notes
+Checklist
+Parts used
+After photos
+Warranty
+Recommended future work
+Customer-facing summary
+```
+
+Before submission:
+- show completion review
+- confirm required evidence
+- warn about missing required checklist/evidence
+
+After success:
+- show submitted report
+- reflect server booking status
+- show resulting earning state when available
+
+---
+
+## 168.14 Professional Earnings
+
+Summary cards:
+- today
+- this week
+- this month
+- pending
+- available/settled where supported
+
+List rows:
+- booking
+- gross value
+- commission
+- adjustment
+- tax/withholding
+- net earning
+- status
+
+Filters:
+- date
+- status
+- service
+
+Every row can open earning details.
+
+---
+
+## 168.15 Payouts
+
+Show:
+- next payout
+- pending balance
+- paid history
+- failed payouts
+- adjustment history
+
+Failed payout:
+- failure reason
+- next action
+- support shortcut
+
+---
+
+## 168.16 Professional Performance
+
+Show real metrics:
+- rating
+- completion rate
+- acceptance rate
+- cancellation rate
+- on-time rate
+- complaint rate
+- rework rate
+- recent review trend where backend supports it
+
+Use explanations, not only numbers.
+
+---
+
+## 168.17 Professional Reviews
+
+List:
+- customer review
+- service
+- booking date
+- category ratings
+- tags
+- response/moderation state if product supports it
+
+---
+
+## 168.18 Professional Support
+
+Allow:
+- new ticket
+- booking-linked help
+- payout help
+- account/verification help
+- safety/emergency help
+- ticket history
+
+---
+
+# 169. Admin / Operations Application — Full Control Plane
+
+The admin portal must not be a read-only set of tables. It is the operational control plane for the business.
+
+## 169.1 Admin Dashboard
+
+Summary cards must be clickable and route to filtered operational views.
+
+Examples:
+
+```text
+Bookings Today -> /admin/bookings?date=today
+Unassigned -> /admin/live?status=unassigned
+Pending Verification -> /admin/verification
+Refunds -> /admin/refunds
+Pending Payouts -> /admin/payouts
+Open Tickets -> /admin/support?status=open
+Critical Disputes -> /admin/disputes?priority=critical
+```
+
+Include:
+- booking snapshot
+- professional availability risk
+- finance snapshot
+- support/dispute snapshot
+- live alerts
+- quick actions
+
+No decorative KPI that cannot be investigated.
+
+---
+
+## 169.2 Admin Analytics
+
+Every chart:
+- real aggregation API
+- date range
+- location filter where supported
+- category/service filter where supported
+- loading/empty/error
+- tooltip/legend
+- downloadable/exportable report only where backend endpoint exists
+
+Analytics should link to underlying operational view when practical.
+
+---
+
+## 169.3 Live Operations Board
+
+This is a high-value operational screen.
+
+Columns/status groups:
+
+```text
+New
+Searching Provider
+Awaiting Provider
+Upcoming
+On The Way
+Arrived
+In Service
+Waiting Customer Approval
+Payment Pending
+Problem
+Completed
+```
+
+Card:
+- booking #
+- service
+- customer area
+- scheduled time
+- professional
+- payment
+- elapsed/late indicator
+- alert indicator
+
+Actions from card/detail drawer:
+- open booking
+- assign
+- reassign
+- contact customer
+- contact professional
+- reschedule
+- cancel
+- add internal note
+- escalate
+- open support/dispute context
+
+Live board needs:
+- search
+- city
+- zone
+- service
+- booking type
+- status
+- professional
+- late-only
+- emergency-only
+- problem-only
+- auto/manual refresh indicator
+
+---
+
+## 169.4 Admin Booking Detail
+
+Tabs/sections:
+
+```text
+Overview
+Timeline
+Assignment
+Customer
+Professional
+Quote
+Payments
+Refunds
+Service Evidence
+Messages
+Support
+Disputes
+Internal Notes
+Audit
+```
+
+Actions permission-controlled:
+- assign
+- reassign
+- reschedule
+- cancel
+- approve special operational action
+- initiate/refund according to role
+- escalate
+- add note
+- contact parties
+
+Every admin mutation must record/display meaningful resulting state.
+
+---
+
+## 169.5 Manual Assignment Drawer
+
+Inputs:
+- booking summary
+- search professional
+- filter by eligibility
+- distance/area
+- skills
+- availability
+- rating/performance
+- current workload
+- reason for manual assignment
+
+Only eligible professionals should be selectable unless a privileged override exists in backend rules.
+
+Confirm before assignment.
+
+---
+
+## 169.6 Professional Admin
+
+List filters:
+- name/id
+- city
+- service
+- verification
+- active/suspended
+- rating
+- performance level
+- onboarding status
+
+Row actions:
+- open
+- verify/review
+- activate/suspend as permitted
+- inspect bookings
+- inspect earnings/payouts
+- add internal note
+
+Professional detail tabs:
+
+```text
+Overview
+Verification
+Documents
+Services
+Skills
+Areas
+Schedule
+Bookings
+Earnings
+Payouts
+Reviews
+Complaints
+Performance
+Internal Notes
+Audit
+```
+
+### Verification review interaction
+
+For each item:
+- view submitted data/file
+- status
+- approve
+- reject
+- rejection reason
+- request resubmission
+- audit metadata
+
+Bulk approval should be used only where business-safe.
+
+---
+
+## 169.7 Customer Admin
+
+List:
+- search
+- city
+- booking count
+- membership
+- account state
+- support/dispute indicators
+
+Customer detail:
+
+```text
+Profile
+Addresses
+Bookings
+Payments
+Refunds
+Membership
+Support
+Reviews
+Credits
+Internal Notes
+Audit
+```
+
+Actions are permission-controlled.
+
+---
+
+## 169.8 Catalog Admin — Real CRUD
+
+This must be fully editable from UI.
+
+### Categories
+
+List:
+- name
+- parent/subcategory relationship where applicable
+- status
+- sort order
+- service count
+- emergency eligibility
+
+Create/edit form:
+
+```text
+Name
+Slug
+Short Description
+Detailed Description
+Image/Icon reference
+Sort Order
+Active
+Emergency Eligible
+SEO/display metadata already supported by backend
+```
+
+Actions:
+- create
+- edit
+- activate/deactivate
+- reorder
+- open services
+- delete only if backend business rules allow it
+
+### Services
+
+Form:
+
+```text
+Category
+Name
+Slug
+Short Description
+Detailed Description
+Problems solved
+Default duration
+Inspection required?
+Emergency eligible?
+Recurring eligible?
+Active
+Display order
+```
+
+### Service Problems
+
+Form:
+- service/category
+- label
+- description
+- sort order
+- active
+- recommended service/package mapping where backend supports it
+
+### Packages
+
+Form:
+
+```text
+Service
+Name
+Short Description
+Detailed Description
+Price/base pricing reference
+Duration
+What's Included
+What's Excluded
+Warranty
+Inspection Required?
+Parts Included?
+Minimum Charge
+Cancellation Rule
+Popular?
+Emergency Eligible?
+Active?
+```
+
+### Add-ons
+
+Form:
+- service/package
+- name
+- description
+- price rule/reference
+- quantity rules
+- active
+- display order
+
+Admin changes must appear in customer discovery without code deployment.
+
+---
+
+## 169.9 Pricing Admin
+
+Filters:
+- city
+- area
+- category
+- service
+- package
+- active date
+
+Create/edit price rule:
+- scope
+- base price
+- fee/adjustment
+- valid from/to
+- emergency/weekend/time rules where supported
+- professional payout rule reference if applicable
+- active
+
+Show price version/history.
+
+A pricing change must require:
+- confirmation
+- effective date
+- audit entry
+
+---
+
+## 169.10 Service Area Admin
+
+Hierarchy browser:
+- country
+- state
+- city
+- zone
+- locality
+- pincode
+
+Forms:
+- create/edit area nodes
+- activate/deactivate
+- enable category/service/package per area
+- emergency availability
+- operational notes if supported
+
+Show service coverage clearly.
+
+---
+
+## 169.11 Availability / Capacity Admin
+
+Filters:
+- date
+- city
+- zone
+- category
+- service
+- time
+
+Show:
+- available professionals
+- scheduled demand
+- unassigned demand
+- shortage state
+
+Allow drilldown to professional availability and affected bookings.
+
+---
+
+## 169.12 Payments Admin
+
+List:
+- payment id
+- booking
+- customer
+- amount
+- method/provider
+- status
+- gateway reference
+- date
+
+Filters:
+- status
+- provider
+- date
+- booking/customer
+- amount
+
+Detail:
+- payment timeline
+- gateway references
+- verification/webhook state
+- associated refunds
+- audit
+
+No fake "Mark paid" action unless a legitimate backend operation explicitly supports it.
+
+---
+
+## 169.13 Refund Admin
+
+Refund queue:
+- requested
+- awaiting review
+- approved
+- processing
+- processed
+- rejected/failed as supported
+
+Refund detail:
+- booking
+- payment
+- reason
+- policy result
+- requested amount
+- allowed amount from backend
+- evidence/support context
+- customer communication
+- audit
+
+Actions:
+- approve
+- reject with reason
+- process
+- retry failed process if supported
+
+Every money action requires explicit confirmation.
+
+---
+
+## 169.14 Commission Admin
+
+List and edit commission rules.
+
+Inputs:
+- category
+- service
+- city
+- professional tier
+- percentage
+- flat fee
+- effective dates
+- active
+
+Show:
+- rule history
+- affected scope
+- sample server-generated calculation only if endpoint supports it
+
+---
+
+## 169.15 Payout Admin
+
+List:
+- professional
+- period
+- amount
+- status
+- paid date
+- failure
+
+Detail:
+- included earnings
+- adjustments
+- taxes/withholding
+- final payout
+- gateway/reference
+- audit
+
+Actions:
+- inspect
+- process/retry if backend permits
+- add adjustment through proper form
+- support/escalate
+
+---
+
+## 169.16 Coupons Admin
+
+Form:
+
+```text
+Code
+Discount Type
+Value
+Max Discount
+Minimum Order Value
+Validity
+Usage Limit
+Per-Customer Limit
+Eligibility scope
+Active
+```
+
+Eligibility scope can include configured:
+- category
+- service
+- city
+- first booking
+- membership
+- referral/campaign
+
+Show redemption count and usage detail.
+
+---
+
+## 169.17 Membership Admin
+
+CRUD:
+- name
+- price
+- validity
+- benefits
+- discount rules
+- fee waiver
+- cancellation benefit
+- priority support
+- active
+
+Show active customer count if aggregation is available.
+
+---
+
+## 169.18 Support Agent Workspace
+
+Ticket list:
+- ticket number
+- customer/professional
+- booking
+- category
+- priority
+- status
+- assigned agent
+- age
+
+Filters:
+- priority
+- status
+- category
+- agent
+- booking
+- customer/professional
+
+Ticket detail:
+- conversation
+- booking timeline
+- payment context
+- attachments
+- internal notes
+- assigned agent
+- resolution
+
+Actions:
+- assign to self/agent
+- reply
+- internal note
+- change status
+- escalate
+- link/create dispute
+- request refund review
+- close
+
+---
+
+## 169.19 Dispute Workspace
+
+List:
+- booking
+- dispute type
+- amount at risk
+- priority
+- opened date
+- status
+- assigned owner
+
+Detail:
+- customer statement
+- professional statement
+- booking timeline
+- communication
+- photos/evidence
+- before/after evidence
+- quotes
+- payment/refund data
+- prior support tickets
+- internal notes
+- audit
+
+Resolution form:
+- decision
+- customer outcome
+- professional outcome
+- refund/credit/adjustment
+- suspension/action where permitted
+- explanation
+- confirm
+
+---
+
+## 169.20 Review Moderation
+
+Admin can:
+- search/filter reviews
+- inspect booking link
+- inspect media
+- flag suspected abuse
+- moderate according to product policy
+- inspect rating trends
+
+Do not allow arbitrary silent editing of customer review text unless the business explicitly defines such a policy.
+
+---
+
+## 169.21 CMS Admin
+
+Editable content:
+- homepage banners
+- offers
+- FAQs
+- how it works
+- trust & safety
+- policy pages
+- category banners
+- city landing content
+- professional onboarding content
+
+Editor requirements:
+- create
+- edit
+- preview where possible
+- publish/unpublish
+- display/sort order where applicable
+- validation
+- audit
+
+---
+
+## 169.22 Roles & Permissions
+
+Admin role detail:
+- role name
+- permission matrix
+- users assigned
+- save changes
+
+Permission groups reflect §114.
+
+Changing high-impact roles/permissions requires confirmation and must be audited.
+
+---
+
+## 169.23 Audit
+
+Searchable list:
+- actor
+- action
+- entity
+- date/time
+- before/after availability
+- related booking/professional/customer where applicable
+
+Audit screen is read-only for normal administrators.
+
+---
+
+# 170. Forms, Interaction, State and UX Standard
+
+## 170.1 Standard Form Anatomy
+
+Every major form uses:
+
+```text
+Title
+Short contextual explanation
+Field labels
+Required markers
+Inline help where needed
+Inline validation
+Server validation
+Primary action
+Secondary/back action
+Submitting state
+Success state
+Failure state
+Unsaved change protection where appropriate
+```
+
+Do not rely only on toast messages for validation.
+
+### Validation timing
+
+- obvious local format validation can appear after blur or submit
+- server/business validation appears inline at the relevant field/section
+- do not block typing with aggressive validation
+- preserve user inputs after server failure
+
+---
+
+## 170.2 Button States
+
+Every mutation button supports:
+
+```text
+idle
+hover/focus where applicable
+disabled
+submitting
+success feedback
+failure/retry
+```
+
+Prevent duplicate submission.
+
+Examples:
+
+```text
+Save -> Saving...
+Book -> Creating booking...
+Accept -> Accepting...
+Approve -> Approving...
+Pay -> Processing...
+Upload -> Uploading 46%...
+Refund -> Processing refund...
+```
+
+---
+
+## 170.3 Mutation Feedback
+
+Use the right feedback location:
+
+- inline for field/business validation
+- within card for card-level action failure
+- page banner for page-level failure
+- toast only for short-lived confirmation
+- modal/dialog for confirmations
+- dedicated success screen for major completion such as booking/payment/onboarding submission
+
+Critical errors must not disappear automatically before the user can understand them.
+
+---
+
+## 170.4 Loading
+
+Use meaningful skeletons that resemble final layout.
+
+Required at minimum:
+- home
+- category
+- service
+- search results
+- slots
+- quote
+- booking list/detail
+- professional requests/jobs
+- professional dashboard
+- earnings
+- admin dashboard
+- admin tables
+- analytics
+- finance
+- support/dispute
+
+Do not replace the entire application with a single centered spinner unless only a tiny isolated action is loading.
+
+---
+
+## 170.5 Empty States
+
+Every empty state must contain:
+- clear explanation
+- useful next action
+
+Examples:
+
+```text
+No bookings yet -> Explore services
+No saved addresses -> Add address
+No professional requests -> View upcoming jobs
+No payouts yet -> View earnings
+No open tickets -> Create support ticket
+No services in area -> Change location
+No search results -> Clear filters / describe your problem
+```
+
+---
+
+## 170.6 Error Recovery
+
+The UI must specifically handle:
+
+- authentication expired
+- forbidden action
+- server unavailable
+- network loss
+- validation error
+- booking slot conflict
+- quote expired
+- professional no longer available
+- payment failure
+- payment verification delay
+- upload failure
+- stale booking state
+- already accepted request
+- duplicate review
+- coupon ineligible
+- refund not permitted
+- concurrent admin edit when backend reports it
+
+Where a recovery action exists, show it:
+
+```text
+Retry
+Refresh quote
+Choose another slot
+Re-open booking
+Upload again
+Sign in again
+Contact support
+```
+
+---
+
+## 170.7 Offline / Network Loss
+
+Do not fake successful transactions.
+
+Allowed:
+- preserve unsent form draft locally where reasonable
+- show offline banner
+- retry safe reads
+- let customer copy entered text
+
+Forbidden:
+- pretend booking/payment/refund/assignment succeeded offline
+
+---
+
+## 170.8 Confirmation Dialog Standard
+
+For high-impact action show:
+- action being taken
+- affected entity
+- financial/policy effect
+- reason field when required
+- confirm/cancel
+
+Avoid generic "Are you sure?" without context.
+
+---
+
+## 170.9 Drawers, Modals and Bottom Sheets
+
+Use:
+- full page for long/high-complexity forms
+- modal/dialog for confirmation
+- drawer for desktop contextual edit/detail
+- bottom sheet for compact mobile selectors/actions
+- full-screen mobile sheet/page for long forms
+
+Do not place a 20-field admin form in a tiny modal.
+
+---
+
+## 170.10 Sticky Actions
+
+Appropriate screens should keep the most important action visible.
+
+Examples:
+- service detail -> Book
+- booking wizard -> Continue
+- quote approval -> Approve/Reject
+- professional active job -> next status action
+- completion form -> Review & Complete
+- admin review form -> Save/Approve/Reject
+
+Sticky bars must not cover content or mobile safe areas.
+
+---
+
+## 170.11 Search, Filter and Sort Standard
+
+For list pages:
+- search
+- clear filters
+- visible active filter chips/count
+- result count
+- pagination or incremental loading according to existing backend contract
+- empty filtered state distinct from globally empty state
+
+Admin filters should be encoded in URL query parameters where practical so views can be shared/reopened.
+
+---
+
+## 170.12 Table Standard — Admin
+
+Tables support as appropriate:
+- loading skeleton rows
+- sortable columns
+- filters
+- pagination
+- row click/detail
+- explicit action menu
+- selected row state
+- bulk actions only where safe
+- empty/error
+- responsive fallback
+
+Do not put every possible field into one unreadable table.
+
+---
+
+## 170.13 Card Standard — Customer/Professional
+
+Cards should answer:
+1. what is this?
+2. what state is it in?
+3. what matters now?
+4. what can I do next?
+
+Avoid cards that exist only for decoration.
+
+---
+
+## 170.14 Upload Standard
+
+All upload surfaces:
+- allowed file types/size guidance based on backend rules
+- progress
+- preview where safe
+- retry
+- remove
+- failed state
+- uploaded state
+- accessible file picker
+- mobile camera compatibility where browser permits
+
+Do not mark form complete before required upload has actually succeeded.
+
+---
+
+## 170.15 Notification / Real-Time Refresh Behavior
+
+Without introducing a new technology choice, the UI must at minimum support reliable server refresh for time-sensitive state.
+
+Pages that need refresh behavior:
+- active customer booking
+- professional requests
+- professional active job
+- admin live operations
+- payment verification
+- quote approval
+- support conversation if current backend supports refresh
+
+Show:
+- last updated / refreshing where useful
+- manual refresh
+- stale state handling
+
+Do not imply live state when the screen is actually stale.
+
+---
+
+## 170.16 Unsaved Drafts
+
+Preserve appropriate drafts:
+- booking wizard
+- support ticket
+- professional onboarding
+- admin long-form edits where practical
+
+On navigation away:
+- save draft if designed to persist
+- otherwise warn about unsaved changes
+
+Never persist raw payment secrets or sensitive verification material unnecessarily in browser storage.
+
+---
+
+## 170.17 Accessibility
+
+Minimum:
+- keyboard access for desktop
+- focus-visible states
+- semantic labels
+- form error association
+- screen-reader labels for icon buttons
+- sufficient contrast
+- logical heading order
+- status not communicated by color alone
+- dialogs trap/focus correctly
+- touch targets large enough for mobile
+- image uploads have meaningful accessible names
+
+---
+
+## 170.18 Responsive Experience
+
+### Customer bottom navigation
+
+```text
+Home
+Services
+Bookings
+Offers
+Account
+```
+
+When a critical active booking exists, the product may surface it prominently without breaking the base navigation.
+
+### Professional bottom navigation
+
+```text
+Home
+Requests
+Jobs
+Earnings
+Account
+```
+
+### Mobile patterns
+
+- horizontal service chips
+- 2-column category cards where width allows
+- single-column detailed cards
+- full-width form fields
+- sticky bottom CTA
+- bottom sheet selectors
+- condensed timeline
+- expandable price breakdown
+- no forced desktop data grid for customer/professional views
+
+---
+
+## 170.19 Visual / Interaction Quality Bar — "Wow" Without Gimmicks
+
+The desired quality should come from usefulness and polish, not decorative animation.
+
+Use:
+- strong hierarchy
+- meaningful whitespace
+- rich service cards
+- clear status chips
+- polished skeletons
+- persistent booking summary
+- progressive disclosure
+- smart defaults
+- problem-first discovery
+- clear trust indicators
+- contextual next actions
+- before/after evidence gallery
+- quote comparison
+- elegant empty states
+- purposeful transitions for drawers/sheets/status changes
+- consistent icons already available in the project
+
+Avoid:
+- excessive gradients
+- random animations
+- fake counters
+- fake live maps
+- fake professional availability
+- fake ratings
+- fake "X people booked this today"
+- auto-rotating content that interferes with interaction
+- hidden interactions users must guess
+
+---
+
+## 170.20 High-Impact Product Enhancements Required
+
+These additions make the frontend feel materially more complete.
+
+### A. Resume Booking Draft
+
+If a customer exits mid-booking:
+- home can show `Continue booking`
+- validate draft against fresh serviceability/availability/quote when resumed
+
+### B. Recently Viewed
+
+Track service IDs and show:
+- recent services
+- quick re-open
+- do not use it as authoritative business data
+
+### C. One-Tap Rebook
+
+From completed booking:
+- prefill service
+- package
+- prior add-ons
+- address
+- preferred professional when allowed
+- force fresh availability and quote
+
+### D. Compare Packages
+
+Allow selecting 2-3 packages for side-by-side meaningful comparison on service detail.
+
+### E. Contextual Support
+
+Opening support from a booking should preselect that booking and show relevant help categories.
+
+### F. Active Job Mode
+
+Customer and professional active booking/job screens should prioritize current operational action over generic navigation content.
+
+### G. Professional Trust Profile
+
+Customer can open assigned professional detail containing only server-backed:
+- verification state
+- rating
+- completed jobs
+- experience
+- service skills
+- badges
+- reviews
+
+### H. Quote History
+
+Customer/admin can see original and revised quote versions.
+
+### I. Actionable Admin KPIs
+
+Every dashboard KPI drills into the filtered operational list.
+
+### J. Provider Shortage Awareness
+
+Admin capacity/operations screens clearly surface:
+- no-provider bookings
+- low supply by category/zone/time
+- affected upcoming bookings
+
+### K. Booking Draft Step Validation
+
+Each step must be individually valid before proceeding, but previous valid data remains editable.
+
+### L. Smart Next Action
+
+Booking/job cards calculate the next **allowed** action from server status rather than showing every possible button.
+
+---
+
+## 170.21 Exact Component Families
+
+Use existing project conventions, but organize Home Services into reusable component families.
+
+```text
+components/
+  common/
+    AsyncState
+    EmptyState
+    ErrorState
+    ConfirmDialog
+    StatusBadge
+    MoneyBreakdown
+    SearchInput
+    FilterBar
+    FilterChip
+    Pagination
+    UploadField
+    MediaPreview
+    Timeline
+    DetailSection
+    StickyActionBar
+
+  customer/
+    LocationSelector
+    AddressCard
+    AddressForm
+    CategoryCard
+    ServiceCard
+    PackageCard
+    PackageComparison
+    AddOnSelector
+    ProblemSelector
+    BookingDraftSummary
+    SlotPicker
+    QuoteBreakdown
+    CouponForm
+    PaymentPanel
+    BookingCard
+    BookingTimeline
+    ProfessionalTrustCard
+    AdditionalQuoteCard
+    ReviewForm
+    SupportTicketForm
+
+  professional/
+    OnboardingStepper
+    VerificationItem
+    ServiceSkillSelector
+    ServiceAreaSelector
+    WeeklyAvailabilityEditor
+    TimeOffForm
+    JobRequestCard
+    JobCard
+    JobActionPanel
+    StartVerificationForm
+    ServiceChecklist
+    EvidenceUploader
+    AdditionalQuoteBuilder
+    MaterialLineEditor
+    CompletionForm
+    EarningsBreakdown
+
+  admin/
+    AdminMetricCard
+    AdminFilterBar
+    AdminDataTable
+    AdminDetailDrawer
+    LiveBookingCard
+    AssignmentDrawer
+    VerificationReview
+    CatalogEntityForm
+    PricingRuleForm
+    ServiceAreaForm
+    RefundReview
+    CommissionRuleForm
+    PayoutDetail
+    SupportWorkspace
+    DisputeResolutionForm
+    PermissionMatrix
+    AuditViewer
+```
+
+Names can be adapted to existing conventions, but equivalent reusable capabilities must exist.
+
+---
+
+## 170.22 Exact Page Mapping
+
+Recommended expansion of the existing module:
+
+```text
+pages/
+  Home.tsx
+  Search.tsx
+  Categories.tsx
+  CategoryDetail.tsx
+  ServiceDetail.tsx
+  ProblemWizard.tsx
+  BookingFlow.tsx
+  Bookings.tsx
+  BookingDetail.tsx
+  Addresses.tsx
+  Offers.tsx
+  Membership.tsx
+  RecurringServices.tsx
+  Warranty.tsx
+  Favorites.tsx
+  Wallet.tsx
+  Invoices.tsx
+  InvoiceDetail.tsx
+  Notifications.tsx
+  Support.tsx
+  SupportNew.tsx
+  SupportDetail.tsx
+  DisputeNew.tsx
+  Account.tsx
+  Profile.tsx
+
+pages/pro/
+  ProDashboard.tsx
+  ProOnboarding.tsx
+  ProVerification.tsx
+  ProRequests.tsx
+  ProJobs.tsx
+  ProJobDetail.tsx
+  ProCalendar.tsx
+  ProAvailability.tsx
+  ProServices.tsx
+  ProAreas.tsx
+  ProEarnings.tsx
+  ProPayouts.tsx
+  ProReviews.tsx
+  ProPerformance.tsx
+  ProNotifications.tsx
+  ProSupport.tsx
+  ProSupportNew.tsx
+  ProProfile.tsx
+
+pages/admin/
+  AdminDashboard.tsx
+  AdminAnalytics.tsx
+  AdminLiveOps.tsx
+  AdminBookings.tsx
+  AdminBookingDetail.tsx
+  AdminCustomers.tsx
+  AdminCustomerDetail.tsx
+  AdminProfessionals.tsx
+  AdminProfessionalDetail.tsx
+  AdminVerification.tsx
+  AdminCatalog.tsx
+  AdminCategories.tsx
+  AdminServices.tsx
+  AdminPackages.tsx
+  AdminAddOns.tsx
+  AdminProblems.tsx
+  AdminPricing.tsx
+  AdminAreas.tsx
+  AdminAvailability.tsx
+  AdminPayments.tsx
+  AdminRefunds.tsx
+  AdminCommissions.tsx
+  AdminPayouts.tsx
+  AdminCoupons.tsx
+  AdminMemberships.tsx
+  AdminReviews.tsx
+  AdminSupport.tsx
+  AdminSupportDetail.tsx
+  AdminDisputes.tsx
+  AdminDisputeDetail.tsx
+  AdminReports.tsx
+  AdminCms.tsx
+  AdminUsers.tsx
+  AdminRoles.tsx
+  AdminAudit.tsx
+  AdminSettings.tsx
+```
+
+Do not create all pages as empty shells. A route is complete only when its required interactions are wired.
+
+---
+
+## 170.23 API Binding Expectations
+
+The frontend should have explicit API methods rather than ad-hoc fetch calls scattered across pages.
+
+Examples of method groups:
+
+```text
+auth/account
+location/address
+catalog/search
+serviceability
+availability
+quotes
+bookings
+booking actions
+payments
+refunds
+reviews
+favorites
+membership
+recurring
+wallet
+notifications
+support
+disputes
+
+professional profile
+professional onboarding
+professional verification
+professional services
+professional areas
+professional availability
+professional requests
+professional jobs
+professional job actions
+professional earnings
+professional payouts
+professional reviews
+professional support
+
+admin dashboard
+admin analytics
+admin live operations
+admin bookings
+admin assignment
+admin customers
+admin professionals
+admin verification
+admin catalog
+admin pricing
+admin areas
+admin finance
+admin coupons
+admin memberships
+admin reviews
+admin support
+admin disputes
+admin reports
+admin cms
+admin users/roles
+admin audit
+admin settings
+```
+
+If an endpoint required by these screens does not exist yet, implement the corresponding backend endpoint according to the
+business rules in this document rather than replacing the interaction with mock data.
+
+---
+
+## 170.24 Frontend Acceptance Scenarios
+
+The frontend is not considered complete until all of these can be demonstrated against the real backend.
+
+### Customer
+
+1. create/sign in to account using existing platform auth
+2. edit profile
+3. add, edit and remove address
+4. change service location
+5. search by service
+6. search by problem phrase
+7. browse category
+8. open service
+9. compare/select package
+10. select add-ons
+11. enter service-specific information
+12. choose address
+13. fail serviceability and recover
+14. choose available slot
+15. experience slot conflict and recover without losing draft
+16. add instructions and upload evidence
+17. get server quote
+18. apply valid coupon
+19. see invalid/ineligible coupon
+20. complete payment
+21. experience payment failure and retry
+22. see booking confirmation
+23. track assignment
+24. open assigned professional profile
+25. reschedule
+26. cancel and view refund effect
+27. use service start verification flow
+28. receive and approve/reject additional quote
+29. see completion evidence
+30. pay remaining amount if required
+31. receive invoice/service report
+32. leave review
+33. rebook
+34. create support ticket
+35. raise dispute
+36. submit warranty/rework request
+37. view wallet/credits
+38. mark notification read
+
+### Professional
+
+1. complete onboarding
+2. upload verification documents
+3. respond to rejection/resubmission
+4. select services/skills
+5. select service areas
+6. configure availability
+7. block time off
+8. receive request
+9. accept request
+10. handle already-taken request
+11. decline with reason
+12. start travel
+13. mark arrived
+14. enter start verification
+15. upload before evidence
+16. complete checklist
+17. create additional quote
+18. add parts/materials
+19. wait for approval
+20. complete service
+21. upload after evidence
+22. see earning
+23. see commission deductions
+24. see payout
+25. see review
+26. create support ticket
+
+### Admin / Operations
+
+1. open dashboard KPI and drill into filtered data
+2. operate live board
+3. manually assign booking
+4. reassign booking
+5. handle unassigned booking
+6. inspect customer
+7. inspect professional
+8. approve/reject verification
+9. create category
+10. create service
+11. create package
+12. create add-on
+13. create problem mapping
+14. change ordering/status
+15. create pricing rule
+16. configure service area
+17. view availability shortage
+18. inspect payment
+19. process refund workflow
+20. create/update commission rule
+21. inspect payout
+22. create coupon
+23. create membership plan
+24. work support ticket
+25. resolve dispute
+26. moderate review according to policy
+27. publish CMS content
+28. modify role/permissions
+29. inspect audit trail
+30. use analytics filters
+
+---
+
+## 170.25 UI Definition of Done
+
+A frontend feature is done only if:
+
+```text
+route works
+API request works
+loading works
+success works
+empty works
+error works
+validation works
+permission works
+mobile works
+desktop works
+back/retry works
+mutation is protected from double-submit
+server state is reflected after mutation
+no placeholder data is displayed as real data
+no primary CTA is dead
+```
+
+The goal is not merely a beautiful UI.
+
+The goal is a customer opening the application and feeling that **every screen is alive, every action has depth,
+every important state is handled, and the product can actually run a home-services business.**
+
+---
 
 ---
 
