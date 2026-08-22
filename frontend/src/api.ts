@@ -205,17 +205,20 @@ export interface AdvanceRow { id: number; name: string; status: string; advance:
 const TOKEN_KEY = 'lux_token'
 const ROLE_KEY = 'lux_role'
 const USER_KEY = 'lux_user'
+const EMAIL_KEY = 'lux_email'
 export function getToken(): string | null { return localStorage.getItem(TOKEN_KEY) }
 export function getRole(): string { return localStorage.getItem(ROLE_KEY) || 'admin' }
 export function getUsername(): string { return localStorage.getItem(USER_KEY) || '' }
+export function getEmail(): string { return localStorage.getItem(EMAIL_KEY) || '' }
 export function isAuthed(): boolean { return !!getToken() }
 export function isAdmin(): boolean { return getRole() === 'admin' }
-export function logout(): void { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(USER_KEY) }
+export function logout(): void { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(USER_KEY); localStorage.removeItem(EMAIL_KEY) }
 
-async function finishLogin(data: { token: string; username: string; role: string }) {
+async function finishLogin(data: { token: string; username: string; role: string }, email = '') {
   localStorage.setItem(TOKEN_KEY, data.token)
   localStorage.setItem(ROLE_KEY, data.role)
   localStorage.setItem(USER_KEY, data.username)
+  if (email) localStorage.setItem(EMAIL_KEY, email)
 }
 
 export async function login(email: string, password: string): Promise<void> {
@@ -226,7 +229,7 @@ export async function login(email: string, password: string): Promise<void> {
   })
   if (!r.ok) throw new Error('Invalid email or password')
   const data = await r.json()
-  finishLogin(data)
+  finishLogin(data, email)
 }
 
 export async function register(email: string, password: string): Promise<void> {
@@ -237,7 +240,7 @@ export async function register(email: string, password: string): Promise<void> {
   })
   const data = await r.json()
   if (!r.ok) throw new Error(data?.error || 'Could not create account')
-  finishLogin(data)
+  finishLogin(data, email)
 }
 
 function authHeaders(): Record<string, string> {

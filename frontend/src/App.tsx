@@ -36,7 +36,7 @@ import {
   MedicalPrescriptions, MedicalRecords,
   HomeServicesHome, HomeServicesCategories, HomeServicesCategoryDetail, HomeServicesServiceDetail,
   HomeServicesSearch, HomeServicesBookingFlow, HomeServicesBookings, HomeServicesBookingDetail,
-  HomeServicesOffers, HomeServicesAccount, HomeServicesProDashboard, HomeServicesProRequests,
+  HomeServicesOffers, HomeServicesAccount, HomeServicesAddresses, HomeServicesProDashboard, HomeServicesProRequests,
   HomeServicesProJobs, HomeServicesProJobDetail, HomeServicesProEarnings, HomeServicesProProfile,
   HomeServicesAdminDashboard, HomeServicesAdminLiveOps, HomeServicesAdminBookings,
   HomeServicesAdminProfessionals, HomeServicesAdminFinance,
@@ -286,6 +286,7 @@ export default function App() {
           <Route path="/home-services/bookings/:bookingId" element={<HomeServicesBookingDetail />} />
           <Route path="/home-services/offers" element={<HomeServicesOffers />} />
           <Route path="/home-services/account" element={<HomeServicesAccount />} />
+          <Route path="/home-services/addresses" element={<HomeServicesAddresses />} />
           <Route path="/home-services/pro" element={<HomeServicesProDashboard />} />
           <Route path="/home-services/pro/requests" element={<HomeServicesProRequests />} />
           <Route path="/home-services/pro/jobs" element={<HomeServicesProJobs />} />

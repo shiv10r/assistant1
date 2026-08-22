@@ -23,6 +23,25 @@ import type {
   SupportTicket,
 } from './homeServicesData'
 
+export type {
+  AvailabilitySlot,
+  Booking,
+  BookingStatus,
+  City,
+  CommissionRule,
+  Dispute,
+  HomeService,
+  HomeServicePackage,
+  Notification,
+  Payout,
+  Professional,
+  ProfessionalEarning,
+  ProfessionalStatus,
+  Review,
+  ServiceCategory,
+  SupportTicket,
+}
+
 // ---------------------------------------------------------------------------
 // Envelope + error types
 // ---------------------------------------------------------------------------
@@ -124,6 +143,24 @@ export type OpenDisputeRequest = {
   customerId: string
   reason: string
 }
+
+export type CreateAddressRequest = {
+  label: string
+  line1: string
+  line2?: string
+  cityId?: string
+  zoneId?: string
+  localityId?: string
+  pincode: string
+  lat?: number
+  lng?: number
+  isDefault?: boolean
+  contactPerson?: string
+  contactPhone?: string
+  accessInstructions?: string
+}
+
+export type UpdateAddressRequest = CreateAddressRequest
 
 // ---------------------------------------------------------------------------
 // Response DTO types
@@ -676,6 +713,82 @@ export async function getNotifications(userId: string, signal?: AbortSignal): Pr
 }
 
 // ---------------------------------------------------------------------------
+// Customer addresses
+// ---------------------------------------------------------------------------
+
+export type CustomerAddress = {
+  id: string
+  customerId: string
+  label: string
+  line1: string
+  line2: string
+  cityId: string | null
+  zoneId: string | null
+  localityId: string | null
+  pincode: string
+  lat: number | null
+  lng: number | null
+  isDefault: boolean
+  contactPerson: string | null
+  contactPhone: string | null
+  accessInstructions: string | null
+  cityName?: string | null
+  zoneName?: string | null
+  localityName?: string | null
+}
+
+export async function getAddresses(customerId: string, signal?: AbortSignal): Promise<CustomerAddress[]> {
+  return request<CustomerAddress[]>(`/home-services/customers/${encodeURIComponent(customerId)}/addresses`, { signal })
+}
+
+export type CustomerProfile = {
+  id: string
+  userId: string
+  displayName: string
+  defaultAddressId: string | null
+  walletBalance: number
+  membershipPlanId: string | null
+  referralCode: string | null
+  referredByCustomerId: string | null
+  phone: string
+  email: string
+  addresses: CustomerAddress[]
+}
+
+export async function ensureCustomer(req: { email: string; fullName?: string; phone?: string }): Promise<CustomerProfile> {
+  return request<CustomerProfile>('/home-services/customers/ensure', jsonInit(req))
+}
+
+export async function getAddress(customerId: string, addressId: string): Promise<CustomerAddress> {
+  return request<CustomerAddress>(`/home-services/customers/${encodeURIComponent(customerId)}/addresses/${encodeURIComponent(addressId)}`)
+}
+
+export async function createAddress(customerId: string, req: CreateAddressRequest): Promise<CustomerAddress> {
+  return request<CustomerAddress>(`/home-services/customers/${encodeURIComponent(customerId)}/addresses`, jsonInit(req))
+}
+
+export async function updateAddress(customerId: string, addressId: string, req: UpdateAddressRequest): Promise<CustomerAddress> {
+  return request<CustomerAddress>(
+    `/home-services/customers/${encodeURIComponent(customerId)}/addresses/${encodeURIComponent(addressId)}`,
+    jsonInit(req, 'PUT'),
+  )
+}
+
+export async function deleteAddress(customerId: string, addressId: string): Promise<void> {
+  await request<{ message: string }>(
+    `/home-services/customers/${encodeURIComponent(customerId)}/addresses/${encodeURIComponent(addressId)}`,
+    { method: 'DELETE' },
+  )
+}
+
+export async function setDefaultAddress(customerId: string, addressId: string): Promise<void> {
+  await request<{ message: string }>(
+    `/home-services/customers/${encodeURIComponent(customerId)}/addresses/set-default`,
+    jsonInit({ addressId }),
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Grouped API surface
 // ---------------------------------------------------------------------------
 
@@ -731,4 +844,11 @@ export const homeServicesApi = {
   getDisputes,
   openDispute,
   getNotifications,
+  getAddresses,
+  getAddress,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  ensureCustomer,
 }

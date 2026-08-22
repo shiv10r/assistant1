@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 import {
   MdAccountBalanceWallet, MdAddCircle, MdAdminPanelSettings, MdAssignmentTurnedIn, MdBarChart,
-  MdBuild, MdDashboard, MdEventAvailable, MdGroups, MdHome, MdInventory, MdPayments,
+  MdBuild, MdDashboard, MdEventAvailable, MdGroups, MdHome, MdHomeWork, MdInventory, MdPayments,
   MdPendingActions, MdPerson, MdPriceChange, MdRedeem, MdVerifiedUser, MdViewKanban,
   MdWorkspacePremium, MdSupportAgent, MdReportGmailerrorred,
 } from 'react-icons/md'
@@ -15,6 +15,7 @@ const CUSTOMER_NAV = [
   { to: '/home-services', label: 'Home', icon: MdHome, end: true },
   { to: '/home-services/categories', label: 'Services', icon: MdBuild, end: false },
   { to: '/home-services/bookings', label: 'Bookings', icon: MdEventAvailable, end: false },
+  { to: '/home-services/addresses', label: 'Addresses', icon: MdHomeWork, end: false },
   { to: '/home-services/offers', label: 'Offers', icon: MdRedeem, end: false },
   { to: '/home-services/account', label: 'Account', icon: MdPerson, end: false },
 ] as const
