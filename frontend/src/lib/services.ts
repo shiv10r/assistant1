@@ -1,4 +1,6 @@
-export type ServiceId = 'interior' | 'warehouse' | 'school' | 'hotel' | 'travel' | 'news' | 'jobs' | 'commerce' | 'bank' | 'medical' | 'home-services'
+import { ENABLED_MODULES, type ModuleKey } from '../app/moduleRegistry'
+
+export type ServiceId = ModuleKey
 
 export type ServiceDef = {
   id: ServiceId
@@ -10,104 +12,15 @@ export type ServiceDef = {
   shell?: 'portal'
 }
 
-export const SERVICES: ServiceDef[] = [
-  {
-    id: 'interior',
-    label: 'VSR Interiors',
-    tagline: 'Spaces, projects, AI designs & estimates',
-    icon: '🏠',
-    gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)',
-    home: '/interior/dashboard',
-  },
-  {
-    id: 'warehouse',
-    label: 'VSR Warehouse',
-    tagline: 'Inventory, suppliers, orders & fulfilment',
-    icon: '📦',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-    home: '/warehouse/dashboard',
-  },
-  {
-    id: 'school',
-    label: 'VSR School',
-    tagline: 'Students, academics, fees & attendance',
-    icon: '🎓',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
-    home: '/school',
-  },
-  {
-    id: 'hotel',
-    label: 'VSR Hotels',
-    tagline: 'Reservations, rooms, guests & housekeeping',
-    icon: '',
-    gradient: 'var(--grad)',
-    home: '/hotel',
-    shell: 'portal',
-  },
-  {
-    id: 'travel',
-    label: 'VSR Travel',
-    tagline: 'Destinations, packages, group trips & custom journeys',
-    icon: '',
-    gradient: 'var(--grad)',
-    home: '/travel',
-    shell: 'portal',
-  },
-  {
-    id: 'news',
-    label: 'VSR News',
-    tagline: 'Breaking stories, trusted reporting & saved reads',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #A62421 0%, #6F1715 100%)',
-    home: '/news',
-    shell: 'portal',
-  },
-  {
-    id: 'jobs',
-    label: 'VSR Jobs',
-    tagline: 'Search roles, compare employers & save opportunities',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #175EAA 0%, #087B70 100%)',
-    home: '/jobs',
-    shell: 'portal',
-  },
-  {
-    id: 'commerce',
-    label: 'VSR Commerce',
-    tagline: 'Discover, compare & shop quality products',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)',
-    home: '/commerce',
-    shell: 'portal',
-  },
-  {
-    id: 'bank',
-    label: 'VSR Bank',
-    tagline: 'Accounts, transfers, cards & secure banking',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0E7490 100%)',
-    home: '/bank',
-    shell: 'portal',
-  },
-  {
-    id: 'medical',
-    label: 'VSR Medical',
-    tagline: 'Doctors, appointments, records & prescriptions',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #047857 0%, #0E7490 100%)',
-    home: '/medical',
-    shell: 'portal',
-  },
-  {
-    id: 'home-services',
-    label: 'VSR Home Services',
-    tagline: 'Verified pros for repairs, cleaning & home care',
-    icon: '',
-    gradient: 'linear-gradient(135deg, #B45309 0%, #DC2626 100%)',
-    home: '/home-services',
-    shell: 'portal',
-  },
-]
+export const SERVICES: ServiceDef[] = ENABLED_MODULES.map((module) => ({
+  id: module.key,
+  label: module.name,
+  tagline: module.tagline,
+  icon: module.icon,
+  gradient: module.gradient,
+  home: module.entryRoute,
+  shell: 'shell' in module ? module.shell : undefined,
+}))
 
 const LAST_SERVICE_KEY = 'lux_last_service'
 

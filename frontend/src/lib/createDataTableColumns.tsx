@@ -1,4 +1,4 @@
-import type { DataColumn } from '../components/DataTable'
+import type { DataColumn } from '../platform/tables'
 import { money } from './utils'
 import { Badge } from '../components/ui'
 

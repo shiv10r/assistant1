@@ -3,7 +3,7 @@ import { MdAdd, MdDeleteOutline, MdHomeWork, MdStar, MdErrorOutline } from 'reac
 import HomeServicesShell from '../HomeServicesShell'
 import { HsEmpty, HsSection } from '../hsShared'
 import { homeServicesApi, type CustomerAddress, type CustomerProfile } from '../homeServicesApi'
-import { getEmail } from '../../../api'
+import { getEmail } from '../../../platform/auth'
 
 type Draft = {
   label: string

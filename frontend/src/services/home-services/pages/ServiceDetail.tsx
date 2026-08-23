@@ -5,7 +5,7 @@ import HomeServicesShell from '../HomeServicesShell'
 import { money, HsSection } from '../hsShared'
 import { homeServicesApi } from '../homeServicesApi'
 import type { CustomerProfile } from '../homeServicesApi'
-import { getEmail } from '../../../api'
+import { getEmail } from '../../../platform/auth'
 
 type ApiPackage = {
   id: string

@@ -1,3 +1,7 @@
+import { clearAuthToken, getToken, storeAuthSession } from './platform/auth'
+
+export { getEmail, getRole, getToken, getUsername, isAdmin, isAuthed, logout } from './platform/auth'
+
 // Dev: BASE = '' -> Vite proxies /api to the local backend.
 // Prod: default to the deployed Render API so no VITE_API_URL env var is required in Netlify.
 export const BASE =
@@ -202,23 +206,8 @@ export interface DelayedRow { id: number; party: string; refLabel: string; balan
 export interface AdvanceRow { id: number; name: string; status: string; advance: number; advanceLabel: string; spent: number; spentLabel: string; remaining: number; remainingLabel: string }
 
 // ---------------- core ----------------
-const TOKEN_KEY = 'lux_token'
-const ROLE_KEY = 'lux_role'
-const USER_KEY = 'lux_user'
-const EMAIL_KEY = 'lux_email'
-export function getToken(): string | null { return localStorage.getItem(TOKEN_KEY) }
-export function getRole(): string { return localStorage.getItem(ROLE_KEY) || 'admin' }
-export function getUsername(): string { return localStorage.getItem(USER_KEY) || '' }
-export function getEmail(): string { return localStorage.getItem(EMAIL_KEY) || '' }
-export function isAuthed(): boolean { return !!getToken() }
-export function isAdmin(): boolean { return getRole() === 'admin' }
-export function logout(): void { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(USER_KEY); localStorage.removeItem(EMAIL_KEY) }
-
-async function finishLogin(data: { token: string; username: string; role: string }, email = '') {
-  localStorage.setItem(TOKEN_KEY, data.token)
-  localStorage.setItem(ROLE_KEY, data.role)
-  localStorage.setItem(USER_KEY, data.username)
-  if (email) localStorage.setItem(EMAIL_KEY, email)
+function finishLogin(data: { token: string; username: string; role: string }, email = '') {
+  storeAuthSession(data, email)
 }
 
 export async function login(email: string, password: string): Promise<void> {
@@ -250,34 +239,34 @@ function authHeaders(): Record<string, string> {
 
 async function get<T>(url: string): Promise<T> {
   const r = await fetch(BASE + url, { headers: authHeaders() })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   return r.json()
 }
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
   return r.json()
 }
 
 async function postVoid(url: string, body: unknown): Promise<void> {
   const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
 }
 
 async function put<T>(url: string, body: unknown): Promise<T> {
   const r = await fetch(BASE + url, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body) })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   return r.json()
 }
 
 async function del(url: string): Promise<void> {
   const r = await fetch(BASE + url, { method: 'DELETE', headers: authHeaders() })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
 }
 
@@ -287,7 +276,7 @@ export { today }
 // Fetches a protected blob with the auth token, returning blob + suggested filename.
 async function fetchBlob(url: string): Promise<{ blob: Blob; name: string }> {
   const r = await fetch(BASE + url, { headers: authHeaders() })
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new Error('Unauthorized') }
+  if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   const blob = await r.blob()
   const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'luxinfra-download'

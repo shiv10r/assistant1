@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { MODULES_BY_KEY } from '../app/moduleRegistry'
 
 export const Layout = lazy(() => import('../Layout'))
 export const ServiceChooser = lazy(() => import('../common/ServiceChooser'))
@@ -23,7 +24,7 @@ export const Insights = lazy(() => import('../pages/Insights'))
 export const Broadcast = lazy(() => import('../pages/Broadcast'))
 export const VideoCall = lazy(() => import('../pages/VideoCall'))
 
-export const InteriorHome = lazy(() => import('../services/interior/InteriorHome'))
+export const InteriorHome = lazy(MODULES_BY_KEY.interior.lazyRouteLoader)
 export const InteriorProjects = lazy(() => import('../services/interior/InteriorProjects'))
 export const InteriorProjectDetails = lazy(() => import('../services/interior/InteriorProjectDetails'))
 export const InteriorRoomDetails = lazy(() => import('../services/interior/InteriorRoomDetails'))
@@ -33,7 +34,7 @@ export const InteriorDesignDetails = lazy(() => import('../services/interior/Int
 export const InteriorProducts = lazy(() => import('../services/interior/InteriorProducts'))
 export const InteriorQuotation = lazy(() => import('../services/interior/InteriorQuotation'))
 
-export const WarehouseHome = lazy(() => import('../services/warehouse/WarehouseHome'))
+export const WarehouseHome = lazy(MODULES_BY_KEY.warehouse.lazyRouteLoader)
 export const WarehouseInventory = lazy(() => import('../services/warehouse/WarehouseInventory'))
 export const WarehousePurchaseOrders = lazy(() => import('../services/warehouse/WarehousePurchaseOrders'))
 export const WarehouseGrn = lazy(() => import('../services/warehouse/WarehouseGrn'))
@@ -55,7 +56,7 @@ export const WarehouseDispatch = lazy(() => import('../services/warehouse/Wareho
 export const WarehouseReturns = lazy(() => import('../services/warehouse/WarehouseReturns'))
 export const WarehouseStockCount = lazy(() => import('../services/warehouse/WarehouseStockCount'))
 
-export const SchoolHome = lazy(() => import('../services/school/SchoolHome'))
+export const SchoolHome = lazy(MODULES_BY_KEY.school.lazyRouteLoader)
 export const SchoolStudents = lazy(() => import('../services/school/SchoolStudents'))
 export const SchoolClasses = lazy(() => import('../services/school/SchoolClasses'))
 export const SchoolFees = lazy(() => import('../services/school/SchoolFees'))
@@ -112,21 +113,21 @@ export const SchoolUsers = lazy(() => import('../services/school/SchoolUsers'))
 export const SchoolAuditLog = lazy(() => import('../services/school/SchoolAuditLog'))
 export const SchoolSettings = lazy(() => import('../services/school/SchoolSettings'))
 
-export const HotelHome = lazy(() => import('../services/hotel/HotelHome'))
+export const HotelHome = lazy(MODULES_BY_KEY.hotel.lazyRouteLoader)
 export const HotelReservations = lazy(() => import('../services/hotel/HotelReservations'))
 export const HotelRooms = lazy(() => import('../services/hotel/HotelRooms'))
 export const HotelGuests = lazy(() => import('../services/hotel/HotelGuests'))
 export const HotelHousekeeping = lazy(() => import('../services/hotel/HotelHousekeeping'))
 export const HotelShell = lazy(() => import('../services/hotel/HotelShell'))
 
-export const TravelHome = lazy(() => import('../services/travel/TravelHome'))
+export const TravelHome = lazy(MODULES_BY_KEY.travel.lazyRouteLoader)
 export const TravelDestinations = lazy(() => import('../services/travel/TravelDestinations'))
 export const TravelPackages = lazy(() => import('../services/travel/TravelPackages'))
 export const TravelGroupTrips = lazy(() => import('../services/travel/TravelGroupTrips'))
 export const TravelCustomize = lazy(() => import('../services/travel/TravelCustomize'))
 export const TravelMyTrips = lazy(() => import('../services/travel/TravelMyTrips'))
 
-export const NewsHome = lazy(() => import('../services/news/NewsHome'))
+export const NewsHome = lazy(MODULES_BY_KEY.news.lazyRouteLoader)
 export const NewsLatest = lazy(() => import('../services/news/NewsLatest'))
 export const NewsBookmarks = lazy(() => import('../services/news/NewsBookmarks'))
 export const NewsArticle = lazy(() => import('../services/news/NewsArticle'))
@@ -134,7 +135,7 @@ export const NewsTrending = lazy(() => import('../services/news/NewsTrending'))
 export const NewsSearch = lazy(() => import('../services/news/NewsSearch'))
 export const NewsCategory = lazy(() => import('../services/news/NewsCategory'))
 
-export const JobsHome = lazy(() => import('../services/jobs/JobsHome'))
+export const JobsHome = lazy(MODULES_BY_KEY.jobs.lazyRouteLoader)
 export const JobsSearch = lazy(() => import('../services/jobs/JobsSearch'))
 export const JobsSaved = lazy(() => import('../services/jobs/JobsSaved'))
 export const JobDetail = lazy(() => import('../services/jobs/JobDetail'))
@@ -144,7 +145,7 @@ export const JobsApplications = lazy(() => import('../services/jobs/JobsApplicat
 export const CandidateProfile = lazy(() => import('../services/jobs/CandidateProfile'))
 export const JobApplicationFlow = lazy(() => import('../services/jobs/JobApplicationFlow'))
 
-export const CommerceHome = lazy(() => import('../services/commerce/CommerceHome'))
+export const CommerceHome = lazy(MODULES_BY_KEY.commerce.lazyRouteLoader)
 export const CommerceCategories = lazy(() => import('../services/commerce/CommerceCategories'))
 export const CommerceProducts = lazy(() => import('../services/commerce/CommerceProducts'))
 export const CommerceProductDetail = lazy(() => import('../services/commerce/CommerceProductDetail'))
@@ -155,7 +156,7 @@ export const CommerceBrands = lazy(() => import('../services/commerce/CommerceBr
 export const CommerceSearch = lazy(() => import('../services/commerce/CommerceSearch'))
 export const CommerceCheckout = lazy(() => import('../services/commerce/CommerceCheckout'))
 
-export const BankHome = lazy(() => import('../services/bank/BankHome'))
+export const BankHome = lazy(MODULES_BY_KEY.bank.lazyRouteLoader)
 export const BankAccounts = lazy(() => import('../services/bank/BankAccounts'))
 export const BankAccountDetail = lazy(() => import('../services/bank/BankAccountDetail'))
 export const BankTransactions = lazy(() => import('../services/bank/BankTransactions'))
@@ -171,7 +172,7 @@ export const BankDocuments = lazy(() => import('../services/bank/BankDocuments')
 export const BankProfile = lazy(() => import('../services/bank/BankProfile'))
 export const BankAdmin = lazy(() => import('../services/bank/BankAdmin'))
 
-export const MedicalHome = lazy(() => import('../services/medical/pages/MedicalHome'))
+export const MedicalHome = lazy(MODULES_BY_KEY.medical.lazyRouteLoader)
 export const MedicalDoctors = lazy(() => import('../services/medical/pages/MedicalDoctors'))
 export const MedicalAppointments = lazy(() => import('../services/medical/pages/MedicalAppointments'))
 export const MedicalPatients = lazy(() => import('../services/medical/pages/MedicalPatients'))
@@ -183,7 +184,7 @@ export const MedicalRecords = lazy(() => import('../services/medical/pages/Medic
 export const MedicalNotifications = lazy(() => import('../services/medical/pages/MedicalNotifications'))
 export const MedicalAdmin = lazy(() => import('../services/medical/pages/MedicalAdmin'))
 
-export const HomeServicesHome = lazy(() => import('../services/home-services/pages/Home'))
+export const HomeServicesHome = lazy(MODULES_BY_KEY['home-services'].lazyRouteLoader)
 export const HomeServicesCategories = lazy(() => import('../services/home-services/pages/Categories'))
 export const HomeServicesCategoryDetail = lazy(() => import('../services/home-services/pages/CategoryDetail'))
 export const HomeServicesServiceDetail = lazy(() => import('../services/home-services/pages/ServiceDetail'))

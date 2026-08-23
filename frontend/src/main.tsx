@@ -2,7 +2,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initTheme, initWeatherTheme } from './theme'
-import { ToastProvider } from './components/ui/ToastProvider'
+import { ToastProvider } from './platform/ui'
 import './index.css'
 import App from './App.tsx'
 

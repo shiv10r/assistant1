@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { AppUser, UserSessionInfo } from '../api'
-import { isAdmin } from '../api'
+import { isAdmin } from '../platform/auth'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Empty } from '../components/ui'
 import { useToast } from '../components/ui/Toast'
 import {
