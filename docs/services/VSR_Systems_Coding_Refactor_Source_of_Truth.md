@@ -16,8 +16,16 @@ Keep the current deployment exactly as one system:
 ONE React frontend        -> Netlify
 ONE ASP.NET Core backend  -> Render
 ONE PostgreSQL database   -> Supabase
-ONE production branch     -> main
 ```
+
+Repository promotion rule:
+
+```text
+Frontend production      -> merge/push to luxinfra-frontend
+Backend integration      -> raise a PR targeting develop03
+```
+
+Do not push backend feature work directly to another deployment branch unless the user explicitly changes this rule.
 
 Do NOT introduce now:
 
