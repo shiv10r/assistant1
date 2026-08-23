@@ -5,17 +5,7 @@ import { isAuthed } from './platform/auth'
 import {
   Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
-  VideoCall, InteriorRoutes, WarehouseRoutes, SchoolAdmissions, SchoolAssets,
-  SchoolAttendance, SchoolAttendanceAnalytics, SchoolAuditLog, SchoolCafeteria, SchoolCertificates,
-  SchoolClasses, SchoolClubs, SchoolCounselling, SchoolDirectory, SchoolDiscipline, SchoolDocuments,
-  SchoolEvents, SchoolExams, SchoolExpenses, SchoolFeeStructure, SchoolFees, SchoolGrievances,
-  SchoolHelpdesk, SchoolHomework, SchoolHome, SchoolHostel, SchoolHouses, SchoolIncidents,
-  SchoolInventory, SchoolLeave, SchoolLibrary, SchoolLMS, SchoolMessaging, SchoolNotices,
-  SchoolNotifications, SchoolOnlineExams, SchoolParents, SchoolPayroll, SchoolPerformance,
-  SchoolProcurement, SchoolProjects, SchoolPTM, SchoolQuestionBank, SchoolReceipts,
-  SchoolRecruitment, SchoolResults, SchoolSessions, SchoolSettings, SchoolSports, SchoolStaff,
-  SchoolStudents, SchoolSubjects, SchoolSurveys, SchoolTasks, SchoolTimetable, SchoolTraining,
-  SchoolTransport, SchoolUsers, SchoolVisitors, HotelGuests, HotelHome, HotelHousekeeping,
+  VideoCall, InteriorRoutes, WarehouseRoutes, SchoolRoutes, HotelGuests, HotelHome, HotelHousekeeping,
   HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
   TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsCategory, NewsHome,
   NewsLatest, NewsSearch, NewsTrending,
@@ -120,63 +110,8 @@ export default function App() {
           {/* Warehouse service: module-owned route bundle */}
           <Route path="/warehouse/*" element={<WarehouseRoutes />} />
 
-          {/* School service */}
-          <Route path="/school" element={<SchoolHome />} />
-          <Route path="/school/students" element={<SchoolStudents />} />
-          <Route path="/school/classes" element={<SchoolClasses />} />
-          <Route path="/school/fees" element={<SchoolFees />} />
-          <Route path="/school/attendance" element={<SchoolAttendance />} />
-          <Route path="/school/inventory" element={<SchoolInventory />} />
-          <Route path="/school/staff" element={<SchoolStaff />} />
-          <Route path="/school/projects" element={<SchoolProjects />} />
-          <Route path="/school/parents" element={<SchoolParents />} />
-          <Route path="/school/admissions" element={<SchoolAdmissions />} />
-          <Route path="/school/directory" element={<SchoolDirectory />} />
-          <Route path="/school/sessions" element={<SchoolSessions />} />
-          <Route path="/school/subjects" element={<SchoolSubjects />} />
-          <Route path="/school/timetable" element={<SchoolTimetable />} />
-          <Route path="/school/homework" element={<SchoolHomework />} />
-          <Route path="/school/lms" element={<SchoolLMS />} />
-          <Route path="/school/questions" element={<SchoolQuestionBank />} />
-          <Route path="/school/exams" element={<SchoolExams />} />
-          <Route path="/school/results" element={<SchoolResults />} />
-          <Route path="/school/online-exams" element={<SchoolOnlineExams />} />
-          <Route path="/school/leave" element={<SchoolLeave />} />
-          <Route path="/school/attendance-analytics" element={<SchoolAttendanceAnalytics />} />
-          <Route path="/school/recruitment" element={<SchoolRecruitment />} />
-          <Route path="/school/performance" element={<SchoolPerformance />} />
-          <Route path="/school/training" element={<SchoolTraining />} />
-          <Route path="/school/fee-structure" element={<SchoolFeeStructure />} />
-          <Route path="/school/receipts" element={<SchoolReceipts />} />
-          <Route path="/school/expenses" element={<SchoolExpenses />} />
-          <Route path="/school/payroll" element={<SchoolPayroll />} />
-          <Route path="/school/transport" element={<SchoolTransport />} />
-          <Route path="/school/library" element={<SchoolLibrary />} />
-          <Route path="/school/procurement" element={<SchoolProcurement />} />
-          <Route path="/school/assets" element={<SchoolAssets />} />
-          <Route path="/school/visitors" element={<SchoolVisitors />} />
-          <Route path="/school/hostel" element={<SchoolHostel />} />
-          <Route path="/school/cafeteria" element={<SchoolCafeteria />} />
-          <Route path="/school/clubs" element={<SchoolClubs />} />
-          <Route path="/school/sports" element={<SchoolSports />} />
-          <Route path="/school/houses" element={<SchoolHouses />} />
-          <Route path="/school/discipline" element={<SchoolDiscipline />} />
-          <Route path="/school/counselling" element={<SchoolCounselling />} />
-          <Route path="/school/notices" element={<SchoolNotices />} />
-          <Route path="/school/events" element={<SchoolEvents />} />
-          <Route path="/school/messaging" element={<SchoolMessaging />} />
-          <Route path="/school/notifications" element={<SchoolNotifications />} />
-          <Route path="/school/ptm" element={<SchoolPTM />} />
-          <Route path="/school/surveys" element={<SchoolSurveys />} />
-          <Route path="/school/documents" element={<SchoolDocuments />} />
-          <Route path="/school/certificates" element={<SchoolCertificates />} />
-          <Route path="/school/helpdesk" element={<SchoolHelpdesk />} />
-          <Route path="/school/grievances" element={<SchoolGrievances />} />
-          <Route path="/school/incidents" element={<SchoolIncidents />} />
-          <Route path="/school/tasks" element={<SchoolTasks />} />
-          <Route path="/school/users" element={<SchoolUsers />} />
-          <Route path="/school/audit" element={<SchoolAuditLog />} />
-          <Route path="/school/settings" element={<SchoolSettings />} />
+          {/* School service: module-owned route bundle */}
+          <Route path="/school/*" element={<SchoolRoutes />} />
 
           <Route path="/hotel" element={<HotelHome />} />
           <Route path="/hotel/dashboard" element={<HotelHome />} />

@@ -45,7 +45,7 @@ export const MODULE_REGISTRY = [
     key: 'school', name: 'VSR School', tagline: 'Students, academics, fees & attendance', icon: '🎓',
     gradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)', baseRoute: '/school', entryRoute: '/school',
     navigation: ['/school', '/school/students', '/school/attendance', '/school/fees'], permissions: [],
-    lazyRouteLoader: () => import('../services/school/SchoolHome'), enabled: true,
+    lazyRouteLoader: () => import('../services/school/routes'), enabled: true,
   },
   {
     key: 'hotel', name: 'VSR Hotels', tagline: 'Reservations, rooms, guests & housekeeping', icon: '', gradient: 'var(--grad)',
