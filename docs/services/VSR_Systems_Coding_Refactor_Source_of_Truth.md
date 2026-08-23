@@ -27,6 +27,17 @@ Backend integration      -> raise a PR targeting develop03
 
 Do not push backend feature work directly to another deployment branch unless the user explicitly changes this rule.
 
+MVP configuration rule:
+
+```text
+Shared non-secret defaults  -> appsettings.json
+Local credentials/settings -> appsettings.Development.json
+Cloud credentials/settings -> appsettings.Production.json
+Phase 3 secret storage      -> Azure Key Vault
+```
+
+ASP.NET Core environment variables may override either environment file during deployment.
+
 Do NOT introduce now:
 
 ```text
