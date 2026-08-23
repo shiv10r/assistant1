@@ -33,7 +33,7 @@ export const MODULE_REGISTRY = [
     key: 'interior', name: 'VSR Interiors', tagline: 'Spaces, projects, AI designs & estimates', icon: '🏠',
     gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)', baseRoute: '/interior', entryRoute: '/interior/dashboard',
     navigation: ['/interior/dashboard', '/interior/projects', '/interior/products'], permissions: [],
-    lazyRouteLoader: () => import('../services/interior/InteriorHome'), enabled: true,
+    lazyRouteLoader: () => import('../services/interior/routes'), enabled: true,
   },
   {
     key: 'warehouse', name: 'VSR Warehouse', tagline: 'Inventory, suppliers, orders & fulfilment', icon: '📦',

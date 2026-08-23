@@ -5,8 +5,7 @@ import { isAuthed } from './platform/auth'
 import {
   Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
-  VideoCall, InteriorDesignDetails, InteriorDesigns, InteriorGenerate, InteriorHome,
-  InteriorProducts, InteriorProjectDetails, InteriorProjects, InteriorQuotation, InteriorRoomDetails,
+  VideoCall, InteriorRoutes,
   WarehouseCustomers, WarehouseDispatch, WarehouseGrn, WarehouseHome, WarehouseInventory,
   WarehouseModules, WarehouseOrders, WarehousePacking, WarehousePicking, WarehouseProducts,
   WarehouseProjectAttendance, WarehouseProjects, WarehouseProjectsMap, WarehouseProjectWorkspace,
@@ -303,17 +302,8 @@ export default function App() {
           <Route path="/home-services/database-check" element={<HomeServicesDatabaseCheck />} />
           <Route path="/home-services/categories/add" element={<HomeServicesAddCategory />} />
 
-          {/* Interior service */}
-          <Route path="/interior" element={<InteriorHome />} />
-          <Route path="/interior/dashboard" element={<InteriorHome />} />
-          <Route path="/interior/projects" element={<InteriorProjects />} />
-          <Route path="/interior/projects/:id" element={<InteriorProjectDetails />} />
-          <Route path="/interior/projects/:id/rooms/:roomId" element={<InteriorRoomDetails />} />
-          <Route path="/interior/projects/:id/generate" element={<InteriorGenerate />} />
-          <Route path="/interior/projects/:id/designs" element={<InteriorDesigns />} />
-          <Route path="/interior/projects/:id/designs/:designId" element={<InteriorDesignDetails />} />
-          <Route path="/interior/projects/:id/quotation" element={<InteriorQuotation />} />
-          <Route path="/interior/products" element={<InteriorProducts />} />
+          {/* Interior service: module-owned route bundle */}
+          <Route path="/interior/*" element={<InteriorRoutes />} />
 
           {/* Backward-compat redirects from old top-level paths to their service */}
           <Route path="/projects/*" element={<Redirect to="/interior/projects" />} />
