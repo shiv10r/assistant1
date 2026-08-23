@@ -15,7 +15,7 @@ Keep the current deployment exactly as one system:
 ```text
 ONE React frontend        -> Netlify
 ONE ASP.NET Core backend  -> Render
-ONE PostgreSQL database   -> Supabase
+ONE production database   -> Supabase PostgreSQL
 ```
 
 Repository promotion rule:
@@ -31,7 +31,7 @@ MVP configuration rule:
 
 ```text
 Shared non-secret defaults  -> appsettings.json
-Local credentials/settings -> appsettings.Development.json
+Local PostgreSQL/settings  -> appsettings.Development.json
 Cloud credentials/settings -> appsettings.Production.json
 Phase 3 secret storage      -> Azure Key Vault
 ```
@@ -953,5 +953,6 @@ As of August 23, 2026:
 - Missing optional documents return JSON `null` instead of a failed request.
 - Home Services catalog responses include package prices needed by the UI.
 - Firebase and backup integrations disable cleanly when unconfigured.
-- Development uses configured Supabase PostgreSQL with local Redis fallback.
+- Development uses local PostgreSQL on port 5433 with sample seed mode and local Redis fallback.
+- Production uses Supabase with automatic seeding disabled so real data is never overwritten.
 - MVP credentials move to Azure Key Vault in Phase 3.

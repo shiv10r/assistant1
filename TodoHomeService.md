@@ -52,6 +52,6 @@
 - [ ] Create "Create Booking" wizard form → POST /api/home-services/bookings/price-quotes → /bookings
 - [ ] Create "Admin Dashboard" page showing real-time table counts from Supabase
 
-**Data Location:** All new data goes to **Supabase (PostgreSQL)** - connected via `db.qfgozadjsucuoxrxrknc.supabase.co`. No local database.
+**Data Location:** Development uses local PostgreSQL sample data. Deployed Production uses Supabase PostgreSQL for real data.
 
 **Verify in:** Supabase Dashboard → Table Editor → See real-time row counts

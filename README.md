@@ -41,6 +41,7 @@ Deployment branches and environment details are documented in the deployment gui
 
 - Development frontend: `http://127.0.0.1:5173`
 - Development API and Swagger: `http://127.0.0.1:5050` and `/swagger`
+- Development database: local PostgreSQL `vsr_systems_dev` on port `5433` with sample data
 - Production data: one Supabase PostgreSQL database
 - Shared client collections: `/api/{module}/data/{collection}`
 - MVP secrets move to Azure Key Vault in Phase 3.
