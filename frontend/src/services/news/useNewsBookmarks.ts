@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 
 const BOOKMARK_KEY = 'vsr-news-bookmarks'
 
@@ -15,7 +15,7 @@ function readBookmarks(): readonly string[] {
 }
 
 export function useNewsBookmarks() {
-  const [bookmarks, setBookmarks] = useState<readonly string[]>(readBookmarks)
+  const [bookmarks, setBookmarks] = usePersistedDocument<readonly string[]>('news:bookmarks', readBookmarks())
 
   function toggleBookmark(slug: string) {
     setBookmarks((current) => {

@@ -8,6 +8,7 @@ import {
   buildAvailabilitySlots,
 } from './homeServicesData'
 import { homeServicesApi } from './homeServicesApi'
+import { api } from '../../platform/api'
 
 // VSR Home Services — client-side demo state. In production the .NET backend is
 // authoritative for pricing, availability, booking status, assignment, refunds,
@@ -89,7 +90,7 @@ export function useHomeServicesStore() {
         setReviews(custReviews as readonly Review[])
         setEarnings(custEarnings as readonly ProfessionalEarning[])
         setPayouts(custPayouts.payouts ?? [])
-      } catch (e) {
+      } catch {
         // Keep empty state; UI will show loading until data arrives
       } finally {
         setIsLoading(false)
@@ -101,6 +102,7 @@ export function useHomeServicesStore() {
 
   const persist = useCallback((key: string, value: unknown) => {
     localStorage.setItem(key, JSON.stringify(value))
+    void api.moduleData.put('home-services', key.replace(/^vsr-hs-/, ''), value).catch(() => undefined)
   }, [])
 
   // -------------------------------------------------------------------------

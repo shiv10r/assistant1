@@ -1,5 +1,5 @@
 import { access, readFile, readdir } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = dirname(fileURLToPath(import.meta.url))
@@ -10,7 +10,10 @@ const sourceFiles = (await readdir(src, { recursive: true }))
 const legacyImports = []
 for (const path of sourceFiles) {
   const content = await readFile(join(src, path), 'utf8')
-  if (/from\s+['"](?:\.\.\/)+ui['"]/.test(content)) legacyImports.push(path)
+  const imports = content.matchAll(/from\s+['"]((?:\.\.\/)+ui)['"]/g)
+  for (const match of imports) {
+    if (resolve(dirname(join(src, path)), match[1]) === resolve(src, 'ui')) legacyImports.push(path)
+  }
 }
 
 let legacyFileExists = true

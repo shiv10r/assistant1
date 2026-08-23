@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 import { submitApplication } from './candidateApplication'
 import type {
   ApplicationDraft,
@@ -20,7 +21,7 @@ type PersistResult = { readonly kind: 'saved' } | { readonly kind: 'storage-erro
 type SubmitResult = SubmitApplicationResult | { readonly kind: 'storage-error' }
 
 export function useCandidateApplications() {
-  const [state, setState] = useState<CandidateState>(() => readCandidateState(localStorage))
+  const [state, setState] = usePersistedDocument<CandidateState>('jobs:candidate-applications', readCandidateState(localStorage))
   const [persistenceError, setPersistenceError] = useState<string | null>(null)
 
   function persist(next: CandidateState): PersistResult {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 
 const SAVED_JOBS_KEY = 'vsr-jobs-saved'
 
@@ -15,7 +15,7 @@ function readSavedJobs(): readonly string[] {
 }
 
 export function useSavedJobs() {
-  const [savedJobs, setSavedJobs] = useState<readonly string[]>(readSavedJobs)
+  const [savedJobs, setSavedJobs] = usePersistedDocument<readonly string[]>('jobs:saved', readSavedJobs())
 
   function toggleSavedJob(slug: string) {
     setSavedJobs((current) => {

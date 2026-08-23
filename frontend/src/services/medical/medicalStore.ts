@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 import { MEDICAL_NOTIFICATIONS } from './medicalData'
 
 // VSR Health — client-side demo state. Clinical and billing records stay
@@ -50,8 +50,8 @@ function readBookedAppointments(): readonly BookedAppointment[] {
 }
 
 export function useMedicalStore() {
-  const [readNotifications, setReadNotifications] = useState<readonly string[]>(readReadNotifications)
-  const [booked, setBooked] = useState<readonly BookedAppointment[]>(readBookedAppointments)
+  const [readNotifications, setReadNotifications] = usePersistedDocument<readonly string[]>('medical:notifications-read', readReadNotifications())
+  const [booked, setBooked] = usePersistedDocument<readonly BookedAppointment[]>('medical:booked-appointments', readBookedAppointments())
 
   function markNotificationRead(notificationId: string) {
     if (readNotifications.includes(notificationId)) return

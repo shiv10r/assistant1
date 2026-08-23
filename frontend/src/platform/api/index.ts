@@ -270,6 +270,26 @@ async function del(url: string): Promise<void> {
   if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
 }
 
+const moduleData = {
+  async get<T>(module: string, collection: string, signal?: AbortSignal): Promise<T | null> {
+    const r = await fetch(`${BASE}/api/${encodeURIComponent(module)}/data/${encodeURIComponent(collection)}`, {
+      headers: authHeaders(),
+      signal,
+    })
+    if (r.status === 404) return null
+    if (!r.ok) throw new Error(`API error ${r.status}`)
+    return r.json() as Promise<T>
+  },
+  async put<T>(module: string, collection: string, value: T): Promise<void> {
+    const r = await fetch(`${BASE}/api/${encodeURIComponent(module)}/data/${encodeURIComponent(collection)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(value),
+    })
+    if (!r.ok) throw new Error(`API error ${r.status}`)
+  },
+}
+
 function today(): string { return new Date().toISOString().slice(0, 10) }
 export { today }
 
@@ -586,6 +606,7 @@ const insights = {
 export const api = {
   get,
   send,
+  moduleData,
   aiStatus,
   aiChat,
   search,

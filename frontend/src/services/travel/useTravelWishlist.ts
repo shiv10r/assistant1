@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 
 const WISHLIST_KEY = 'luxinfra:travel:wishlist'
 
@@ -8,17 +9,16 @@ function readWishlist(): ReadonlySet<string> {
 }
 
 export function useTravelWishlist() {
-  const [savedIds, setSavedIds] = useState<ReadonlySet<string>>(readWishlist)
+  const [saved, setSaved] = usePersistedDocument<readonly string[]>('travel:wishlist', [...readWishlist()])
+  const savedIds = new Set(saved)
 
   const toggleSaved = useCallback((packageId: string) => {
-    setSavedIds((current) => {
-      const next = new Set(current)
-      if (next.has(packageId)) next.delete(packageId)
-      else next.add(packageId)
-      localStorage.setItem(WISHLIST_KEY, [...next].join(','))
+    setSaved((current) => {
+      const next = current.includes(packageId) ? current.filter((id) => id !== packageId) : [...current, packageId]
+      localStorage.setItem(WISHLIST_KEY, next.join(','))
       return next
     })
-  }, [])
+  }, [setSaved])
 
   return { savedIds, toggleSaved }
 }

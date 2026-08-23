@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 
 export type CommerceCartLine = {
   readonly productId: string
@@ -41,8 +41,8 @@ function readWishlist(): readonly string[] {
 }
 
 export function useCommerceStore() {
-  const [cart, setCart] = useState<readonly CartLine[]>(readCart)
-  const [wishlist, setWishlist] = useState<readonly string[]>(readWishlist)
+  const [cart, setCart] = usePersistedDocument<readonly CartLine[]>('commerce:cart', readCart())
+  const [wishlist, setWishlist] = usePersistedDocument<readonly string[]>('commerce:wishlist', readWishlist())
 
   function persistCart(next: readonly CartLine[]) {
     localStorage.setItem(CART_KEY, JSON.stringify(next))

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { usePersistedDocument } from '../../lib/localStore'
 import { bankCardById, bankFormatDateTime, BANK_NOTIFICATIONS } from './bankingData'
 
 const UNREAD_BASE = BANK_NOTIFICATIONS.length
@@ -72,9 +72,9 @@ function readTransferHistory(): readonly BankTransferRecord[] {
 }
 
 export function useBankStore() {
-  const [cardStatus, setCardStatus] = useState<CardStatusMap>(readCardStatus)
-  const [readNotifications, setReadNotifications] = useState<readonly string[]>(readReadNotifications)
-  const [transfers, setTransfers] = useState<readonly BankTransferRecord[]>(readTransferHistory)
+  const [cardStatus, setCardStatus] = usePersistedDocument<CardStatusMap>('bank:card-status', readCardStatus())
+  const [readNotifications, setReadNotifications] = usePersistedDocument<readonly string[]>('bank:notifications-read', readReadNotifications())
+  const [transfers, setTransfers] = usePersistedDocument<readonly BankTransferRecord[]>('bank:transfers', readTransferHistory())
 
   /** Effective card status = persisted override (frozen/active) else fixture status. */
   function cardStatusOf(cardId: string): 'active' | 'frozen' | 'blocked' {
