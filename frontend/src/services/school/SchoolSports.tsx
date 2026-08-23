@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { Trophy, Plus, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SportsTeam, Fixture } from './types'
 import { TEAM_SEED, FIXTURE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolSports() {
   const { items: teams, add: addTeam, update: updateTeam, remove: removeTeam } = useLocalCollection<SportsTeam>('school:teams', TEAM_SEED)

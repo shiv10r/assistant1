@@ -1,6 +1,6 @@
 import { Heart, MapPin, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { money } from '../../components/ui'
+import { money } from '../../platform/ui'
 import type { TravelPackage } from './types'
 
 type TravelPackageCardProps = {

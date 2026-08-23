@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Database, RefreshCw, Loader2 } from 'lucide-react'
 import { homeServicesApi } from '../homeServicesApi'
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '../../../components/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from '../../../platform/ui'
 
 interface TableCount {
   table_name: string

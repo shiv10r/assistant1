@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Project } from '../api'
-import { Card, CardContent, Button, Badge, Empty } from '../components/ui'
-import { useToast } from '../components/ui/Toast'
+import { Card, CardContent, Button, Badge, Empty } from '../platform/ui'
+import { useToast } from '../platform/ui'
 import { FiVideo, FiLink2, FiCopy, FiCheck, FiRefreshCw, FiBriefcase, FiExternalLink } from 'react-icons/fi'
 
 const PROVIDERS = [

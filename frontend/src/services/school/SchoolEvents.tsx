@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../platform/ui'
 import { CalendarDays, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { CalendarEvent } from './types'
 import { EVENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolEvents() {
   const { items, add, update, remove } = useLocalCollection<CalendarEvent>('school:events', EVENT_SEED)

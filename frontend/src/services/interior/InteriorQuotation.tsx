@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Modal, money, num, fmtDate } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Modal, money, num, fmtDate } from '../../platform/ui'
 import { ArrowLeft, FileText, Share2, CheckCircle2, Receipt } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { InteriorProject, InteriorDesign, InteriorProduct } from './types'

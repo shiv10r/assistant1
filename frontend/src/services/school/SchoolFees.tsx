@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal, money, fmtDate, todayISO } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal, money, fmtDate, todayISO } from '../../platform/ui'
 import { Wallet, Plus, Search, CheckCircle2, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { FeeRecord, FeeStatus, Student } from './types'
 import { FEE_SEED, STUDENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
+import { DataTable, type DataColumn } from '../../platform/tables'
 
 const STATUS_TONE: Record<FeeStatus, 'success' | 'warning' | 'danger'> = { paid: 'success', pending: 'warning', overdue: 'danger' }
 

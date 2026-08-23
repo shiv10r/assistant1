@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../platform/ui'
 import { ReceiptText, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Receipt, Student } from './types'
 import { RECEIPT_SEED, STUDENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { money } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { money } from '../../platform/ui'
 
 export default function SchoolReceipts() {
   const { items: students } = useLocalCollection<Student>('school:students', STUDENT_SEED)

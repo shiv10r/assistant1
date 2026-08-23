@@ -1,14 +1,14 @@
 ﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { AnalyticsData } from '../api'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Empty, PageHead, money } from '../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Empty, PageHead, money } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 import { FiTrendingUp, FiTrendingDown, FiBarChart2, FiLock } from 'react-icons/fi'
 import { IoWallet } from 'react-icons/io5'
 import { MdWorkspacePremium } from 'react-icons/md'
 import { cn } from '../lib/utils'
 import { useViewMode } from '../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../platform/dashboard'
 
 const STATUS_TONE: Record<string, 'default' | 'success' | 'info' | 'warning' | 'outline' | 'danger'> = {
   'In Discussion': 'info',

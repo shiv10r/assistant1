@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Empty, money } from '../../components/ui'
+import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal, Empty, money } from '../../platform/ui'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ProjectRecord } from './types'
 import { PROJECT_SEED } from './seed'
 import { fmtDate, cn } from '../../lib/utils'
-import LocationPicker from '../../components/LocationPicker'
-import WeatherCard from '../../components/WeatherCard'
+import LocationPicker from '../../platform/maps'
+import { WeatherCard } from '../../platform/dashboard'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 import {
   ArrowLeft, Users, Wallet, Building2, ClipboardList, Clock3, Layers3, FileText, Palette, FolderOpen,
   Plus, TrendingUp, TrendingDown, Target, MapPin, Trash2, Pencil, Briefcase,

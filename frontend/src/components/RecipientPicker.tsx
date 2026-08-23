@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FiLoader, FiBell, FiBellOff, FiCheck } from 'react-icons/fi'
 import { api } from '../api'
 import type { AppUser } from '../api'
-import { Modal, Button } from './ui'
+import { Modal, Button } from '../platform/ui'
 
 interface RecipientPickerProps {
   open: boolean

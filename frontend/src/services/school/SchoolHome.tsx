@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, money, num, fmtDate, todayISO } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, money, num, fmtDate, todayISO } from '../../platform/ui'
 import { GraduationCap, Layers, Wallet, CalendarCheck, Users, UserPlus, FileQuestion, Megaphone, AlertTriangle, ArrowRight, BookOpen, Bus, UtensilsCrossed, Trophy } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { Student, SchoolClass, FeeRecord, AttendanceRecord, StaffMember, AdmissionLead, LeaveRequest, Ticket } from './types'
 import { STUDENT_SEED, CLASS_SEED, FEE_SEED, ATTENDANCE_SEED, STAFF_SEED, ADMISSION_SEED, LEAVE_SEED, TICKET_SEED } from './seed'
-import { KPICard } from '../../components/ui'
-import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
+import { KPICard } from '../../platform/ui'
+import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../platform/dashboard'
 
 const NAV = [
   { label: 'Students', to: '/school/students', icon: <Users className="w-5 h-5" /> },

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BizTxnItem, CatalogItem, Party, Settings } from '../../api'
-import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Textarea, Select, Label, Modal, money, todayISO } from '../../components/ui'
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Textarea, Select, Label, Modal, money, todayISO } from '../../platform/ui'
 import { Plus, Trash2, Eye, Save, X, ReceiptText, User, Wallet, FileText } from 'lucide-react'
 import { cn } from '../../lib/utils'
 

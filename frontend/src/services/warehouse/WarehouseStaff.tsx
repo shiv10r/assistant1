@@ -1,4 +1,4 @@
-import AttendanceModule from '../../components/AttendanceModule'
+import AttendanceModule from '../../platform/attendance'
 import type { StaffMember } from './types'
 import { STAFF_SEED } from './seed'
 

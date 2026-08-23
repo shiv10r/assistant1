@@ -1,4 +1,4 @@
-import { api } from '../../api'
+import { api } from '../../platform/api'
 import type { Destination, TravelPackage, GroupDeparture } from './types'
 import { DESTINATION_SEED, PACKAGE_SEED, DEPARTURE_SEED } from './seed'
 

@@ -3,9 +3,9 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { IoLocate } from 'react-icons/io5'
 import { FiSearch, FiMapPin, FiLoader } from 'react-icons/fi'
-import { Button } from './ui'
-import { cn } from '../lib/utils'
-import { getTheme } from '../theme'
+import { Button } from '../ui'
+import { cn } from '../../lib/utils'
+import { getTheme } from '../../theme'
 
 interface NominatimResult {
   place_id: number

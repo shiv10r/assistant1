@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { ReportData, ReportKpis } from '../api'
-import { Card, CardContent, Badge, Empty } from '../components/ui'
+import { Card, CardContent, Badge, Empty } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 import { cn } from '../lib/utils'
 import {
@@ -11,7 +11,7 @@ import {
 import { IoWallet, IoSparkles } from 'react-icons/io5'
 import { MdCalendarToday, MdWorkspacePremium, MdCurrencyRupee, MdVerifiedUser } from 'react-icons/md'
 import { useViewMode } from '../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../platform/dashboard'
 
 const PERIODS = ['Today', 'Week', 'Month', 'All'] as const
 type P = typeof PERIODS[number]

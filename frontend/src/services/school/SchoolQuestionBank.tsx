@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../platform/ui'
 import { FileQuestion, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Question, SchoolClass, QuestionType } from './types'
 import { QUESTION_SEED, CLASS_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolQuestionBank() {
   const { items: classes } = useLocalCollection<SchoolClass>('school:classes', CLASS_SEED)

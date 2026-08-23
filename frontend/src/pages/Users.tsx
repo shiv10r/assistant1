@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { AppUser, UserSessionInfo } from '../api'
 import { isAdmin } from '../platform/auth'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Empty } from '../components/ui'
-import { useToast } from '../components/ui/Toast'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Label, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Empty } from '../platform/ui'
+import { useToast } from '../platform/ui'
 import {
   FiUsers, FiUserPlus, FiShield, FiShieldOff, FiTrash2, FiKey, FiSearch
 } from 'react-icons/fi'

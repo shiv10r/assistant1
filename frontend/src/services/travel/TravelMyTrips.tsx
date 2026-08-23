@@ -1,5 +1,5 @@
 import { CalendarCheck, Heart, ReceiptText, Users } from 'lucide-react'
-import { money } from '../../components/ui'
+import { money } from '../../platform/ui'
 import { useLocalCollection } from '../../lib/localStore'
 import { BOOKING_SEED, PACKAGE_SEED } from './seed'
 import { TravelPackageCard } from './TravelPackageCard'

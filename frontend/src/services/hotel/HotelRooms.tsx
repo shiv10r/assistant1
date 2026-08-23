@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { BedDouble, Search } from 'lucide-react'
-import { Badge, Card, CardContent, Input, PageHead, Select, money } from '../../components/ui'
+import { Badge, Card, CardContent, Input, PageHead, Select, money } from '../../platform/ui'
 import { useLocalCollection } from '../../lib/localStore'
 import { ROOM_SEED } from './seed'
 import type { Room, RoomStatus } from './types'

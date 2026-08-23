@@ -1,4 +1,4 @@
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Modal, fmtDate, money } from '../../components/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Modal, fmtDate, money } from '../../platform/ui'
 import { Check, History } from 'lucide-react'
 import type { DesignStyle, DesignVersion, InteriorDesign } from './types'
 

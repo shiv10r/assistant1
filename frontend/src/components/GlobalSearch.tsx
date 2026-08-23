@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { AssistantSearch } from '../api'
-import { Modal, Input, Badge, money, cn } from './ui'
+import { Modal, Input, Badge, money, cn } from '../platform/ui'
 import { FiSearch, FiUsers, FiArrowRight, FiClock, FiBriefcase, FiFileText, FiBox, FiFolder } from 'react-icons/fi'
 import { MdSchool } from 'react-icons/md'
 

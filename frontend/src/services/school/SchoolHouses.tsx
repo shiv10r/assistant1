@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { Flag, Plus, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { House, HousePoint } from './types'
 import { HOUSE_SEED, HOUSE_POINT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 const HOUSE_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#f59e0b', '#8b5cf6', '#06b6d4']
 

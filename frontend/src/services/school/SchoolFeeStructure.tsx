@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { Wallet, Plus, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { FeeStructure, SchoolClass } from './types'
 import { FEE_STRUCTURE_SEED, CLASS_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { money } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { money } from '../../platform/ui'
 
 export default function SchoolFeeStructure() {
   const { items: classes } = useLocalCollection<SchoolClass>('school:classes', CLASS_SEED)

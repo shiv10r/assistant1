@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal } from '../../platform/ui'
 import { Boxes, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { StockItem } from './types'
 import { STOCK_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
+import { DataTable, type DataColumn } from '../../platform/tables'
 
 const emptyForm = { sku: '', name: '', category: '', qty: '0', unit: 'pcs', reorderLevel: '0', unitPrice: '0' }
 

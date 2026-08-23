@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { Bus, Plus, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Vehicle, TransportRoute } from './types'
 import { VEHICLE_SEED, ROUTE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
-import { money } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
+import { money } from '../../platform/ui'
 
 export default function SchoolTransport() {
   const { items: vehicles, add: addVehicle, update: updateVehicle, remove: removeVehicle } = useLocalCollection<Vehicle>('school:vehicles', VEHICLE_SEED)

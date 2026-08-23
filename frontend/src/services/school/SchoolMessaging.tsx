@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../platform/ui'
 import { MessageSquare, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Message } from './types'
 import { MESSAGE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolMessaging() {
   const { items, add, update, remove } = useLocalCollection<Message>('school:messages', MESSAGE_SEED)

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
-import { Button, Modal, Label } from '../components/ui'
-import { useToast } from '../components/ui/Toast'
+import { Button, Modal, Label } from '../platform/ui'
+import { useToast } from '../platform/ui'
 import { IoBarcode, IoScan } from 'react-icons/io5'
 import { FiX } from 'react-icons/fi'
 

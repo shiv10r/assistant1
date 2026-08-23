@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import { homeServicesApi } from '../homeServicesApi'
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea, Select, Label } from '../../../components/ui'
-import { useToast } from '../../../components/ui/Toast'
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea, Select, Label } from '../../../platform/ui'
+import { useToast } from '../../../platform/ui'
 
 interface CategoryForm {
   name: string

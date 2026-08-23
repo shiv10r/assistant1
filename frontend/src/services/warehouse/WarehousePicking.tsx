@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { ListChecks, Plus, Search, CheckCircle2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { PickList, PickLine, SalesOrder, InventoryItem } from './types'
 import { PICK_SEED, ORDER_SEED, INVENTORY_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useStockLedger } from './ledger'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 export default function WarehousePicking() {
   const { items: picks, add, update } = useLocalCollection<PickList>('warehouse:picks', PICK_SEED)

@@ -3,8 +3,8 @@ import { api } from '../api'
 import type {
   PlRow, Gstr1Data, CreditRow, ForecastData, StockRow, LabourRow, DelayedRow, AdvanceRow,
 } from '../api'
-import { Card, CardContent, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Button } from '../components/ui'
-import { useToast } from '../components/ui/Toast'
+import { Card, CardContent, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Button } from '../platform/ui'
+import { useToast } from '../platform/ui'
 import { cn } from '../lib/utils'
 import {
   FiTrendingUp, FiPackage, FiUsers, FiFileText, FiSend, FiDownload, FiRefreshCw

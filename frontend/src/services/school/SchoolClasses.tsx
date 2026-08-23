@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal } from '../../platform/ui'
 import { Layers, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SchoolClass } from './types'
 import { CLASS_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
+import { DataTable, type DataColumn } from '../../platform/tables'
 
 const emptyForm = { name: '', section: '', teacher: '', capacity: '40', studentCount: '0' }
 

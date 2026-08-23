@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Sparkles } from 'lucide-react'
-import { Badge, Card, CardContent, PageHead, Select } from '../../components/ui'
+import { Badge, Card, CardContent, PageHead, Select } from '../../platform/ui'
 import { useLocalCollection } from '../../lib/localStore'
 import { HOUSEKEEPING_SEED } from './seed'
 import type { HousekeepingStatus, HousekeepingTask } from './types'

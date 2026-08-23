@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
 import { Home, Plus, Search, Trash2, ArrowRight, Pencil } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { InteriorProject, InteriorRoom, InteriorDesign, PropertyType, RoomType } from './types'
 import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { Stepper } from '../../components/Stepper'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { Stepper } from '../../platform/ui'
 import { PROPERTY_TYPES, ROOM_TYPES } from './types'
 
 const emptyProject = { name: '', propertyType: 'Apartment' as PropertyType, location: '', totalArea: '', budget: '' }

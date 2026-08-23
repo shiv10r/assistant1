@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Binoculars, CalendarDays, Compass, Heart, MapPin, Mountain, Search, ShieldCheck, Sparkles, Users } from 'lucide-react'
-import { money } from '../../components/ui'
+import { money } from '../../platform/ui'
 import { DEPARTURE_SEED, DESTINATION_SEED, PACKAGE_SEED } from './seed'
 import { TravelPackageCard } from './TravelPackageCard'
 import TravelShell from './TravelShell'

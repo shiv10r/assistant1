@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Modal, Empty, money, Textarea, Select } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Label, Modal, Empty, money, Textarea, Select } from '../../platform/ui'
 import { Briefcase, Plus, Search, Pencil, Trash2, ArrowRight, MapPin } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ProjectRecord, ProjectStatus } from './types'
 import { PROJECT_SEED } from './seed'
 import { fmtDate } from '../../lib/utils'
-import LocationPicker from '../../components/LocationPicker'
+import LocationPicker from '../../platform/maps'
 
 const emptyForm = { name: '', client: '', startDate: '', budget: '0', address: '', latitude: '', longitude: '' }
 const STATUS_BADGE: Record<ProjectStatus, 'default' | 'success' | 'info'> = { planned: 'info', active: 'default', completed: 'success' }

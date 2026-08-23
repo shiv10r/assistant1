@@ -3,7 +3,7 @@
 // non-2xx responses and failed envelopes throw ApiError. BASE resolves to the
 // local Vite proxy in dev and the deployed Render API in production.
 
-import { BASE } from '../../api'
+import { BASE } from '../../platform/api'
 import type {
   AvailabilitySlot,
   Booking,

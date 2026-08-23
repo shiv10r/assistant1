@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { ArrowLeftRight, Plus, Search, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { StockTransfer, StockTransferLine, InventoryItem } from './types'
@@ -10,12 +10,12 @@ import { TRANSFER_FLOW } from './types'
 import { TRANSFER_SEED, INVENTORY_SEED, WAREHOUSE_SEED, LOCATION_SEED } from './seed'
 import { availableOf } from './types'
 import { todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
-import { Stepper } from '../../components/Stepper'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
+import { Stepper } from '../../platform/ui'
 import { useStockLedger } from './ledger'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 const STEPS = ['Details', 'Confirm']
 

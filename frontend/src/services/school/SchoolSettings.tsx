@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Modal } from '../../platform/ui'
 import { Settings, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SchoolSetting } from './types'
 import { SETTING_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolSettings() {
   const { items, add, update, remove } = useLocalCollection<SchoolSetting>('school:settings', SETTING_SEED)

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import type { BizTxn, BillingKpis, CatalogItem, CashData, BankAccount } from '../../api'
-import { Badge, Empty, Input, PageHead } from '../../components/ui'
+import { Badge, Empty, Input, PageHead } from '../../platform/ui'
 import { money, shortDate } from '../../lib/utils'
-import { useToast } from '../../components/ui/Toast'
+import { useToast } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 const TYPE_BADGE: Record<string, 'success' | 'danger' | 'outline' | 'default'> = {
   SALE: 'success', PURCHASE: 'danger', SALE_RETURN: 'danger', PURCHASE_RETURN: 'success',

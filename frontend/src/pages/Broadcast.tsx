@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Broadcast } from '../api'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, PageHead } from '../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, PageHead } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 import { FiSend, FiSquare, FiBell, FiLock, FiTrash2 } from 'react-icons/fi'
 import { IoMegaphone } from 'react-icons/io5'

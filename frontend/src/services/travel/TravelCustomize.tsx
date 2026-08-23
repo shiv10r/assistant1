@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Send, Sparkles } from 'lucide-react'
-import { Button, Card, CardContent, Input, Label, Select } from '../../components/ui'
+import { Button, Card, CardContent, Input, Label, Select } from '../../platform/ui'
 import { genId, useLocalCollection } from '../../lib/localStore'
 import TravelShell from './TravelShell'
 import type { TravelLead, TravelTheme } from './types'

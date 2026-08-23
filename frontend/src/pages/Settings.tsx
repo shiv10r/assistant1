@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { applyTheme, getTheme } from '../theme'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button, Switch, PageHead } from '../components/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button, Switch, PageHead } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
-import { useToast } from '../components/ui/Toast'
+import { useToast } from '../platform/ui'
 import {
   FiMoon, FiSun, FiBell, FiDatabase, FiShield, FiInfo
 } from 'react-icons/fi'

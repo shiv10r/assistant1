@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, money, cn } from './ui'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
+import { cn, money } from '../../lib/utils'
 
 export interface BarDatum { label: string; value: number; valueLabel?: string }
 export interface DonutDatum { label: string; value: number; color: string }

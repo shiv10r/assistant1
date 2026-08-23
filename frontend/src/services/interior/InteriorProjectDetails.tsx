@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
 import { ArrowLeft, Plus, Sparkles, Trash2, Camera, MapPin, Ruler, Wallet, CalendarDays, Eye } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { InteriorProject, InteriorRoom, InteriorDesign, RoomType } from './types'

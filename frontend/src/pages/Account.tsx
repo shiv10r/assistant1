@@ -1,8 +1,8 @@
 ﻿import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { Settings, BackupStatus, FirebaseVersion } from '../api'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../components/ui'
-import { useToast } from '../components/ui/Toast'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../platform/ui'
+import { useToast } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 import {
   FiPhone, FiMapPin, FiSave, FiCheckCircle, FiXCircle, FiLoader,

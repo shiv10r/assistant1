@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { Briefcase, Plus, Pencil, Trash2, Search, ArrowRight } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { JobOpening, Applicant } from './types'
 import { JOB_SEED, APPLICANT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 const STAGES: Applicant['stage'][] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected']
 

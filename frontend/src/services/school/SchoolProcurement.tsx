@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { ShoppingCart, Plus, Pencil, Trash2, CheckCircle2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Vendor, PurchaseOrder } from './types'
 import { VENDOR_SEED, PO_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
-import { money } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
+import { money } from '../../platform/ui'
 
 export default function SchoolProcurement() {
   const { items: vendors, add: addVendor, update: updateVendor, remove: removeVendor } = useLocalCollection<Vendor>('school:vendors', VENDOR_SEED)

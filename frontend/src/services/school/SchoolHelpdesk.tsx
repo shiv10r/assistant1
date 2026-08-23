@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { LifeBuoy, Plus, Pencil, Trash2, Search, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Ticket } from './types'
 import { TICKET_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolHelpdesk() {
   const { items, add, update, remove } = useLocalCollection<Ticket>('school:tickets', TICKET_SEED)

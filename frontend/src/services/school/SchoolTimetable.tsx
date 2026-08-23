@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Empty } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Empty } from '../../platform/ui'
 import { CalendarClock, Plus, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { TimetableSlot, SchoolClass } from './types'
 import { TIMETABLE_SEED, CLASS_SEED } from './seed'
-import { KPICard } from '../../components/ui'
+import { KPICard } from '../../platform/ui'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

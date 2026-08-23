@@ -1,4 +1,4 @@
-import { cn } from './ui'
+import { cn } from '../../lib/utils'
 import { FiCheck } from 'react-icons/fi'
 
 interface StepperProps {

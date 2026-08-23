@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Modal, Select, money, num } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Modal, Select, money, num } from '../../platform/ui'
 import { Search, Package } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { InteriorProduct, ProductCategory } from './types'
 import { PRODUCT_SEED } from './seed'
 import { PRODUCT_CATEGORIES } from './types'
-import { DataTable, type DataColumn } from '../../components/DataTable'
+import { DataTable, type DataColumn } from '../../platform/tables'
 
 const CATEGORY_COLORS: Record<ProductCategory, string> = {
   Furniture: 'bg-blue-500/10 text-blue-500',

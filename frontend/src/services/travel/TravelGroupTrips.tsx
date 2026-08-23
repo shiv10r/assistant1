@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { money } from '../../components/ui'
+import { money } from '../../platform/ui'
 import { getDepartures } from './travelApi'
 import type { GroupDeparture } from './types'
 import TravelShell from './TravelShell'

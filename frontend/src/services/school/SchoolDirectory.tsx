@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Input } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Input } from '../../platform/ui'
 import { Users, Search, UserRound, Briefcase } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { Student, StaffMember, ParentRecord } from './types'
 import { STUDENT_SEED, STAFF_SEED, PARENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 type Entry =
   | { kind: 'student'; id: string; name: string; contact: string; detail: string }

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button } from '../../platform/ui'
 import { CalendarCheck, Search, Trash2 } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { AttendanceRecord } from './types'
 import { ATTENDANCE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
-import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
+import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../platform/dashboard'
 
 export default function SchoolAttendanceAnalytics() {
   const { items: records, remove } = useLocalCollection<AttendanceRecord>('school:attendance', ATTENDANCE_SEED)

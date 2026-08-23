@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardContent, Button, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Input, Select, Textarea } from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+import { Card, CardContent, Button, Badge, Empty, Tabs, TabsList, TabsTrigger, TabsContent, Input, Select, Textarea } from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 import {
   StatStrip, CrudLayout, RowItem, CrudToolbar, EditDel, DatePill, FormField,
-} from '../../components/crud'
+} from '../../platform/ui'
 import { formatNumber as money, toCsv } from '../../lib/utils'
 import {
   FileText, Flag, Tag, Cog, Fuel, TriangleAlert, Star, Plus, Download, Building2, TrendingUp, Wallet, Wrench,

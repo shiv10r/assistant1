@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import type { Settings } from '../../api'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Input, Textarea, Label, Switch, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Input, Textarea, Label, Switch, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { cn } from '../../lib/utils'
 
 interface Preference {

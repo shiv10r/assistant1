@@ -1,13 +1,13 @@
 ﻿import { useEffect, useState, useMemo } from 'react'
 import { api } from '../api'
 import type { ActivityItem } from '../api'
-import { Card, CardContent, Badge, cn } from '../components/ui'
+import { Card, CardContent, Badge, cn } from '../platform/ui'
 import {
   FiTrendingUp, FiClock, FiFilter, FiLoader, FiMoreHorizontal,
   FiUsers, FiDollarSign, FiBriefcase, FiMessageSquare, FiActivity
 } from 'react-icons/fi'
 import { useViewMode } from '../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../platform/dashboard'
 
 type FilterType = 'all' | 'billing' | 'projects' | 'assistant'
 

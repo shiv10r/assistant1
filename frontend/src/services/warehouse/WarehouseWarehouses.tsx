@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { Building2, MapPin, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Warehouse, LocationBin } from './types'
 import { WAREHOUSE_SEED, LOCATION_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 const emptyWh = { name: '', code: '', address: '', contactPerson: '', phone: '', status: 'active' as 'active' | 'inactive' }
 const emptyLoc = { warehouseId: 'wh-1', code: '', zone: '', rack: '', bin: '', capacity: '0', status: 'active' as 'active' | 'inactive' }

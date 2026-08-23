@@ -90,7 +90,7 @@ import {
   IoMoon,
 } from 'react-icons/io5'
 import AiWidget from './components/AiWidget'
-import WeatherCard from './components/WeatherCard'
+import { WeatherCard } from './platform/dashboard'
 import GlobalSearch from './components/GlobalSearch'
 import { VsrLogo } from './components/VsrLogo'
 import { Modal } from './platform/ui'

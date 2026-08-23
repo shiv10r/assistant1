@@ -1,4 +1,4 @@
-import { Badge, Button } from '../../components/ui'
+import { Badge, Button } from '../../platform/ui'
 import { CheckCircle2, Palette, ScanLine, Sparkles, UploadCloud, Wand2 } from 'lucide-react'
 
 export type GenStage = 'idle' | 'uploading' | 'processing' | 'generating' | 'completed' | 'failed'

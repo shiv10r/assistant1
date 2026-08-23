@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import type { CatalogItem, Settings } from '../../api'
-import { Card, CardContent, Badge, Input, Textarea, Select, Label, Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money, num } from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+import { Card, CardContent, Badge, Input, Textarea, Select, Label, Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Empty, money, num } from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import BarcodeScanner from '../../components/BarcodeScanner'
 import { Plus, Search, Package, Trash2, Edit, Barcode } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 const UNITS = ['Pcs', 'Kg', 'Gm', 'Ltr', 'Mtr', 'Sqft', 'Box', 'Bag', 'Dozen', 'Hour', 'Day', 'Set', 'Pair', 'Piece', 'Roll', 'Sheet', 'Pack', 'Bundle']
 const TAXES = [0, 0.25, 1.5, 3, 5, 12, 18, 28]

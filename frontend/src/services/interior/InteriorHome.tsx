@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, money, num } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, money, num } from '../../platform/ui'
 import { Home, Plus, Sparkles, ShoppingBag, FileText, ArrowRight, CheckCircle2, Layers, Camera } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct } from './types'
 import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED, PRODUCT_SEED } from './seed'
-import { KPICard } from '../../components/ui'
-import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../components/AdvancedPanel'
+import { KPICard } from '../../platform/ui'
+import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../platform/dashboard'
 
 const NAV = [
   { label: 'New project', to: '/interior/projects', icon: <Plus className="w-5 h-5" /> },

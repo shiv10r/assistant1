@@ -2,18 +2,18 @@ import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Button, Input, Label, Select, Empty,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { Truck, Plus, Search, Trash2, CheckCircle2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { GrnRecord, GrnLine, PurchaseOrder, InventoryItem, PutawayBin } from './types'
 import { PO_SEED, GRN_SEED, INVENTORY_SEED, LOCATION_SEED, WAREHOUSE_SEED } from './seed'
 import { fmtDate, todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
-import { Stepper } from '../../components/Stepper'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
+import { Stepper } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 import { useStockLedger } from './ledger'
 
 const STEPS = ['Purchase Order', 'Receive Items', 'Inspection', 'Put-away', 'Complete']

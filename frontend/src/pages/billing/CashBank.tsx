@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import type { BankAccount, CashEntry } from '../../api'
-import { Card, CardContent, Badge, Button, Input, Textarea, Label, Modal, Empty, money, todayISO, fmtDate } from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+import { Card, CardContent, Badge, Button, Input, Textarea, Label, Modal, Empty, money, todayISO, fmtDate } from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { Banknote, Landmark, Plus, Minus, Pencil, Trash2, Wallet, PiggyBank, CreditCard, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 function blankBank(): BankAccount {
   return { id: 0, name: '', accNo: '', ifsc: '', upiId: '', openingBalance: 0, asOf: todayISO() }

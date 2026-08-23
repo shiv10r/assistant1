@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { Banknote, Plus, Pencil, Trash2, Search, BadgeCheck } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { PayrollRecord, StaffMember } from './types'
 import { PAYROLL_SEED, STAFF_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
-import { money } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
+import { money } from '../../platform/ui'
 
 export default function SchoolPayroll() {
   const { items: staff } = useLocalCollection<StaffMember>('school:staff', STAFF_SEED)

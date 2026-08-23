@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { PackageCheck, Plus, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Package as Pkg, SalesOrder } from './types'
 import { PACK_SEED, ORDER_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 export default function WarehousePacking() {
   const { items: packages, add, update } = useLocalCollection<Pkg>('warehouse:packages', PACK_SEED)

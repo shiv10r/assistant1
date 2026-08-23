@@ -1,6 +1,6 @@
 import type { DataColumn } from '../platform/tables'
 import { money } from './utils'
-import { Badge } from '../components/ui'
+import { Badge } from '../platform/ui'
 
 export type StatusConfig = {
   [key: string]: 'default' | 'success' | 'warning' | 'danger' | 'info'

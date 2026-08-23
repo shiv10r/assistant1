@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { TrendingDown, Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ExpenseRecord } from './types'
 import { EXPENSE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { money } from '../../components/ui'
-import { AdvancedPanel, type DonutDatum } from '../../components/AdvancedPanel'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { money } from '../../platform/ui'
+import { AdvancedPanel, type DonutDatum } from '../../platform/dashboard'
 
 export default function SchoolExpenses() {
   const { items, add, update, remove } = useLocalCollection<ExpenseRecord>('school:expenses', EXPENSE_SEED)

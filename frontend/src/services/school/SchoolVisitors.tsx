@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Modal } from '../../platform/ui'
 import { DoorOpen, Plus, Pencil, Trash2, Search, LogOut } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { VisitorLog } from './types'
 import { VISITOR_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolVisitors() {
   const { items, add, update, remove } = useLocalCollection<VisitorLog>('school:visitors', VISITOR_SEED)

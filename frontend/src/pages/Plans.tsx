@@ -1,4 +1,4 @@
-import { Card, CardContent, Badge, Button, PageHead, cn } from '../components/ui'
+import { Card, CardContent, Badge, Button, PageHead, cn } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 
 const PLANS = [

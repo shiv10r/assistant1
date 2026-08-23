@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { Award, Plus, Pencil, Trash2, Search, Ban } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { CertificateTemplate, Certificate, Student } from './types'
 import { CERT_TEMPLATE_SEED, CERTIFICATE_SEED, STUDENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolCertificates() {
   const { items: templates, add: addTemplate, update: updateTemplate, remove: removeTemplate } = useLocalCollection<CertificateTemplate>('school:cert-templates', CERT_TEMPLATE_SEED)

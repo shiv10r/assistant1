@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { BedDouble, Plus, Pencil, Trash2, LogOut } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { HostelRoom, HostelAllocation, Student } from './types'
 import { ROOM_SEED, ALLOCATION_SEED, STUDENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolHostel() {
   const { items: rooms, add: addRoom, update: updateRoom, remove: removeRoom } = useLocalCollection<HostelRoom>('school:rooms', ROOM_SEED)

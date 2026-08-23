@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select } from '../../platform/ui'
 import { History, Trash2, Search } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { AuditLog } from './types'
 import { AUDIT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolAuditLog() {
   const { items, remove } = useLocalCollection<AuditLog>('school:audit', AUDIT_SEED)

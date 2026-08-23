@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { GraduationCap, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Student, SchoolClass } from './types'
 import { STUDENT_SEED, CLASS_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
+import { DataTable, type DataColumn } from '../../platform/tables'
 import { useCollectionSearch } from '../../hooks/useCollectionSearch'
 
 const studentSearchText = (student: Student) =>

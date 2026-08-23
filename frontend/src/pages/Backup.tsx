@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { BackupStatus, BackupResult, FirebaseVersion, DriveStatus } from '../api'
-import { Button } from '../components/ui'
+import { Button } from '../platform/ui'
 import { subscribePush, onPushMessage, ensureServiceWorker } from '../firebase'
 
 export default function Backup() {

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Textarea } from '../../platform/ui'
 import { Megaphone, Plus, Pencil, Trash2, Search, Pin, Send } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Notice } from './types'
 import { NOTICE_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolNotices() {
   const { items, add, update, remove } = useLocalCollection<Notice>('school:notices', NOTICE_SEED)

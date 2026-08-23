@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Empty, fmtDate, todayISO } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button, Input, Empty, fmtDate, todayISO } from '../../platform/ui'
 import { CalendarCheck, Search } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { AttendanceRecord, AttendanceStatus, Student } from './types'

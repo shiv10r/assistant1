@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { Users, Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Supplier } from './types'
 import { SUPPLIER_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, DonutChart } from '../../platform/dashboard'
 
 const emptyForm = {
   name: '', company: '', contact: '', phone: '', email: '', gstin: '',

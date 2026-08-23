@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { ShoppingCart, Plus, Search, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { SalesOrder, SalesOrderLine, SalesOrderStatus, InventoryItem, Customer } from './types'
@@ -10,10 +10,10 @@ import { ORDER_FLOW, availableOf } from './types'
 import { ORDER_SEED, CUSTOMER_SEED, INVENTORY_SEED, WAREHOUSE_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
 import { money } from '../../lib/utils'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 interface DraftLine { itemId: string; qty: string; price: string; taxPct: string; discountPct: string }
 

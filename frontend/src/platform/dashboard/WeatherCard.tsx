@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { useWeather } from '../hooks/useWeather'
-import { conditionMeta, weatherBlurb } from '../lib/weather'
-import { cn } from '../lib/utils'
-import { Button } from './ui'
+import { useWeather } from '../../hooks/useWeather'
+import { conditionMeta, weatherBlurb } from '../../lib/weather'
+import { cn } from '../../lib/utils'
+import { Button } from '../ui/Form'
 import { FiLoader, FiMapPin, FiDownload, FiRefreshCw } from 'react-icons/fi'
 
 interface WeatherCardProps {

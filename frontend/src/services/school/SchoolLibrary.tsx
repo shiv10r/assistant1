@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui'
+import { Card, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { BookOpen, Plus, Pencil, Trash2, Undo2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { LibraryBook, LibraryIssue, Student, StaffMember } from './types'
 import { BOOK_SEED, ISSUE_SEED, STUDENT_SEED, STAFF_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
 
 export default function SchoolLibrary() {
   const { items: books, add: addBook, update: updateBook, remove: removeBook } = useLocalCollection<LibraryBook>('school:books', BOOK_SEED)

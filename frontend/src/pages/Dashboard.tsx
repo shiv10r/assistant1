@@ -2,10 +2,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import type { ActivityItem, AnalyticsData, ContractMilestone, ModuleSummary, Snag } from '../api'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Empty, money, cn } from '../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Empty, money, cn } from '../platform/ui'
 import { SERVICES, getLastService, setLastService, type ServiceId } from '../lib/services'
 import { useViewMode } from '../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../platform/dashboard'
 import {
   FiTrendingUp,
   FiUsers,

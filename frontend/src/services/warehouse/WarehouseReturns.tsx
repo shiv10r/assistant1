@@ -1,19 +1,19 @@
 import { useMemo, useState } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal, Tabs, TabsList, TabsTrigger, TabsContent,
-} from '../../components/ui'
-import { useToast } from '../../components/ui/Toast'
+} from '../../platform/ui'
+import { useToast } from '../../platform/ui'
 import { RotateCcw, Plus, Search, Trash2 } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ReturnRecord, ReturnLine, ReturnStatus, InventoryItem } from './types'
 import { RETURN_FLOW } from './types'
 import { RETURN_SEED, INVENTORY_SEED } from './seed'
 import { todayISO } from '../../lib/utils'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { StatusBadge } from '../../platform/ui'
 import { useStockLedger } from './ledger'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 interface DraftLine { itemId: string; qty: string; reason: string; condition: 'good' | 'damaged'; action: 'restock' | 'quarantine' | 'return_to_supplier' }
 

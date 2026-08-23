@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { Users, Phone, Plus, Pencil, Trash2, Search, Mail } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ParentRecord, Student } from './types'
 import { PARENT_SEED, STUDENT_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolParents() {
   const { items: students } = useLocalCollection<Student>('school:students', STUDENT_SEED)

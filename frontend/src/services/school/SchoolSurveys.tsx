@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Select, Modal } from '../../platform/ui'
 import { ClipboardCheck, Plus, Pencil, Trash2, Search, Rocket, XCircle } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { Survey } from './types'
 import { SURVEY_SEED } from './seed'
-import { DataTable, type DataColumn } from '../../components/DataTable'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { DataTable, type DataColumn } from '../../platform/tables'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 
 export default function SchoolSurveys() {
   const { items, add, update, remove } = useLocalCollection<Survey>('school:surveys', SURVEY_SEED)

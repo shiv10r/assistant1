@@ -1,17 +1,17 @@
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Badge, Button } from '../../platform/ui'
 import { Boxes, ClipboardList, Truck, Users, Package, AlertTriangle, PackageX, IndianRupee, ArrowRight, History, ShoppingCart, ArrowLeftRight } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import type { InventoryItem, PurchaseOrder, GrnRecord, SalesOrder, StockTransfer } from './types'
 import { availableOf, stockStatusOf } from './types'
 import { INVENTORY_SEED, PO_SEED, GRN_SEED, WAREHOUSE_SEED, ORDER_SEED, TRANSFER_SEED } from './seed'
 import { money, fmtDate } from '../../lib/utils'
-import { KPICard } from '../../components/ui'
-import { StatusBadge } from '../../components/StatusBadge'
+import { KPICard } from '../../platform/ui'
+import { StatusBadge } from '../../platform/ui'
 import { useStockLedger } from './ledger'
 import { MOVEMENT_LABEL } from './ledger'
 import { useViewMode } from '../../hooks/useViewMode'
-import { AdvancedPanel, BarChart, DonutChart } from '../../components/AdvancedPanel'
+import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
 
 export default function WarehouseHome() {
   const navigate = useNavigate()
