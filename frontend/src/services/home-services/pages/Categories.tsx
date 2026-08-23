@@ -97,21 +97,26 @@ export default function Categories() {
       <section className="hs-section">
         <HsSection title="Popular right now" />
         <div className="hs-service-grid">
-          {[...services].sort((a, b) => b.packages[0].basePrice - a.packages[0].basePrice).slice(0, 4).map((s) => (
+          {[...services].sort((a, b) => ((b as HomeService & { startingPrice?: number }).startingPrice ?? b.packages?.[0]?.basePrice ?? 0) - ((a as HomeService & { startingPrice?: number }).startingPrice ?? a.packages?.[0]?.basePrice ?? 0)).slice(0, 4).map((s) => {
+            const apiService = s as HomeService & { imageUrl?: string; startingPrice?: number }
+            const price = apiService.startingPrice ?? s.packages?.[0]?.basePrice ?? 0
+            const image = s.image || apiService.imageUrl || ''
+            return (
             <Link key={s.id} to={`/home-services/services/${s.slug}`} className="hs-service-card">
-              <img src={s.image} alt={s.name} loading="lazy" />
+              <img src={image} alt={s.name} loading="lazy" />
               <div className="hs-service-card-body">
                 <strong>{s.name}</strong>
                 <p>{s.shortDescription}</p>
                 <span className="hs-price-row" style={{ justifyContent: 'flex-start', gap: 6 }}>
-                  <b>{s.packages[0].basePrice >= 1000 ? 'from' : 'starts at'} {s.packages[0].basePrice >= 1000 ? '' : ''}</b>
+                  <b>{price > 0 ? `Starts at ₹${price.toLocaleString('en-IN')}` : 'View packages'}</b>
                 </span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--hs-brand-2)', fontSize: 12, fontWeight: 800 }}>
                   Book now <MdArrowForward aria-hidden="true" />
                 </span>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       </section>
     </HomeServicesShell>

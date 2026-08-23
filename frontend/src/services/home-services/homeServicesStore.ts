@@ -7,7 +7,6 @@ import {
   COUPONS, SERVICE_ADDONS, COMMISSION_RULES, SUPPORT_TICKETS, DISPUTES, NOTIFICATIONS,
   buildAvailabilitySlots,
 } from './homeServicesData'
-import { homeServicesApi } from './homeServicesApi'
 import { api } from '../../platform/api'
 
 // VSR Home Services — client-side demo state. In production the .NET backend is
@@ -80,16 +79,22 @@ export function useHomeServicesStore() {
   useEffect(() => {
     ;(async () => {
       try {
-        const [custBookings, custReviews, custEarnings, custPayouts] = await Promise.all([
-          homeServicesApi.getBookings().then(r => r ?? []),
-          homeServicesApi.getReviews().then(r => r ?? []),
-          homeServicesApi.getProfessionalEarningsSummary('0').then(r => r ?? { totalGross: 0, totalCommission: 0, totalEarnings: 0, paidEarnings: 0, pendingEarnings: 0, eligibleCount: 0, paidCount: 0 }).then(r => r ? [] : r),
-          homeServicesApi.getPayoutStatus('0').then(r => r ?? { pendingAmount: 0, processingAmount: 0, paidAmount: 0, nextPayoutDate: null, payouts: [] }),
+        const read = async <T,>(key: string): Promise<readonly T[]> => {
+          const remote = await api.moduleData.get<T[]>('home-services', key)
+          if (remote) return remote
+          const local = localStorage.getItem(`vsr-hs-${key}`)
+          return local ? JSON.parse(local) as T[] : []
+        }
+        const [savedBookings, savedReviews, savedEarnings, savedPayouts] = await Promise.all([
+          read<Booking>('bookings'),
+          read<Review>('reviews'),
+          read<ProfessionalEarning>('earnings'),
+          read<Payout>('payouts'),
         ])
-        setBookings(custBookings as readonly Booking[])
-        setReviews(custReviews as readonly Review[])
-        setEarnings(custEarnings as readonly ProfessionalEarning[])
-        setPayouts(custPayouts.payouts ?? [])
+        setBookings(savedBookings)
+        setReviews(savedReviews)
+        setEarnings(savedEarnings)
+        setPayouts(savedPayouts)
       } catch {
         // Keep empty state; UI will show loading until data arrives
       } finally {

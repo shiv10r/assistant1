@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# VSR Systems Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19, TypeScript, and Vite client for the VSR Systems modular business platform.
 
-Currently, two official plugins are available:
+## Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run check:chunks
+npm run check:legacy-ui
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Development runs at `http://127.0.0.1:5173` and proxies `/api` to the ASP.NET Core API at `http://localhost:5050`.
+
+## Structure
+
+- `src/platform/` owns shared technical capabilities and API access.
+- `src/services/` owns isolated business modules.
+- `src/components/` contains reusable application UI.
+- `src/routes/` defines lazy-loaded route boundaries.
+
+Business modules must not import another module's internal code. Shared collections persist through `/api/{module}/data/{collection}` with local fallback only where explicitly supported.

@@ -363,8 +363,11 @@ const billing = {
   deleteBank: (id: number) => del(`/api/billing/banks/${id}`),
   cheques: () => get<BizTxn[]>('/api/billing/cheques'),
   clearCheque: (id: number) => postVoid(`/api/billing/cheques/${id}/cleared`, {}),
-  settings: () => get<Settings>('/api/billing/settings'),
-  setSetting: (key: string, value: string) => postVoid('/api/billing/settings', { key, value }),
+  settings: async () => (await moduleData.get<Settings>('platform', 'billing-settings')) ?? {},
+  setSetting: async (key: string, value: string) => {
+    const settings = (await moduleData.get<Settings>('platform', 'billing-settings')) ?? {}
+    await moduleData.put('platform', 'billing-settings', { ...settings, [key]: value })
+  },
 }
 
 // Projects
@@ -624,19 +627,25 @@ export const api = {
   analytics: () => get<AnalyticsData>('/api/analytics'),
   reportKpis,
   scheduleEmail: (email: string, period?: string, periodLabel?: string) => post<{ ok: boolean; to?: string; fileName?: string; code?: string; message?: string; error?: string }>('/api/reports/schedule-email', { email, period, periodLabel }),
-  backupStatus: () => get<BackupStatus>('/api/backup'),
+  backupStatus: async (): Promise<BackupStatus> => ({ enabled: false, url: null, localRows: 0 }),
   backupPush: () => post<BackupResult>('/api/backup/push', {}),
   backupPull: () => post<BackupResult>('/api/backup/pull', {}),
-  firebaseVersion: () => get<FirebaseVersion>('/api/backup/version'),
+  firebaseVersion: async (): Promise<FirebaseVersion> => ({ enabled: false, project: null, bucket: null, version: 0, localRows: 0 }),
   firebasePush: () => post<BackupResult>('/api/backup/firebase-push', {}),
   firebasePull: () => post<BackupResult>('/api/backup/firebase-pull', {}),
 
   // ---- Firebase Auth + Push (free Spark plan) ----
-  firebaseConfig: async (): Promise<FirebaseWebConfig> => {
-    const r = await fetch(BASE + '/api/firebase/config')
-    if (!r.ok) throw new Error(`API error ${r.status}`)
-    return r.json()
-  },
+  firebaseConfig: async (): Promise<FirebaseWebConfig> => ({
+    enabled: false,
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: '',
+    vapidKey: '',
+    measurementId: '',
+  }),
   firebaseLogin: async (idToken: string): Promise<void> => {
     const r = await fetch(BASE + '/api/auth/firebase', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

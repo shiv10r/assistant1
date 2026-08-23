@@ -941,3 +941,17 @@ Stop after Phase 1.
 ```
 
 After Phase 1 is stable, start Phase 2 in a separate coding-agent session.
+
+---
+
+# 23. Current Runtime Contract
+
+As of August 23, 2026:
+
+- Frontend and backend build as separate repositories.
+- Every module owns its routes and shared document persistence endpoint.
+- Missing optional documents return JSON `null` instead of a failed request.
+- Home Services catalog responses include package prices needed by the UI.
+- Firebase and backup integrations disable cleanly when unconfigured.
+- Development uses configured Supabase PostgreSQL with local Redis fallback.
+- MVP credentials move to Azure Key Vault in Phase 3.

@@ -9,7 +9,17 @@ let cached: { config: FirebaseWebConfig; app: FirebaseApp | null; auth: Auth | n
 
 async function load(): Promise<NonNullable<typeof cached>> {
   if (cached) return cached
-  const config = await api.firebaseConfig()
+  const config = await api.firebaseConfig().catch(() => ({
+    enabled: false,
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: '',
+    vapidKey: '',
+    measurementId: '',
+  }))
   cached = { config, app: null, auth: null, messaging: null, analytics: null, perf: null }
   if (!config.enabled || !config.apiKey) return cached
 

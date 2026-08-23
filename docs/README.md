@@ -13,6 +13,7 @@
 ## Engineering Records
 
 - [Frontend design system](../DESIGN.md)
+- [Modular architecture source of truth](services/VSR_Systems_Coding_Refactor_Source_of_Truth.md)
 - `superpowers/specs/` - approved and historical design specifications.
 - `superpowers/plans/` - implementation plans and execution records.
 

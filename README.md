@@ -5,7 +5,7 @@ LuxInfra is a multi-service business operations application for interior design,
 ## Repository Layout
 
 - `frontend/` - React 19, TypeScript, Vite, and Tailwind CSS application.
-- `backend/` - .NET backend projects and build artifacts available on this branch.
+- The ASP.NET Core backend is maintained in the adjacent `VSRSystemsBackend` repository.
 - `docs/` - deployment guidance, service specifications, and engineering plans.
 - `data/` - local application data used by the development environment.
 
@@ -36,3 +36,11 @@ Frontend visual and interaction rules are defined in [DESIGN.md](DESIGN.md).
 ## Branches
 
 Deployment branches and environment details are documented in the deployment guide. Do not deploy legacy branches without reviewing that guide.
+
+## Runtime Contract
+
+- Development frontend: `http://127.0.0.1:5173`
+- Development API and Swagger: `http://127.0.0.1:5050` and `/swagger`
+- Production data: one Supabase PostgreSQL database
+- Shared client collections: `/api/{module}/data/{collection}`
+- MVP secrets move to Azure Key Vault in Phase 3.
