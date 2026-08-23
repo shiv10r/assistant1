@@ -5,12 +5,7 @@ import { isAuthed } from './platform/auth'
 import {
   Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
-  VideoCall, InteriorRoutes,
-  WarehouseCustomers, WarehouseDispatch, WarehouseGrn, WarehouseHome, WarehouseInventory,
-  WarehouseModules, WarehouseOrders, WarehousePacking, WarehousePicking, WarehouseProducts,
-  WarehouseProjectAttendance, WarehouseProjects, WarehouseProjectsMap, WarehouseProjectWorkspace,
-  WarehousePurchaseOrders, WarehouseReturns, WarehouseStaff, WarehouseStockCount,
-  WarehouseSuppliers, WarehouseTransfers, WarehouseWarehouses, SchoolAdmissions, SchoolAssets,
+  VideoCall, InteriorRoutes, WarehouseRoutes, SchoolAdmissions, SchoolAssets,
   SchoolAttendance, SchoolAttendanceAnalytics, SchoolAuditLog, SchoolCafeteria, SchoolCertificates,
   SchoolClasses, SchoolClubs, SchoolCounselling, SchoolDirectory, SchoolDiscipline, SchoolDocuments,
   SchoolEvents, SchoolExams, SchoolExpenses, SchoolFeeStructure, SchoolFees, SchoolGrievances,
@@ -122,29 +117,8 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/video" element={<VideoCall />} />
 
-          {/* Warehouse service */}
-          <Route path="/warehouse" element={<WarehouseHome />} />
-          <Route path="/warehouse/dashboard" element={<WarehouseHome />} />
-          <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
-          <Route path="/warehouse/purchase-orders" element={<WarehousePurchaseOrders />} />
-          <Route path="/warehouse/grn" element={<WarehouseGrn />} />
-          <Route path="/warehouse/suppliers" element={<WarehouseSuppliers />} />
-          <Route path="/warehouse/staff" element={<WarehouseStaff />} />
-          <Route path="/warehouse/projects" element={<WarehouseProjects />} />
-          <Route path="/warehouse/projects/:id" element={<WarehouseProjectWorkspace />} />
-          <Route path="/warehouse/projects/:id/attendance" element={<WarehouseProjectAttendance />} />
-          <Route path="/warehouse/map" element={<WarehouseProjectsMap />} />
-          <Route path="/warehouse/modules" element={<WarehouseModules />} />
-          <Route path="/warehouse/products" element={<WarehouseProducts />} />
-          <Route path="/warehouse/customers" element={<WarehouseCustomers />} />
-          <Route path="/warehouse/warehouses" element={<WarehouseWarehouses />} />
-          <Route path="/warehouse/transfers" element={<WarehouseTransfers />} />
-          <Route path="/warehouse/orders" element={<WarehouseOrders />} />
-          <Route path="/warehouse/picking" element={<WarehousePicking />} />
-          <Route path="/warehouse/packing" element={<WarehousePacking />} />
-          <Route path="/warehouse/dispatch" element={<WarehouseDispatch />} />
-          <Route path="/warehouse/returns" element={<WarehouseReturns />} />
-          <Route path="/warehouse/stock-count" element={<WarehouseStockCount />} />
+          {/* Warehouse service: module-owned route bundle */}
+          <Route path="/warehouse/*" element={<WarehouseRoutes />} />
 
           {/* School service */}
           <Route path="/school" element={<SchoolHome />} />

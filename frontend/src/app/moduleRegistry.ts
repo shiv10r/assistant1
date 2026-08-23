@@ -39,7 +39,7 @@ export const MODULE_REGISTRY = [
     key: 'warehouse', name: 'VSR Warehouse', tagline: 'Inventory, suppliers, orders & fulfilment', icon: '📦',
     gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)', baseRoute: '/warehouse', entryRoute: '/warehouse/dashboard',
     navigation: ['/warehouse/dashboard', '/warehouse/inventory', '/warehouse/orders'], permissions: [],
-    lazyRouteLoader: () => import('../services/warehouse/WarehouseHome'), enabled: true,
+    lazyRouteLoader: () => import('../services/warehouse/routes'), enabled: true,
   },
   {
     key: 'school', name: 'VSR School', tagline: 'Students, academics, fees & attendance', icon: '🎓',
