@@ -50,48 +50,48 @@ export const MODULE_REGISTRY = [
   {
     key: 'hotel', name: 'VSR Hotels', tagline: 'Reservations, rooms, guests & housekeeping', icon: '', gradient: 'var(--grad)',
     baseRoute: '/hotel', entryRoute: '/hotel', navigation: ['/hotel', '/hotel/reservations', '/hotel/rooms'], permissions: [],
-    lazyRouteLoader: () => import('../services/hotel/HotelHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/hotel/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'travel', name: 'VSR Travel', tagline: 'Destinations, packages, group trips & custom journeys', icon: '', gradient: 'var(--grad)',
     baseRoute: '/travel', entryRoute: '/travel', navigation: ['/travel', '/travel/destinations', '/travel/packages'], permissions: [],
-    lazyRouteLoader: () => import('../services/travel/TravelHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/travel/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'news', name: 'VSR News', tagline: 'Breaking stories, trusted reporting & saved reads', icon: '',
     gradient: 'linear-gradient(135deg, #A62421 0%, #6F1715 100%)', baseRoute: '/news', entryRoute: '/news',
     navigation: ['/news', '/news/latest', '/news/trending'], permissions: [],
-    lazyRouteLoader: () => import('../services/news/NewsHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/news/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'jobs', name: 'VSR Jobs', tagline: 'Search roles, compare employers & save opportunities', icon: '',
     gradient: 'linear-gradient(135deg, #175EAA 0%, #087B70 100%)', baseRoute: '/jobs', entryRoute: '/jobs',
     navigation: ['/jobs', '/jobs/search', '/jobs/applications'], permissions: [],
-    lazyRouteLoader: () => import('../services/jobs/JobsHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/jobs/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'commerce', name: 'VSR Commerce', tagline: 'Discover, compare & shop quality products', icon: '',
     gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)', baseRoute: '/commerce', entryRoute: '/commerce',
     navigation: ['/commerce', '/commerce/products', '/commerce/cart'], permissions: [],
-    lazyRouteLoader: () => import('../services/commerce/CommerceHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/commerce/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'bank', name: 'VSR Bank', tagline: 'Accounts, transfers, cards & secure banking', icon: '',
     gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0E7490 100%)', baseRoute: '/bank', entryRoute: '/bank',
     navigation: ['/bank', '/bank/accounts', '/bank/transfers'], permissions: [],
-    lazyRouteLoader: () => import('../services/bank/BankHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/bank/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'medical', name: 'VSR Medical', tagline: 'Doctors, appointments, records & prescriptions', icon: '',
     gradient: 'linear-gradient(135deg, #047857 0%, #0E7490 100%)', baseRoute: '/medical', entryRoute: '/medical',
     navigation: ['/medical', '/medical/doctors', '/medical/appointments'], permissions: [],
-    lazyRouteLoader: () => import('../services/medical/pages/MedicalHome'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/medical/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'home-services', name: 'VSR Home Services', tagline: 'Verified pros for repairs, cleaning & home care', icon: '',
     gradient: 'linear-gradient(135deg, #B45309 0%, #DC2626 100%)', baseRoute: '/home-services', entryRoute: '/home-services',
     navigation: ['/home-services', '/home-services/categories', '/home-services/bookings'], permissions: [],
-    lazyRouteLoader: () => import('../services/home-services/pages/Home'), enabled: true, shell: 'portal',
+    lazyRouteLoader: () => import('../services/home-services/routes'), enabled: true, shell: 'portal',
   },
 ] as const satisfies readonly ModuleRegistration[]
 

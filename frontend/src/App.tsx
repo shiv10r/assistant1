@@ -5,27 +5,8 @@ import { isAuthed } from './platform/auth'
 import {
   Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
-  VideoCall, InteriorRoutes, WarehouseRoutes, SchoolRoutes, HotelGuests, HotelHome, HotelHousekeeping,
-  HotelReservations, HotelRooms, TravelCustomize, TravelDestinations, TravelGroupTrips,
-  TravelHome, TravelMyTrips, TravelPackages, NewsArticle, NewsBookmarks, NewsCategory, NewsHome,
-  NewsLatest, NewsSearch, NewsTrending,
-  CompanyDetail, JobDetail, JobsApplications, JobsCompanies, JobsHome, JobsSaved, JobsSearch,
-  CandidateProfile, JobApplicationFlow,
-  CommerceBrands, CommerceCart, CommerceCategories, CommerceCheckout, CommerceHome,
-  CommerceOffers, CommerceProductDetail, CommerceProducts, CommerceSearch, CommerceWishlist,
-  BankAccountDetail, BankAccounts, BankAdmin, BankBeneficiaries, BankBills, BankCards,
-  BankDeposits, BankDocuments, BankHome, BankLoans, BankNotifications, BankProfile,
-  BankStatements, BankTransfers, BankTransactions,
-  MedicalAdmin, MedicalAppointments, MedicalBilling, MedicalDoctors, MedicalHome,
-  MedicalLabs, MedicalNotifications, MedicalPatientDetail, MedicalPatients,
-  MedicalPrescriptions, MedicalRecords,
-  HomeServicesHome, HomeServicesCategories, HomeServicesCategoryDetail, HomeServicesServiceDetail,
-  HomeServicesSearch, HomeServicesBookingFlow, HomeServicesBookings, HomeServicesBookingDetail,
-  HomeServicesOffers, HomeServicesAccount, HomeServicesAddresses, HomeServicesProDashboard, HomeServicesProRequests,
-  HomeServicesProJobs, HomeServicesProJobDetail, HomeServicesProEarnings, HomeServicesProProfile,
-  HomeServicesAdminDashboard, HomeServicesAdminLiveOps, HomeServicesAdminBookings,
-  HomeServicesAdminProfessionals, HomeServicesAdminFinance,
-  HomeServicesDatabaseCheck, HomeServicesAddCategory,
+  VideoCall, InteriorRoutes, WarehouseRoutes, SchoolRoutes, HotelRoutes, TravelRoutes, NewsRoutes,
+  JobsRoutes, CommerceRoutes, BankRoutes, MedicalRoutes, HomeServicesRoutes,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -113,103 +94,14 @@ export default function App() {
           {/* School service: module-owned route bundle */}
           <Route path="/school/*" element={<SchoolRoutes />} />
 
-          <Route path="/hotel" element={<HotelHome />} />
-          <Route path="/hotel/dashboard" element={<HotelHome />} />
-          <Route path="/hotel/reservations" element={<HotelReservations />} />
-          <Route path="/hotel/rooms" element={<HotelRooms />} />
-          <Route path="/hotel/guests" element={<HotelGuests />} />
-          <Route path="/hotel/housekeeping" element={<HotelHousekeeping />} />
-
-          <Route path="/travel" element={<TravelHome />} />
-          <Route path="/travel/destinations" element={<TravelDestinations />} />
-          <Route path="/travel/packages" element={<TravelPackages />} />
-          <Route path="/travel/group-trips" element={<TravelGroupTrips />} />
-          <Route path="/travel/customize" element={<TravelCustomize />} />
-          <Route path="/travel/my-trips" element={<TravelMyTrips />} />
-
-          <Route path="/news" element={<NewsHome />} />
-          <Route path="/news/latest" element={<NewsLatest />} />
-          <Route path="/news/trending" element={<NewsTrending />} />
-          <Route path="/news/search" element={<NewsSearch />} />
-          <Route path="/news/bookmarks" element={<NewsBookmarks />} />
-          <Route path="/news/category/:categorySlug" element={<NewsCategory />} />
-          <Route path="/news/:slug" element={<NewsArticle />} />
-
-          <Route path="/jobs" element={<JobsHome />} />
-          <Route path="/jobs/search" element={<JobsSearch />} />
-          <Route path="/jobs/companies" element={<JobsCompanies />} />
-          <Route path="/jobs/companies/:companySlug" element={<CompanyDetail />} />
-<Route path="/jobs/applications" element={<JobsApplications />} />
-          <Route path="/jobs/saved" element={<JobsSaved />} />
-          <Route path="/jobs/profile" element={<CandidateProfile />} />
-          <Route path="/jobs/:slug/apply" element={<JobApplicationFlow />} />
-          <Route path="/jobs/:slug" element={<JobDetail />} />
-
-          <Route path="/commerce" element={<CommerceHome />} />
-          <Route path="/commerce/categories" element={<CommerceCategories />} />
-          <Route path="/commerce/products" element={<CommerceProducts />} />
-          <Route path="/commerce/product/:slug" element={<CommerceProductDetail />} />
-          <Route path="/commerce/cart" element={<CommerceCart />} />
-          <Route path="/commerce/checkout" element={<CommerceCheckout />} />
-          <Route path="/commerce/wishlist" element={<CommerceWishlist />} />
-          <Route path="/commerce/offers" element={<CommerceOffers />} />
-          <Route path="/commerce/brands" element={<CommerceBrands />} />
-          <Route path="/commerce/search" element={<CommerceSearch />} />
-
-          <Route path="/bank" element={<BankHome />} />
-          <Route path="/bank/accounts" element={<BankAccounts />} />
-          <Route path="/bank/accounts/:accountId" element={<BankAccountDetail />} />
-          <Route path="/bank/transactions" element={<BankTransactions />} />
-          <Route path="/bank/transfers" element={<BankTransfers />} />
-          <Route path="/bank/beneficiaries" element={<BankBeneficiaries />} />
-          <Route path="/bank/cards" element={<BankCards />} />
-          <Route path="/bank/deposits" element={<BankDeposits />} />
-          <Route path="/bank/loans" element={<BankLoans />} />
-          <Route path="/bank/statements" element={<BankStatements />} />
-          <Route path="/bank/bills" element={<BankBills />} />
-          <Route path="/bank/notifications" element={<BankNotifications />} />
-          <Route path="/bank/documents" element={<BankDocuments />} />
-          <Route path="/bank/profile" element={<BankProfile />} />
-          <Route path="/bank/admin" element={<BankAdmin />} />
-
-          <Route path="/medical" element={<MedicalHome />} />
-          <Route path="/medical/doctors" element={<MedicalDoctors />} />
-          <Route path="/medical/appointments" element={<MedicalAppointments />} />
-          <Route path="/medical/patients" element={<MedicalPatients />} />
-          <Route path="/medical/patients/:patientId" element={<MedicalPatientDetail />} />
-          <Route path="/medical/prescriptions" element={<MedicalPrescriptions />} />
-          <Route path="/medical/labs" element={<MedicalLabs />} />
-          <Route path="/medical/billing" element={<MedicalBilling />} />
-          <Route path="/medical/records" element={<MedicalRecords />} />
-          <Route path="/medical/notifications" element={<MedicalNotifications />} />
-<Route path="/medical/admin" element={<MedicalAdmin />} />
-
-          {/* Home Services service */}
-          <Route path="/home-services" element={<HomeServicesHome />} />
-          <Route path="/home-services/categories" element={<HomeServicesCategories />} />
-          <Route path="/home-services/categories/:slug" element={<HomeServicesCategoryDetail />} />
-          <Route path="/home-services/services/:slug" element={<HomeServicesServiceDetail />} />
-          <Route path="/home-services/search" element={<HomeServicesSearch />} />
-          <Route path="/home-services/book" element={<HomeServicesBookingFlow />} />
-          <Route path="/home-services/bookings" element={<HomeServicesBookings />} />
-          <Route path="/home-services/bookings/:bookingId" element={<HomeServicesBookingDetail />} />
-          <Route path="/home-services/offers" element={<HomeServicesOffers />} />
-          <Route path="/home-services/account" element={<HomeServicesAccount />} />
-          <Route path="/home-services/addresses" element={<HomeServicesAddresses />} />
-          <Route path="/home-services/pro" element={<HomeServicesProDashboard />} />
-          <Route path="/home-services/pro/requests" element={<HomeServicesProRequests />} />
-          <Route path="/home-services/pro/jobs" element={<HomeServicesProJobs />} />
-          <Route path="/home-services/pro/jobs/:jobId" element={<HomeServicesProJobDetail />} />
-          <Route path="/home-services/pro/earnings" element={<HomeServicesProEarnings />} />
-          <Route path="/home-services/pro/profile" element={<HomeServicesProProfile />} />
-          <Route path="/home-services/admin" element={<HomeServicesAdminDashboard />} />
-          <Route path="/home-services/admin/live" element={<HomeServicesAdminLiveOps />} />
-          <Route path="/home-services/admin/bookings" element={<HomeServicesAdminBookings />} />
-          <Route path="/home-services/admin/professionals" element={<HomeServicesAdminProfessionals />} />
-          <Route path="/home-services/admin/finance" element={<HomeServicesAdminFinance />} />
-          <Route path="/home-services/admin/analytics" element={<HomeServicesAdminDashboard />} />
-          <Route path="/home-services/database-check" element={<HomeServicesDatabaseCheck />} />
-          <Route path="/home-services/categories/add" element={<HomeServicesAddCategory />} />
+          <Route path="/hotel/*" element={<HotelRoutes />} />
+          <Route path="/travel/*" element={<TravelRoutes />} />
+          <Route path="/news/*" element={<NewsRoutes />} />
+          <Route path="/jobs/*" element={<JobsRoutes />} />
+          <Route path="/commerce/*" element={<CommerceRoutes />} />
+          <Route path="/bank/*" element={<BankRoutes />} />
+          <Route path="/medical/*" element={<MedicalRoutes />} />
+          <Route path="/home-services/*" element={<HomeServicesRoutes />} />
 
           {/* Interior service: module-owned route bundle */}
           <Route path="/interior/*" element={<InteriorRoutes />} />
