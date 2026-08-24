@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getRole, logout } from './platform/auth'
-import { api } from './api'
-import type { Broadcast } from './api'
 import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
@@ -89,7 +87,6 @@ import {
   IoVideocam,
   IoMoon,
 } from 'react-icons/io5'
-import AiWidget from './components/AiWidget'
 import { WeatherCard } from './platform/dashboard'
 import GlobalSearch from './components/GlobalSearch'
 import { VsrLogo } from './components/VsrLogo'
@@ -379,29 +376,6 @@ const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business:
 
 const SIDEBAR_KEY = 'lux_sidebar_open'
 
-function BroadcastTicker() {
-  const [active, setActive] = useState<Broadcast | null>(null)
-
-  useEffect(() => {
-    const load = () => api.modules.broadcastActive().then((r) => setActive(r.active)).catch(() => {})
-    load()
-    const t = setInterval(load, 60000)
-    return () => clearInterval(t)
-  }, [])
-
-  if (!active) return null
-  return (
-    <div className="broadcast-ticker">
-      <div className="broadcast-ticker-track">
-        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
-        <span className="broadcast-ticker-item"><IoMegaphone className="w-4 h-4" /> {active.message}</span>
-      </div>
-    </div>
-  )
-}
-
 function defaultSidebarOpen(): boolean {
   const saved = localStorage.getItem(SIDEBAR_KEY)
   if (saved !== null) return saved === '1'
@@ -536,8 +510,6 @@ export default function Layout() {
         </Button>
       </header>
 
-      {!isPortal && <BroadcastTicker />}
-
       <div className="body-row">
         <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
           {groups.map((g) => {
@@ -590,7 +562,6 @@ export default function Layout() {
         <main className="content"><Outlet /></main>
       </div>
       {!isPortal && <>
-        <AiWidget />
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
         <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
         <div className="space-y-4">
