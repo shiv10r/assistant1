@@ -4,9 +4,12 @@ import { MdArrowBack, MdCall, MdCancel, MdCheckCircle, MdChat, MdEventAvailable,
 import HomeServicesShell from '../HomeServicesShell'
 import { useHomeServicesStore } from '../homeServicesStore'
 import { money, formatDateTime, HsEmpty, HsSection, HsStatusBadge, HsStars, HsPaymentBadge } from '../hsShared'
+import { useBookingRealtime } from '../../../platform/realtime'
+import BookingChat from './BookingChat'
 
 export default function BookingDetail() {
   const { bookingId } = useParams<{ bookingId: string }>()
+  const realtimeStatus = useBookingRealtime(bookingId)
   const store = useHomeServicesStore()
   const booking = store.bookings.find((b) => b.id === bookingId)
   const [rating, setRating] = useState(5)
@@ -15,6 +18,7 @@ export default function BookingDetail() {
   const [cancelOpen, setCancelOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('Changed my mind')
   const [disputeReason, setDisputeReason] = useState('')
+  const [chatOpen, setChatOpen] = useState(false)
 
   const service = booking ? store.serviceById(booking.serviceId) : null
   const pkg = booking ? store.packageById(booking.packageId) : null
@@ -59,7 +63,7 @@ export default function BookingDetail() {
               <h2 style={{ margin: 0, fontSize: 18 }}>{service.name}</h2>
               <p style={{ margin: '4px 0 0', color: 'var(--hs-muted)', fontSize: 12 }}>{booking.number} · {pkg.name}</p>
             </div>
-            <HsStatusBadge status={booking.status} />
+            <span className="flex items-center gap-2"><small className="text-[10px] text-muted">Live: {realtimeStatus}</small><HsStatusBadge status={booking.status} /></span>
           </div>
           <div className="hs-booking-meta">
             <span><MdEventAvailable aria-hidden="true" /> {formatDateTime(booking.scheduledStart)}</span>
@@ -86,8 +90,9 @@ export default function BookingDetail() {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <a className="hs-btn hs-btn--secondary hs-btn--sm" href={`tel:${professional.phone}`}><MdCall aria-hidden="true" /> Call</a>
-              <button type="button" className="hs-btn hs-btn--secondary hs-btn--sm" onClick={() => { /* masked chat */ }}><MdChat aria-hidden="true" /> Chat</button>
+              <button type="button" className="hs-btn hs-btn--secondary hs-btn--sm" onClick={() => setChatOpen((value) => !value)}><MdChat aria-hidden="true" /> {chatOpen ? 'Close chat' : 'Chat'}</button>
             </div>
+            {chatOpen && <BookingChat bookingId={booking.id} />}
           </div>
         )}
 

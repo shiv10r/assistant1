@@ -8,6 +8,7 @@ import {
   buildAvailabilitySlots,
 } from './homeServicesData'
 import { api } from '../../platform/api'
+import type { BookingStatusChangedPayload, RealtimeEventEnvelope } from '../../platform/realtime'
 
 // VSR Home Services — client-side demo state. In production the .NET backend is
 // authoritative for pricing, availability, booking status, assignment, refunds,
@@ -108,6 +109,16 @@ export function useHomeServicesStore() {
   const persist = useCallback((key: string, value: unknown) => {
     localStorage.setItem(key, JSON.stringify(value))
     void api.moduleData.put('home-services', key.replace(/^vsr-hs-/, ''), value).catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    const update = (event: Event) => {
+      const message = (event as CustomEvent<RealtimeEventEnvelope<BookingStatusChangedPayload>>).detail
+      if (message.eventType !== 'home-services.booking.status-changed') return
+      setBookings((current) => current.map((booking) => booking.id === message.payload.bookingId ? { ...booking, status: message.payload.status as BookingStatus, assignedProfessionalId: message.payload.assignedProfessionalId ?? booking.assignedProfessionalId, scheduledStart: message.payload.scheduledStart ?? booking.scheduledStart } : booking))
+    }
+    window.addEventListener('vsr:realtime', update)
+    return () => window.removeEventListener('vsr:realtime', update)
   }, [])
 
   // -------------------------------------------------------------------------

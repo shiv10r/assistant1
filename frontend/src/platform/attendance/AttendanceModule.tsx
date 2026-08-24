@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Empty, Modal, PageHead } from '../ui'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import { fmtDate, isValidMobile, mobileDigits, money, num, todayISO } from '../../lib/utils'
+import './attendance.css'
 
 /** Minimal worker shape — any service's staff record satisfies it. */
 export interface AttendanceWorker {

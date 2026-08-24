@@ -98,11 +98,14 @@
 
 /* Sidebar */
 .sidebar {
-  width: 292px; flex: 0 0 auto; min-height: 0; overflow: hidden;
+  position: relative; width: var(--sidebar-width, 310px); flex: 0 0 auto; min-height: 0; overflow: hidden;
   display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border);
-  transition: transform .25s ease, width .25s ease;
+  transition: transform .25s ease;
 }
-.sidebar.wide { width: 370px; }
+.sidebar-resizer { position: absolute; z-index: 5; top: 0; right: -4px; bottom: 0; width: 9px; cursor: col-resize; touch-action: none; }
+.sidebar-resizer::after { content: ''; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px; background: transparent; transition: background .15s ease; }
+.sidebar-resizer:hover::after, body.is-resizing-sidebar .sidebar-resizer::after { background: var(--primary); }
+body.is-resizing-sidebar { cursor: col-resize; user-select: none; }
 .sidebar-brand { min-height: 66px; padding: .8rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .sidebar-brand button { width: 32px; height: 32px; display: grid; place-items: center; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; cursor: pointer; }
 .sidebar-brand button:hover { color: var(--primary); border-color: var(--primary); }
@@ -112,7 +115,6 @@
 .sidebar-service strong { overflow: hidden; color: var(--text); font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar-service small { margin-top: .18rem; overflow: hidden; color: var(--muted); font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar-section-controls { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .1rem .9rem .45rem 1rem; }
-.sidebar-section-controls > div { display: flex; gap: .3rem; }
 .sidebar-section-controls span { color: var(--muted); font-size: .6rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .sidebar-section-controls button { padding: .25rem; color: var(--primary); background: transparent; border: 0; font-size: .6rem; font-weight: 700; cursor: pointer; }
 .sidebar-section-controls button:hover { text-decoration: underline; }
@@ -193,5 +195,6 @@
     transition: transform 0.25s ease;
     z-index: 50; box-shadow: 4px 0 16px rgba(0,0,0,.4);
   }
+  .sidebar-resizer { display: none; }
   .sidebar.open { transform: translateX(0); }
 }

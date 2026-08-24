@@ -22,7 +22,6 @@ import {
   FiClock,
   FiMessageSquare,
   FiSettings,
-  FiVideo,
   FiShield,
   FiCreditCard,
   FiUser,
@@ -34,6 +33,7 @@ import {
   FiArrowLeft,
   FiArrowRight,
   FiCode,
+  FiGitBranch,
 } from 'react-icons/fi'
 import {
   MdDashboard,
@@ -364,9 +364,6 @@ const COMMON_GROUPS: NavGroup[] = [
   { title: 'Workspace', items: [
     { label: 'Chat', to: '/assistant', icon: <FiMessageSquare className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <FiSettings className="w-5 h-5" /> },
-  ]},
-  { title: 'Collaboration', items: [
-    { label: 'Meetings & Calls', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
     { label: 'Broadcast', to: '/broadcast', icon: <IoMegaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
   ]},
   { title: 'Administration', items: [
@@ -386,6 +383,7 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const operations: NavGroup[] = config ? [{
     title: service?.shell === 'portal' ? 'My workspace' : 'Operations',
     items: [
+      { to: `/${config.id}/operations/visual-workflow`, label: 'Visual Workflow', icon: <FiGitBranch className="w-5 h-5" /> },
       ...(hasNativePortfolio ? [] : [
         { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
         { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
@@ -400,7 +398,6 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const coordination: NavGroup[] = config ? [{
     title: 'Coordination',
     items: [
-      { to: `/${config.id}/operations/collaboration`, label: 'Collaboration', icon: <FiMessageSquare className="w-5 h-5" /> },
       { to: `/${config.id}/operations/tracking`, label: 'Tracking Timeline', icon: <FiCheckSquare className="w-5 h-5" /> },
       { to: `/${config.id}/operations/library`, label: 'Project Library', icon: <FiBookOpen className="w-5 h-5" /> },
       { to: `/${config.id}/operations/team`, label: 'Team Workspace', icon: <FiUsers className="w-5 h-5" /> },
@@ -412,7 +409,9 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
 const SIDEBAR_KEY = 'lux_sidebar_open'
-const SIDEBAR_WIDE_KEY = 'vsr_sidebar_wide'
+const SIDEBAR_WIDTH_KEY = 'vsr_sidebar_width'
+const SIDEBAR_MIN = 270
+const SIDEBAR_MAX = 460
 
 function defaultSidebarOpen(): boolean {
   const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -424,7 +423,7 @@ export default function Layout() {
   const username = getUsername() || 'User'
   const role = getRole()
   const [open, setOpen] = useState(defaultSidebarOpen)
-  const [sidebarWide, setSidebarWide] = useState(() => localStorage.getItem(SIDEBAR_WIDE_KEY) === '1')
+  const [sidebarWidth, setSidebarWidth] = useState(() => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Number(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || 310)))
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
@@ -460,12 +459,23 @@ export default function Layout() {
     })
   }
 
-  function toggleSidebarWidth() {
-    setSidebarWide((current) => {
-      const next = !current
-      localStorage.setItem(SIDEBAR_WIDE_KEY, next ? '1' : '0')
-      return next
-    })
+  function startSidebarResize(event: React.PointerEvent<HTMLDivElement>) {
+    if (isMobile()) return
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = sidebarWidth
+    document.body.classList.add('is-resizing-sidebar')
+    const move = (pointer: PointerEvent) => setSidebarWidth(Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, startWidth + pointer.clientX - startX)))
+    const stop = (pointer: PointerEvent) => {
+      const width = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, startWidth + pointer.clientX - startX))
+      setSidebarWidth(width)
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(width))
+      document.body.classList.remove('is-resizing-sidebar')
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
   }
 
   function isMobile() {
@@ -584,7 +594,7 @@ export default function Layout() {
       </header>
 
       <div className="body-row">
-        <nav className={cn('sidebar', open ? 'open' : 'collapsed', sidebarWide && 'wide')}>
+        <nav className={cn('sidebar', open ? 'open' : 'collapsed')} style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}>
           <div className="sidebar-brand">
             <VsrLogo size={34} wordmark />
             <button onClick={() => navigate('/')} title="Switch workspace"><FiGrid className="w-4 h-4" /></button>
@@ -595,7 +605,7 @@ export default function Layout() {
           </div>
           <div className="sidebar-section-controls">
             <span>Navigation</span>
-            <div><button onClick={toggleSidebarWidth}>{sidebarWide ? 'Compact' : 'Widen'}</button><button onClick={() => setCollapsedGroups(collapsedGroups.size ? new Set() : new Set(groups.map((group) => group.title)))}>{collapsedGroups.size ? 'Expand all' : 'Collapse all'}</button></div>
+            <button onClick={() => setCollapsedGroups(collapsedGroups.size ? new Set() : new Set(groups.map((group) => group.title)))}>{collapsedGroups.size ? 'Expand all' : 'Collapse all'}</button>
           </div>
           <div className="sidebar-scroll">{groups.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)
@@ -645,6 +655,7 @@ export default function Layout() {
               <button onClick={() => navigate('/account')} title="Account"><FiUser className="w-4 h-4" /></button>
             </div>
           </div>
+          <div className="sidebar-resizer" role="separator" aria-label="Resize navigation" aria-orientation="vertical" onPointerDown={startSidebarResize} />
         </nav>
         {open && isMobile() && <div className="backdrop" onClick={() => setOpen(false)} />}
 
