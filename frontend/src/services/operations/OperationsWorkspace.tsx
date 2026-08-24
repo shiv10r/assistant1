@@ -20,8 +20,8 @@ import OperationsCapabilityCards from './OperationsCapabilityCards'
 import ProjectLibrary from './ProjectLibrary'
 import TeamRoster from './TeamRoster'
 import TrackingTimeline from './TrackingTimeline'
-import { seedCheckpoints, seedDiscussions, seedLibrary, seedMeetings, seedRoster } from './seedData'
-import type { Checkpoint, Discussion, LibraryProject, Meeting, StoredFile, TeamMember, Visit, WorkItem } from './types'
+import { seedCheckpoints, seedDiscussions, seedLibrary, seedRoster } from './seedData'
+import type { Checkpoint, Discussion, LibraryProject, StoredFile, TeamMember, Visit, WorkItem } from './types'
 import { getTheme } from '../../theme'
 import './operations.css'
 import './operations-workspaces.css'
@@ -61,7 +61,6 @@ function OperationsWorkspace({ config, view }: { config: OperationsConfig; view:
   const team = useLocalCollection<TeamMember>(`${config.id}:operations-roster`, seedRoster(config))
   const checkpoints = useLocalCollection<Checkpoint>(`${config.id}:operations-checkpoints`, seedCheckpoints(config, work.items))
   const discussions = useLocalCollection<Discussion>(`${config.id}:operations-discussions`, seedDiscussions(config, work.items, team.items))
-  const meetings = useLocalCollection<Meeting>(`${config.id}:operations-meetings`, seedMeetings(config, work.items, team.items))
   const library = useLocalCollection<LibraryProject>(`${config.id}:operations-library`, seedLibrary(config, work.items))
   const { isAdvanced } = useViewMode()
   const workers: AttendanceWorker[] = config.team.map((person, index) => ({ id: `${config.id}-person-${index + 1}`, ...person, status: 'active' }))
@@ -72,7 +71,7 @@ function OperationsWorkspace({ config, view }: { config: OperationsConfig; view:
   if (view === 'map') return <OperationsMap config={config} work={work.items} />
   if (view === 'assistant') return <OperationsAssistant config={config} work={work.items} visits={visits.items} />
   if (view === 'files') return <OperationsFiles config={config} work={work.items} files={files} />
-  if (view === 'collaboration') return <CollaborationWorkspace config={config} work={work.items} discussions={discussions} meetings={meetings} team={team.items} />
+  if (view === 'collaboration') return <CollaborationWorkspace config={config} work={work.items} discussions={discussions} team={team.items} />
   if (view === 'tracking') return <TrackingTimeline config={config} work={work.items} checkpoints={checkpoints} isAdvanced={isAdvanced} />
   if (view === 'library') return <ProjectLibrary config={config} work={work.items} library={library} />
   if (view === 'team') return <TeamRoster config={config} team={team} isAdvanced={isAdvanced} />
@@ -165,16 +164,19 @@ function OperationsMap({ config, work }: { config: OperationsConfig; work: WorkI
   const [selected, setSelected] = useState(work[0]?.id ?? '')
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null)
   const [statusFilter, setStatusFilter] = useState('All')
+  const [detailsOpen, setDetailsOpen] = useState(true)
+  const [maximized, setMaximized] = useState(false)
   const located = work.filter((item) => item.lat && item.lng && (statusFilter === 'All' || item.status === statusFilter))
   const chosen = work.find((item) => item.id === selected)
   const statuses = [...new Set(work.map((item) => item.status))]
   useEffect(() => { if (!mapNode.current || map.current) return; const instance = L.map(mapNode.current).setView([20.5937, 78.9629], 5); const tiles = getTheme() === 'dark' ? 'dark_all' : 'light_all'; L.tileLayer(`https://{s}.basemaps.cartocdn.com/${tiles}/{z}/{x}/{y}{r}.png`, { attribution: '(c) OpenStreetMap', maxZoom: 19 }).addTo(instance); map.current = instance; return () => { instance.remove(); map.current = null } }, [])
   useEffect(() => { if (!map.current) return; layer.current?.remove(); const next = L.layerGroup().addTo(map.current); layer.current = next; located.forEach((item) => { const node = document.createElement('div'); node.className = 'ops-map-tooltip'; const strong = document.createElement('strong'); strong.textContent = item.title; const small = document.createElement('small'); small.textContent = `${item.status} · ${item.progress}%`; node.append(strong, small); const marker = L.circleMarker([item.lat, item.lng], { radius: selected === item.id ? 11 : 8, color: '#fff', weight: 3, fillColor: selected === item.id ? '#0F8F83' : '#2563EB', fillOpacity: 1 }).addTo(next).bindTooltip(node); marker.on('click', () => setSelected(item.id)) }); if (position) L.circleMarker([position.lat, position.lng], { radius: 7, color: '#fff', weight: 3, fillColor: '#D94F70', fillOpacity: 1 }).addTo(next).bindTooltip('Your location'); if (located.length) map.current.fitBounds(L.latLngBounds(located.map((item) => [item.lat, item.lng])), { padding: [50, 50], maxZoom: 12 }); return () => { next.remove() } }, [located, position, selected])
+  useEffect(() => { const timer = window.setTimeout(() => map.current?.invalidateSize(), 260); return () => window.clearTimeout(timer) }, [detailsOpen, maximized])
   const locate = () => navigator.geolocation?.getCurrentPosition((result) => { const next = { lat: result.coords.latitude, lng: result.coords.longitude }; setPosition(next); map.current?.setView([next.lat, next.lng], 11) })
   const directions = () => { if (!chosen) return; window.open(`https://www.google.com/maps/dir/?api=1&destination=${chosen.lat},${chosen.lng}`, '_blank', 'noopener') }
   return <div className="operations-page"><OperationsHeader config={config} eyebrow="Location intelligence" title={capitalize(config.mapNetworkLabel)} action={<Button variant="outline" onClick={locate}><Navigation className="w-4 h-4" /> Find me</Button>} />
     <section className="ops-map-summary"><div><MapPin /><span><strong>{located.length}</strong><small>mapped {config.mapPointLabel}s</small></span></div><div><span className="ops-map-dot is-active" /><span><strong>{work.filter((item) => !['Completed', 'Cancelled'].includes(item.status)).length}</strong><small>active locations</small></span></div><div><span className="ops-map-dot is-progress" /><span><strong>{work.length ? Math.round(work.reduce((sum, item) => sum + item.progress, 0) / work.length) : 0}%</strong><small>network progress</small></span></div><div className="ops-map-filters"><button className={statusFilter === 'All' ? 'is-active' : ''} onClick={() => setStatusFilter('All')}>All</button>{statuses.map((status) => <button key={status} className={statusFilter === status ? 'is-active' : ''} onClick={() => setStatusFilter(status)}>{status}</button>)}</div></section>
-    <div className="ops-map-layout"><div className="ops-map-stage"><div ref={mapNode} className="ops-map-canvas" /><div className="ops-map-legend"><span><i className="is-work" /> {capitalize(config.mapPointLabel)}</span>{position && <span><i className="is-you" /> Your location</span>}</div></div><aside><span className="ops-map-count">{located.length} {config.mapPointLabel}{located.length === 1 ? '' : 's'} in view</span>{located.map((item) => <button key={item.id} className={selected === item.id ? 'is-active' : ''} onClick={() => { setSelected(item.id); map.current?.setView([item.lat, item.lng], 13) }}><MapPin className="w-4 h-4" /><span><strong>{item.title}</strong><small>{item.location} · {item.progress}% complete</small><i><b style={{ width: `${item.progress}%` }} /></i></span></button>)}{chosen && <div className="ops-map-selected"><span>Selected {config.mapPointLabel}</span><h3>{chosen.title}</h3><p>{chosen.customer} · {chosen.owner}</p><div><Badge variant={STATUS_VARIANT(chosen.status)} size="sm">{chosen.status}</Badge><strong>{money(chosen.value)}</strong></div><Button className="w-full" onClick={directions} disabled={!chosen.lat || !chosen.lng}><Navigation className="w-4 h-4" /> Directions to {config.mapPointLabel}</Button></div>}</aside></div>
+    <div className={`ops-map-layout${detailsOpen ? '' : ' is-panel-hidden'}${maximized ? ' is-expanded' : ''}`}><div className="ops-map-stage"><div ref={mapNode} className="ops-map-canvas" /><div className="ops-map-view-controls"><button onClick={() => setMaximized((value) => !value)}>{maximized ? 'Restore map' : 'Maximize map'}</button><button onClick={() => setDetailsOpen((value) => !value)}>{detailsOpen ? 'Hide details' : 'Show details'}</button></div><div className="ops-map-legend"><span><i className="is-work" /> {capitalize(config.mapPointLabel)}</span>{position && <span><i className="is-you" /> Your location</span>}</div></div><aside><span className="ops-map-count">{located.length} {config.mapPointLabel}{located.length === 1 ? '' : 's'} in view</span>{located.map((item) => <button key={item.id} className={selected === item.id ? 'is-active' : ''} onClick={() => { setSelected(item.id); map.current?.setView([item.lat, item.lng], 13) }}><MapPin className="w-4 h-4" /><span><strong>{item.title}</strong><small>{item.location} · {item.progress}% complete</small><i><b style={{ width: `${item.progress}%` }} /></i></span></button>)}{chosen && <div className="ops-map-selected"><span>Selected {config.mapPointLabel}</span><h3>{chosen.title}</h3><p>{chosen.customer} · {chosen.owner}</p><div><Badge variant={STATUS_VARIANT(chosen.status)} size="sm">{chosen.status}</Badge><strong>{money(chosen.value)}</strong></div><Button className="w-full" onClick={directions} disabled={!chosen.lat || !chosen.lng}><Navigation className="w-4 h-4" /> Directions to {config.mapPointLabel}</Button></div>}</aside></div>
   </div>
 }
 
