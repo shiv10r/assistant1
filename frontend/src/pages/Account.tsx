@@ -1,16 +1,18 @@
-﻿import { useEffect, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import type { Settings, BackupStatus, FirebaseVersion } from '../api'
+import type { Settings } from '../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Textarea, Select, Label, Button, Badge } from '../platform/ui'
 import { useToast } from '../platform/ui'
 import { usePlan } from '../hooks/usePlan'
 import {
   FiPhone, FiMapPin, FiSave, FiCheckCircle, FiXCircle, FiLoader,
-  FiCreditCard, FiSettings, FiHardDrive, FiCloud, FiBell, FiDatabase, FiInfo
+  FiCamera, FiCreditCard, FiSettings, FiHardDrive, FiCloud, FiBell, FiDatabase, FiInfo, FiTrash2, FiUser
 } from 'react-icons/fi'
 import { MdApartment, MdCurrencyRupee, MdWorkspacePremium, MdVerifiedUser } from 'react-icons/md'
-import { cn } from '../lib/utils'
+import { cn, isValidMobile, mobileDigits } from '../lib/utils'
 import { Link } from 'react-router-dom'
+import { getEmail, getRole, getUsername, getUserProfile, saveUserProfile } from '../platform/auth'
+import type { UserProfile } from '../platform/auth'
 
 const STATE_LIST = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat',
@@ -34,11 +36,19 @@ function Field({ label, value, onChange, placeholder, type, list }: {
       <Label>{label}</Label>
       {list ? (
         <Select value={value} onValueChange={onChange}>
-          <option value="">Selectâ€¦</option>
+          <option value="">Select...</option>
           {list.map((o) => <option key={o} value={o}>{o}</option>)}
         </Select>
       ) : (
-        <Input type={type || 'text'} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+        <Input
+          type={type || 'text'}
+          value={value}
+          onChange={(e) => onChange(type === 'tel' ? mobileDigits(e.target.value) : e.target.value)}
+          placeholder={placeholder}
+          inputMode={type === 'tel' ? 'numeric' : undefined}
+          maxLength={type === 'tel' ? 10 : undefined}
+          pattern={type === 'tel' ? '[0-9]{10}' : undefined}
+        />
       )}
     </div>
   )
@@ -66,28 +76,72 @@ function ServiceRow({ icon, title, state, note, action }: {
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
+function avatarData(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Could not read the selected image.'))
+    reader.onload = () => {
+      const image = new Image()
+      image.onerror = () => reject(new Error('The selected file is not a valid image.'))
+      image.onload = () => {
+        const scale = Math.min(1, 512 / Math.max(image.width, image.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.max(1, Math.round(image.width * scale))
+        canvas.height = Math.max(1, Math.round(image.height * scale))
+        canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', .86))
+      }
+      image.src = String(reader.result)
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function Account() {
+  const username = getUsername() || 'User'
+  const role = getRole()
   const { toast } = useToast()
   const { plan, isPremium, setPlan } = usePlan()
   const [s, setS] = useState<Settings>({})
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
-  const [backup, setBackup] = useState<BackupStatus | null>(null)
-  const [firebase, setFirebase] = useState<FirebaseVersion | null>(null)
   const [drive, setDrive] = useState<{ configured: boolean; hasCredentials: boolean; folder?: string; email?: string } | null>(null)
   const [pushDevices, setPushDevices] = useState<number>(0)
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    const stored = getUserProfile(username)
+    return { ...stored, email: stored.email || getEmail(), phone: mobileDigits(stored.phone) }
+  })
+  const avatarInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    api.billing.settings().then(setS).catch(() => {})
-    api.backupStatus().then(setBackup).catch(() => {})
-    api.firebaseVersion().then(setFirebase).catch(() => {})
+    api.billing.settings().then((settings) => setS({ ...settings, 'general.firm_phone': mobileDigits(settings['general.firm_phone'] || '') })).catch(() => {})
     api.integrations.driveStatus().then(setDrive).catch(() => {})
     api.pushDevices().then((d) => setPushDevices(d.length)).catch(() => {})
   }, [])
 
   const set = (k: string) => (v: string) => setS((p) => ({ ...p, [k]: v }))
+  const setProfileField = (key: keyof UserProfile) => (value: string) => setProfile((current) => ({ ...current, [key]: value }))
+
+  const uploadAvatar = async (file: File | undefined) => {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image is too large', description: 'Choose an image smaller than 5 MB.', variant: 'error' })
+      return
+    }
+    try {
+      setProfileField('avatar')(await avatarData(file))
+    } catch (error) {
+      toast({ title: 'Could not use image', description: String(error), variant: 'error' })
+    }
+  }
 
   const saveFirm = async () => {
+    if ((profile.phone && !isValidMobile(profile.phone)) || (s['general.firm_phone'] && !isValidMobile(s['general.firm_phone']))) {
+      const text = 'Enter a valid 10-digit mobile number.'
+      setMsg({ ok: false, text })
+      toast({ title: text, variant: 'error' })
+      return
+    }
     const keys = [
       'general.firm_name', 'general.owner_name', 'general.business_type', 'general.firm_gstin', 'general.firm_pan',
       'general.firm_state_code',
@@ -99,9 +153,10 @@ export default function Account() {
     ]
     setSaving(true)
     try {
+      saveUserProfile(username, profile)
       for (const k of keys) await api.billing.setSetting(k, s[k] || '')
-      setMsg({ ok: true, text: 'Firm profile saved successfully.' })
-      toast({ title: 'Firm profile saved' })
+      setMsg({ ok: true, text: 'Account and business profile saved.' })
+      toast({ title: 'Account profile saved' })
       setTimeout(() => setMsg(null), 3000)
     } catch (e) {
       setMsg({ ok: false, text: String(e) })
@@ -115,10 +170,10 @@ export default function Account() {
       <div className="page-head">
         <div>
           <h1>My Account</h1>
-          <div className="muted">Your firm profile, billing, services and data</div>
+          <div className="muted">Your personal details, business identity and connected services</div>
         </div>
         <Button onClick={saveFirm} disabled={saving}>
-          {saving ? <><FiLoader className="w-4 h-4 animate-spin" /> Savingâ€¦</> : <><FiSave className="w-4 h-4" /> Save Profile</>}
+          {saving ? <><FiLoader className="w-4 h-4 animate-spin" /> Saving...</> : <><FiSave className="w-4 h-4" /> Save Profile</>}
         </Button>
       </div>
 
@@ -129,7 +184,36 @@ export default function Account() {
         </div>
       )}
 
-      {/* Plan & profile summary */}
+      <Card className="mb-6 overflow-hidden">
+        <div className="h-24 bg-gradient-to-r from-primary/30 via-primary/10 to-accent/20" />
+        <CardContent className="relative p-5 pt-0">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end">
+            <div className="-mt-10 shrink-0">
+              <div className="w-24 h-24 overflow-hidden rounded-2xl border-4 border-surface bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-3xl font-bold shadow-lg">
+                {profile.avatar ? <img src={profile.avatar} alt={`${profile.displayName || username} avatar preview`} className="w-full h-full object-cover" /> : (profile.displayName || username).slice(0, 1).toUpperCase()}
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-semibold text-text">{profile.displayName || username}</p>
+              <p className="text-sm text-muted">@{username} <span className="mx-1">/</span> <span className="capitalize">{role}</span></p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input ref={avatarInput} type="file" accept="image/*" className="hidden" onChange={(event) => { void uploadAvatar(event.target.files?.[0]); event.target.value = '' }} />
+              <Button type="button" variant="outline" size="sm" onClick={() => avatarInput.current?.click()}><FiCamera className="w-4 h-4" /> Upload avatar</Button>
+              {profile.avatar && <Button type="button" variant="ghost" size="sm" className="text-red-500" onClick={() => setProfileField('avatar')('')}><FiTrash2 className="w-4 h-4" /> Remove</Button>}
+            </div>
+          </div>
+          <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-4">
+            <Field label="Display Name" value={profile.displayName} onChange={setProfileField('displayName')} placeholder={username} />
+            <Field label="Email Address" value={profile.email} onChange={setProfileField('email')} placeholder="you@company.com" type="email" />
+            <Field label="Phone Number" value={profile.phone} onChange={setProfileField('phone')} placeholder="9876543210" type="tel" />
+            <Field label="Job Title" value={profile.jobTitle} onChange={setProfileField('jobTitle')} placeholder="Operations manager" />
+          </div>
+          <p className="mt-3 text-xs text-muted">Avatar and personal details are stored for this signed-in user on this device.</p>
+        </CardContent>
+      </Card>
+
+      {/* Plan & business summary */}
       <Card className="mb-6">
         <CardContent className="p-5">
           <div className="flex flex-wrap items-center gap-4">
@@ -180,7 +264,7 @@ export default function Account() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Field label="Phone / Mobile" value={s['general.firm_phone'] || ''} onChange={set('general.firm_phone')} placeholder="+91 98765 43210" type="tel" />
+            <Field label="Phone / Mobile" value={s['general.firm_phone'] || ''} onChange={set('general.firm_phone')} placeholder="9876543210" type="tel" />
             <Field label="Email" value={s['general.firm_email'] || ''} onChange={set('general.firm_email')} placeholder="hello@vsrsystems.com" type="email" />
             <Field label="Website" value={s['general.firm_website'] || ''} onChange={set('general.firm_website')} placeholder="www.vsrsystems.com" />
           </div>
@@ -244,7 +328,7 @@ export default function Account() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label>Logo URL</Label>
-                <Input value={s['general.firm_logo'] || ''} onChange={(e) => setS({ ...s, 'general.firm_logo': e.target.value })} placeholder="https://â€¦/logo.png" />
+                <Input value={s['general.firm_logo'] || ''} onChange={(e) => setS({ ...s, 'general.firm_logo': e.target.value })} placeholder="https://example.com/logo.png" />
               </div>
               <div>
                 <Label>Amount in Words</Label>
@@ -266,35 +350,22 @@ export default function Account() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><FiCloud className="w-5 h-5 text-primary" /> Connected Services</CardTitle>
-          <CardDescription>Backup, notifications and cloud status</CardDescription>
+          <CardDescription>Integration and notification status for this account</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 sm:grid-cols-2">
           <ServiceRow
             icon={<FiHardDrive className="w-4 h-4" />}
             title="Google Drive backup"
             state={drive?.configured ? 'ok' : drive?.hasCredentials ? 'warn' : 'off'}
-            note={drive?.configured ? `Backing up to ${drive.folder}${drive.email ? ` Â· ${drive.email}` : ''}` : drive?.hasCredentials ? 'Credentials set â€” connect via Integrations' : 'Not configured'}
-            action={<Link to="/integrations" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Set up</Link>}
-          />
-          <ServiceRow
-            icon={<FiDatabase className="w-4 h-4" />}
-            title="Cloud sync"
-            state={backup?.enabled ? 'ok' : 'off'}
-            note={backup?.enabled ? `Turso mirror ${backup.localRows ?? 0} local records synced` : 'Turso not configured'}
-          />
-          <ServiceRow
-            icon={<FiCloud className="w-4 h-4" />}
-            title="Firebase mirror"
-            state={firebase?.enabled ? 'ok' : 'off'}
-            note={firebase?.enabled ? `Auto-restore on redeploy Â· v${firebase.version ?? 0}` : 'Firebase not configured'}
-            action={firebase?.enabled ? <Link to="/backup" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Manage</Link> : undefined}
+            note={drive?.configured ? `Backing up to ${drive.folder}${drive.email ? ` - ${drive.email}` : ''}` : drive?.hasCredentials ? 'Credentials set - connect via Integrations' : 'Not configured'}
+            action={<Link to="/integrations" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Manage</Link>}
           />
           <ServiceRow
             icon={<FiBell className="w-4 h-4" />}
             title="Push notifications"
             state={pushDevices > 0 ? 'ok' : 'warn'}
             note={pushDevices > 0 ? `${pushDevices} device(s) receiving alerts` : 'No device registered yet'}
-            action={<Link to="/backup" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Enable</Link>}
+            action={<Link to="/settings" className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium rounded-lg bg-transparent text-text hover:bg-surface whitespace-nowrap">Manage</Link>}
           />
         </CardContent>
       </Card>
@@ -307,10 +378,10 @@ export default function Account() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><MdCurrencyRupee className="w-5 h-5" /></div>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><FiUser className="w-5 h-5" /></div>
               <div>
-                <p className="text-sm font-medium text-text">Default login is <Badge variant="outline" size="sm">admin</Badge></p>
-                <p className="text-sm text-muted mt-0.5">Password set via <code className="text-primary">AUTH_PASS</code> server env variable.</p>
+                <p className="text-sm font-medium text-text">Signed in as <Badge variant="outline" size="sm">{username}</Badge></p>
+                <p className="text-sm text-muted mt-0.5">Your current access role is <span className="capitalize text-primary">{role}</span>.</p>
               </div>
             </div>
           </CardContent>
@@ -324,8 +395,8 @@ export default function Account() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><FiDatabase className="w-5 h-5" /></div>
               <div>
-                <p className="text-sm font-medium text-text">Data is stored on the backend (SQLite)</p>
-                <p className="text-sm text-muted mt-0.5">Back up to Trail Tech services in <Link className="text-primary hover:underline" to="/backup">Backup &amp; Sync</Link> or Drive above.</p>
+                <p className="text-sm font-medium text-text">Managed project storage</p>
+                <p className="text-sm text-muted mt-0.5">Project files use signed Supabase storage when enabled, with private browser storage as the local fallback. Google Drive is managed under <Link className="text-primary hover:underline" to="/integrations">Integrations</Link>.</p>
               </div>
             </div>
           </CardContent>

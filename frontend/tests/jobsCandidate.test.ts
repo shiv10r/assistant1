@@ -12,7 +12,7 @@ import type { CandidateProfile } from '../src/services/jobs/candidateApplication
 const COMPLETE_PROFILE: CandidateProfile = {
   fullName: 'Aarav Sharma',
   email: 'aarav@example.com',
-  phone: '+91 98765 43210',
+  phone: '9876543210',
   location: 'Bengaluru',
   headline: 'Frontend engineer',
   experienceSummary: 'Four years building accessible React products.',
@@ -29,6 +29,12 @@ test('returns field errors when required candidate details are missing', () => {
   const errors = validateCandidateProfile({ ...COMPLETE_PROFILE, email: '', skills: [] })
 
   assert.deepEqual(errors, { email: 'Enter your email address.', skills: 'Add at least one skill.' })
+})
+
+test('rejects a candidate mobile number that is not 10 digits', () => {
+  const errors = validateCandidateProfile({ ...COMPLETE_PROFILE, phone: '98765' })
+
+  assert.equal(errors.phone, 'Enter a valid 10-digit mobile number.')
 })
 
 test('accepts PDF resume metadata when file size is within the limit', () => {

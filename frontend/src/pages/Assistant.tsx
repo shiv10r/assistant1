@@ -4,27 +4,34 @@ import { api } from '../api'
 import type { ChatMessage, AiChatTurn, AssistantSearch } from '../api'
 
 type Mode = 'app' | 'ai'
+type AssistantMessage = ChatMessage & { error?: boolean; retry?: { text: string; mode: Mode } }
+
+function errorText(error: unknown) {
+  const detail = error instanceof Error ? error.message.replace(/^Error:\s*/i, '') : ''
+  return detail && !/^API error \d+$/i.test(detail) ? detail : 'The service did not respond. Check your connection and try again.'
+}
 
 export default function Assistant() {
   const [mode, setMode] = useState<Mode>('app')
   const [aiModel, setAiModel] = useState<string | null>(null)
-  const [aiConfigured, setAiConfigured] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { text: "👋 Hey! I'm your VSR Systems assistant. Tell me expenses like \"site A paint exp = 5k\", \"spent 5000 on cement\", or \"five thousand for labour\". Say \"show report\" any time.", isUser: false },
+  const [aiStatus, setAiStatus] = useState<'checking' | 'ready' | 'unavailable' | 'error'>('checking')
+  const [messages, setMessages] = useState<AssistantMessage[]>([
+    { text: "I'm your VSR Systems assistant. Record expenses like \"site A paint exp = 5k\", or say \"show report\" any time.", isUser: false },
   ])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AssistantSearch | null>(null)
   const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
   const historyRef = useRef<AiChatTurn[]>([])
 
   useEffect(() => {
     api.aiStatus().then((s) => {
       setAiModel(s.model)
-      setAiConfigured(s.configured)
-    }).catch(() => {})
+      setAiStatus(s.configured ? 'ready' : 'unavailable')
+    }).catch(() => setAiStatus('error'))
   }, [])
 
   async function runSearch(q: string) {
@@ -32,53 +39,62 @@ export default function Assistant() {
     if (text.length < 2) return
     setSearchQuery(text)
     setSearching(true)
+    setSearchError('')
     setSearchResults(null)
     try {
       setSearchResults(await api.search(text))
     } catch (err) {
       setSearchResults(null)
-      setMessages((m) => [...m, { text: `⚠️ Search failed: ${err}`, isUser: false }])
+      setSearchError(errorText(err))
     } finally {
       setSearching(false)
     }
   }
 
-  const append = (msgs: ChatMessage[]) => setMessages((m) => [...m, ...msgs])
+  const append = (msgs: AssistantMessage[]) => setMessages((m) => [...m, ...msgs])
+
+  async function submit(text: string, requestedMode: Mode, showUser = true) {
+    if (showUser) setMessages((current) => [...current, { text, isUser: true }])
+    setBusy(true)
+    try {
+      if (requestedMode === 'ai' && aiStatus === 'ready') {
+        const history = historyRef.current
+        historyRef.current = [...history, { role: 'user', content: text }]
+        const reply = await api.aiChat(text, history)
+        if (!reply.ok || !reply.configured) throw new Error(reply.error || 'AI chat is temporarily unavailable.')
+        historyRef.current = [...historyRef.current, { role: 'assistant', content: reply.text }]
+        append([{ text: reply.text, isUser: false }])
+      } else {
+        if (requestedMode === 'ai') append([{ text: 'AI chat is unavailable, so I used the built-in VSR assistant for this message.', isUser: false }])
+        append(await api.send(text))
+      }
+    } catch (error) {
+      if (requestedMode === 'ai') historyRef.current = historyRef.current.slice(0, -1)
+      append([{ text: errorText(error), isUser: false, error: true, retry: { text, mode: requestedMode } }])
+    } finally {
+      setBusy(false)
+      window.setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    }
+  }
 
   async function send(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
     if (!text || busy) return
     setInput('')
-    setMessages((m) => [...m, { text, isUser: true }])
-    setBusy(true)
-    try {
-      if (mode === 'ai') {
-        const history = historyRef.current
-        historyRef.current = [...history, { role: 'user', content: text }]
-        const reply = await api.aiChat(text, history)
-        historyRef.current = [...historyRef.current, { role: 'assistant', content: reply.text }]
-        append([{ text: reply.text, isUser: false }])
-      } else {
-        append(await api.send(text))
-      }
-    } catch (err) {
-      setMessages((m) => [...m, { text: `⚠️ ${err}`, isUser: false }])
-    } finally {
-      setBusy(false)
-    }
-    setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    await submit(text, mode)
   }
 
   function switchMode(next: Mode) {
     setMode(next)
     historyRef.current = []
     if (next === 'ai') {
-      setMessages([{ text: aiConfigured
-        ? `🧠 DeepSeek AI mode is on. Ask me anything — business or general — and I'll answer in the same language you write.`
-        : "⚠️ AI chat isn't enabled yet — set the OPENROUTER_API_KEY env var on the server.", isUser: false }])
+      setMessages([{ text: aiStatus === 'ready'
+        ? 'AI chat is ready. Ask a business or general question in the language you prefer.'
+        : aiStatus === 'checking' ? 'Checking AI availability. If it is unavailable, messages will use the built-in VSR assistant.'
+        : 'AI chat is unavailable. Your messages can still be handled by the built-in VSR assistant.', isUser: false }])
     } else {
-      setMessages([{ text: "👋 Back in VSR Systems mode. Tell me expenses like \"site A paint exp = 5k\" or \"spent 5000 on cement\".", isUser: false }])
+      setMessages([{ text: 'Built-in VSR assistant ready. Record an expense, request totals, or show a report.', isUser: false }])
     }
   }
 
@@ -90,14 +106,14 @@ export default function Assistant() {
       <header className="chat-header">
         <div>
           <div className="brand">Lux<span>Infra</span></div>
-          <div className="tagline">{mode === 'ai' ? 'deepseek AI assistant' : 'your expense bestie 🤝'}</div>
+          <div className="tagline">{mode === 'ai' ? 'AI assistant' : 'expense and report assistant'}</div>
         </div>
         <div className="ai-mode-switch">
           <button className={mode === 'app' ? 'active' : ''} onClick={() => switchMode('app')}>App</button>
           <button className={mode === 'ai' ? 'active' : ''} onClick={() => switchMode('ai')}>AI</button>
         </div>
-        {mode === 'ai' && aiModel && <span className="ai-model-tag">{aiModel}</span>}
-        <div className="online">● online</div>
+        {mode === 'ai' && aiModel && <span className="ai-model-tag">Model: {aiModel}</span>}
+        <div className="online">{mode === 'ai' ? (aiStatus === 'checking' ? '● checking' : aiStatus === 'ready' ? '● ready' : '○ fallback active') : '● ready'}</div>
       </header>
 
       <div className="messages">
@@ -116,7 +132,7 @@ export default function Assistant() {
               </table>
             </div>
           ) : (
-            <div className={`msg ${m.isUser ? 'user' : 'bot'}`} key={i}><div className="text">{m.text}</div></div>
+            <div className={`msg ${m.isUser ? 'user' : 'bot'} ${m.error ? 'border border-red-500/30' : ''}`} key={i}><div className="text">{m.text}</div>{m.retry && <button type="button" className="mt-2 text-xs font-semibold underline" disabled={busy} onClick={() => void submit(m.retry!.text, m.retry!.mode, false)}>Retry</button>}</div>
           )
         )}
         <div ref={endRef} />
@@ -125,7 +141,7 @@ export default function Assistant() {
       <div className="chips">
         {(mode === 'app' ? appChips : aiChips).map((label, i) => {
           const text = label.split(' ').slice(1).join(' ')
-          return <button key={i} onClick={() => { setInput(text); if (mode === 'app') api.send(text).then(append).catch(() => {}) }}>{label}</button>
+          return <button key={i} onClick={() => setInput(text)}>{label}</button>
         })}
       </div>
 
@@ -138,6 +154,7 @@ export default function Assistant() {
           />
           <button className="send" type="submit">{searching ? '…' : '🔍'}</button>
         </form>
+        {searchError && <div role="alert" className="mx-2 mb-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-600">Search could not be completed. {searchError} <button type="button" className="font-semibold underline" onClick={() => void runSearch(searchQuery)}>Retry</button></div>}
         {searchResults && (
           <div className="search-results">
             {searchResults.projects.length > 0 && (
@@ -171,9 +188,10 @@ export default function Assistant() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={mode === 'ai' ? 'Ask DeepSeek anything...' : 'site A paint exp = 5k ...'}
+           placeholder={mode === 'ai' ? 'Ask the AI assistant...' : 'site A paint exp = 5k ...'}
+           maxLength={2000}
         />
-        <button className="send" type="submit">{busy ? '…' : '➤'}</button>
+         <button className="send" type="submit" disabled={busy || !input.trim()}>{busy ? '…' : '➤'}</button>
       </form>
     </div>
   )

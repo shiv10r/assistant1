@@ -12,6 +12,7 @@ import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, DonutChart } from '../../platform/dashboard'
 import { useCollectionSearch } from '../../hooks/useCollectionSearch'
+import { mobileDigits } from '../../lib/utils'
 
 const emptyForm = {
   name: '', company: '', gstin: '', phone: '', email: '',
@@ -37,7 +38,7 @@ export default function WarehouseCustomers() {
   function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
   function openEdit(c: Customer) {
     setEditing(c)
-    setForm({ name: c.name, company: c.company, gstin: c.gstin, phone: c.phone, email: c.email, billingAddress: c.billingAddress, shippingAddress: c.shippingAddress, status: c.status })
+    setForm({ name: c.name, company: c.company, gstin: c.gstin, phone: mobileDigits(c.phone), email: c.email, billingAddress: c.billingAddress, shippingAddress: c.shippingAddress, status: c.status })
     setModalOpen(true)
   }
 
@@ -46,6 +47,7 @@ export default function WarehouseCustomers() {
       toast({ title: 'Retailer name is required', variant: 'error' })
       return
     }
+    if (form.phone && !/^\d{10}$/.test(form.phone)) { toast({ title: 'Enter a valid 10-digit mobile number', variant: 'error' }); return }
     if (editing) {
       update(editing.id, form)
       toast({ title: 'Retailer updated', description: form.name })
@@ -151,7 +153,7 @@ export default function WarehouseCustomers() {
             <div><Label>GSTIN</Label><Input value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label>10-digit Mobile</Label><Input type="tel" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={form.phone} onChange={(e) => setForm({ ...form, phone: mobileDigits(e.target.value) })} placeholder="9876543210" /></div>
             <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
           </div>
           <div>

@@ -1,12 +1,11 @@
 import { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { api } from './api'
 import { isAuthed } from './platform/auth'
 import {
-  Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
+  Account, Activity, Analytics, Assistant, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
   VideoCall, InteriorRoutes, WarehouseRoutes, SchoolRoutes, HotelRoutes, TravelRoutes, NewsRoutes,
-  JobsRoutes, CommerceRoutes, BankRoutes, MedicalRoutes, HomeServicesRoutes, OperationsWorkspace,
+  JobsRoutes, CommerceRoutes, BankRoutes, MedicalRoutes, HomeServicesRoutes, RailwayRoutes, OperationsWorkspace,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -19,7 +18,6 @@ function Redirect({ to }: { to: string }) {
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed())
-  const [refreshKey, setRefreshKey] = useState(0)
 
   function PageTracker() {
     const location = useLocation()
@@ -28,25 +26,6 @@ export default function App() {
     }, [location.pathname])
     return null
   }
-
-  // Auto-refresh: poll the Firebase data version; when it changes, remount the
-  // active page so it re-fetches its data (live updates after data changes).
-  useEffect(() => {
-    if (!authed) return
-    let seen = 0
-    let stopped = false
-    async function poll() {
-      try {
-        const v = await api.firebaseVersion()
-        if (stopped) return
-        if (seen === 0) { seen = v.version }
-        else if (v.version !== seen && v.version > 0) { seen = v.version; setRefreshKey((k) => k + 1) }
-      } catch { /* firebase disabled / offline — ignore */ }
-    }
-    poll()
-    const t = setInterval(poll, 20000)
-    return () => { stopped = true; clearInterval(t) }
-  }, [authed])
 
   if (!authed) {
     return (
@@ -60,7 +39,7 @@ export default function App() {
     <BrowserRouter>
       <PageTracker />
       <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-sm text-muted" role="status">Loading workspace...</div>}>
-        <Routes key={refreshKey}>
+        <Routes>
         {/* Service chooser — the hub landing after login */}
         <Route path="/" element={<ServiceChooser />} />
 
@@ -70,7 +49,6 @@ export default function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/backup" element={<Backup />} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/settings" element={<Settings />} />
 
@@ -94,6 +72,7 @@ export default function App() {
 
           {/* School service: module-owned route bundle */}
           <Route path="/school/*" element={<SchoolRoutes />} />
+          <Route path="/railway/*" element={<RailwayRoutes />} />
 
           <Route path="/hotel/*" element={<HotelRoutes />} />
           <Route path="/travel/*" element={<TravelRoutes />} />

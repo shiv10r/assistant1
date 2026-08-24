@@ -19,7 +19,7 @@ export interface Dashboard { todayTotal: number; todayLabel: string; monthTotal:
 export interface BillingKpis { youllGet: number; youllGive: number; monthSale: number }
 
 export interface Party { id: number; name: string; phone: string; openingBalance: number; balanceType: string; asOfDate: string; creditLimit: number; gstType: string; gstin: string; state: string; stateCode: string; billingAddress: string; email: string; currentBalance: number }
-export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
+export interface CatalogItem { id: number; name: string; type: string; salePrice: number; purchasePrice: number; wholesalePrice: number; mrp?: number; unit: string; category: string; hsnSac: string; taxRate: number; stockQty: number; minStock: number; barcode: string; description: string }
 export interface BizTxn { id: number; partyId: number; partyName: string; type: string; refNo: number; prefix: string; date: string; dueDate: string; subtotal: number; discount: number; tax: number; roundOff: number; total: number; received: number; balance: number; paymentMode: string; chequeStatus: string; description: string; stateOfSupply: string; tcs: number; tds: number; reverseCharge: boolean; status: string; paymentGateway: string; paymentStatus: string; paymentId: string; orderId: string; paidAt: string }
 export interface BizTxnItem { id: number; txnId: number; itemId: number; itemName: string; hsnSac: string; unit: string; qty: number; freeQty: number; rate: number; discountPct: number; taxRate: number; amount: number }
 export interface CashEntry { id: number; kind: string; amount: number; date: string; description: string }
@@ -42,15 +42,15 @@ export interface DesignFile { id: number; projectId: number; category: string; n
 export interface ProjectFolder { id: number; projectId: number; name: string; createdAt: string }
 export interface ProjectFile { id: number; projectId: number; folderId: number; fileName: string; filePath: string; uploadedAt: string }
 export interface FileBlobMeta { id: number; projectId: number; category: string; name: string; contentType: string; size: number; sizeLabel: string; uploadedAt: string }
+export type StorageBucket = 'project-media'
+export interface SignedUploadRequest { bucket: StorageBucket; path: string; contentType: string }
+export interface StorageObjectRequest { bucket: StorageBucket; path: string }
+export interface SignedUrlResponse { signedUrl: string }
 
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
 export interface ActivityItem { id: number; action: string; detail: string; source: string; timeLabel: string; timestamp: string }
 export interface FirebaseWebConfig { enabled: boolean; apiKey: string; authDomain: string; projectId: string; storageBucket: string; messagingSenderId: string; appId: string; vapidKey: string; measurementId: string }
-export interface BackupStatus { enabled: boolean; url: string | null; localRows: number }
-export interface BackupResult { ok: boolean; message: string }
-export interface DriveStatus { configured: boolean; hasCredentials: boolean; folder?: string; email?: string }
-export interface FirebaseVersion { enabled: boolean; project: string | null; bucket: string | null; version: number; localRows: number }
 export interface AnalyticsData {
   billing: { youllGet: number; youllGive: number; monthSale: number }
   projects: { id: number; name: string; status: string; value: number; spent: number; received: number; entries: number; lead: string | null; taskPct: number; budgetPct: number; pctLabel: string; valueLabel: string; spentLabel: string; receivedLabel: string }[]
@@ -268,8 +268,12 @@ async function put<T>(url: string, body: unknown): Promise<T> {
   return r.json()
 }
 
-async function del(url: string): Promise<void> {
-  const r = await fetch(BASE + url, { method: 'DELETE', headers: authHeaders() })
+async function del(url: string, body?: unknown): Promise<void> {
+  const r = await fetch(BASE + url, {
+    method: 'DELETE',
+    headers: body === undefined ? authHeaders() : { 'Content-Type': 'application/json', ...authHeaders() },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
   if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}: ${await r.text().catch(() => '')}`)
 }
@@ -458,6 +462,23 @@ const integrations = {
   weather: (latitude: number, longitude: number) => get<{ ok: boolean; weather?: ProjectWeather; message?: string }>(`/api/weather?latitude=${latitude}&longitude=${longitude}`),
 }
 
+const weather = (latitude: number, longitude: number) =>
+  get<{ ok: boolean; weather?: ProjectWeather; message?: string }>(`/api/weather?latitude=${latitude}&longitude=${longitude}`)
+
+const storage = {
+  createSignedUpload: (request: SignedUploadRequest) => post<SignedUrlResponse>('/api/storage/uploads/sign', request),
+  uploadToSignedUrl: async (signedUrl: string, file: File) => {
+    const response = await fetch(signedUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    })
+    if (!response.ok) throw new Error(`Upload failed (${response.status})`)
+  },
+  signedDownload: (request: StorageObjectRequest) => post<SignedUrlResponse>('/api/storage/downloads/sign', request),
+  remove: (request: StorageObjectRequest) => del('/api/storage/objects', request),
+}
+
 export function uploadUrl(projectId: number, blobId: number): string {
   return `${BASE}/api/projects/${projectId}/uploads/${blobId}`
 }
@@ -633,19 +654,14 @@ export const api = {
   auth,
   payroll,
   integrations,
+  weather,
+  storage,
   modules,
   insights,
   maps,
   analytics: () => get<AnalyticsData>('/api/analytics'),
   reportKpis,
   scheduleEmail: (email: string, period?: string, periodLabel?: string) => post<{ ok: boolean; to?: string; fileName?: string; code?: string; message?: string; error?: string }>('/api/reports/schedule-email', { email, period, periodLabel }),
-  backupStatus: async (): Promise<BackupStatus> => ({ enabled: false, url: null, localRows: 0 }),
-  backupPush: () => post<BackupResult>('/api/backup/push', {}),
-  backupPull: () => post<BackupResult>('/api/backup/pull', {}),
-  firebaseVersion: async (): Promise<FirebaseVersion> => ({ enabled: false, project: null, bucket: null, version: 0, localRows: 0 }),
-  firebasePush: () => post<BackupResult>('/api/backup/firebase-push', {}),
-  firebasePull: () => post<BackupResult>('/api/backup/firebase-pull', {}),
-
   // ---- Firebase Auth + Push (free Spark plan) ----
   firebaseConfig: async (): Promise<FirebaseWebConfig> => ({
     enabled: false,
@@ -669,7 +685,6 @@ export const api = {
   },
   pushRegister: (token: string, platform = 'web') => post<{ ok: boolean; message: string }>('/api/push/register', { token, platform }),
   pushDevices: () => get<{ id: number; token: string; platform: string; username: string; createdAt: string }[]>('/api/push/devices'),
-  pushTest: (title?: string, body?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/test', { title, body }),
   pushNotify: (recipients: string[], title: string, body: string, url?: string) => post<{ ok: boolean; enabled: boolean; sent: number }>('/api/push/notify', { recipients, title, body, url }),
   activity: (count = 100) => get<ActivityItem[]>(`/api/activity?count=${count}`),
   googleLogin: () => auth.googleLogin(),

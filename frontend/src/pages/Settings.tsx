@@ -9,6 +9,8 @@ import {
 import { MdWorkspacePremium } from 'react-icons/md'
 import type { Settings } from '../api'
 import { api } from '../api'
+import { subscribePush } from '../firebase'
+import { Link } from 'react-router-dom'
 
 type ThemeChoice = 'Dark' | 'Light'
 
@@ -16,12 +18,12 @@ const NOTIFY_KEYS: { key: string; label: string; desc: string }[] = [
   { key: 'notify.low_stock', label: 'Low stock alerts', desc: 'Show a warning when an item crosses its minimum stock' },
   { key: 'notify.daily_digest', label: 'Daily summary', desc: 'Show a digest of today’s expenses and sales on login' },
   { key: 'notify.project_updates', label: 'Project updates', desc: 'Notify when project payments, DPR or tasks change' },
-  { key: 'notify.backup_reminder', label: 'Backup reminders', desc: 'Remind you to verify your cloud backup periodically' },
 ]
 
 export default function Settings() {
   const [theme, setTheme] = useState<ThemeChoice>(() => getTheme() === 'light' ? 'Light' : 'Dark')
   const [s, setS] = useState<Settings>({})
+  const [pushBusy, setPushBusy] = useState(false)
   const { plan, setPlan } = usePlan()
   const { toast } = useToast()
 
@@ -45,12 +47,19 @@ export default function Settings() {
     }
   }
 
-  const backup = () => {
-    const blob = new Blob([JSON.stringify({ note: 'VSR Systems data is stored on the backend (SQLite). Download the app DB from the Render service dashboard for a full backup. A cloud mirror syncs to Turso every 30 seconds when configured.', plan }, null, 2)], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'vsrsystems-backup-note.json'
-    a.click()
+  const enablePush = async () => {
+    setPushBusy(true)
+    try {
+      const subscription = await subscribePush()
+      if (!subscription.token) throw new Error(subscription.error || 'Notification service did not return a device token.')
+      const result = await api.pushRegister(subscription.token)
+      if (!result.ok) throw new Error(result.message || 'Could not register this device.')
+      toast({ title: 'Device notifications enabled', description: 'This browser can now receive workspace alerts.' })
+    } catch (error) {
+      toast({ title: 'Could not enable notifications', description: String(error), variant: 'error' })
+    } finally {
+      setPushBusy(false)
+    }
   }
 
   return (
@@ -109,6 +118,10 @@ export default function Settings() {
               <Switch checked={isOn(n.key)} onCheckedChange={(v) => toggle(n.key, v)} aria-label={n.label} />
             </div>
           ))}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <p className="text-sm text-muted">Allow this browser to receive enabled workspace alerts.</p>
+            <Button variant="outline" onClick={enablePush} disabled={pushBusy}><FiBell className="w-4 h-4" /> {pushBusy ? 'Enabling...' : 'Enable on this device'}</Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -116,13 +129,13 @@ export default function Settings() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><FiDatabase className="w-5 h-5 text-primary" /> Data &amp; Privacy</CardTitle>
-          <CardDescription>Where your data lives and how to back it up</CardDescription>
+          <CardDescription>How project files and local preferences are handled</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="muted" style={{ marginBottom: 12 }}>
-            Your data stays on the backend's SQLite database and mirrors to your Turso cloud DB every 30 seconds when configured. Nothing is shared.
+            Project files use short-lived signed links with managed Supabase storage when enabled. Personal interface preferences remain in this browser.
           </div>
-          <Button variant="outline" onClick={backup}>⬇ Download backup note</Button>
+          <Link to="/integrations" className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium rounded-lg border border-border bg-surface text-text hover:bg-surface-hover">Manage cloud integrations</Link>
         </CardContent>
       </Card>
 
@@ -130,11 +143,11 @@ export default function Settings() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><FiShield className="w-5 h-5 text-primary" /> Security</CardTitle>
-          <CardDescription>Access & protection</CardDescription>
+          <CardDescription>Access and protection</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p className="text-muted">Single admin login protected by a Bearer token on every API call.</p>
-          <p className="text-muted">Change the password via the <code className="text-primary">AUTH_PASS</code> and token via <code className="text-primary">API_TOKEN</code> server environment variables.</p>
+          <p className="text-muted">Authenticated API requests use secure bearer tokens.</p>
+          <p className="text-muted">Team roles control access to administrative and operational features.</p>
         </CardContent>
       </Card>
 
@@ -144,7 +157,7 @@ export default function Settings() {
           <CardTitle className="flex items-center gap-2"><FiInfo className="w-5 h-5 text-primary" /> About</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="muted">VSR Systems · v1.1 · React + .NET backend · data stays on your device's server</div>
+          <div className="muted">VSR Systems / v1.1 / React workspace with managed project storage</div>
         </CardContent>
       </Card>
     </>

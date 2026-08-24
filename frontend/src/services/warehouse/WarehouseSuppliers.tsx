@@ -11,6 +11,7 @@ import { DataTable, type DataColumn } from '../../platform/tables'
 import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, DonutChart } from '../../platform/dashboard'
+import { mobileDigits } from '../../lib/utils'
 
 const emptyForm = {
   name: '', company: '', contact: '', phone: '', email: '', gstin: '',
@@ -40,7 +41,7 @@ export default function WarehouseSuppliers() {
   function openAdd() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
   function openEdit(s: Supplier) {
     setEditing(s)
-    setForm({ name: s.name, company: s.company, contact: s.contact, phone: s.phone, email: s.email, gstin: s.gstin, address: s.address, paymentTerms: s.paymentTerms, status: s.status })
+    setForm({ name: s.name, company: s.company, contact: s.contact, phone: mobileDigits(s.phone), email: s.email, gstin: s.gstin, address: s.address, paymentTerms: s.paymentTerms, status: s.status })
     setModalOpen(true)
   }
 
@@ -49,6 +50,7 @@ export default function WarehouseSuppliers() {
       toast({ title: 'Vendor name is required', variant: 'error' })
       return
     }
+    if (form.phone && !/^\d{10}$/.test(form.phone)) { toast({ title: 'Enter a valid 10-digit mobile number', variant: 'error' }); return }
     if (editing) {
       update(editing.id, form)
       toast({ title: 'Vendor updated', description: form.name })
@@ -155,7 +157,7 @@ export default function WarehouseSuppliers() {
             <div><Label>Contact person</Label><Input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label>10-digit Mobile</Label><Input type="tel" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={form.phone} onChange={(e) => setForm({ ...form, phone: mobileDigits(e.target.value) })} placeholder="9876543210" /></div>
             <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">

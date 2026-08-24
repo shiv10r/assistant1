@@ -1,6 +1,6 @@
 export type Theme = 'dark' | 'light'
 export type WeatherTheme = 'sunny' | 'cloudy' | 'rain' | 'storm' | 'snow' | 'night' | 'default'
-export type AccentId = 'cobalt' | 'violet' | 'teal' | 'rose' | 'amber' | 'paper'
+export type AccentId = 'cobalt' | 'violet' | 'teal' | 'rose' | 'amber' | 'ink' | 'paper'
 
 export const ACCENT_OPTIONS: readonly { id: AccentId; label: string; color: string }[] = [
   { id: 'cobalt', label: 'Cobalt', color: '#2563EB' },
@@ -8,6 +8,7 @@ export const ACCENT_OPTIONS: readonly { id: AccentId; label: string; color: stri
   { id: 'teal', label: 'Teal', color: '#0F8F83' },
   { id: 'rose', label: 'Rose', color: '#D94F70' },
   { id: 'amber', label: 'Amber', color: '#D97706' },
+  { id: 'ink', label: 'Ink', color: '#111827' },
   { id: 'paper', label: 'Paper', color: '#F8FAFC' },
 ]
 

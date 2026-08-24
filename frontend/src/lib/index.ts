@@ -6,7 +6,7 @@ export { usePlan } from '../hooks/usePlan'
 export { useViewMode } from '../hooks/useViewMode'
 export { useCollectionSearch } from '../hooks/useCollectionSearch'
 export { useServiceList, useServiceStats, type ServiceListConfig, type ServiceListReturn, type ServiceStats } from './useServiceList'
-export { useServiceForm, createRequiredValidator, createEmailValidator, createMinLengthValidator, createNumberValidator, type ServiceFormState, type ServiceFormActions } from './useServiceForm'
+export { useServiceForm, createRequiredValidator, createEmailValidator, createMinLengthValidator, createNumberValidator, type ServiceFormState, type ServiceFormActions, type ServiceFormErrors, type ServiceFormValidators } from './useServiceForm'
 export {
   createStatusColumn,
   createMoneyColumn,

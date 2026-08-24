@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Send, Sparkles } from 'lucide-react'
 import { Button, Card, CardContent, Input, Label, Select } from '../../platform/ui'
 import { genId, useLocalCollection } from '../../lib/localStore'
+import { mobileDigits } from '../../lib/utils'
 import TravelShell from './TravelShell'
 import type { TravelLead, TravelTheme } from './types'
 
@@ -49,7 +50,7 @@ export default function TravelCustomize() {
           <div><Label htmlFor="lead-budget">Budget per person</Label><Input id="lead-budget" required min="5000" step="1000" type="number" value={form.budget} onChange={(event) => setForm({ ...form, budget: event.target.value })} /></div>
           <div><Label htmlFor="lead-theme">Trip style</Label><Select id="lead-theme" value={form.theme} onChange={(event) => setForm({ ...form, theme: event.target.value })}>{THEMES.map((theme) => <option key={theme}>{theme}</option>)}</Select></div>
           <div><Label htmlFor="lead-name">Your name</Label><Input id="lead-name" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Full name" /></div>
-          <div><Label htmlFor="lead-phone">Phone number</Label><Input id="lead-phone" required type="tel" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} placeholder="+91 98765 43210" /></div>
+          <div><Label htmlFor="lead-phone">Phone number</Label><Input id="lead-phone" required type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} onChange={(event) => setForm({ ...form, phone: mobileDigits(event.target.value) })} placeholder="9876543210" /></div>
           <div className="sm:col-span-2"><Button type="submit" size="lg" className="w-full sm:w-auto"><Send className="h-4 w-4" />Send trip request</Button></div>
         </form></CardContent></Card>
       </div>

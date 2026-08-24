@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, CreditCard, MapPin, PackageCheck, ShieldCheck, Truck } from 'lucide-react'
-import { money } from '../../lib/utils'
+import { isValidMobile, mobileDigits, money } from '../../lib/utils'
 import { commerceProductById } from './commerceData'
 import CommerceShell from './CommerceShell'
 import { useCommerceStore } from './commerceStore'
@@ -25,7 +25,8 @@ export default function CommerceCheckout() {
   }, 0)
   const shipping = subtotal - discount > 499 ? 0 : 49
   const total = subtotal - discount + shipping
-  const addressValid = address.name.trim() !== '' && address.phone.trim() !== '' && address.line.trim() !== '' && address.city.trim() !== '' && address.postal.trim() !== ''
+  const phoneValid = isValidMobile(address.phone)
+  const addressValid = address.name.trim() !== '' && phoneValid && address.line.trim() !== '' && address.city.trim() !== '' && address.postal.trim() !== ''
 
   function placeOrder() {
     store.clearCart()
@@ -83,7 +84,7 @@ export default function CommerceCheckout() {
                 <h2><MapPin aria-hidden="true" /> Delivery address</h2>
                 <div className="commerce-checkout-fields">
                   <label htmlFor="co-name">Full name<input id="co-name" value={address.name} onChange={(event) => setAddress({ ...address, name: event.target.value })} placeholder="Your full name" /></label>
-                  <label htmlFor="co-phone">Phone<input id="co-phone" value={address.phone} onChange={(event) => setAddress({ ...address, phone: event.target.value })} placeholder="10-digit mobile number" inputMode="tel" /></label>
+                  <label htmlFor="co-phone">Phone<input id="co-phone" type="tel" value={address.phone} onChange={(event) => setAddress({ ...address, phone: mobileDigits(event.target.value) })} placeholder="10-digit mobile number" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" />{address.phone && !phoneValid && <small role="alert">Enter a valid 10-digit mobile number.</small>}</label>
                   <label htmlFor="co-line">Address line<input id="co-line" value={address.line} onChange={(event) => setAddress({ ...address, line: event.target.value })} placeholder="House, street, area" /></label>
                   <div className="commerce-checkout-row">
                     <label htmlFor="co-city">City<input id="co-city" value={address.city} onChange={(event) => setAddress({ ...address, city: event.target.value })} placeholder="City" /></label>

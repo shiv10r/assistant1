@@ -6,6 +6,7 @@ import type { Student, SchoolClass } from './types'
 import { STUDENT_SEED, CLASS_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { useCollectionSearch } from '../../hooks/useCollectionSearch'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 const studentSearchText = (student: Student) =>
   `${student.name} ${student.admissionNo} ${student.className}`
@@ -17,6 +18,7 @@ export default function SchoolStudents() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
   const [form, setForm] = useState({ admissionNo: '', name: '', classId: classes[0]?.id ?? '', guardianName: '', phone: '', status: 'active' as Student['status'] })
+  const [phoneError, setPhoneError] = useState('')
 
   const columns: DataColumn<Student>[] = [
     { key: 'admissionNo', header: 'Admission No', render: (s) => <span className="font-mono text-xs">{s.admissionNo}</span> },
@@ -29,19 +31,22 @@ export default function SchoolStudents() {
 
   function openAdd() {
     setEditing(null)
+    setPhoneError('')
     setForm({ admissionNo: '', name: '', classId: classes[0]?.id ?? '', guardianName: '', phone: '', status: 'active' })
     setModalOpen(true)
   }
 
   function openEdit(s: Student) {
     setEditing(s)
-    setForm({ admissionNo: s.admissionNo, name: s.name, classId: s.classId, guardianName: s.guardianName, phone: s.phone, status: s.status })
+    setPhoneError('')
+    setForm({ admissionNo: s.admissionNo, name: s.name, classId: s.classId, guardianName: s.guardianName, phone: mobileDigits(s.phone), status: s.status })
     setModalOpen(true)
   }
 
   function save() {
     const cls = classes.find((c) => c.id === form.classId)
     if (!form.name.trim() || !cls) return
+    if (form.phone && !isValidMobile(form.phone)) { setPhoneError('Enter a valid 10-digit mobile number.'); return }
     const payload = { ...form, className: `${cls.name} - ${cls.section}` }
     if (editing) update(editing.id, payload)
     else add({ id: genId(), ...payload })
@@ -104,7 +109,7 @@ export default function SchoolStudents() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Guardian name</Label><Input value={form.guardianName} onChange={(e) => setForm({ ...form, guardianName: e.target.value })} /></div>
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} error={phoneError} onChange={(e) => { setForm({ ...form, phone: mobileDigits(e.target.value) }); setPhoneError('') }} /></div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>

@@ -11,6 +11,7 @@ import { DataTable, type DataColumn } from '../../platform/tables'
 import { StatusBadge } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
+import { mobileDigits } from '../../lib/utils'
 
 const emptyWh = { name: '', code: '', address: '', contactPerson: '', phone: '', status: 'active' as 'active' | 'inactive' }
 const emptyLoc = { warehouseId: 'wh-1', code: '', zone: '', rack: '', bin: '', capacity: '0', status: 'active' as 'active' | 'inactive' }
@@ -50,7 +51,7 @@ export default function WarehouseWarehouses() {
   function openAddWh() { setEditingWh(null); setWhForm(emptyWh); setWhModalOpen(true) }
   function openEditWh(w: Warehouse) {
     setEditingWh(w)
-    setWhForm({ name: w.name, code: w.code, address: w.address, contactPerson: w.contactPerson, phone: w.phone, status: w.status })
+    setWhForm({ name: w.name, code: w.code, address: w.address, contactPerson: w.contactPerson, phone: mobileDigits(w.phone), status: w.status })
     setWhModalOpen(true)
   }
 
@@ -59,6 +60,7 @@ export default function WarehouseWarehouses() {
       toast({ title: 'Warehouse name and code are required', variant: 'error' })
       return
     }
+    if (whForm.phone && !/^\d{10}$/.test(whForm.phone)) { toast({ title: 'Enter a valid 10-digit mobile number', variant: 'error' }); return }
     if (editingWh) {
       updateWh(editingWh.id, whForm)
       toast({ title: 'Warehouse updated', description: whForm.name })
@@ -243,7 +245,7 @@ export default function WarehouseWarehouses() {
           <div><Label>Address</Label><Input value={whForm.address} onChange={(e) => setWhForm({ ...whForm, address: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Contact person</Label><Input value={whForm.contactPerson} onChange={(e) => setWhForm({ ...whForm, contactPerson: e.target.value })} /></div>
-            <div><Label>Phone</Label><Input value={whForm.phone} onChange={(e) => setWhForm({ ...whForm, phone: e.target.value })} /></div>
+            <div><Label>10-digit Mobile</Label><Input type="tel" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={whForm.phone} onChange={(e) => setWhForm({ ...whForm, phone: mobileDigits(e.target.value) })} placeholder="9876543210" /></div>
           </div>
           <div>
             <Label>Status</Label>

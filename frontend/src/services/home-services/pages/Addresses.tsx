@@ -4,6 +4,7 @@ import HomeServicesShell from '../HomeServicesShell'
 import { HsEmpty, HsSection } from '../hsShared'
 import { homeServicesApi, type CustomerAddress, type CustomerProfile } from '../homeServicesApi'
 import { getEmail } from '../../../platform/auth'
+import { mobileDigits } from '../../../lib/utils'
 
 type Draft = {
   label: string
@@ -148,7 +149,7 @@ export default function Addresses() {
                     </label>
                     <label style={{ fontSize: 13, display: 'grid', gap: 4 }}>
                       Contact phone
-                      <input value={draft.contactPhone} onChange={(e) => setDraft({ ...draft, contactPhone: e.target.value })} className="hs-input" inputMode="tel" />
+                      <input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={draft.contactPhone} onChange={(e) => setDraft({ ...draft, contactPhone: mobileDigits(e.target.value) })} className="hs-input" placeholder="9876543210" />
                     </label>
                   </div>
                   <label style={{ fontSize: 13, display: 'grid', gap: 4 }}>

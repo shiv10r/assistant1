@@ -8,6 +8,7 @@ import { DataTable, type DataColumn } from '../../platform/tables'
 import { KPICard } from '../../platform/ui'
 import { StatusBadge } from '../../platform/ui'
 import { money } from '../../platform/ui'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 export default function SchoolProcurement() {
   const { items: vendors, add: addVendor, update: updateVendor, remove: removeVendor } = useLocalCollection<Vendor>('school:vendors', VENDOR_SEED)
@@ -17,6 +18,7 @@ export default function SchoolProcurement() {
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null)
   const [vendorForm, setVendorForm] = useState({ name: '', phone: '', email: '', category: '', gst: '' })
+  const [vendorPhoneError, setVendorPhoneError] = useState('')
   const [orderForm, setOrderForm] = useState({ vendorId: vendors[0]?.id ?? '', items: '', total: 0, status: 'draft' as PurchaseOrder['status'], date: new Date().toISOString().slice(0, 10) })
   const [tab, setTab] = useState('orders')
 
@@ -37,18 +39,21 @@ export default function SchoolProcurement() {
 
   function openAddVendor() {
     setEditingVendor(null)
+    setVendorPhoneError('')
     setVendorForm({ name: '', phone: '', email: '', category: '', gst: '' })
     setVendorModal(true)
   }
 
   function openEditVendor(v: Vendor) {
     setEditingVendor(v)
-    setVendorForm({ name: v.name, phone: v.phone, email: v.email ?? '', category: v.category, gst: v.gst })
+    setVendorPhoneError('')
+    setVendorForm({ name: v.name, phone: mobileDigits(v.phone), email: v.email ?? '', category: v.category, gst: v.gst })
     setVendorModal(true)
   }
 
   function saveVendor() {
     if (!vendorForm.name.trim()) return
+    if (vendorForm.phone && !isValidMobile(vendorForm.phone)) { setVendorPhoneError('Enter a valid 10-digit mobile number.'); return }
     if (editingVendor) updateVendor(editingVendor.id, vendorForm)
     else addVendor({ id: genId(), ...vendorForm })
     setVendorModal(false)
@@ -149,7 +154,7 @@ export default function SchoolProcurement() {
             <div><Label>Category</Label><Input value={vendorForm.category} onChange={(e) => setVendorForm({ ...vendorForm, category: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Phone</Label><Input value={vendorForm.phone} onChange={(e) => setVendorForm({ ...vendorForm, phone: e.target.value })} /></div>
+            <div><Label>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={vendorForm.phone} error={vendorPhoneError} onChange={(e) => { setVendorForm({ ...vendorForm, phone: mobileDigits(e.target.value) }); setVendorPhoneError('') }} /></div>
             <div><Label>Email</Label><Input type="email" value={vendorForm.email} onChange={(e) => setVendorForm({ ...vendorForm, email: e.target.value })} /></div>
           </div>
           <div><Label>GST</Label><Input value={vendorForm.gst} onChange={(e) => setVendorForm({ ...vendorForm, gst: e.target.value })} /></div>

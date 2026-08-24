@@ -7,6 +7,7 @@ import { PARENT_SEED, STUDENT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { KPICard } from '../../platform/ui'
 import { StatusBadge } from '../../platform/ui'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 export default function SchoolParents() {
   const { items: students } = useLocalCollection<Student>('school:students', STUDENT_SEED)
@@ -15,6 +16,7 @@ export default function SchoolParents() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ParentRecord | null>(null)
   const [form, setForm] = useState({ name: '', phone: '', email: '', occupation: '', address: '', childIds: [] as string[], status: 'active' as ParentRecord['status'] })
+  const [phoneError, setPhoneError] = useState('')
 
   const filtered = useMemo(
     () => items.filter((p) => `${p.name} ${p.phone} ${p.email ?? ''}`.toLowerCase().includes(query.toLowerCase())),
@@ -39,18 +41,21 @@ export default function SchoolParents() {
 
   function openAdd() {
     setEditing(null)
+    setPhoneError('')
     setForm({ name: '', phone: '', email: '', occupation: '', address: '', childIds: [], status: 'active' })
     setModalOpen(true)
   }
 
   function openEdit(p: ParentRecord) {
     setEditing(p)
-    setForm({ name: p.name, phone: p.phone, email: p.email ?? '', occupation: p.occupation ?? '', address: p.address ?? '', childIds: p.childIds, status: p.status })
+    setPhoneError('')
+    setForm({ name: p.name, phone: mobileDigits(p.phone), email: p.email ?? '', occupation: p.occupation ?? '', address: p.address ?? '', childIds: p.childIds, status: p.status })
     setModalOpen(true)
   }
 
   function save() {
-    if (!form.name.trim() || !form.phone.trim()) return
+    if (!isValidMobile(form.phone)) { setPhoneError('Enter a valid 10-digit mobile number.'); return }
+    if (!form.name.trim()) return
     const payload = { ...form, childIds: form.childIds }
     if (editing) update(editing.id, payload)
     else add({ id: genId(), ...payload })
@@ -103,7 +108,7 @@ export default function SchoolParents() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div><Label required>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div><Label required>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label required>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} error={phoneError} onChange={(e) => { setForm({ ...form, phone: mobileDigits(e.target.value) }); setPhoneError('') }} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>

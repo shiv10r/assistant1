@@ -19,11 +19,12 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export default function WeatherCard({ latitude, longitude, siteName, className, onSetLocation, useMyLocation }: WeatherCardProps) {
   const hasCoords = latitude != null && longitude != null && latitude !== 0 && longitude !== 0
   const w = useWeather(useMyLocation ? undefined : (hasCoords ? latitude : undefined), useMyLocation ? undefined : (hasCoords ? longitude : undefined))
+  const enableWeather = w.enable
 
   useEffect(() => {
-    if (useMyLocation) { w.enable() }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (useMyLocation) void enableWeather()
+  }, [useMyLocation, enableWeather])
+
   const meta = w.weather ? conditionMeta(w.weather.weatherCode, w.weather.isDay) : null
   const updatedAgo = w.weather
     ? Math.max(1, Math.round((Date.now() - new Date(w.weather.updatedAt).getTime()) / 60000))
@@ -76,7 +77,10 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
           <FiLoader className="w-4 h-4 animate-spin" /> Loading weather…
         </div>
       ) : w.error ? (
-        <p className="text-sm text-red-500 p-6">{w.error}</p>
+        <div className="p-6 flex items-start gap-3">
+          <FiMapPin className="w-5 h-5 text-muted mt-0.5 flex-shrink-0" />
+          <div><p className="text-sm text-text">Weather unavailable</p><p className="text-xs text-muted mt-1">{w.error}</p><Button size="sm" variant="outline" className="mt-3" onClick={() => void (useMyLocation ? w.enable() : w.refresh(latitude!, longitude!, true))}><FiRefreshCw className="w-4 h-4" /> Try again</Button></div>
+        </div>
       ) : w.weather && meta ? (
         <>
           {/* Animated hero band — wide, not square */}
@@ -96,7 +100,7 @@ export default function WeatherCard({ latitude, longitude, siteName, className, 
                     </Button>
                   )}
                   {w.weather && (
-                    <Button size="sm" variant="ghost" onClick={() => (useMyLocation ? w.enable() : w.refresh(hasCoords ? latitude! : 20.5937, hasCoords ? longitude! : 78.9629))} title="Refresh weather" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
+                    <Button size="sm" variant="ghost" onClick={() => (useMyLocation ? w.enable() : w.refresh(latitude!, longitude!, true))} title="Refresh weather" className="!p-1.5 !h-8 !w-8 text-white/90 hover:text-white hover:bg-white/15">
                       <FiRefreshCw className="w-4 h-4" />
                     </Button>
                   )}

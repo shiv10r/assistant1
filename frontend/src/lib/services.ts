@@ -1,11 +1,14 @@
-import { ENABLED_MODULES, type ModuleKey } from '../app/moduleRegistry'
+import { ENABLED_MODULES } from '../app/moduleRegistry'
 
-export type ServiceId = ModuleKey
+// Service modules are registry-driven; consumers should not need exhaustive
+// updates merely to render navigation or a generic service icon.
+export type ServiceId = string
 
 export type ServiceDef = {
   id: ServiceId
   label: string
   tagline: string
+  category: 'operations' | 'travel' | 'marketplace' | 'personal'
   icon: string
   gradient: string
   home: string
@@ -16,6 +19,7 @@ export const SERVICES: ServiceDef[] = ENABLED_MODULES.map((module) => ({
   id: module.key,
   label: module.name,
   tagline: module.tagline,
+  category: module.category,
   icon: module.icon,
   gradient: module.gradient,
   home: module.entryRoute,

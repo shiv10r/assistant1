@@ -6,6 +6,7 @@ import type { VisitorLog } from './types'
 import { VISITOR_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { KPICard } from '../../platform/ui'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 export default function SchoolVisitors() {
   const { items, add, update, remove } = useLocalCollection<VisitorLog>('school:visitors', VISITOR_SEED)
@@ -13,6 +14,7 @@ export default function SchoolVisitors() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<VisitorLog | null>(null)
   const [form, setForm] = useState({ name: '', phone: '', purpose: '', personToMeet: '', inTime: new Date().toISOString().slice(0, 16), outTime: '', badge: '' })
+  const [phoneError, setPhoneError] = useState('')
 
   const filtered = useMemo(
     () => items.filter((v) => `${v.name} ${v.purpose} ${v.personToMeet}`.toLowerCase().includes(query.toLowerCase())),
@@ -32,18 +34,21 @@ export default function SchoolVisitors() {
 
   function openAdd() {
     setEditing(null)
+    setPhoneError('')
     setForm({ name: '', phone: '', purpose: '', personToMeet: '', inTime: new Date().toISOString().slice(0, 16), outTime: '', badge: `V-${items.length + 102}` })
     setModalOpen(true)
   }
 
   function openEdit(v: VisitorLog) {
     setEditing(v)
-    setForm({ name: v.name, phone: v.phone, purpose: v.purpose, personToMeet: v.personToMeet, inTime: v.inTime, outTime: v.outTime ?? '', badge: v.badge })
+    setPhoneError('')
+    setForm({ name: v.name, phone: mobileDigits(v.phone), purpose: v.purpose, personToMeet: v.personToMeet, inTime: v.inTime, outTime: v.outTime ?? '', badge: v.badge })
     setModalOpen(true)
   }
 
   function save() {
     if (!form.name.trim()) return
+    if (form.phone && !isValidMobile(form.phone)) { setPhoneError('Enter a valid 10-digit mobile number.'); return }
     const payload = { ...form, outTime: form.outTime || undefined }
     if (editing) update(editing.id, payload)
     else add({ id: genId(), ...payload })
@@ -95,7 +100,7 @@ export default function SchoolVisitors() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div><Label required>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} error={phoneError} onChange={(e) => { setForm({ ...form, phone: mobileDigits(e.target.value) }); setPhoneError('') }} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Purpose</Label><Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} /></div>
