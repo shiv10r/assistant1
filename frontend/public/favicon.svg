@@ -1,17 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="vsr-grad" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFB066" />
-      <stop offset="0.55" stop-color="#FF9638" />
-      <stop offset="1" stop-color="#10B981" />
-    </linearGradient>
-    <linearGradient id="vsr-sheen" x1="4" y1="2" x2="42" y2="40" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fff" stop-opacity="0.32" />
-      <stop offset="1" stop-color="#fff" stop-opacity="0" />
+    <linearGradient id="brand" x1="8" y1="10" x2="56" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0759B8" />
+      <stop offset="0.55" stop-color="#008BD2" />
+      <stop offset="1" stop-color="#12366B" />
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#vsr-grad)" />
-  <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#vsr-sheen)" />
-  <path d="M16.5 15.5 32 45 47.5 15.5" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="32" cy="51" r="4.4" fill="#fff" />
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#F8FAFC" />
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="#C7D6E8" stroke-width="2" />
+  <path d="M9 18h9l7 20 7-20h8L29 47h-9z" fill="url(#brand)" />
+  <path d="M36 18h18v7H42v4h10c4 0 6 2 6 6v4c0 5-3 8-8 8H35v-7h15v-4H40c-4 0-6-2-6-6v-4c0-3 1-6 2-8z" fill="url(#brand)" />
+  <circle cx="54" cy="16" r="3" fill="#00A6D9" />
 </svg>
