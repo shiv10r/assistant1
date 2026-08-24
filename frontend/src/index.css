@@ -55,7 +55,7 @@
 }
 
 /* ---------- Weather app mode ----------
-   Subtle tint of the LuxInfra tokens driven by the site weather.
+   Subtle tint of the VSR Systems tokens driven by the site weather.
    Keeps the base dark/light surfaces and component structure intact. */
 :root[data-theme='dark'][data-weather='sunny'] {
   --bg: #151208;

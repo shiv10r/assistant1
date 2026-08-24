@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship the remaining 10 V1 warehouse modules (products, customers, warehouses/locations, stock transfer, sales orders, picking, packing, dispatch, returns, stock count) as 9 new pages in the existing LuxInfra warehouse service, then push to `luxinfra-frontend`.
+**Goal:** Ship the remaining 10 V1 warehouse modules (products, customers, warehouses/locations, stock transfer, sales orders, picking, packing, dispatch, returns, stock count) as 9 new pages in the existing VSR Systems warehouse service, then push to `luxinfra-frontend`.
 
 **Architecture:** Extend the existing localStorage-backed warehouse module (`frontend/src/services/warehouse/`). Each module = a new page file + new types + seed data + collection key (`warehouse:<name>`), reusing the shared `DataTable`/`KpiCard`/`StatusBadge`/`Stepper`/`Drawer` components and the `useStockLedger`/`useAdjustments` hooks. Register routes in `App.tsx` and nav groups in `Layout.tsx`. All quantity changes are ledger-logged; never silently mutate inventory.
 

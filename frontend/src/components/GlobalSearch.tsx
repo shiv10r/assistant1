@@ -5,6 +5,7 @@ import type { AssistantSearch } from '../api'
 import { Modal, Input, Badge, money, cn } from '../platform/ui'
 import { FiSearch, FiUsers, FiArrowRight, FiClock, FiBriefcase, FiFileText, FiBox, FiFolder } from 'react-icons/fi'
 import { MdSchool } from 'react-icons/md'
+import { getStorageKey } from '../lib/localStore'
 
 /** A row a global search can jump to. */
 export interface SearchResult {
@@ -186,19 +187,19 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
 
 /** Collection metadata: localStorage key prefix to target route and display group. */
 const COLLECTIONS: { key: string; group: string; to: (id: string, row: Record<string, unknown>) => string; nameField: string[] }[] = [
-  { key: 'luxinfra:interior:projects', group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
-  { key: 'luxinfra:interior:rooms', group: 'Interior Rooms', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/rooms/${id}`, nameField: ['name', 'roomType', 'notes'] },
-  { key: 'luxinfra:interior:designs', group: 'Interior Designs', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/designs/${id}`, nameField: ['name', 'style', 'color'] },
-  { key: 'luxinfra:interior:products', group: 'Interior Products', to: () => '/interior/products', nameField: ['name', 'category'] },
-  { key: 'luxinfra:warehouse:products', group: 'Warehouse Products', to: () => '/warehouse/products', nameField: ['name', 'sku'] },
-  { key: 'luxinfra:warehouse:customers', group: 'Warehouse Customers', to: () => '/warehouse/customers', nameField: ['name', 'company'] },
-  { key: 'luxinfra:warehouse:suppliers', group: 'Warehouse Suppliers', to: () => '/warehouse/suppliers', nameField: ['name', 'company'] },
-  { key: 'luxinfra:warehouse:staff', group: 'Warehouse Staff', to: () => '/warehouse/staff', nameField: ['name'] },
-  { key: 'luxinfra:warehouse:projects', group: 'Warehouse Projects', to: (id) => `/warehouse/projects/${id}`, nameField: ['name', 'client'] },
-  { key: 'luxinfra:school:students', group: 'School Students', to: () => '/school/students', nameField: ['name', 'rollNo', 'admissionNo'] },
-  { key: 'luxinfra:school:classes', group: 'School Classes', to: () => '/school/classes', nameField: ['name', 'section'] },
-  { key: 'luxinfra:school:staff', group: 'School Staff', to: () => '/school/staff', nameField: ['name'] },
-  { key: 'luxinfra:school:projects', group: 'School Projects', to: () => `/school/projects`, nameField: ['name', 'client'] },
+  { key: getStorageKey('interior:projects'), group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
+  { key: getStorageKey('interior:rooms'), group: 'Interior Rooms', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/rooms/${id}`, nameField: ['name', 'roomType', 'notes'] },
+  { key: getStorageKey('interior:designs'), group: 'Interior Designs', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/designs/${id}`, nameField: ['name', 'style', 'color'] },
+  { key: getStorageKey('interior:products'), group: 'Interior Products', to: () => '/interior/products', nameField: ['name', 'category'] },
+  { key: getStorageKey('warehouse:products'), group: 'Warehouse Products', to: () => '/warehouse/products', nameField: ['name', 'sku'] },
+  { key: getStorageKey('warehouse:customers'), group: 'Warehouse Customers', to: () => '/warehouse/customers', nameField: ['name', 'company'] },
+  { key: getStorageKey('warehouse:suppliers'), group: 'Warehouse Suppliers', to: () => '/warehouse/suppliers', nameField: ['name', 'company'] },
+  { key: getStorageKey('warehouse:staff'), group: 'Warehouse Staff', to: () => '/warehouse/staff', nameField: ['name'] },
+  { key: getStorageKey('warehouse:projects'), group: 'Warehouse Projects', to: (id) => `/warehouse/projects/${id}`, nameField: ['name', 'client'] },
+  { key: getStorageKey('school:students'), group: 'School Students', to: () => '/school/students', nameField: ['name', 'rollNo', 'admissionNo'] },
+  { key: getStorageKey('school:classes'), group: 'School Classes', to: () => '/school/classes', nameField: ['name', 'section'] },
+  { key: getStorageKey('school:staff'), group: 'School Staff', to: () => '/school/staff', nameField: ['name'] },
+  { key: getStorageKey('school:projects'), group: 'School Projects', to: () => `/school/projects`, nameField: ['name', 'client'] },
 ]
 
 /** Scan every known frontend-only collection for matches. */

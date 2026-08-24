@@ -481,6 +481,6 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# LuxInfra local data
-LuxInfra.Web/data/
+# VSR Systems local data
+VSRSystems.Web/data/
 *.db3

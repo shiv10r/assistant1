@@ -27,7 +27,7 @@ The first migration will use small list pages with matching mechanics. It must l
 ## Acceptance Criteria
 
 - No service entity or seed-data type moves into a shared module.
-- Existing route paths and `luxinfra:` collection keys remain unchanged.
+- Existing route paths and `vsrsystems:` collection keys remain unchanged.
 - Migrated pages retain their current rows, action buttons, search behavior, empty states, and exports.
 - Shared code has one clear responsibility and no service-specific imports.
 - Only user-approved static verification is run after implementation.

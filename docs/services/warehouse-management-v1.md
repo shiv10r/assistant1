@@ -2111,7 +2111,7 @@ The key part is **`pl-12`** (or an equivalent adequate left padding), so `"Searc
 Add Bank Account
 Enter your bank details for balance tracking button is not  working 
 The  current  color of the applicaiton text and backgrounds  is not acceptable its loooks shitty  not  feels like  enterprize level app
-LuxInfra
+VSR Systems
 ● Online
 
 🌤️
@@ -2137,7 +2137,7 @@ Upcoming Feature
 when ever i click on any of the option while  staying on ware house service it swaps the  service navigates back  to some random not on the page where i have logged in  
 
 
-LuxInfra
+VSR Systems
 Choose the workspace for this session
 
 
@@ -2382,11 +2382,11 @@ ADDED ONE IMAGE THAT KIND IF DESIGN WE MIGHT NEED
 Yes — give the coding agent this **exact text specification**. It focuses on reproducing the visual design, not explaining the screenshot generally.
 
 ````md
-# LuxInfra — Workspace Selection Page UI Specification
+# VSR Systems — Workspace Selection Page UI Specification
 
 ## Goal
 
-Redesign the existing LuxInfra workspace-selection page to closely reproduce the provided reference design.
+Redesign the existing VSR Systems workspace-selection page to closely reproduce the provided reference design.
 
 The page should feel like a **premium modern B2B SaaS application** with a dark navy/charcoal theme, warm orange accent color, subtle background decoration, strong typography, and polished cards.
 
@@ -2440,10 +2440,10 @@ Place a simple application header at the top.
 
 ### Left
 
-LuxInfra logo/brand:
+VSR Systems logo/brand:
 
 ```text
-[Home/Infrastructure icon] LuxInfra
+[Home/Infrastructure icon] VSR Systems
 ```
 
 Brand styling:
@@ -2457,10 +2457,10 @@ Brand styling:
 Example:
 
 ```text
-⌂ LuxInfra
+⌂ VSR Systems
 ```
 
-Use the actual existing LuxInfra logo if available rather than replacing it with a generic icon.
+Use the actual existing VSR Systems logo if available rather than replacing it with a generic icon.
 
 ### Right
 
@@ -2500,7 +2500,7 @@ Center the main content.
 Heading:
 
 ```text
-Welcome to LuxInfra
+Welcome to VSR Systems
 ```
 
 Styling:
@@ -2515,7 +2515,7 @@ Styling:
 Example:
 
 ```text
-Welcome to LuxInfra
+Welcome to VSR Systems
               ^^^^^
               orange
 ```
@@ -2537,7 +2537,7 @@ Add a small orange horizontal accent line below the subtitle.
 Example:
 
 ```text
-Welcome to LuxInfra
+Welcome to VSR Systems
 Choose the workspace for this session
              ─────
 ```
@@ -2906,7 +2906,7 @@ Subtitle:
 Right access, right people
 ```
 
-Icons should use the LuxInfra orange accent.
+Icons should use the VSR Systems accent.
 
 Use subtle vertical dividers between items.
 
@@ -2964,13 +2964,13 @@ Dark warm/orange-tinted navy
 
 ### Primary Orange
 
-Use a warm LuxInfra orange approximately:
+Use a warm VSR Systems accent approximately:
 
 ```text
 #FF9638
 ```
 
-or reuse the existing LuxInfra brand orange if already defined.
+or reuse the existing VSR Systems brand accent if already defined.
 
 ### Text
 
@@ -3067,7 +3067,7 @@ Everything becomes one column:
 ```text
 Logo
 
-Welcome to LuxInfra
+Welcome to VSR Systems
 Choose workspace
 
 [Interior Design]
@@ -3089,7 +3089,7 @@ Cards should become nearly full width with appropriate horizontal padding.
 Header:
 
 ```text
-LuxInfra                       ☰
+VSR Systems                    ☰
 ```
 
 or collapse Help/Admin into a compact menu.
@@ -3159,7 +3159,7 @@ Use:
 
 ### Current issue 4 — Branding
 
-Make LuxInfra branding more prominent and polished.
+Make VSR Systems branding more prominent and polished.
 
 ### Current issue 5 — Typography
 
@@ -3230,7 +3230,7 @@ Fast
 The visual priority should be:
 
 ```text
-LuxInfra branding
+VSR Systems branding
         ↓
 Welcome heading
         ↓
@@ -3252,7 +3252,7 @@ The page should look like a **real commercial SaaS product**, not a generic Reac
 The implementation is complete only when:
 
 * [ ] Full-screen dark navy background
-* [ ] LuxInfra branding is prominent
+* [ ] VSR Systems branding is prominent
 * [ ] Welcome heading is centered
 * [ ] Orange accent on "Infra"
 * [ ] Subtitle is correctly positioned
@@ -3287,7 +3287,7 @@ once done alll the above task
  create a new branch from frontend keep theoptimized version of the code industry level code use less numebr of files try to accomodate in less fiels 
  Dont stop for my approvals just do whats is best recommneded 
 
-Do all the changes on the lux infra  frontend branch  as it was heppening previosuly  optimized branch i  will deploy later will chk alter 
+Do all changes on the `luxinfra-frontend` branch as before; the optimized branch will be deployed after review.
 
  Here is major bug when ever side nav is open  the  right side of the  card items are  nto  coming in proper length that  are overlapping each other  wh ni close the hamburger  after clicking it the nthe form rows for 99%  cases is coming properly not overlapping  
 

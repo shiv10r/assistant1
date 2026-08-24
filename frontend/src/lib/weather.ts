@@ -1,7 +1,7 @@
 import type { ProjectWeather } from '../api'
 import type { WeatherTheme } from '../theme'
 
-/** Maps an Open-Meteo weather code to a LuxInfra condition label + icon. */
+/** Maps an Open-Meteo weather code to a VSR Systems condition label + icon. */
 export function conditionMeta(code: number, isDay: boolean): { label: string; icon: string } {
   if (code === 0) return { label: isDay ? 'Clear' : 'Clear Night', icon: isDay ? '☀️' : '🌙' }
   if (code === 1) return { label: 'Mainly Clear', icon: isDay ? '🌤️' : '🌙' }
@@ -17,7 +17,7 @@ export function conditionMeta(code: number, isDay: boolean): { label: string; ic
   return { label: 'Unknown', icon: '🌡️' }
 }
 
-/** Resolves a weather payload to a subtle LuxInfra weather theme. */
+/** Resolves a weather payload to a subtle VSR Systems weather theme. */
 export function resolveWeatherTheme(w: ProjectWeather): WeatherTheme {
   if (!w.isDay) return 'night'
   const c = w.weatherCode

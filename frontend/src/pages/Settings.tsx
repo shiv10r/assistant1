@@ -49,7 +49,7 @@ export default function Settings() {
     const blob = new Blob([JSON.stringify({ note: 'VSR Systems data is stored on the backend (SQLite). Download the app DB from the Render service dashboard for a full backup. A cloud mirror syncs to Turso every 30 seconds when configured.', plan }, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = 'luxinfra-backup-note.json'
+    a.download = 'vsrsystems-backup-note.json'
     a.click()
   }
 

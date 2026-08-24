@@ -299,7 +299,7 @@ async function fetchBlob(url: string): Promise<{ blob: Blob; name: string }> {
   if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   const blob = await r.blob()
-  const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'luxinfra-download'
+  const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'vsrsystems-download'
   return { blob, name }
 }
 

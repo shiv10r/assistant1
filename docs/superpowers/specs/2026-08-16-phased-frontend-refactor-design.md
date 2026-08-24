@@ -11,7 +11,7 @@ Make the React application consistent, maintainable, testable, and presentation-
 ## Scope
 
 - Refactor the React frontend and repository documentation.
-- Preserve all current routes, workflows, backend API contracts, domain entities, seed data, and `luxinfra:*` local-storage keys.
+- Preserve all current routes, workflows, backend API contracts, domain entities, seed data, and `vsrsystems:*` local-storage keys.
 - Change backend code only if a verified compatibility defect blocks the frontend.
 - Improve the existing deep-navy and warm-orange enterprise UI rather than replacing the product identity.
 - Delete duplicate or obsolete files only after dependency and route checks prove they are unused.
