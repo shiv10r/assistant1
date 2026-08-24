@@ -16,9 +16,27 @@ export interface OperationsConfig {
   aiPrompts: string[]
   seeds: Array<{ title: string; customer: string; location: string; status: string; progress: number; value: number; owner: string; lat: number; lng: number }>
   team: Array<{ name: string; role: string; dailyRate?: number }>
+  roleNames: [string, string, string]
+  channelLabel: string
+  hurdleLabel: string
+  meetingLabel: string
+  timelineLabel: string
+  checkpoint: string
+  checkpointLabels: [string, string, string]
+  libraryLabel: string
+  mapNetworkLabel: string
+  mapPointLabel: string
 }
 
-const configs: OperationsConfig[] = [
+type BaseOperationsConfig = Omit<OperationsConfig,
+  'roleNames' | 'channelLabel' | 'hurdleLabel' | 'meetingLabel' | 'timelineLabel' |
+  'checkpoint' | 'checkpointLabels' | 'libraryLabel' | 'mapNetworkLabel' | 'mapPointLabel'>
+
+type OperationsDetails = Pick<OperationsConfig,
+  'roleNames' | 'channelLabel' | 'hurdleLabel' | 'meetingLabel' | 'timelineLabel' |
+  'checkpoint' | 'checkpointLabels' | 'libraryLabel' | 'mapNetworkLabel' | 'mapPointLabel'>
+
+const configs: BaseOperationsConfig[] = [
   {
     id: 'interior', title: 'Studio operations', description: 'Control design delivery, site coordination, approvals and project knowledge.', item: 'project', items: 'projects', customer: 'client', location: 'site', visit: 'site visit', people: 'studio team', value: 'design value', attendance: true, map: true,
     aiPrompts: ['Summarize delivery risk', 'Draft a client update', 'Identify delayed approvals'],
@@ -45,6 +63,15 @@ const configs: OperationsConfig[] = [
       { title: 'Admissions 2027', customer: 'Admissions Office', location: 'City Campus, Jaipur', status: 'Review', progress: 46, value: 850000, owner: 'Aman Sethi', lat: 26.892, lng: 75.81 },
       { title: 'Sports Ground Upgrade', customer: 'Student Affairs', location: 'North Campus, Jaipur', status: 'Planning', progress: 15, value: 1700000, owner: 'Riya Sen', lat: 26.95, lng: 75.78 },
     ], team: [{ name: 'Neha Joshi', role: 'Academic coordinator', dailyRate: 2200 }, { name: 'Aman Sethi', role: 'Administrator', dailyRate: 2100 }, { name: 'Riya Sen', role: 'Activities lead', dailyRate: 1900 }],
+  },
+  {
+    id: 'railway', title: 'Railway operations', description: 'Coordinate routes, station readiness, fleet programs and daily network movement.', item: 'network program', items: 'network programs', customer: 'operating region', location: 'station', visit: 'station review', people: 'rail operations team', value: 'program budget', attendance: true, map: true,
+    aiPrompts: ['Summarize network readiness', 'Identify movement risks', 'Prepare a station coordination brief'],
+    seeds: [
+      { title: 'Western Corridor Readiness', customer: 'Western Region', location: 'Mumbai Central', status: 'Active', progress: 76, value: 14800000, owner: 'Aditi Rao', lat: 18.9696, lng: 72.8194 },
+      { title: 'Southern Fleet Rotation', customer: 'Southern Region', location: 'Chennai Central', status: 'Review', progress: 53, value: 9600000, owner: 'Vikram Iyer', lat: 13.0827, lng: 80.2707 },
+      { title: 'Platform Modernization', customer: 'Northern Region', location: 'New Delhi Station', status: 'Planning', progress: 27, value: 18200000, owner: 'Meera Singh', lat: 28.6424, lng: 77.2195 },
+    ], team: [{ name: 'Aditi Rao', role: 'Network controller', dailyRate: 3400 }, { name: 'Vikram Iyer', role: 'Fleet readiness lead', dailyRate: 3200 }, { name: 'Meera Singh', role: 'Station operations manager', dailyRate: 3000 }],
   },
   {
     id: 'hotel', title: 'Stay planner', description: 'Keep reservations, property visits and travel documents organized in one private hub.', item: 'stay plan', items: 'stay plans', customer: 'traveler', location: 'property', visit: 'property check-in', people: 'travelers', value: 'trip value', attendance: false, map: true,
@@ -120,7 +147,46 @@ const configs: OperationsConfig[] = [
   },
 ]
 
-export const OPERATIONS_CONFIG = Object.fromEntries(configs.map((config) => [config.id, config])) as Record<ModuleKey, OperationsConfig>
+const DETAILS: Record<ModuleKey, OperationsDetails> = {
+  interior: {
+    roleNames: ['Design lead', 'Site coordinator', 'Procurement specialist'], channelLabel: 'studio thread', hurdleLabel: 'design hurdle', meetingLabel: 'design review', timelineLabel: 'delivery timeline', checkpoint: 'design checkpoint', checkpointLabels: ['Concept approval', 'Site readiness', 'Client handover'], libraryLabel: 'completed design library', mapNetworkLabel: 'active site network', mapPointLabel: 'site',
+  },
+  warehouse: {
+    roleNames: ['Facility manager', 'Inventory lead', 'Dispatch supervisor'], channelLabel: 'network thread', hurdleLabel: 'operational blocker', meetingLabel: 'facility huddle', timelineLabel: 'rollout timeline', checkpoint: 'readiness checkpoint', checkpointLabels: ['Capacity confirmed', 'Inventory staged', 'Fulfillment ready'], libraryLabel: 'program closeout library', mapNetworkLabel: 'facility network', mapPointLabel: 'facility',
+  },
+  school: {
+    roleNames: ['Academic coordinator', 'Campus administrator', 'Student affairs lead'], channelLabel: 'campus thread', hurdleLabel: 'campus concern', meetingLabel: 'coordination meeting', timelineLabel: 'initiative timeline', checkpoint: 'campus checkpoint', checkpointLabels: ['Scope endorsed', 'Resources ready', 'Campus launch'], libraryLabel: 'institutional archive', mapNetworkLabel: 'campus network', mapPointLabel: 'campus',
+  },
+  railway: {
+    roleNames: ['Network controller', 'Fleet readiness lead', 'Station operations manager'], channelLabel: 'network control thread', hurdleLabel: 'movement blocker', meetingLabel: 'network huddle', timelineLabel: 'readiness timeline', checkpoint: 'movement checkpoint', checkpointLabels: ['Route cleared', 'Station ready', 'Movement completed'], libraryLabel: 'completed movement library', mapNetworkLabel: 'rail operations network', mapPointLabel: 'station',
+  },
+  hotel: {
+    roleNames: ['Trip organizer', 'Guest coordinator', 'Property liaison'], channelLabel: 'stay thread', hurdleLabel: 'stay issue', meetingLabel: 'arrival call', timelineLabel: 'stay timeline', checkpoint: 'stay checkpoint', checkpointLabels: ['Property confirmed', 'Arrival ready', 'Stay completed'], libraryLabel: 'previous stay library', mapNetworkLabel: 'property collection', mapPointLabel: 'property',
+  },
+  travel: {
+    roleNames: ['Trip lead', 'Route planner', 'Booking coordinator'], channelLabel: 'journey thread', hurdleLabel: 'travel hurdle', meetingLabel: 'trip planning call', timelineLabel: 'journey timeline', checkpoint: 'journey checkpoint', checkpointLabels: ['Route agreed', 'Bookings confirmed', 'Journey complete'], libraryLabel: 'past journey library', mapNetworkLabel: 'destination network', mapPointLabel: 'destination',
+  },
+  news: {
+    roleNames: ['Desk editor', 'Field reporter', 'News producer'], channelLabel: 'editorial thread', hurdleLabel: 'coverage blocker', meetingLabel: 'editorial conference', timelineLabel: 'publishing timeline', checkpoint: 'editorial checkpoint', checkpointLabels: ['Pitch approved', 'Reporting complete', 'Ready to publish'], libraryLabel: 'published coverage library', mapNetworkLabel: 'reporting map', mapPointLabel: 'reporting area',
+  },
+  jobs: {
+    roleNames: ['Candidate', 'Career mentor', 'Recruiter contact'], channelLabel: 'search thread', hurdleLabel: 'application hurdle', meetingLabel: 'career check-in', timelineLabel: 'application timeline', checkpoint: 'application checkpoint', checkpointLabels: ['Application tailored', 'Interview prepared', 'Decision received'], libraryLabel: 'previous application library', mapNetworkLabel: 'opportunity map', mapPointLabel: 'work location',
+  },
+  commerce: {
+    roleNames: ['Buyer', 'Product researcher', 'Delivery coordinator'], channelLabel: 'purchase thread', hurdleLabel: 'order issue', meetingLabel: 'purchase review', timelineLabel: 'purchase timeline', checkpoint: 'order checkpoint', checkpointLabels: ['Selection approved', 'Order confirmed', 'Delivery accepted'], libraryLabel: 'previous purchase library', mapNetworkLabel: 'delivery network', mapPointLabel: 'delivery area',
+  },
+  bank: {
+    roleNames: ['Goal owner', 'Financial advisor', 'Beneficiary'], channelLabel: 'planning thread', hurdleLabel: 'financial dependency', meetingLabel: 'advisor review', timelineLabel: 'goal timeline', checkpoint: 'goal checkpoint', checkpointLabels: ['Plan agreed', 'Funding on track', 'Goal review'], libraryLabel: 'completed goal library', mapNetworkLabel: 'service access map', mapPointLabel: 'service location',
+  },
+  medical: {
+    roleNames: ['Patient advocate', 'Primary clinician', 'Care coordinator'], channelLabel: 'care thread', hurdleLabel: 'care concern', meetingLabel: 'care conference', timelineLabel: 'care timeline', checkpoint: 'care checkpoint', checkpointLabels: ['Plan confirmed', 'Treatment reviewed', 'Outcome follow-up'], libraryLabel: 'previous care library', mapNetworkLabel: 'care network', mapPointLabel: 'care location',
+  },
+  'home-services': {
+    roleNames: ['Service coordinator', 'Field professional', 'Quality reviewer'], channelLabel: 'service thread', hurdleLabel: 'job blocker', meetingLabel: 'dispatch huddle', timelineLabel: 'job timeline', checkpoint: 'service checkpoint', checkpointLabels: ['Visit confirmed', 'Work completed', 'Quality accepted'], libraryLabel: 'completed service library', mapNetworkLabel: 'service coverage map', mapPointLabel: 'service site',
+  },
+}
+
+export const OPERATIONS_CONFIG = Object.fromEntries(configs.map((config) => [config.id, { ...config, ...DETAILS[config.id] }])) as Record<ModuleKey, OperationsConfig>
 
 export function operationsConfig(id: string | undefined): OperationsConfig | null {
   return id && id in OPERATIONS_CONFIG ? OPERATIONS_CONFIG[id as ModuleKey] : null

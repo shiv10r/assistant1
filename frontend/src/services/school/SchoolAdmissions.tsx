@@ -7,7 +7,7 @@ import { ADMISSION_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { KPICard } from '../../platform/ui'
 import { StatusBadge } from '../../platform/ui'
-import { todayISO } from '../../lib/utils'
+import { isValidMobile, mobileDigits, todayISO } from '../../lib/utils'
 
 const STAGES: AdmissionStage[] = ['lead', 'contacted', 'visit', 'applied', 'test', 'approved', 'paid', 'enrolled']
 
@@ -18,6 +18,7 @@ export default function SchoolAdmissions() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<AdmissionLead | null>(null)
   const [form, setForm] = useState({ studentName: '', guardianName: '', phone: '', email: '', grade: 'Grade 5 - A', source: 'referral', stage: 'lead' as AdmissionStage, followUpDate: '', notes: '', createdAt: '' })
+  const [phoneError, setPhoneError] = useState('')
 
   const filtered = useMemo(
     () => items.filter((a) => (source === 'all' || a.source === source) && `${a.studentName} ${a.guardianName} ${a.phone}`.toLowerCase().includes(query.toLowerCase())),
@@ -41,18 +42,21 @@ export default function SchoolAdmissions() {
 
   function openAdd() {
     setEditing(null)
+    setPhoneError('')
     setForm({ studentName: '', guardianName: '', phone: '', email: '', grade: 'Grade 5 - A', source: 'referral', stage: 'lead', followUpDate: '', notes: '', createdAt: todayISO() })
     setModalOpen(true)
   }
 
   function openEdit(a: AdmissionLead) {
     setEditing(a)
-    setForm({ studentName: a.studentName, guardianName: a.guardianName, phone: a.phone, email: a.email ?? '', grade: a.grade, source: a.source, stage: a.stage, followUpDate: a.followUpDate ?? '', notes: a.notes ?? '', createdAt: a.createdAt })
+    setPhoneError('')
+    setForm({ studentName: a.studentName, guardianName: a.guardianName, phone: mobileDigits(a.phone), email: a.email ?? '', grade: a.grade, source: a.source, stage: a.stage, followUpDate: a.followUpDate ?? '', notes: a.notes ?? '', createdAt: a.createdAt })
     setModalOpen(true)
   }
 
   function save() {
-    if (!form.studentName.trim() || !form.phone.trim()) return
+    if (!isValidMobile(form.phone)) { setPhoneError('Enter a valid 10-digit mobile number.'); return }
+    if (!form.studentName.trim()) return
     const payload = { ...form, followUpDate: form.followUpDate || undefined, notes: form.notes || undefined }
     if (editing) update(editing.id, payload)
     else add({ id: genId(), ...payload })
@@ -118,7 +122,7 @@ export default function SchoolAdmissions() {
             <div><Label>Guardian name</Label><Input value={form.guardianName} onChange={(e) => setForm({ ...form, guardianName: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label required>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div><Label required>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={form.phone} error={phoneError} onChange={(e) => { setForm({ ...form, phone: mobileDigits(e.target.value) }); setPhoneError('') }} /></div>
             <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">

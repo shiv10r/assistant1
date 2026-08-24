@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
-import type { BankAccount, CashEntry } from '../../api'
+import type { BankAccount, CashEntry, Settings } from '../../api'
 import { Card, CardContent, Badge, Button, Input, Textarea, Label, Modal, Empty, money, todayISO, fmtDate } from '../../platform/ui'
 import { useToast } from '../../platform/ui'
 import { Banknote, Landmark, Plus, Minus, Pencil, Trash2, Wallet, PiggyBank, CreditCard, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
+import { settingEnabled } from './billingPreferences'
 
 function blankBank(): BankAccount {
   return { id: 0, name: '', accNo: '', ifsc: '', upiId: '', openingBalance: 0, asOf: todayISO() }
@@ -18,6 +19,7 @@ export default function CashBank() {
   const [balance, setBalance] = useState(0)
   const [entries, setEntries] = useState<CashEntry[]>([])
   const [banks, setBanks] = useState<BankAccount[]>([])
+  const [settings, setSettings] = useState<Settings>({})
   const [err, setErr] = useState('')
   const [cashOpen, setCashOpen] = useState(false)
   const [bankOpen, setBankOpen] = useState(false)
@@ -28,18 +30,29 @@ export default function CashBank() {
   const [cDate, setCDate] = useState(todayISO())
   const [cDesc, setCDesc] = useState('')
 
-  const load = () => Promise.all([api.billing.cash(), api.billing.banks()])
-    .then(([c, b]) => { setBalance(c.balance); setEntries(c.entries); setBanks(b) })
+  const load = () => Promise.all([api.billing.cash(), api.billing.banks(), api.billing.settings()])
+    .then(([c, b, s]) => { setBalance(c.balance); setEntries(c.entries); setBanks(b); setSettings(s) })
     .catch(() => {})
   useEffect(() => { load() }, [])
 
   const totalBank = useMemo(() => banks.reduce((s, b) => s + b.openingBalance, 0), [banks])
+  const cashAdjustmentsOn = settingEnabled(settings, 'cash.adjustments_enabled')
+  const bankAccountsOn = settingEnabled(settings, 'bank.accounts_enabled')
+  const ifscOn = bankAccountsOn && settingEnabled(settings, 'bank.ifsc')
+  const upiOn = bankAccountsOn && settingEnabled(settings, 'bank.upi')
+  const cashAdded = entries.filter((entry) => entry.kind === 'add').reduce((sum, entry) => sum + entry.amount, 0)
+  const cashReduced = entries.filter((entry) => entry.kind === 'reduce').reduce((sum, entry) => sum + entry.amount, 0)
+  const cashByDate = useMemo(() => {
+    const totals = new Map<string, number>()
+    entries.forEach((entry) => totals.set(entry.date, (totals.get(entry.date) ?? 0) + (entry.kind === 'add' ? entry.amount : -entry.amount)))
+    return [...totals.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([date, value]) => ({ label: `${value >= 0 ? '+' : '-'} ${fmtDate(date)}`, value: Math.abs(value) }))
+  }, [entries])
 
   const addCash = async () => {
     const amt = Number(cAmt)
     if (!cAmt || amt <= 0) { setErr('Enter a valid amount'); return }
     try {
-      await api.billing.adjustCash({ id: 0, kind: ck, amount: amt, date: cDate || todayISO(), description: cDesc })
+      await api.billing.adjustCash({ id: 0, kind: ck, amount: amt, date: cDate || todayISO(), description: cDesc.trim() })
       setErr('')
       setCashOpen(false); setCAmt(''); setCDesc('')
       load()
@@ -87,12 +100,14 @@ export default function CashBank() {
           <div className="muted">In-hand cash and your bank accounts</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { setCK('add'); setCAmt(''); setCDesc(''); setCDate(todayISO()); setErr(''); setCashOpen(true) }}>
+          <Button variant="outline" disabled={!cashAdjustmentsOn} title={cashAdjustmentsOn ? undefined : 'Enable Cash Adjustments in Billing Settings'} onClick={() => { setCK('add'); setCAmt(''); setCDesc(''); setCDate(todayISO()); setErr(''); setCashOpen(true) }}>
             <Plus className="w-4 h-4" /> Adjust Cash
           </Button>
-          <Button onClick={openAddBank}><Landmark className="w-4 h-4" /> Add Bank Account</Button>
+          <Button onClick={openAddBank} disabled={!bankAccountsOn} title={bankAccountsOn ? undefined : 'Enable Bank Accounts in Billing Settings'}><Landmark className="w-4 h-4" /> Add Bank Account</Button>
         </div>
       </div>
+
+      {(!cashAdjustmentsOn || !bankAccountsOn) && <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-text">{!cashAdjustmentsOn && !bankAccountsOn ? 'Cash adjustments and bank account editing are disabled' : !cashAdjustmentsOn ? 'Cash adjustments are disabled' : 'Bank account editing is disabled'} in Billing Settings. Existing records remain visible.</div>}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -108,23 +123,21 @@ export default function CashBank() {
           compare={[
             { label: 'Cash in hand', value: money(balance), delta: 'register balance', deltaTone: balance >= 0 ? 'up' : 'down' },
             { label: 'Bank balance', value: money(totalBank), delta: `${banks.length} accounts`, deltaTone: 'flat' },
-            { label: 'Cash added', value: money(entries.filter((e) => e.kind === 'add').reduce((s, e) => s + e.amount, 0)), delta: 'total inflows', deltaTone: 'flat' },
-            { label: 'Cash reduced', value: money(entries.filter((e) => e.kind === 'reduce').reduce((s, e) => s + e.amount, 0)), delta: 'total outflows', deltaTone: 'flat' },
+             { label: 'Net cash movement', value: money(cashAdded - cashReduced), delta: `${entries.length} adjustments`, deltaTone: cashAdded >= cashReduced ? 'up' : 'down' },
+             { label: 'Total liquidity', value: money(balance + totalBank), delta: 'cash plus bank', deltaTone: balance + totalBank >= 0 ? 'up' : 'down' },
           ]}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <p className="text-xs text-muted uppercase tracking-wide mb-2">Cash activity</p>
-              <BarChart
-                data={entries.slice(0, 8).map((e) => ({ label: e.kind === 'add' ? '+' : '−', value: e.amount }))}
-              />
+               <p className="text-xs text-muted uppercase tracking-wide mb-2">Net cash movement by date</p>
+               <BarChart data={cashByDate} />
             </div>
             <div>
-              <p className="text-xs text-muted uppercase tracking-wide mb-2">Add vs reduce</p>
+               <p className="text-xs text-muted uppercase tracking-wide mb-2">Current liquidity allocation</p>
               <DonutChart
                 data={[
-                  { label: 'Added', value: entries.filter((e) => e.kind === 'add').reduce((s, e) => s + e.amount, 0), color: 'var(--primary)' },
-                  { label: 'Reduced', value: entries.filter((e) => e.kind === 'reduce').reduce((s, e) => s + e.amount, 0), color: '#ef4444' },
+                   { label: 'Cash', value: Math.max(0, balance), color: '#10b981' },
+                   ...banks.map((bank, index) => ({ label: bank.name, value: Math.max(0, bank.openingBalance), color: ['var(--primary)', '#f59e0b', '#8b5cf6', '#06b6d4'][index % 4] })),
                 ].filter((d) => d.value > 0)}
               />
             </div>
@@ -168,7 +181,7 @@ export default function CashBank() {
           <CardContent className="p-0">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h2 className="text-base font-semibold m-0">Bank Accounts</h2>
-              <Button size="sm" variant="outline" onClick={openAddBank}><Plus className="w-4 h-4" /> Add</Button>
+               <Button size="sm" variant="outline" onClick={openAddBank} disabled={!bankAccountsOn}><Plus className="w-4 h-4" /> Add</Button>
             </div>
             {banks.length === 0 ? (
               <Empty icon={<Landmark className="w-12 h-12" />} title="No bank accounts" description="Add your bank details to track balances" action={<Button onClick={openAddBank}><Landmark className="w-4 h-4" /> Add Bank Account</Button>} />
@@ -187,10 +200,10 @@ export default function CashBank() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
-                        <Button variant="ghost" size="icon" onClick={() => openEditBank(b)} aria-label="Edit">
+                         <Button variant="ghost" size="icon" onClick={() => openEditBank(b)} aria-label="Edit" disabled={!bankAccountsOn}>
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => removeBank(b)} aria-label="Delete" className="text-red-500 hover:bg-red-500/10">
+                         <Button variant="ghost" size="icon" onClick={() => removeBank(b)} aria-label="Delete" disabled={!bankAccountsOn} className="text-red-500 hover:bg-red-500/10">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -238,7 +251,7 @@ export default function CashBank() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="camt" required>Amount (₹)</Label>
-              <Input id="camt" type="number" min="0" step="0.01" value={cAmt} onChange={(e) => setCAmt(e.target.value)} placeholder="0" autoFocus />
+               <Input id="camt" type="number" min="0.01" max="999999999" step="0.01" inputMode="decimal" value={cAmt} onChange={(e) => setCAmt(e.target.value)} placeholder="0" autoFocus required />
             </div>
             <div>
               <Label htmlFor="cdate">Date</Label>
@@ -247,7 +260,7 @@ export default function CashBank() {
           </div>
           <div>
             <Label htmlFor="cnote">Note</Label>
-            <Textarea id="cnote" value={cDesc} onChange={(e) => setCDesc(e.target.value)} placeholder="Reason for this entry" rows={2} />
+             <Textarea id="cnote" value={cDesc} onChange={(e) => setCDesc(e.target.value)} placeholder="Reason for this entry" rows={2} maxLength={240} />
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button type="button" variant="outline" onClick={() => setCashOpen(false)}>Cancel</Button>
@@ -268,21 +281,21 @@ export default function CashBank() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="bname" required>Bank Name</Label>
-              <Input id="bname" value={bankForm.name} onChange={(e) => setBankForm({ ...bankForm, name: e.target.value })} placeholder="e.g. HDFC Bank" autoFocus />
+               <Input id="bname" value={bankForm.name} onChange={(e) => setBankForm({ ...bankForm, name: e.target.value })} placeholder="e.g. HDFC Bank" maxLength={80} autoFocus required />
             </div>
             <div>
               <Label htmlFor="bacc">Account Number</Label>
-              <Input id="bacc" value={bankForm.accNo} onChange={(e) => setBankForm({ ...bankForm, accNo: e.target.value })} placeholder="11-digit account number" />
+               <Input id="bacc" value={bankForm.accNo} onChange={(e) => setBankForm({ ...bankForm, accNo: e.target.value.replace(/\D/g, '') })} placeholder="Account number" inputMode="numeric" pattern="[0-9]{6,18}" maxLength={18} />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="bifsc">IFSC Code</Label>
-              <Input id="bifsc" value={bankForm.ifsc} onChange={(e) => setBankForm({ ...bankForm, ifsc: e.target.value.toUpperCase() })} placeholder="HDFC0001234" />
+               <Input id="bifsc" value={bankForm.ifsc} onChange={(e) => setBankForm({ ...bankForm, ifsc: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') })} placeholder={ifscOn ? 'HDFC0001234' : 'Disabled in Billing Settings'} pattern="[A-Z]{4}0[A-Z0-9]{6}" maxLength={11} disabled={!ifscOn} />
             </div>
             <div>
               <Label htmlFor="bupi">UPI ID</Label>
-              <Input id="bupi" value={bankForm.upiId} onChange={(e) => setBankForm({ ...bankForm, upiId: e.target.value })} placeholder="name@bank" />
+               <Input id="bupi" value={bankForm.upiId} onChange={(e) => setBankForm({ ...bankForm, upiId: e.target.value.trim() })} placeholder={upiOn ? 'name@bank' : 'Disabled in Billing Settings'} pattern="[A-Za-z0-9._-]{2,}@[A-Za-z0-9.-]{2,}" maxLength={80} disabled={!upiOn} />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

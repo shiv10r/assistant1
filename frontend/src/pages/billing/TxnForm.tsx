@@ -5,6 +5,7 @@ import type { BizTxn, BizTxnItem, CatalogItem, Party, Settings } from '../../api
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input, Textarea, Select, Label, Modal, money, todayISO } from '../../platform/ui'
 import { Plus, Trash2, Eye, Save, X, ReceiptText, User, Wallet, FileText } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { settingEnabled } from './billingPreferences'
 
 const MODES = ['Cash', 'Cheque', 'Bank Transfer', 'UPI', 'Card']
 const TAX_RATES = [0, 0.25, 3, 5, 12, 18, 28]
@@ -18,8 +19,10 @@ export default function TxnForm() {
   const [parties, setParties] = useState<Party[]>([])
   const [settings, setSettings] = useState<Settings>({})
   const [err, setErr] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const [type, setType] = useState('SALE')
+  const requestedType = params.get('type')
+  const [type, setType] = useState(requestedType && ['SALE', 'PURCHASE', 'ESTIMATE', 'SALE_ORDER', 'PURCHASE_ORDER', 'DELIVERY_CHALLAN', 'PROFORMA', 'PAYMENT_IN', 'PAYMENT_OUT'].includes(requestedType) ? requestedType : 'SALE')
   const [partyId, setPartyId] = useState(0)
   const [date, setDate] = useState(todayISO())
   const [dueDate, setDueDate] = useState(todayISO())
@@ -70,19 +73,20 @@ export default function TxnForm() {
   }, [editId])
 
   // ---- settings-driven behaviour ----
-  const gstOn = settings['gst.enabled'] !== '0'
-  const stateOn = settings['gst.state_of_supply'] === '1'
-  const hsnOn = settings['gst.hsn'] !== '0'
-  const txnTaxOn = settings['txn.txn_wise_tax'] === '1'
-  const itemTaxOn = settings['txn.item_wise_tax'] !== '0'
-  const roundOn = settings['txn.round_off'] === '1'
-  const termsOn = settings['txn.terms_enabled'] === '1'
+  const gstOn = settingEnabled(settings, 'gst.enabled')
+  const stateOn = gstOn && settingEnabled(settings, 'gst.state_of_supply')
+  const hsnOn = gstOn && settingEnabled(settings, 'gst.hsn')
+  const txnTaxOn = gstOn && settingEnabled(settings, 'txn.txn_wise_tax')
+  const itemTaxOn = gstOn && settingEnabled(settings, 'txn.item_wise_tax')
+  const roundOn = settingEnabled(settings, 'txn.round_off')
+  const termsOn = settingEnabled(settings, 'txn.terms_enabled')
   const termsText = settings['txn.terms_text'] || 'Thanks for doing business with us!'
-  const billOfSupply = settings['print.bill_of_supply_non_tax'] === '1'
-  const autoInvoiceNo = settings['txn.invoice_number'] !== '0'
-  const tcsOn = gstOn && settings['gst.tcs'] === '1'
-  const tdsOn = gstOn && settings['gst.tds'] === '1'
-  const reverseChargeOn = gstOn && settings['gst.reverse_charge'] === '1'
+  const billOfSupply = settingEnabled(settings, 'print.bill_of_supply_non_tax')
+  const autoInvoiceNo = settingEnabled(settings, 'txn.invoice_number')
+  const cashSaleDefault = settingEnabled(settings, 'txn.cash_sale_default')
+  const tcsOn = gstOn && settingEnabled(settings, 'gst.tcs')
+  const tdsOn = gstOn && settingEnabled(settings, 'gst.tds')
+  const reverseChargeOn = gstOn && settingEnabled(settings, 'gst.reverse_charge')
 
   const TYPES = useMemo(() => {
     const all = [
@@ -93,9 +97,9 @@ export default function TxnForm() {
       { v: 'PAYMENT_IN', l: 'Payment-In' }, { v: 'PAYMENT_OUT', l: 'Payment-Out' },
     ]
     return all.filter((t) =>
-      t.v === 'ESTIMATE' ? settings['txn.enable.estimate'] !== '0'
-      : t.v === 'DELIVERY_CHALLAN' ? settings['txn.enable.delivery_challan'] !== '0'
-      : t.v === 'PROFORMA' ? settings['txn.enable.proforma'] === '1'
+      t.v === 'ESTIMATE' ? settingEnabled(settings, 'txn.enable.estimate')
+      : t.v === 'DELIVERY_CHALLAN' ? settingEnabled(settings, 'txn.enable.delivery_challan')
+      : t.v === 'PROFORMA' ? settingEnabled(settings, 'txn.enable.proforma')
       : true)
   }, [settings])
 
@@ -110,7 +114,7 @@ export default function TxnForm() {
     const d = Number(discount) || 0
     const tcsAmt = tcsOn ? subtotal * Number(tcs || 0) / 100 : 0
     const tdsAmt = tdsOn ? subtotal * Number(tds || 0) / 100 : 0
-    let total = Math.max(0, subtotal + tax - d)
+    let total = isPayment ? Math.max(0, Number(received) || 0) : Math.max(0, subtotal + tax - d)
     if (type !== 'PAYMENT_IN' && type !== 'PAYMENT_OUT') total += tcsAmt
     if (type === 'PURCHASE') total -= tdsAmt
     let roundOff = 0
@@ -140,6 +144,14 @@ export default function TxnForm() {
   }
 
   const save = async () => {
+    setErr('')
+    if (!date) { setErr('Transaction date is required.'); return }
+    if (!autoInvoiceNo && keepRef.refNo < 1) { setErr('Enter a valid document number.'); return }
+    if ((isPayment || !cashSaleDefault) && partyId === 0) { setErr(`Select a party for this ${txnType(type).toLowerCase()}.`); return }
+    const good = lines.filter((line) => line.itemName.trim() && line.qty > 0 && line.rate > 0)
+    if (!isPayment && good.length === 0) { setErr('Add at least one line item with a name, quantity, and rate.'); return }
+    if (totals.total <= 0) { setErr('Enter an amount greater than zero.'); return }
+    setSaving(true)
     try {
       const txn: BizTxn = {
         id: editId, partyId, partyName: parties.find((p) => p.id === partyId)?.name || '', type,
@@ -147,23 +159,13 @@ export default function TxnForm() {
         subtotal: totals.subtotal, discount: Number(discount) || 0, tax: totals.tax,
         roundOff: totals.roundOff, total: totals.total, received: totals.received,
         balance: totals.balance, paymentMode: mode, chequeStatus: mode === 'Cheque' ? (keepRef.status === 'OPEN' ? 'open' : '') : '',
-        description, stateOfSupply, tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: keepRef.status,
+        description: description.trim(), stateOfSupply: stateOfSupply.trim(), tcs: totals.tcsAmt, tds: totals.tdsAmt, reverseCharge, status: keepRef.status,
         paymentGateway: '', paymentStatus: '', paymentId: '', orderId: '', paidAt: '',
       }
-      const good = lines.filter((l) => l.itemName && l.qty > 0 && l.rate > 0)
-      await api.billing.saveTxn(txn, good)
+      await api.billing.saveTxn(txn, good.map((line) => ({ ...line, itemName: line.itemName.trim(), hsnSac: line.hsnSac.trim() })))
       nav('/billing')
-    } catch (e) { setErr(String(e)) }
-  }
-
-  if (err) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-red-500">⚠️ {err}</p>
-        </CardContent>
-      </Card>
-    )
+    } catch (e) { setErr(e instanceof Error ? e.message : 'The transaction could not be saved.') }
+    finally { setSaving(false) }
   }
 
   return (
@@ -194,7 +196,7 @@ export default function TxnForm() {
                 <div>
                   <Label>Party / Customer</Label>
                   <Select value={partyId} onValueChange={(v) => selectParty(Number(v))}>
-                    <option value={0}>{isPayment ? 'Select party' : 'Cash / walk-in'}</option>
+                    <option value={0}>{isPayment || !cashSaleDefault ? 'Select party' : 'Cash / walk-in'}</option>
                     {parties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </Select>
                 </div>
@@ -202,6 +204,10 @@ export default function TxnForm() {
                   <Label>Date</Label>
                   <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                 </div>
+                {!autoInvoiceNo && <div>
+                  <Label>Document Number</Label>
+                  <Input type="number" min="1" inputMode="numeric" value={keepRef.refNo || ''} onChange={(e) => setKeepRef((current) => ({ ...current, refNo: Number(e.target.value) || 0 }))} placeholder="Enter number" required />
+                </div>}
               </div>
               {!isPayment && (
                 <div className="grid gap-4 md:grid-cols-3 mt-4">
@@ -218,7 +224,7 @@ export default function TxnForm() {
                   {stateOn && (
                     <div>
                       <Label>State of Supply</Label>
-                      <Input value={stateOfSupply} placeholder="e.g. Karnataka" onChange={(e) => setStateOfSupply(e.target.value)} />
+                     <Input value={stateOfSupply} placeholder="e.g. Karnataka" onChange={(e) => setStateOfSupply(e.target.value)} maxLength={80} />
                     </div>
                   )}
                 </div>
@@ -258,7 +264,7 @@ export default function TxnForm() {
                       {lines.map((l, i) => (
                         <tr key={i} className="border-b border-border last:border-0">
                           <td className="px-4 py-2">
-                            <Input value={l.itemName} placeholder="Item name" onChange={(e) => patchLine(i, { itemName: e.target.value })} />
+                             <Input value={l.itemName} placeholder="Item name" onChange={(e) => patchLine(i, { itemName: e.target.value })} maxLength={120} />
                           </td>
                           <td className="px-2 py-2 w-20">
                             <Input type="number" min={0} value={l.qty} onChange={(e) => patchLine(i, { qty: Number(e.target.value) })} className="text-center" />
@@ -268,7 +274,7 @@ export default function TxnForm() {
                           </td>
                           {hsnOn && (
                             <td className="px-2 py-2 hidden md:table-cell">
-                              <Input value={l.hsnSac} placeholder="HSN" onChange={(e) => patchLine(i, { hsnSac: e.target.value })} />
+                               <Input value={l.hsnSac} placeholder="HSN" onChange={(e) => patchLine(i, { hsnSac: e.target.value })} inputMode="numeric" pattern="[0-9]{4,8}" maxLength={8} />
                             </td>
                           )}
                           {gstOn && !txnTaxOn && itemTaxOn && (
@@ -317,7 +323,7 @@ export default function TxnForm() {
               </div>
               <div className="mt-4">
                 <Label>Description / Note</Label>
-                <Textarea value={description} placeholder="Reference, note or memo…" rows={2} onChange={(e) => setDescription(e.target.value)} />
+                 <Textarea value={description} placeholder="Reference, note or memo…" rows={2} onChange={(e) => setDescription(e.target.value)} maxLength={500} />
               </div>
               {gstOn && txnTaxOn && !isPayment && (
                 <div className="mt-4">
@@ -376,8 +382,9 @@ export default function TxnForm() {
                 <p className="text-xs text-muted mt-4 border-t border-border pt-3">{termsText}</p>
               )}
               <div className="flex flex-col gap-2 mt-5">
-                <Button onClick={save}><Save className="w-4 h-4" /> Save {txnType(type)}</Button>
-                {settings['txn.invoice_preview'] !== '0' && (
+                 {err && <p role="alert" className="text-sm text-red-500 rounded-lg bg-red-500/10 p-3">{err}</p>}
+                 <Button onClick={save} disabled={saving}><Save className="w-4 h-4" /> {saving ? 'Saving...' : `Save ${txnType(type)}`}</Button>
+                 {settingEnabled(settings, 'txn.invoice_preview') && (
                   <Button variant="outline" onClick={() => setShowPreview(true)}><Eye className="w-4 h-4" /> Preview invoice</Button>
                 )}
               </div>
@@ -393,10 +400,10 @@ export default function TxnForm() {
             <div>
               <div className="brand" style={{ fontSize: 20 }}>{settings['general.firm_name'] || 'Lux'}<span>Infra</span></div>
               <div className="text-xs text-muted mt-1">{settings['general.firm_gstin'] ? `GSTIN ${settings['general.firm_gstin']}` : ''}</div>
-              {settings['general.firm_pan'] && <div className="text-xs text-muted">PAN {settings['general.firm_pan']}</div>}
+               {settingEnabled(settings, 'print.pan_on_sale') && settings['general.firm_pan'] && <div className="text-xs text-muted">PAN {settings['general.firm_pan']}</div>}
               {settings['general.firm_phone'] && <div className="text-xs text-muted">Ph: {settings['general.firm_phone']}</div>}
               {settings['general.firm_email'] && <div className="text-xs text-muted">{settings['general.firm_email']}</div>}
-              {settings['general.firm_state'] && <div className="text-xs text-muted">State: {settings['general.firm_state']}{settings['general.firm_state_code'] ? ` (Code ${settings['general.firm_state_code']})` : ''}</div>}
+               {settings['general.firm_state'] && <div className="text-xs text-muted">State: {settings['general.firm_state']}{settingEnabled(settings, 'print.state_code') && settings['general.firm_state_code'] ? ` (Code ${settings['general.firm_state_code']})` : ''}</div>}
               <div className="text-xs text-muted">{settings['general.firm_address']}</div>
             </div>
             <div className="text-right">
@@ -404,7 +411,8 @@ export default function TxnForm() {
               {autoInvoiceNo && <p className="text-xs text-muted">{settings['general.firm_name'] ? 'Invoice No' : '#'}{type === 'ESTIMATE' ? ' EST' : type === 'DELIVERY_CHALLAN' ? ' DC' : type === 'PROFORMA' ? ' PF' : ' INV'}—auto</p>}
               <p className="text-xs text-muted">Date {date}</p>
               {dueDate && dueDate !== date && <p className="text-xs text-muted">Due {dueDate}</p>}
-              {stateOn && <p className="text-xs text-muted">Place of Supply: {stateOfSupply || '—'}</p>}
+               {stateOn && settingEnabled(settings, 'print.place_of_supply') && <p className="text-xs text-muted">Place of Supply: {stateOfSupply || '—'}</p>}
+               {settingEnabled(settings, 'print.payment_mode') && <p className="text-xs text-muted">Payment mode: {mode}</p>}
               {reverseCharge && <p className="text-xs text-muted">Reverse charge</p>}
             </div>
           </div>
@@ -433,9 +441,11 @@ export default function TxnForm() {
                 <td className="text-right font-bold text-primary py-3">{money(totals.total)}</td>
               </tr>
             </tfoot>
-          </table>
-          {termsOn && <p className="text-xs text-muted mt-4">{termsText}</p>}
-          {settings['general.firm_bank_account'] && (
+           </table>
+           {settingEnabled(settings, 'print.amount_words') && <p className="text-xs text-muted mt-3"><span className="font-semibold text-text">Amount in words:</span> {amountInWords(totals.total)}</p>}
+           {settingEnabled(settings, 'print.you_saved') && Number(discount) > 0 && <p className="text-xs font-semibold text-emerald-600 mt-2">You saved {money(Number(discount))}</p>}
+           {termsOn && <p className="text-xs text-muted mt-4">{termsText}</p>}
+           {settingEnabled(settings, 'print.bank_details') && settings['general.firm_bank_account'] && (
             <div className="text-xs text-muted mt-4 pt-3 border-t border-border">
               <p className="font-semibold text-text mb-1">Bank Details</p>
               {settings['general.firm_bank_name'] && <p>{settings['general.firm_bank_name']}</p>}
@@ -443,7 +453,8 @@ export default function TxnForm() {
               <p>Account No: {settings['general.firm_bank_account']}</p>
               {settings['general.firm_bank_ifsc'] && <p>IFSC: {settings['general.firm_bank_ifsc']}</p>}
             </div>
-          )}
+           )}
+           {settingEnabled(settings, 'print.signature') && <div className="mt-8 text-right text-xs text-muted"><div className="ml-auto mb-2 w-32 border-t border-border" />{settings['print.signature_text'] || 'Authorised Signatory'}</div>}
         </div>
       </Modal>
     </>
@@ -453,4 +464,24 @@ export default function TxnForm() {
 const txnType = (t: string) =>
   t === 'SALE' ? 'Sale' : t === 'PURCHASE' ? 'Purchase' : t === 'ESTIMATE' ? 'Estimate'
   : t === 'PAYMENT_IN' ? 'Payment-In' : t === 'PAYMENT_OUT' ? 'Payment-Out'
-  : t === 'SALE_ORDER' ? 'Sale Order' : t === 'PURCHASE_ORDER' ? 'Purchase Order' : 'Delivery Challan'
+  : t === 'SALE_ORDER' ? 'Sale Order' : t === 'PURCHASE_ORDER' ? 'Purchase Order'
+  : t === 'PROFORMA' ? 'Proforma Invoice' : 'Delivery Challan'
+
+const SMALL_NUMBERS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+
+function numberWords(value: number): string {
+  const number = Math.floor(value)
+  if (number < 20) return SMALL_NUMBERS[number]
+  if (number < 100) return `${TENS[Math.floor(number / 10)]} ${SMALL_NUMBERS[number % 10]}`.trim()
+  if (number < 1000) return `${numberWords(number / 100)} Hundred ${numberWords(number % 100)}`.trim()
+  if (number < 100000) return `${numberWords(number / 1000)} Thousand ${numberWords(number % 1000)}`.trim()
+  if (number < 10000000) return `${numberWords(number / 100000)} Lakh ${numberWords(number % 100000)}`.trim()
+  return `${numberWords(number / 10000000)} Crore ${numberWords(number % 10000000)}`.trim()
+}
+
+function amountInWords(value: number) {
+  const rupees = Math.floor(value)
+  const paise = Math.round((value - rupees) * 100)
+  return `${rupees ? numberWords(rupees) : 'Zero'} Rupees${paise ? ` and ${numberWords(paise)} Paise` : ''} Only`
+}

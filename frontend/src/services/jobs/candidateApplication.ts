@@ -117,7 +117,7 @@ export function validateCandidateProfile(profile: CandidateProfile): CandidatePr
   return {
     ...(!profile.fullName.trim() ? { fullName: 'Enter your full name.' } : {}),
     ...(!profile.email.trim() ? { email: 'Enter your email address.' } : {}),
-    ...(!profile.phone.trim() ? { phone: 'Enter your phone number.' } : {}),
+    ...(!/^\d{10}$/.test(profile.phone) ? { phone: 'Enter a valid 10-digit mobile number.' } : {}),
     ...(!profile.location.trim() ? { location: 'Enter your location.' } : {}),
     ...(!profile.headline.trim() ? { headline: 'Enter your professional headline.' } : {}),
     ...(!profile.experienceSummary.trim() ? { experienceSummary: 'Summarize your experience.' } : {}),

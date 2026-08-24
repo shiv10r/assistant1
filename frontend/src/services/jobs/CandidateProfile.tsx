@@ -5,10 +5,14 @@ import type { CandidateProfile as Profile, CandidateProfileErrors } from './cand
 import { CandidateProfileFields, ResumeControl } from './CandidateProfileFields'
 import JobsShell from './JobsShell'
 import { useCandidateApplications } from './useCandidateApplications'
+import { mobileDigits } from '../../lib/utils'
 
 export default function CandidateProfile() {
   const { state, persistenceError, saveProfile, saveResume } = useCandidateApplications()
-  const [profile, setProfile] = useState<Profile>(() => state.profile ?? EMPTY_CANDIDATE_PROFILE)
+  const [profile, setProfile] = useState<Profile>(() => {
+    const stored = state.profile ?? EMPTY_CANDIDATE_PROFILE
+    return { ...stored, phone: mobileDigits(stored.phone) }
+  })
   const [errors, setErrors] = useState<CandidateProfileErrors>({})
 
   function handleSave() {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Empty, Modal, PageHead } from '../ui'
 import { useLocalCollection, genId } from '../../lib/localStore'
-import { fmtDate, money, num, todayISO } from '../../lib/utils'
+import { fmtDate, isValidMobile, mobileDigits, money, num, todayISO } from '../../lib/utils'
 
 /** Minimal worker shape — any service's staff record satisfies it. */
 export interface AttendanceWorker {
@@ -133,6 +133,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
 
   const saveWorker = () => {
     if (!wName.trim()) { setErr('Name is required'); return }
+    if (wPhone && !isValidMobile(wPhone)) { setErr('Enter a valid 10-digit mobile number.'); return }
     const saved = { id: genId(), name: wName.trim(), role: wRole, phone: wPhone.trim(), status: 'active', dailyRate: Number(wRate) || 0 }
     workers.add(saved)
     attendance.add({ id: `${day}_${saved.id}`, date: day, staffId: saved.id, status: 'Present', hours: 8 })
@@ -379,7 +380,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
             </select>
           </div>
           <div className="form-row">
-            <input value={wPhone} placeholder="Phone" onChange={(e) => setWPhone(e.target.value)} />
+            <input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={wPhone} placeholder="10-digit mobile" onChange={(e) => setWPhone(mobileDigits(e.target.value))} />
             <input type="number" min={0} step="0.01" value={wRate} placeholder="Daily rate ₹" onChange={(e) => setWRate(e.target.value)} />
           </div>
           {err && <div className="empty" style={{ color: '#E05C7A', padding: '8px 0' }}>{err}</div>}

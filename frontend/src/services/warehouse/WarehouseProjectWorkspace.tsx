@@ -4,7 +4,7 @@ import { Card, CardContent, Badge, Button, Input, Textarea, Select, Label, Modal
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { ProjectRecord } from './types'
 import { PROJECT_SEED } from './seed'
-import { fmtDate, cn } from '../../lib/utils'
+import { fmtDate, cn, mobileDigits } from '../../lib/utils'
 import LocationPicker from '../../platform/maps'
 import { WeatherCard } from '../../platform/dashboard'
 import { useViewMode } from '../../hooks/useViewMode'
@@ -20,7 +20,7 @@ const STATUS_TONE: Record<string, 'default' | 'info' | 'success' | 'warning' | '
   completed: 'success',
 }
 
-type Field = { key: string; label: string; type: 'text' | 'number' | 'date' | 'select'; options?: string[]; required?: boolean; step?: string; placeholder?: string }
+type Field = { key: string; label: string; type: 'text' | 'tel' | 'number' | 'date' | 'select'; options?: string[]; required?: boolean; step?: string; placeholder?: string; maxLength?: number; pattern?: string; inputMode?: 'numeric' | 'decimal' }
 
 type ModuleDef = {
   key: string
@@ -35,7 +35,7 @@ type ModuleDef = {
 const MODULES: ModuleDef[] = [
   { key: 'parties', label: 'Party', desc: 'Site staff & vendors', icon: <Users className="w-6 h-6" />, fields: [
     { key: 'name', label: 'Name', type: 'text', required: true, placeholder: 'e.g. Ramesh Kumar' },
-    { key: 'phone', label: 'Phone', type: 'text', placeholder: '+91 …' },
+    { key: 'phone', label: '10-digit Mobile', type: 'tel', placeholder: '9876543210', maxLength: 10, pattern: '[0-9]{10}', inputMode: 'numeric' },
     { key: 'role', label: 'Role', type: 'select', options: ['Site Staff', 'Supervisor', 'Sub-contractor', 'Material Supplier', 'Vendor'] },
     { key: 'dailyRate', label: 'Daily rate ₹', type: 'number', step: '0.01' },
   ], empty: 'No parties yet', emptySub: 'Add site staff & vendors to track them on this project.' },
@@ -96,7 +96,7 @@ function ModuleModal({ def, pid, open, onClose, onOpened }: { def: ModuleDef; pi
   function openAdd() { setEditId(null); setForm({}); setErr(''); onOpened?.() }
   function openEdit(r: Rec & Record<string, unknown>) {
     setEditId(r.id)
-    setForm(Object.fromEntries(def.fields.map((f) => [f.key, String(r[f.key] ?? '')])))
+    setForm(Object.fromEntries(def.fields.map((f) => [f.key, f.type === 'tel' ? mobileDigits(String(r[f.key] ?? '')) : String(r[f.key] ?? '')])))
     setErr('')
   }
 
@@ -104,6 +104,7 @@ function ModuleModal({ def, pid, open, onClose, onOpened }: { def: ModuleDef; pi
     if (def.fields.some((f) => f.required && !String(form[f.key] ?? '').trim())) {
       setErr('Please fill in the required fields.'); return
     }
+    if (form.phone && !/^\d{10}$/.test(form.phone)) { setErr('Enter a valid 10-digit mobile number.'); return }
     const payload = Object.fromEntries(def.fields.map((f) => [f.key, f.type === 'number' ? Number(form[f.key]) || 0 : (form[f.key] ?? '').trim()]))
     if (editId) col.update(editId, payload)
     else col.add({ id: genId(), ...payload })
@@ -133,7 +134,10 @@ function ModuleModal({ def, pid, open, onClose, onOpened }: { def: ModuleDef; pi
                   step={f.step}
                   value={form[f.key] ?? ''}
                   placeholder={f.placeholder}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                  maxLength={f.maxLength ?? (f.type === 'text' ? 240 : undefined)}
+                  pattern={f.pattern}
+                  inputMode={f.inputMode}
+                  onChange={(e) => setForm({ ...form, [f.key]: f.type === 'tel' ? mobileDigits(e.target.value) : e.target.value })}
                 />
               )}
             </div>
@@ -493,10 +497,12 @@ export default function WarehouseProjectWorkspace() {
             <LocationPicker
               latitude={f.latitude}
               longitude={f.longitude}
-              onChange={(lat, lng, addr) => {
+             onChange={(lat, lng, addr) => {
                 setF((prev) => ({ ...prev, latitude: lat, longitude: lng }))
                 if (addr) setF((prev) => ({ ...prev, address: prev.address || addr }))
-              }}
+             }}
+             markerLabel={`${project.name} delivery site`}
+             purpose={`Maintain ${project.name}'s exact delivery and field-visit destination. This location also drives local weather.`}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-border">

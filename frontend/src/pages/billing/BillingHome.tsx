@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
-import type { BizTxn, BillingKpis, CatalogItem, CashData, BankAccount } from '../../api'
+import type { BizTxn, BillingKpis, CatalogItem, CashData, BankAccount, Settings } from '../../api'
 import { Badge, Empty, Input, PageHead } from '../../platform/ui'
 import { money, shortDate } from '../../lib/utils'
 import { useToast } from '../../platform/ui'
 import { useViewMode } from '../../hooks/useViewMode'
 import { AdvancedPanel, BarChart, DonutChart } from '../../platform/dashboard'
+import { settingEnabled } from './billingPreferences'
 
 const TYPE_BADGE: Record<string, 'success' | 'danger' | 'outline' | 'default'> = {
   SALE: 'success', PURCHASE: 'danger', SALE_RETURN: 'danger', PURCHASE_RETURN: 'success',
@@ -27,6 +28,7 @@ export default function BillingHome() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [cash, setCash] = useState<CashData | null>(null)
   const [banks, setBanks] = useState<BankAccount[]>([])
+  const [settings, setSettings] = useState<Settings>({})
   const [q, setQ] = useState('')
 
   const load = () => {
@@ -35,10 +37,13 @@ export default function BillingHome() {
     api.billing.items().then(setItems).catch(() => setItems([]))
     api.billing.cash().then(setCash).catch(() => setCash(null))
     api.billing.banks().then(setBanks).catch(() => setBanks([]))
+    api.billing.settings().then(setSettings).catch(() => setSettings({}))
   }
   useEffect(load, [])
 
-  const lowStock = items.filter((i) => i.type !== 'Service' && i.minStock > 0 && i.stockQty <= i.minStock)
+  const lowStock = settingEnabled(settings, 'item.stock_maintenance') && settingEnabled(settings, 'item.min_stock')
+    ? items.filter((i) => i.type !== 'Service' && i.minStock > 0 && i.stockQty <= i.minStock)
+    : []
   const bankTotal = banks.reduce((s, b) => s + b.openingBalance, 0)
 
   const query = q.trim().toLowerCase()
@@ -144,8 +149,8 @@ export default function BillingHome() {
 
       <div className="quick-actions">
         <Link to="/billing/sale" className="qa-btn">＋ Sale</Link>
-        <Link to="/billing/sale" className="qa-btn alt">＋ Purchase</Link>
-        <Link to="/billing/sale" className="qa-btn alt2">＋ Estimate</Link>
+        <Link to="/billing/sale?type=PURCHASE" className="qa-btn alt">＋ Purchase</Link>
+        {settingEnabled(settings, 'txn.enable.estimate') && <Link to="/billing/sale?type=ESTIMATE" className="qa-btn alt2">＋ Estimate</Link>}
       </div>
 
       {(lowStock.length > 0 || banks.length > 0) && (

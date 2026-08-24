@@ -388,6 +388,15 @@ export default function WarehouseProjectsMap() {
     setRoute(null); setFromLoc(null); setToLoc(null)
   }
 
+  const fitSites = () => {
+    const map = mapRef.current
+    if (!map || tagged.length === 0) return
+    const bounds = L.latLngBounds(tagged.map((site) => [site.lat, site.lng]))
+    if (userLoc) bounds.extend([userLoc.lat, userLoc.lng])
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
+    fittedRef.current = true
+  }
+
   const openProject = (p: ProjectRecord) => {
     setSelectedProject(p)
     const marker = markerRefs.current.get(p.id)
@@ -410,14 +419,14 @@ export default function WarehouseProjectsMap() {
     <>
       <div className="page-head">
         <div>
-          <h1>Site Map</h1>
+           <h1>Warehouse Project Logistics Map</h1>
           <div className="muted">
             {tagged.length > 0
-              ? `${tagged.length} project${tagged.length === 1 ? '' : 's'} on the map${approxCount > 0 ? ` · ${approxCount} tagged from address` : ''}${userLoc ? ' · distances from your live location' : ''}`
-              : 'Project locations on the map — locate yourself to plan visits'}
+               ? `${tagged.length} project${tagged.length === 1 ? '' : 's'} mapped for dispatch planning and site visits${approxCount > 0 ? ` · ${approxCount} approximate` : ''}${userLoc ? ` · GPS accuracy ±${Math.round(userAcc ?? 0)} m` : ''}`
+               : 'Map project destinations for dispatch planning, warehouse-to-site routing, and visits'}
           </div>
         </div>
-        <div className="flex gap-2">
+         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => locate(true)} className={live ? '!text-emerald-500 !border-emerald-500/50' : ''}>
             <span className="flex items-center gap-1.5">
               {live && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>}
@@ -429,8 +438,8 @@ export default function WarehouseProjectsMap() {
             {userLoc ? <LocateFixed className="w-4 h-4" /> : <Navigation className="w-4 h-4" />}
             {locating ? 'Locating…' : userLoc ? 'Recenter' : 'My location'}
           </Button>
-          <Button variant="ghost" onClick={() => { fittedRef.current = false; window.dispatchEvent(new Event('storage')) }}>
-            <MapPin className="w-4 h-4" /> Refresh
+           <Button variant="ghost" onClick={fitSites} disabled={tagged.length === 0}>
+             <MapPin className="w-4 h-4" /> Fit all sites
           </Button>
         </div>
       </div>
@@ -470,7 +479,7 @@ export default function WarehouseProjectsMap() {
             <PlaceSearch placeholder="From — search a place, e.g. Delhi" onPick={(p) => { setFromLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
             <PlaceSearch placeholder="To — search a place or site address" onPick={(p) => { setToLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
           </div>
-          <p className="text-[11px] text-muted">Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors.</p>
+          <p className="text-[11px] text-muted">Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors. Driving routes by <a href="https://project-osrm.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">OSRM</a>.</p>
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={showRoute} disabled={routing || !fromLoc || !toLoc}>
               <Navigation className="w-4 h-4" /> {routing ? 'Routing…' : 'Show route'}
@@ -529,7 +538,8 @@ export default function WarehouseProjectsMap() {
                   <button type="button" onClick={() => openProject(p)} className="font-medium text-text hover:text-primary hover:underline truncate text-left">{p.name}</button>
                   {userLoc && <Badge variant="outline" size="sm" className="flex-shrink-0">#{i + 1}</Badge>}
                 </div>
-                <p className="text-xs text-muted truncate mb-1">{p.address || 'No address'} · {money(p.budget)}</p>
+                 <p className="text-xs text-muted truncate mb-1">{p.client || 'Client not assigned'} · {p.address || 'No address'}</p>
+                 <p className="text-xs text-muted mb-1">Contract {money(p.budget)} · starts {p.startDate || 'not scheduled'}</p>
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   {approx
                     ? <span className="pop-chip pop-approx">≈ from address</span>
@@ -594,7 +604,9 @@ export default function WarehouseProjectsMap() {
           <LocationPicker
             latitude={locF.latitude}
             longitude={locF.longitude}
-            onChange={(lat, lng, addr) => setLocF((prev) => ({ ...prev, latitude: lat, longitude: lng, address: addr || prev.address }))}
+           onChange={(lat, lng, addr) => setLocF((prev) => ({ ...prev, latitude: lat, longitude: lng, address: addr || prev.address }))}
+           markerLabel={locModal ? `${locModal.name} delivery site` : 'Warehouse project site'}
+           purpose={locModal ? `Set ${locModal.name}'s exact destination for dispatch routing, delivery hand-off, and field visits.` : 'Set the project delivery destination.'}
           />
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-border">
             <p className="text-xs text-muted">Coordinates are saved to the project and shown on the map.</p>

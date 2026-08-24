@@ -12,6 +12,8 @@ export const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency:
 export const money = (n?: number) => (n == null || Number.isNaN(n) ? '₹0' : inr.format(Math.round(n)))
 export const num = (n?: number) => (n == null ? '0' : String(Math.round(n)))
 export const formatNumber = (n: number) => n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+export const mobileDigits = (value: string) => value.replace(/\D/g, '').slice(-10)
+export const isValidMobile = (value: string) => /^\d{10}$/.test(value)
 export const todayISO = () => new Date().toISOString().slice(0, 10)
 export const fmtDate = (d?: string) => {
   if (!d) return ''

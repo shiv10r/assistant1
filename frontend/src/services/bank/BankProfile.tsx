@@ -3,6 +3,7 @@ import { KeyRound, Monitor, ShieldCheck, User, Laptop, Smartphone } from 'lucide
 import { bankFormatDateTime } from './bankingData'
 import BankShell from './BankShell'
 import { useBankStore } from './bankStore'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 const SESSIONS = [
   { id: 'ses-001', device: 'Chrome on Windows', location: 'Mumbai, IN', at: '2026-08-15T07:40:00', current: true },
@@ -21,8 +22,13 @@ export default function BankProfile() {
   const store = useBankStore()
   const [mfa, setMfa] = useState(true)
   const [name, setName] = useState('Aarav Sharma')
-  const [phone, setPhone] = useState('98450 22190')
+  const [phone, setPhone] = useState('9845022190')
   const [email, setEmail] = useState('aarav.sharma@example.com')
+  const [profileMessage, setProfileMessage] = useState('')
+
+  function saveDetails() {
+    setProfileMessage(isValidMobile(phone) ? '' : 'Enter a valid 10-digit mobile number.')
+  }
 
   return (
     <BankShell unreadCount={store.unreadCount}>
@@ -39,13 +45,14 @@ export default function BankProfile() {
               <div className="bank-form">
                 <div className="bank-form-row">
                   <label htmlFor="pf-name">Full name<input id="pf-name" value={name} onChange={(event) => setName(event.target.value)} /></label>
-                  <label htmlFor="pf-phone">Mobile<input id="pf-phone" value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" /></label>
+                  <label htmlFor="pf-phone">Mobile<input id="pf-phone" type="tel" value={phone} onChange={(event) => { setPhone(mobileDigits(event.target.value)); setProfileMessage('') }} inputMode="numeric" maxLength={10} pattern="[0-9]{10}" /></label>
                 </div>
                 <label htmlFor="pf-email">Email<input id="pf-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button type="button" className="bank-btn">Save changes</button>
+                  <button type="button" className="bank-btn" onClick={saveDetails}>Save changes</button>
                   <button type="button" className="bank-btn is-ghost">Verify identity</button>
                 </div>
+                {profileMessage && <p role="alert" style={{ margin: 0, fontSize: 12 }}>{profileMessage}</p>}
               </div>
             </div>
 

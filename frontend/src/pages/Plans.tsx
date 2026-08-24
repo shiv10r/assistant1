@@ -3,7 +3,7 @@ import { usePlan } from '../hooks/usePlan'
 
 const PLANS = [
   { key: 'free', name: 'Starter', price: 0, period: 'forever', blurb: 'For single-site freelancers', highlight: false, features: ['1 active project', 'Unlimited expenses', 'Assistant chat', 'Excel / PDF / PNG reports'] },
-  { key: 'pro', name: 'Pro', price: 1500, period: '/month', blurb: 'For growing interior firms', highlight: true, features: ['Unlimited projects', 'Billing (sales, purchases, parties)', 'Cloud backup & restore', 'Advanced analytics & charts', 'Low-stock alerts', 'Project site map & weather'] },
+  { key: 'pro', name: 'Pro', price: 1500, period: '/month', blurb: 'For growing interior firms', highlight: true, features: ['Unlimited projects', 'Billing (sales, purchases, parties)', 'Google Drive integration', 'Advanced analytics & charts', 'Low-stock alerts', 'Project site map & weather'] },
   { key: 'business', name: 'Business', price: 2500, period: '/month', blurb: 'For multi-branch studios', highlight: false, features: ['Everything in Pro', 'Multi-user access', 'Custom invoice templates', 'Priority support', 'API access', 'Global search'] },
 ]
 

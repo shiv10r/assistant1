@@ -7,6 +7,7 @@ import { JOB_SEED, APPLICANT_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { KPICard } from '../../platform/ui'
 import { StatusBadge } from '../../platform/ui'
+import { isValidMobile, mobileDigits } from '../../lib/utils'
 
 const STAGES: Applicant['stage'][] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected']
 
@@ -21,6 +22,7 @@ export default function SchoolRecruitment() {
   const [editingApp, setEditingApp] = useState<Applicant | null>(null)
   const [jobForm, setJobForm] = useState({ title: '', department: '', openings: 1, experience: '', status: 'open' as JobOpening['status'] })
   const [appForm, setAppForm] = useState({ jobId: jobs[0]?.id ?? '', name: '', phone: '', email: '', stage: 'applied' as Applicant['stage'] })
+  const [appPhoneError, setAppPhoneError] = useState('')
   const [tab, setTab] = useState('jobs')
 
   const filteredJobs = useMemo(
@@ -72,18 +74,21 @@ export default function SchoolRecruitment() {
 
   function openAddApp() {
     setEditingApp(null)
+    setAppPhoneError('')
     setAppForm({ jobId: jobs[0]?.id ?? '', name: '', phone: '', email: '', stage: 'applied' })
     setAppModal(true)
   }
 
   function openEditApp(a: Applicant) {
     setEditingApp(a)
-    setAppForm({ jobId: a.jobId, name: a.name, phone: a.phone, email: a.email, stage: a.stage })
+    setAppPhoneError('')
+    setAppForm({ jobId: a.jobId, name: a.name, phone: mobileDigits(a.phone), email: a.email, stage: a.stage })
     setAppModal(true)
   }
 
   function saveApp() {
     if (!appForm.name.trim()) return
+    if (appForm.phone && !isValidMobile(appForm.phone)) { setAppPhoneError('Enter a valid 10-digit mobile number.'); return }
     const job = jobs.find((j) => j.id === appForm.jobId)
     const payload = { ...appForm, jobTitle: job?.title ?? '', appliedOn: editingApp?.appliedOn ?? new Date().toISOString().slice(0, 10) }
     if (editingApp) updateApplicant(editingApp.id, payload)
@@ -211,7 +216,7 @@ export default function SchoolRecruitment() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><Label required>Name</Label><Input value={appForm.name} onChange={(e) => setAppForm({ ...appForm, name: e.target.value })} /></div>
-            <div><Label>Phone</Label><Input value={appForm.phone} onChange={(e) => setAppForm({ ...appForm, phone: e.target.value })} /></div>
+            <div><Label>Phone</Label><Input type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={appForm.phone} error={appPhoneError} onChange={(e) => { setAppForm({ ...appForm, phone: mobileDigits(e.target.value) }); setAppPhoneError('') }} /></div>
           </div>
           <div><Label>Email</Label><Input type="email" value={appForm.email} onChange={(e) => setAppForm({ ...appForm, email: e.target.value })} /></div>
           <div>

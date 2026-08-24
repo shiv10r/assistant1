@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { getRole, logout } from './platform/auth'
+import { getEmail, getRole, getUsername, getUserProfile, logout, onUserProfileChange } from './platform/auth'
 import { applyTheme, getTheme, isWeatherMode, setWeatherMode } from './theme'
 import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
@@ -21,10 +21,8 @@ import {
   FiCalendar,
   FiClock,
   FiMessageSquare,
-  FiDatabase,
   FiSettings,
   FiVideo,
-  FiZap,
   FiShield,
   FiCreditCard,
   FiUser,
@@ -72,6 +70,7 @@ import {
   MdBuild,
   MdSchool,
   MdSavings,
+  MdTrain,
 } from 'react-icons/md'
 import {
   BiBuildingHouse,
@@ -161,7 +160,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Business Modules', to: '/warehouse/modules', icon: <FiGrid className="w-5 h-5" /> },
     ]},
   ],
-school: [
+  school: [
     { title: 'Command Center', items: [
       { label: 'Overview', to: '/school', icon: <MdDashboard className="w-5 h-5" />, end: true },
     ]},
@@ -249,7 +248,15 @@ school: [
       { label: 'Projects', to: '/school/projects', icon: <IoBriefcase className="w-5 h-5" /> },
     ]},
   ],
-hotel: [
+  railway: [
+    { title: 'Rail Network', items: [
+      { label: 'Network Overview', to: '/railway', icon: <MdTrain className="w-5 h-5" />, end: true },
+      { label: 'Routes & Timetable', to: '/railway/routes', icon: <FiClock className="w-5 h-5" /> },
+      { label: 'Stations', to: '/railway/stations', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Fleet Readiness', to: '/railway/fleet', icon: <FiTruck className="w-5 h-5" /> },
+    ]},
+  ],
+  hotel: [
     { title: 'Hotel Operations', items: [
       { label: 'Overview', to: '/hotel', icon: <MdDashboard className="w-5 h-5" />, end: true },
       { label: 'Reservations', to: '/hotel/reservations', icon: <MdCalendarToday className="w-5 h-5" /> },
@@ -353,17 +360,15 @@ hotel: [
 
 /** Groups shared across every service — kept to the fixed global feature set only. */
 const COMMON_GROUPS: NavGroup[] = [
-  { title: 'Assistant', items: [
+  { title: 'Workspace', items: [
     { label: 'Chat', to: '/assistant', icon: <FiMessageSquare className="w-5 h-5" /> },
-    { label: 'Backup & Sync', to: '/backup', icon: <FiDatabase className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <FiSettings className="w-5 h-5" /> },
   ]},
-  { title: 'Business', items: [
+  { title: 'Collaboration', items: [
     { label: 'Video Call', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
-  ]},
-  { title: 'More', items: [
     { label: 'Broadcast', to: '/broadcast', icon: <IoMegaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
-    { label: 'Upcoming Feature', to: '/integrations', icon: <FiZap className="w-5 h-5" /> },
+  ]},
+  { title: 'Administration', items: [
     { label: 'Team & Roles', to: '/users', icon: <FiShield className="w-5 h-5" />, adminOnly: true },
   ]},
   { title: 'Account', items: [
@@ -379,8 +384,10 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const operations: NavGroup[] = config ? [{
     title: service?.shell === 'portal' ? 'My workspace' : 'Operations',
     items: [
-      { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
-      { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
+      ...(config.id === 'interior' ? [] : [
+        { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
+        { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
+      ]),
       { to: `/${config.id}/operations/visits`, label: `${config.visit.replace(/\b\w/g, (letter) => letter.toUpperCase())}s`, icon: <FiCalendar className="w-5 h-5" /> },
       ...(config.map ? [{ to: `/${config.id}/operations/map`, label: `${config.location.replace(/\b\w/g, (letter) => letter.toUpperCase())} Map`, icon: <FiMap className="w-5 h-5" /> }] : []),
       ...(config.attendance ? [{ to: `/${config.id}/operations/attendance`, label: 'Attendance', icon: <FiClock className="w-5 h-5" /> }] : []),
@@ -388,7 +395,18 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
       { to: `/${config.id}/operations/files`, label: 'Workspace Files', icon: <MdDescription className="w-5 h-5" /> },
     ],
   }] : []
-  return service?.shell === 'portal' ? [...operations, ...serviceGroups] : [...operations, ...serviceGroups, ...COMMON_GROUPS]
+  const coordination: NavGroup[] = config ? [{
+    title: 'Coordination',
+    items: [
+      { to: `/${config.id}/operations/collaboration`, label: 'Collaboration', icon: <FiMessageSquare className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/tracking`, label: 'Tracking Timeline', icon: <FiCheckSquare className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/library`, label: 'Project Library', icon: <FiBookOpen className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/team`, label: 'Team Workspace', icon: <FiUsers className="w-5 h-5" /> },
+    ],
+  }] : []
+  return service?.shell === 'portal'
+    ? [...operations, ...coordination, ...serviceGroups]
+    : [...operations, ...coordination, ...serviceGroups, ...COMMON_GROUPS]
 }
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
@@ -402,15 +420,20 @@ function defaultSidebarOpen(): boolean {
 }
 
 export default function Layout() {
+  const username = getUsername() || 'User'
+  const role = getRole()
   const [open, setOpen] = useState(defaultSidebarOpen)
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
   const [weatherOpen, setWeatherOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profile, setProfile] = useState(() => getUserProfile(username))
+  const profileMenuRef = useRef<HTMLDivElement>(null)
   const { plan } = usePlan()
   const { mode, setMode } = useViewMode()
-  const isAdmin = getRole() === 'admin' || !getRole()
+  const isAdmin = role === 'admin'
   const weather = useWeather()
 
   function toggleWeatherMode() {
@@ -480,6 +503,16 @@ export default function Layout() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  useEffect(() => onUserProfileChange(() => setProfile(getUserProfile(username))), [username])
+
+  useEffect(() => {
+    function closeProfileMenu(event: MouseEvent) {
+      if (!profileMenuRef.current?.contains(event.target as Node)) setProfileOpen(false)
+    }
+    document.addEventListener('mousedown', closeProfileMenu)
+    return () => document.removeEventListener('mousedown', closeProfileMenu)
+  }, [])
+
   return (
     <div className="app">
       <header className="topbar">
@@ -516,8 +549,23 @@ export default function Layout() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'dark' ? <MdWbSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/account')} aria-label="Account" title="Account">
-            <FiUser className="w-5 h-5" />
+          <div className="topbar-profile-wrap" ref={profileMenuRef}>
+            <button className="topbar-profile" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen} aria-haspopup="menu">
+              <span className="topbar-avatar">{profile.avatar ? <img src={profile.avatar} alt="" /> : (profile.displayName || username).slice(0, 1).toUpperCase()}</span>
+              <span className="topbar-profile-copy"><strong>{profile.displayName || username}</strong><small>{role}</small></span>
+              <MdKeyboardArrowDown className="w-4 h-4" />
+            </button>
+            {profileOpen && (
+              <div className="topbar-profile-menu" role="menu">
+                <div className="topbar-profile-summary"><strong>{profile.displayName || username}</strong><span>{profile.email || getEmail() || role}</span></div>
+                <button role="menuitem" onClick={() => { setProfileOpen(false); navigate('/account') }}><FiUser /> My profile</button>
+                {isAdmin && <button role="menuitem" onClick={() => { setProfileOpen(false); navigate('/users') }}><FiUsers /> Team &amp; roles</button>}
+                <button role="menuitem" className="is-danger" onClick={signOut}><MdLogout /> Sign out</button>
+              </div>
+            )}
+          </div>
+          <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" title={`Sign out ${username}`} className="topbar-logout">
+            <MdLogout className="w-5 h-5" />
           </Button>
         </div>
       </header>
@@ -531,6 +579,10 @@ export default function Layout() {
           <div className="sidebar-service">
             <span className="sidebar-service-icon">{service?.icon || 'V'}</span>
             <span><strong>{service?.label ?? 'Workspace'}</strong><small>{service?.tagline ?? 'Business operations'}</small></span>
+          </div>
+          <div className="sidebar-section-controls">
+            <span>Navigation</span>
+            <button onClick={() => setCollapsedGroups(collapsedGroups.size ? new Set() : new Set(groups.map((group) => group.title)))}>{collapsedGroups.size ? 'Expand all' : 'Collapse all'}</button>
           </div>
           <div className="sidebar-scroll">{groups.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)

@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react'
+import { forwardRef, useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react'
 import { cn } from '../../lib/utils'
 
 type ButtonVariant = 'default' | 'outline' | 'ghost' | 'destructive' | 'success'
@@ -39,12 +39,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = 'Button'
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { error?: boolean }>(
-  ({ className, type = 'text', error, ...props }, ref) => (
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { error?: string }>(
+  ({ className, type = 'text', error, 'aria-describedby': describedBy, ...props }, ref) => {
+    const errorId = useId()
+    return (
     <div className="w-full">
       <input
         ref={ref}
         type={type}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? [describedBy, errorId].filter(Boolean).join(' ') : describedBy}
         className={cn(
           'w-full bg-surface border rounded-lg px-4 py-2.5 text-text placeholder:text-muted',
           'transition-colors duration-200',
@@ -55,17 +59,22 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
-  )
+    )
+  }
 )
 Input.displayName = 'Input'
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { error?: boolean }>(
-  ({ className, error, ...props }, ref) => (
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { error?: string }>(
+  ({ className, error, 'aria-describedby': describedBy, ...props }, ref) => {
+    const errorId = useId()
+    return (
     <div className="w-full">
       <textarea
         ref={ref}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? [describedBy, errorId].filter(Boolean).join(' ') : describedBy}
         className={cn(
           'w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text placeholder:text-muted',
           'transition-colors duration-200 resize-none min-h-[80px]',
@@ -76,17 +85,22 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
-  )
+    )
+  }
 )
 Textarea.displayName = 'Textarea'
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { error?: boolean; onValueChange?: (value: string) => void }>(
-  ({ className, error, onValueChange, onChange, ...props }, ref) => (
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { error?: string; onValueChange?: (value: string) => void }>(
+  ({ className, error, onValueChange, onChange, 'aria-describedby': describedBy, ...props }, ref) => {
+    const errorId = useId()
+    return (
     <div className="w-full">
       <select
         ref={ref}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? [describedBy, errorId].filter(Boolean).join(' ') : describedBy}
         onChange={(e) => {
           onChange?.(e)
           onValueChange?.(e.target.value)
@@ -101,9 +115,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
-  )
+    )
+  }
 )
 Select.displayName = 'Select'
 

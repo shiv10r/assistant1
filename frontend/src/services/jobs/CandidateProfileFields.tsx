@@ -3,6 +3,7 @@ import type { ChangeEvent, ReactNode } from 'react'
 import { FileText, Upload } from 'lucide-react'
 import { validateResume } from './candidateApplication'
 import type { CandidateProfile, CandidateProfileErrors, ResumeMetadata } from './candidateApplication'
+import { mobileDigits } from '../../lib/utils'
 
 type CandidateProfileFieldsProps = {
   readonly profile: CandidateProfile
@@ -47,7 +48,7 @@ export function CandidateProfileFields({ profile, errors, onProfileChange }: Can
         <input id="candidate-email" type="email" value={profile.email} autoComplete="email" aria-describedby={describedBy('candidate-email', errors.email)} onChange={(event: ChangeEvent<HTMLInputElement>) => update('email', event.target.value)} />
       </Field>
       <Field id="candidate-phone" label="Phone number" error={errors.phone}>
-        <input id="candidate-phone" type="tel" value={profile.phone} autoComplete="tel" aria-describedby={describedBy('candidate-phone', errors.phone)} onChange={(event: ChangeEvent<HTMLInputElement>) => update('phone', event.target.value)} />
+        <input id="candidate-phone" type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={profile.phone} autoComplete="tel" aria-describedby={describedBy('candidate-phone', errors.phone)} onChange={(event: ChangeEvent<HTMLInputElement>) => update('phone', mobileDigits(event.target.value))} />
       </Field>
       <Field id="candidate-location" label="Location" error={errors.location}>
         <input id="candidate-location" value={profile.location} autoComplete="address-level2" aria-describedby={describedBy('candidate-location', errors.location)} onChange={(event: ChangeEvent<HTMLInputElement>) => update('location', event.target.value)} />

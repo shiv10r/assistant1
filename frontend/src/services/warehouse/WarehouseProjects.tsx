@@ -124,10 +124,12 @@ export default function WarehouseProjects() {
             <LocationPicker
               latitude={form.latitude}
               longitude={form.longitude}
-              onChange={(lat, lng, addr) => {
+             onChange={(lat, lng, addr) => {
                 setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }))
                 if (addr) setForm((prev) => ({ ...prev, address: prev.address || addr }))
-              }}
+             }}
+             markerLabel={`${form.name || 'Project'} delivery site`}
+             purpose="Set the exact warehouse project destination for dispatch routes, site visits, and local weather."
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">

@@ -10,3 +10,13 @@ export {
   storeAuthSession,
   type AuthSession,
 } from './session'
+
+export {
+  getEdition,
+  getUserProfile,
+  onUserProfileChange,
+  saveUserProfile,
+  setEdition,
+  type Edition,
+  type UserProfile,
+} from './profile'

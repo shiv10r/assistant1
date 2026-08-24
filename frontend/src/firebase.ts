@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, type Auth } from 'firebase/auth'
-import { getMessaging, getToken, onMessage, type Messaging } from 'firebase/messaging'
+import { getMessaging, getToken, type Messaging } from 'firebase/messaging'
 import { getAnalytics, isSupported as analyticsSupported, logEvent, type Analytics } from 'firebase/analytics'
 import { getPerformance, type FirebasePerformance } from 'firebase/performance'
 import { api, BASE, type FirebaseWebConfig } from './api'
@@ -101,18 +101,5 @@ export async function subscribePush(): Promise<{ token: string | null; error?: s
     return { token: token || null }
   } catch (e) {
     return { token: null, error: e instanceof Error ? e.message : String(e) }
-  }
-}
-
-export async function onPushMessage(handler: (payload: { title?: string; body?: string }) => void): Promise<void> {
-  const { config, app } = await load()
-  if (!app || !config.messagingSenderId) return
-  try {
-    const messaging = getMessaging(app)
-    onMessage(messaging, (payload) => {
-      handler({ title: payload.notification?.title, body: payload.notification?.body })
-    })
-  } catch {
-    /* ignore */
   }
 }

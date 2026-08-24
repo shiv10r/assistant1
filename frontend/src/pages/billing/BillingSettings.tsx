@@ -3,7 +3,8 @@ import { api } from '../../api'
 import type { Settings } from '../../api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Input, Textarea, Label, Switch, Tabs, TabsList, TabsTrigger, TabsContent } from '../../platform/ui'
 import { useToast } from '../../platform/ui'
-import { cn } from '../../lib/utils'
+import { cn, mobileDigits } from '../../lib/utils'
+import { settingEnabled } from './billingPreferences'
 
 interface Preference {
   key: string
@@ -20,19 +21,31 @@ interface PreferenceGroup {
   settings: Preference[]
 }
 
-const FIRM_FIELDS = [
-  { key: 'general.firm_name', label: 'Firm Name', placeholder: 'VSR Systems', required: true },
-  { key: 'general.firm_gstin', label: 'GSTIN', placeholder: '29AAACL1234A1Z5', pattern: '[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}' },
-  { key: 'general.firm_pan', label: 'PAN', placeholder: 'AAACL1234A' },
-  { key: 'general.firm_phone', label: 'Phone', placeholder: '+91 98765 43210', type: 'tel' },
-  { key: 'general.firm_email', label: 'Email', placeholder: 'billing@vsrsystems.com', type: 'email' },
-  { key: 'general.firm_state', label: 'State', placeholder: 'Karnataka' },
-  { key: 'general.firm_state_code', label: 'State Code', placeholder: '29' },
-  { key: 'general.firm_address', label: 'Address', placeholder: '123 Business Park, Bangalore', multiline: true },
-  { key: 'general.firm_bank_name', label: 'Bank Name', placeholder: 'HDFC Bank' },
-  { key: 'general.firm_bank_account', label: 'Account No', placeholder: '50100234567890' },
-  { key: 'general.firm_bank_ifsc', label: 'IFSC', placeholder: 'HDFC0001234' },
-  { key: 'general.firm_bank_holder', label: 'Account Holder', placeholder: 'VSR Systems Pvt Ltd' },
+interface FirmField {
+  key: string
+  label: string
+  placeholder: string
+  required?: boolean
+  type?: string
+  pattern?: string
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
+  maxLength?: number
+  multiline?: boolean
+}
+
+const FIRM_FIELDS: FirmField[] = [
+  { key: 'general.firm_name', label: 'Firm Name', placeholder: 'VSR Systems', required: true, maxLength: 120 },
+  { key: 'general.firm_gstin', label: 'GSTIN', placeholder: '29AAACL1234A1Z5', pattern: '[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]', maxLength: 15 },
+  { key: 'general.firm_pan', label: 'PAN', placeholder: 'AAACL1234A', pattern: '[A-Z]{5}[0-9]{4}[A-Z]', maxLength: 10 },
+  { key: 'general.firm_phone', label: '10-digit Mobile', placeholder: '9876543210', type: 'tel', inputMode: 'numeric', pattern: '[0-9]{10}', maxLength: 10 },
+  { key: 'general.firm_email', label: 'Email', placeholder: 'billing@vsrsystems.com', type: 'email', maxLength: 254 },
+  { key: 'general.firm_state', label: 'State', placeholder: 'Karnataka', maxLength: 80 },
+  { key: 'general.firm_state_code', label: 'State Code', placeholder: '29', inputMode: 'numeric', pattern: '[0-9]{2}', maxLength: 2 },
+  { key: 'general.firm_address', label: 'Address', placeholder: '123 Business Park, Bangalore', multiline: true, maxLength: 500 },
+  { key: 'general.firm_bank_name', label: 'Bank Name', placeholder: 'HDFC Bank', maxLength: 80 },
+  { key: 'general.firm_bank_account', label: 'Account No', placeholder: '50100234567890', inputMode: 'numeric', pattern: '[0-9]{6,18}', maxLength: 18 },
+  { key: 'general.firm_bank_ifsc', label: 'IFSC', placeholder: 'HDFC0001234', pattern: '[A-Z]{4}0[A-Z0-9]{6}', maxLength: 11 },
+  { key: 'general.firm_bank_holder', label: 'Account Holder', placeholder: 'VSR Systems Pvt Ltd', maxLength: 120 },
 ]
 
 const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
@@ -101,6 +114,17 @@ const PREFERENCE_GROUPS: Record<string, PreferenceGroup> = {
       { key: 'print.bank_details', label: 'Bank Details', desc: 'Print firm bank details on invoices', type: 'toggle' },
     ]
   },
+  cashbank: {
+    title: 'Cash & Bank',
+    description: 'Control manual cash records and the bank details captured by billing',
+    icon: '🏦',
+    settings: [
+      { key: 'cash.adjustments_enabled', label: 'Cash Adjustments', desc: 'Allow manual cash additions and reductions', type: 'toggle' },
+      { key: 'bank.accounts_enabled', label: 'Bank Accounts', desc: 'Allow bank accounts to be added and maintained', type: 'toggle' },
+      { key: 'bank.ifsc', label: 'IFSC Details', desc: 'Capture IFSC when bank accounts are enabled', type: 'toggle', dependsOn: 'bank.accounts_enabled' },
+      { key: 'bank.upi', label: 'UPI Details', desc: 'Capture a UPI ID for enabled bank accounts', type: 'toggle', dependsOn: 'bank.accounts_enabled' },
+    ]
+  },
 }
 
 const labelByKey = Object.fromEntries(Object.values(PREFERENCE_GROUPS).flatMap(g => g.settings.map(s => [s.key, s.label])))
@@ -108,11 +132,12 @@ const labelByKey = Object.fromEntries(Object.values(PREFERENCE_GROUPS).flatMap(g
 export default function BillingSettings() {
   const { toast } = useToast()
   const [s, setS] = useState<Settings>({})
-  const [activeTab, setActiveTab] = useState<'firm' | 'gst' | 'invoicing' | 'items' | 'printing'>('firm')
+  const [activeTab, setActiveTab] = useState<'firm' | 'gst' | 'invoicing' | 'items' | 'printing' | 'cashbank'>('firm')
   const [saving, setSaving] = useState<string | null>(null)
+  const [firmErrors, setFirmErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    api.billing.settings().then(setS).catch(() => {})
+    api.billing.settings().then((settings) => setS({ ...settings, 'general.firm_phone': mobileDigits(settings['general.firm_phone'] || '') })).catch(() => {})
   }, [])
 
   const onChange = async (k: string, v: string, notify = false) => {
@@ -129,8 +154,25 @@ export default function BillingSettings() {
     }
   }
 
-  const isEnabled = (k: string) => s[k] === '1'
-  const shouldShow = (dep?: string) => !dep || isEnabled(dep)
+  const isEnabled = (k: string) => settingEnabled(s, k)
+
+  const updateFirmField = (field: FirmField, value: string) => {
+    let next = value
+    if (field.type === 'tel' || field.inputMode === 'numeric') next = value.replace(/\D/g, '')
+    if (['general.firm_gstin', 'general.firm_pan', 'general.firm_bank_ifsc'].includes(field.key)) next = next.toUpperCase().replace(/[^A-Z0-9]/g, '')
+    setS((previous) => ({ ...previous, [field.key]: next }))
+    setFirmErrors((previous) => ({ ...previous, [field.key]: '' }))
+  }
+
+  const saveFirmField = (field: FirmField) => {
+    const value = (s[field.key] || '').trim()
+    const valid = !field.pattern || !value || new RegExp(`^(?:${field.pattern})$`).test(value)
+    if ((field.required && !value) || !valid) {
+      setFirmErrors((previous) => ({ ...previous, [field.key]: !value ? `${field.label} is required` : `Enter a valid ${field.label.toLowerCase()}` }))
+      return
+    }
+    void onChange(field.key, value, true)
+  }
 
   return (
     <>
@@ -142,12 +184,13 @@ export default function BillingSettings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
           <TabsTrigger value="firm">Firm Details</TabsTrigger>
           <TabsTrigger value="gst">GST & Tax</TabsTrigger>
           <TabsTrigger value="invoicing">Invoicing</TabsTrigger>
           <TabsTrigger value="items">Items & Inventory</TabsTrigger>
           <TabsTrigger value="printing">Print & Export</TabsTrigger>
+          <TabsTrigger value="cashbank">Cash & Bank</TabsTrigger>
         </TabsList>
 
         <TabsContent value="firm">
@@ -165,19 +208,26 @@ export default function BillingSettings() {
                       <Textarea
                         id={field.key}
                         value={s[field.key] || ''}
-                        onChange={(e) => onChange(field.key, e.target.value)}
+                        onChange={(e) => updateFirmField(field, e.target.value)}
+                        onBlur={() => saveFirmField(field)}
                         placeholder={field.placeholder}
                         rows={3}
+                        maxLength={field.maxLength}
+                        error={firmErrors[field.key]}
                       />
                     ) : (
                       <Input
                         id={field.key}
                         type={field.type || 'text'}
                         value={s[field.key] || ''}
-                        onChange={(e) => onChange(field.key, e.target.value)}
+                        onChange={(e) => updateFirmField(field, e.target.value)}
+                        onBlur={() => saveFirmField(field)}
                         placeholder={field.placeholder}
                         pattern={field.pattern}
+                        inputMode={field.inputMode}
+                        maxLength={field.maxLength}
                         required={field.required}
+                        error={firmErrors[field.key]}
                       />
                     )}
                   </div>
@@ -187,7 +237,7 @@ export default function BillingSettings() {
           </Card>
         </TabsContent>
 
-        {(['gst', 'invoicing', 'items', 'printing'] as const).map((tab) => (
+        {(['gst', 'invoicing', 'items', 'printing', 'cashbank'] as const).map((tab) => (
           <TabsContent key={tab} value={tab}>
             <Card>
               <CardHeader>
@@ -195,9 +245,7 @@ export default function BillingSettings() {
                 <CardDescription>{PREFERENCE_GROUPS[tab].description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {PREFERENCE_GROUPS[tab].settings
-                  .filter(setting => shouldShow(setting.dependsOn))
-                  .map((setting) => (
+                {PREFERENCE_GROUPS[tab].settings.map((setting) => (
                     <PreferenceRow
                       key={setting.key}
                       setting={setting}
@@ -205,6 +253,7 @@ export default function BillingSettings() {
                       onChange={onChange}
                       isEnabled={isEnabled(setting.key)}
                       saving={saving === setting.key}
+                      dependencyMet={!setting.dependsOn || isEnabled(setting.dependsOn)}
                     />
                   ))}
               </CardContent>
@@ -216,15 +265,16 @@ export default function BillingSettings() {
   )
 }
 
-function PreferenceRow({ setting, value, onChange, isEnabled, saving }: {
+function PreferenceRow({ setting, value, onChange, isEnabled, saving, dependencyMet }: {
   setting: Preference
   value: string
   onChange: (k: string, v: string, notify?: boolean) => void
   isEnabled: boolean
   saving: boolean
+  dependencyMet: boolean
 }) {
   return (
-    <div className={cn('flex items-start gap-4 p-4 bg-surface/50 rounded-xl border border-border transition-colors', !isEnabled && 'opacity-50')}>
+    <div className={cn('flex items-start gap-4 p-4 bg-surface/50 rounded-xl border border-border transition-colors', !dependencyMet && 'bg-surface2/50')}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3">
           <h4 className="font-medium text-text">{setting.label}</h4>
@@ -235,23 +285,25 @@ function PreferenceRow({ setting, value, onChange, isEnabled, saving }: {
           )}
         </div>
         <p className="text-sm text-muted mt-0.5">{setting.desc}</p>
+        {!dependencyMet && setting.dependsOn && <p className="text-xs text-amber-600 mt-1">Turn on {labelByKey[setting.dependsOn]} first.</p>}
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         {setting.type === 'toggle' && (
           <Switch
-            checked={isEnabled}
+            checked={dependencyMet && isEnabled}
             onCheckedChange={(checked) => onChange(setting.key, checked ? '1' : '0', true)}
-            disabled={saving}
+            disabled={saving || !dependencyMet}
             aria-label={setting.label}
           />
         )}
-        {setting.type === 'textarea' && isEnabled && (
+        {setting.type === 'textarea' && (
           <Textarea
             value={value}
             onChange={(e) => onChange(setting.key, e.target.value)}
             placeholder={`Enter ${setting.label.toLowerCase()}`}
             rows={2}
             className="w-64"
+            disabled={saving || !dependencyMet}
           />
         )}
       </div>
