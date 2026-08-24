@@ -1,191 +1,130 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, Badge, money, num } from '../../platform/ui'
-import { Home, Plus, Sparkles, ShoppingBag, FileText, ArrowRight, CheckCircle2, Layers, Camera } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, money, num, fmtDate } from '../../platform/ui'
+import { ArrowRight, CalendarClock, CircleAlert, Compass, MapPinned, PackageCheck, Plus, Sparkles, Users } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
-import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct } from './types'
-import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED, PRODUCT_SEED } from './seed'
-import { KPICard } from '../../platform/ui'
+import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct, InteriorTask, InteriorProcurement, InteriorDecision } from './types'
+import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED, PRODUCT_SEED, TASK_SEED, PROCUREMENT_SEED, DECISION_SEED } from './seed'
 import { AdvancedPanel, type BarDatum, type DonutDatum } from '../../platform/dashboard'
 
-const NAV = [
-  { label: 'New project', to: '/interior/projects', icon: <Plus className="w-5 h-5" /> },
-  { label: 'All projects', to: '/interior/projects', icon: <Layers className="w-5 h-5" /> },
-  { label: 'Products', to: '/interior/products', icon: <ShoppingBag className="w-5 h-5" /> },
-  { label: 'Designs', to: '/interior/projects', icon: <Sparkles className="w-5 h-5" /> },
-]
+const PHASES = ['Discovery', 'Concept', 'Design Development', 'Procurement', 'Execution', 'Handover']
 
 export default function InteriorHome() {
   const navigate = useNavigate()
-  const { items: projects } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
+  const { items: storedProjects } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
   const { items: rooms } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
   const { items: designs } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
   const { items: products } = useLocalCollection<InteriorProduct>('interior:products', PRODUCT_SEED)
+  const { items: tasks } = useLocalCollection<InteriorTask>('interior:tasks', TASK_SEED)
+  const { items: procurement } = useLocalCollection<InteriorProcurement>('interior:procurement', PROCUREMENT_SEED)
+  const { items: decisions } = useLocalCollection<InteriorDecision>('interior:decisions', DECISION_SEED)
+  const projects = useMemo(() => storedProjects.map((project) => ({ ...PROJECT_SEED.find((seed) => seed.id === project.id), ...project })), [storedProjects])
 
-  const activeProjects = projects.filter((p) => p.status === 'active')
-  const savedDesigns = designs.filter((d) => d.saved && d.status === 'completed')
-  const favorites = designs.filter((d) => d.favorite)
-  const totalBudget = activeProjects.reduce((s, p) => s + p.budget, 0)
-  const roomsWithImage = rooms.filter((r) => r.image).length
+  const activeProjects = projects.filter((project) => project.status === 'active')
+  const totalBudget = activeProjects.reduce((sum, project) => sum + project.budget, 0)
+  const completedDesigns = designs.filter((design) => design.status === 'completed')
+  const approvedDesigns = completedDesigns.filter((design) => design.saved)
+  const approvalRate = completedDesigns.length ? Math.round((approvedDesigns.length / completedDesigns.length) * 100) : 0
+  const openTasks = tasks.filter((task) => task.status !== 'completed')
+  const pendingDecisions = decisions.filter((decision) => decision.status !== 'approved')
+  const atRisk = procurement.filter((item) => item.status === 'delayed').length + tasks.filter((task) => task.status === 'blocked').length
 
-  const designStatusDonut: DonutDatum[] = useMemo(() => {
-    const completed = designs.filter((d) => d.status === 'completed').length
-    const generating = designs.filter((d) => d.status === 'generating').length
-    const failed = designs.filter((d) => d.status === 'failed').length
-    return [
-      { label: 'Completed', value: completed, color: 'var(--emerald, #10b981)' },
-      { label: 'Generating', value: generating, color: 'var(--amber, #f59e0b)' },
-      { label: 'Failed', value: failed, color: 'var(--red, #ef4444)' },
-    ]
-  }, [designs])
+  const phaseBars: BarDatum[] = useMemo(() => PHASES.map((label) => ({
+    label,
+    value: projects.filter((project) => (project.phase ?? 'Discovery') === label).length,
+  })), [projects])
 
-  const styleBars: BarDatum[] = useMemo(() => {
-    const byStyle = new Map<string, number>()
-    for (const d of designs) byStyle.set(d.style, (byStyle.get(d.style) ?? 0) + 1)
-    return [...byStyle.entries()]
-      .map(([label, value]) => ({ label, value }))
-      .slice(0, 6)
-  }, [designs])
+  const procurementDonut: DonutDatum[] = useMemo(() => {
+    const colors = ['#b85c38', '#7f9278', '#c69562', '#637381', '#8e6f8a']
+    const totals = new Map<string, number>()
+    for (const item of procurement) totals.set(item.category, (totals.get(item.category) ?? 0) + item.amount)
+    return [...totals.entries()].map(([label, value], index) => ({ label, value, color: colors[index % colors.length] }))
+  }, [procurement])
 
-  const recentProjects = [...projects].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
-  const recentDesigns = [...designs].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
-
-  const needsAttention = [
-    ...(rooms.filter((r) => !r.image).slice(0, 3).map((r) => {
-      const p = projects.find((x) => x.id === r.projectId)
-      return { label: `Upload image for "${r.name}" (${p?.name ?? 'project'})`, to: `/interior/projects/${r.projectId}/rooms/${r.id}`, tone: 'info' as const }
-    })),
-    ...(designs.filter((d) => d.status === 'failed').slice(0, 2).map((d) => ({
-      label: `Design "${d.name}" failed to generate — retry it`,
-      to: `/interior/projects/${d.projectId}/generate`,
-      tone: 'danger' as const,
-    }))),
-  ].slice(0, 4)
+  const workSignals = [
+    { label: `${pendingDecisions.length} client decisions waiting`, note: 'Approvals are holding the next design gate', icon: <Users className="w-4 h-4" />, color: '#b85c38', to: '/interior/execution' },
+    { label: `${atRisk} delivery risks need action`, note: 'Blocked tasks and delayed procurement', icon: <CircleAlert className="w-4 h-4" />, color: '#d97706', to: '/interior/execution' },
+    { label: `${rooms.filter((room) => !room.image).length} rooms need site photos`, note: 'Capture inputs before AI concept generation', icon: <MapPinned className="w-4 h-4" />, color: '#526b80', to: '/interior/projects' },
+  ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard label="Active projects" value={num(activeProjects.length)} sub={`${money(totalBudget)} total budget`} icon={<Home className="w-5 h-5" />} tone="info" onClick={() => navigate('/interior/projects')} />
-        <KPICard label="AI designs" value={num(savedDesigns.length)} sub={`${num(favorites.length)} favourites`} icon={<Sparkles className="w-5 h-5" />} tone="default" onClick={() => navigate('/interior/projects')} />
-        <KPICard label="Rooms" value={num(rooms.length)} sub={`${num(roomsWithImage)} with photos`} icon={<Camera className="w-5 h-5" />} tone="success" onClick={() => navigate('/interior/projects')} />
-        <KPICard label="Products" value={num(products.length)} sub="in the catalogue" icon={<ShoppingBag className="w-5 h-5" />} tone="warning" onClick={() => navigate('/interior/products')} />
-      </div>
+    <div className="interior-page space-y-6">
+      <section className="interior-hero">
+        <span className="interior-eyebrow"><Compass className="w-3.5 h-3.5" /> Studio command center</span>
+        <h1>Design beautiful spaces.<br />Deliver them precisely.</h1>
+        <p>One workspace for briefs, room intelligence, AI concepts, client approvals, procurement and site execution.</p>
+        <div className="interior-hero-actions">
+          <Button onClick={() => navigate('/interior/projects?new=1')}><Plus className="w-4 h-4" /> Start a project</Button>
+          <Button variant="outline" className="!border-white/25 !text-white hover:!bg-white/10" onClick={() => navigate('/interior/designs')}><Sparkles className="w-4 h-4" /> Open design studio</Button>
+          <Button variant="ghost" className="!text-white/80 hover:!text-white" onClick={() => navigate('/interior/sites')}><MapPinned className="w-4 h-4" /> Plan a site visit</Button>
+        </div>
+      </section>
+
+      <section className="interior-metrics">
+        <button className="interior-metric text-left" style={{ '--metric-color': '#b85c38' } as React.CSSProperties} onClick={() => navigate('/interior/projects')}>
+          <p className="interior-metric-label">Live portfolio</p><p className="interior-metric-value">{num(activeProjects.length)}</p><p className="interior-metric-note">{money(totalBudget)} under management</p>
+        </button>
+        <button className="interior-metric text-left" style={{ '--metric-color': '#7f9278' } as React.CSSProperties} onClick={() => navigate('/interior/designs')}>
+          <p className="interior-metric-label">Design approval</p><p className="interior-metric-value">{approvalRate}%</p><p className="interior-metric-note">{approvedDesigns.length} concepts selected</p>
+        </button>
+        <button className="interior-metric text-left" style={{ '--metric-color': '#526b80' } as React.CSSProperties} onClick={() => navigate('/interior/execution')}>
+          <p className="interior-metric-label">Open work</p><p className="interior-metric-value">{num(openTasks.length)}</p><p className="interior-metric-note">Across design and delivery</p>
+        </button>
+        <button className="interior-metric text-left" style={{ '--metric-color': '#d97706' } as React.CSSProperties} onClick={() => navigate('/interior/execution')}>
+          <p className="interior-metric-label">Attention</p><p className="interior-metric-value">{num(atRisk)}</p><p className="interior-metric-note">Blocked or delayed items</p>
+        </button>
+      </section>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
-          <AdvancedPanel
-            title="Designs by style"
-            subtitle="AI design count per style"
-            bars={styleBars}
-            compare={[
-              { label: 'Projects', value: num(projects.length) },
-              { label: 'Saved designs', value: num(savedDesigns.length) },
-              { label: 'Favourites', value: num(favorites.length), deltaTone: favorites.length ? 'up' : 'flat' },
-            ]}
-          />
-
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">Quick actions</CardTitle>
-            </CardHeader>
+            <CardHeader className="interior-section-title"><div><CardTitle>Portfolio pulse</CardTitle><p>Active projects from concept to handover</p></div><Button variant="ghost" size="sm" onClick={() => navigate('/interior/projects')}>View portfolio <ArrowRight className="w-4 h-4" /></Button></CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {NAV.map((l) => (
-                  <button key={l.label} onClick={() => navigate(l.to)} className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors">
-                    <span className="text-primary">{l.icon}</span>
-                    <span className="text-sm font-medium text-text">{l.label}</span>
-                  </button>
-                ))}
-              </div>
+              {projects.slice(0, 5).map((project) => (
+                <button key={project.id} className="interior-project-row w-full text-left" onClick={() => navigate(`/interior/projects/${project.id}`)}>
+                  <div><p className="text-sm font-semibold text-text">{project.name}</p><p className="text-xs text-muted mt-1">{project.clientName ?? project.propertyType} · {project.location}</p></div>
+                  <div><p className="text-[10px] uppercase tracking-wider text-muted">Phase</p><p className="text-xs font-medium mt-1">{project.phase ?? 'Discovery'}</p></div>
+                  <div><div className="flex justify-between text-[11px] text-muted mb-1.5"><span>Progress</span><span>{project.progress ?? 0}%</span></div><div className="interior-progress-track"><div className="interior-progress-fill" style={{ width: `${project.progress ?? 0}%` }} /></div></div>
+                  <div><p className="text-[10px] uppercase tracking-wider text-muted">Target</p><p className="text-xs font-medium mt-1">{project.targetDate ? fmtDate(project.targetDate) : 'Not set'}</p></div>
+                  <ArrowRight className="w-4 h-4 text-muted" />
+                </button>
+              ))}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">Recent projects</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {recentProjects.length === 0 ? (
-                <p className="text-sm text-muted">No projects yet — create your first one.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {recentProjects.map((p) => (
-                    <button key={p.id} onClick={() => navigate(`/interior/projects/${p.id}`)} className="text-left p-4 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors">
-                      <p className="text-sm font-semibold text-text">{p.name}</p>
-                      <p className="text-xs text-muted mt-1">{p.propertyType} · {p.location}</p>
-                      <p className="text-xs text-primary mt-2">{money(p.budget)}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AdvancedPanel title="Delivery pipeline" subtitle="Projects by current design and execution phase" bars={phaseBars} compare={[
+            { label: 'Rooms planned', value: num(rooms.length) },
+            { label: 'Concepts created', value: num(designs.length) },
+            { label: 'Product library', value: num(products.length) },
+          ]} />
         </div>
 
         <div className="space-y-6">
-          <AdvancedPanel
-            title="Design status"
-            subtitle="Distribution across all designs"
-            donut={designStatusDonut}
-          />
-
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">Recent AI designs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {recentDesigns.length === 0 ? (
-                <p className="text-sm text-muted">No designs yet — generate your first one.</p>
-              ) : (
-                <div className="space-y-2">
-                  {recentDesigns.map((d) => (
-                    <button
-                      key={d.id}
-                      onClick={() => navigate(`/interior/projects/${d.projectId}/designs/${d.id}`)}
-                      className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors text-left"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-text truncate">{d.name}</p>
-                        <p className="text-xs text-muted">{d.style} · {d.color} · {money(d.budget)}</p>
-                      </div>
-                      {d.saved ? <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" /> : <ArrowRight className="w-4 h-4 text-muted flex-shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              )}
+            <CardHeader><CardTitle className="text-sm">Studio intelligence</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {workSignals.map((signal) => (
+                <button key={signal.label} className="interior-signal w-full text-left" onClick={() => navigate(signal.to)}>
+                  <span className="interior-signal-icon" style={{ '--signal': signal.color } as React.CSSProperties}>{signal.icon}</span>
+                  <span><span className="block text-xs font-semibold text-text">{signal.label}</span><span className="block text-[11px] text-muted mt-0.5">{signal.note}</span></span>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted" />
+                </button>
+              ))}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <FileText className="w-4 h-4 text-amber-500" /> Needs attention
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {needsAttention.length === 0 ? (
-                <p className="text-sm text-muted">All clear — nothing needs attention right now.</p>
-              ) : (
-                <div className="space-y-2">
-                  {needsAttention.map((n, i) => (
-                    <button
-                      key={i}
-                      onClick={() => navigate(n.to)}
-                      className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-surface2 hover:border-primary/50 transition-colors text-left"
-                    >
-                      <span className="text-sm text-text flex-1 min-w-0">{n.label}</span>
-                      <ArrowRight className="w-4 h-4 text-muted flex-shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AdvancedPanel title="Committed spend" subtitle="Procurement value by category" donut={procurementDonut} />
 
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <Badge variant="info">Frontend preview</Badge>
-              <p className="text-sm text-muted">Projects, rooms, AI designs, products and cost estimates are stored locally in your browser.</p>
+            <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm">Next milestones</CardTitle><CalendarClock className="w-4 h-4 text-primary" /></CardHeader>
+            <CardContent className="space-y-3">
+              {[...openTasks].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 4).map((task) => (
+                <div key={task.id} className="flex items-start justify-between gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
+                  <div><p className="text-xs font-medium text-text">{task.title}</p><p className="text-[11px] text-muted mt-1">{projects.find((project) => project.id === task.projectId)?.name} · {task.owner}</p></div>
+                  <Badge variant={task.status === 'blocked' ? 'danger' : 'outline'} size="sm">{fmtDate(task.dueDate)}</Badge>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/interior/execution')}><PackageCheck className="w-4 h-4" /> Manage delivery</Button>
             </CardContent>
           </Card>
         </div>

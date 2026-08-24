@@ -183,8 +183,8 @@ export default function InteriorQuotation() {
 
               <Card>
                 <CardContent className="flex items-center gap-3">
-                  <Badge variant="info">Frontend preview</Badge>
-                  <p className="text-sm text-muted">Estimates are computed from the products linked to your saved designs. Nothing is sent anywhere.</p>
+                  <Badge variant="info">Planning estimate</Badge>
+                  <p className="text-sm text-muted">Computed from products linked to persisted saved designs. Use formal billing for contractual quotations and tax invoices.</p>
                 </CardContent>
               </Card>
             </div>

@@ -54,7 +54,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     const dark = getTheme() === 'dark'
     const map = L.map(containerRef.current, { center: [20.5937, 78.9629], zoom: 5 })
     L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`, {
-      attribution: 'Â© OpenStreetMap contributors',
+      attribution: '(c) OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
     mapRef.current = map
@@ -134,7 +134,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowResults(false) }}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch() } }}
-          placeholder="Search place, city, areaâ€¦ e.g. Dadar, Mumbai"
+          placeholder="Search place, city, area... e.g. Dadar, Mumbai"
           className="w-full rounded-lg border border-border bg-surface2/60 pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary"
         />
         <button
@@ -170,10 +170,10 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
 
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={useMyLocation} disabled={locating}>
-          <IoLocate className="w-3.5 h-3.5" /> {locating ? 'Locatingâ€¦' : 'Use my location'}
+          <IoLocate className="w-3.5 h-3.5" /> {locating ? 'Locating...' : 'Use my location'}
         </Button>
         <span className={cn('text-xs', hasCoords ? 'text-emerald-600' : 'text-muted')}>
-          {hasCoords ? `ðŸ“ ${lat}, ${lng}` : 'No coordinates set â€” search or click the map'}
+          {hasCoords ? `Location: ${lat}, ${lng}` : 'No coordinates set - search or click the map'}
         </span>
       </div>
     </div>

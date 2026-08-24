@@ -1,5 +1,5 @@
 import type {
-  InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct,
+  InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct, InteriorTask, InteriorProcurement, InteriorDecision,
 } from './types'
 
 export const PROJECT_SEED: InteriorProject[] = [
@@ -12,6 +12,8 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 250000,
     status: 'active',
     createdAt: '2026-07-28T10:00:00.000Z',
+    clientName: 'Aarav Mehta', leadDesigner: 'Nisha Rao', phase: 'Design Development', priority: 'signature', progress: 58,
+    targetDate: '2026-10-18', latitude: '19.0760', longitude: '72.8777',
   },
   {
     id: 'int-proj-2',
@@ -22,6 +24,8 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 180000,
     status: 'active',
     createdAt: '2026-08-02T09:30:00.000Z',
+    clientName: 'Mira Shah', leadDesigner: 'Kabir Sen', phase: 'Concept', priority: 'priority', progress: 34,
+    targetDate: '2026-11-06', latitude: '18.5204', longitude: '73.8567',
   },
   {
     id: 'int-proj-3',
@@ -32,6 +36,8 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 300000,
     status: 'completed',
     createdAt: '2026-06-15T12:00:00.000Z',
+    clientName: 'Rohan Iyer', leadDesigner: 'Nisha Rao', phase: 'Handover', priority: 'standard', progress: 100,
+    targetDate: '2026-08-12', latitude: '12.9716', longitude: '77.5946',
   },
 ]
 
@@ -203,4 +209,25 @@ export const PRODUCT_SEED: InteriorProduct[] = [
   // Kitchen
   { id: 'int-prod-19', name: 'Modular Kitchen Unit', category: 'Kitchen', price: 95000, material: 'Plywood + Laminate', color: 'Walnut', description: 'Base + tall units with quartz countertop.' },
   { id: 'int-prod-20', name: 'Chimney & Hob Combo', category: 'Kitchen', price: 26000, material: 'Stainless Steel', color: 'Silver', description: 'Auto-clean chimney with 3-burner hob.' },
+]
+
+export const TASK_SEED: InteriorTask[] = [
+  { id: 'int-task-1', projectId: 'int-proj-1', title: 'Freeze living room material palette', phase: 'Design Development', owner: 'Nisha Rao', dueDate: '2026-08-27', status: 'in-progress', progress: 70 },
+  { id: 'int-task-2', projectId: 'int-proj-1', title: 'Issue reflected ceiling drawings', phase: 'Design Development', owner: 'Arjun Patel', dueDate: '2026-08-30', status: 'not-started', progress: 10 },
+  { id: 'int-task-3', projectId: 'int-proj-2', title: 'Client concept presentation', phase: 'Concept', owner: 'Kabir Sen', dueDate: '2026-08-26', status: 'in-progress', progress: 80 },
+  { id: 'int-task-4', projectId: 'int-proj-2', title: 'Verify wardrobe site dimensions', phase: 'Concept', owner: 'Site Team', dueDate: '2026-08-25', status: 'blocked', progress: 35 },
+  { id: 'int-task-5', projectId: 'int-proj-3', title: 'Close handover snag list', phase: 'Handover', owner: 'Nisha Rao', dueDate: '2026-08-12', status: 'completed', progress: 100 },
+]
+
+export const PROCUREMENT_SEED: InteriorProcurement[] = [
+  { id: 'int-proc-1', projectId: 'int-proj-1', item: 'Custom sectional sofa', category: 'Furniture', vendor: 'Forma Living', amount: 64000, expectedDate: '2026-09-08', status: 'ordered' },
+  { id: 'int-proc-2', projectId: 'int-proj-1', item: 'Oak engineered flooring', category: 'Flooring', vendor: 'Woodcraft India', amount: 52200, expectedDate: '2026-09-02', status: 'in-transit' },
+  { id: 'int-proc-3', projectId: 'int-proj-2', item: 'Wardrobe hardware set', category: 'Bedroom', vendor: 'Hafele Partner', amount: 28500, expectedDate: '2026-09-18', status: 'quoted' },
+  { id: 'int-proc-4', projectId: 'int-proj-2', item: 'Decorative pendant lights', category: 'Lighting', vendor: 'Luma Studio', amount: 22000, expectedDate: '2026-09-10', status: 'delayed' },
+]
+
+export const DECISION_SEED: InteriorDecision[] = [
+  { id: 'int-dec-1', projectId: 'int-proj-1', title: 'Approve final sofa fabric', requestedFrom: 'Aarav Mehta', dueDate: '2026-08-26', status: 'pending' },
+  { id: 'int-dec-2', projectId: 'int-proj-1', title: 'Confirm entertainment wall finish', requestedFrom: 'Aarav Mehta', dueDate: '2026-08-29', status: 'approved' },
+  { id: 'int-dec-3', projectId: 'int-proj-2', title: 'Select master bedroom palette', requestedFrom: 'Mira Shah', dueDate: '2026-08-27', status: 'changes-requested' },
 ]

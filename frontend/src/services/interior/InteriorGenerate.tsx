@@ -28,6 +28,7 @@ export default function InteriorGenerate() {
   const [prompt, setPrompt] = useState('')
   const [stage, setStage] = useState<GenStage>('idle')
   const [progress, setProgress] = useState(0)
+  const [createdDesignId, setCreatedDesignId] = useState('')
   const timers = useRef<number[]>([])
 
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
@@ -54,57 +55,30 @@ export default function InteriorGenerate() {
     return picked.slice(0, 5)
   }
 
-  function runStage(s: GenStage, pct: number, next: GenStage, delay: number, finalize = false) {
-    timers.current.push(window.setTimeout(() => {
-      setStage(s)
-      setProgress(pct)
-      if (finalize) {
-        const room = projectRooms.find((r) => r.id === roomId)
-        if (!room) { setStage('failed'); return }
-        const productIds = pickProducts(style, color)
-        add({
-          id: genId(),
-          projectId: project!.id,
-          roomId: room.id,
-          name: name.trim(),
-          style,
-          color,
-          budget: Number(budget) || room.budget,
-          status: 'completed',
-          favorite: false,
-          saved: false,
-          createdAt: new Date().toISOString(),
-          currentVersion: 1,
-          versions: [
-            {
-              id: genId(),
-              version: 1,
-              style,
-              color,
-              budget: Number(budget) || room.budget,
-              prompt: prompt.trim() || 'AI generated design',
-              productIds,
-              createdAt: new Date().toISOString(),
-            },
-          ],
-        })
-        setStage('completed')
-      } else {
-        runStage(next, pct + 25, next === 'generating' ? 'completed' : next, delay + 900, next === 'generating')
-      }
-    }, delay))
-  }
-
   function start() {
     if (!canStart) return
-    setProgress(0)
-    setStage('uploading')
+    timers.current.forEach(clearTimeout)
+    timers.current = []
+    setCreatedDesignId('')
     const roomHasImage = Boolean(selectedRoom?.image)
-    if (roomHasImage) {
-      runStage('uploading', 15, 'processing', 600, false)
-    } else {
-      runStage('processing', 30, 'generating', 400, false)
-    }
+    setStage(roomHasImage ? 'uploading' : 'processing')
+    setProgress(roomHasImage ? 12 : 28)
+    if (roomHasImage) timers.current.push(window.setTimeout(() => { setStage('processing'); setProgress(42) }, 800))
+    timers.current.push(window.setTimeout(() => { setStage('generating'); setProgress(74) }, roomHasImage ? 1700 : 900))
+    timers.current.push(window.setTimeout(() => {
+      const room = projectRooms.find((item) => item.id === roomId)
+      if (!room || !project) { setStage('failed'); return }
+      const designId = genId()
+      const designBudget = Number(budget) || room.budget
+      add({
+        id: designId, projectId: project.id, roomId: room.id, name: name.trim(), style, color, budget: designBudget,
+        status: 'completed', favorite: false, saved: false, createdAt: new Date().toISOString(), currentVersion: 1,
+        versions: [{ id: genId(), version: 1, style, color, budget: designBudget, prompt: prompt.trim() || 'AI generated design', productIds: pickProducts(style, color), createdAt: new Date().toISOString() }],
+      })
+      setCreatedDesignId(designId)
+      setProgress(100)
+      setStage('completed')
+    }, roomHasImage ? 3100 : 2300))
   }
 
   if (!project) {
@@ -179,10 +153,9 @@ export default function InteriorGenerate() {
                   progress={progress}
                   name={name}
                   roomName={selectedRoom?.name}
-                  onGenerateAnother={() => { setStage('idle'); setProgress(0) }}
-                  onViewDesign={() => {
-                      const created = designs.find((d) => d.name === name.trim() && d.projectId === project.id && d.roomId === roomId && d.status === 'completed')
-                      navigate(created ? `/interior/projects/${project.id}/designs/${created.id}` : `/interior/projects/${project.id}/designs`)
+                   onGenerateAnother={() => { setStage('idle'); setProgress(0); setCreatedDesignId('') }}
+                   onViewDesign={() => {
+                       navigate(createdDesignId ? `/interior/projects/${project.id}/designs/${createdDesignId}` : `/interior/projects/${project.id}/designs`)
                   }}
                 />
               )}
@@ -220,7 +193,7 @@ export default function InteriorGenerate() {
               <p className="flex items-start gap-2"><span className="text-primary font-medium">2.</span> Pick a style, palette and budget</p>
               <p className="flex items-start gap-2"><span className="text-primary font-medium">3.</span> The AI creates a design concept with furniture, decor and lighting</p>
               <p className="flex items-start gap-2"><span className="text-primary font-medium">4.</span> Review, save or tweak — then generate a cost estimate</p>
-              <Badge variant="info" size="sm">Frontend preview</Badge>
+               <Badge variant="info" size="sm">Concept simulation</Badge>
             </CardContent>
           </Card>
 

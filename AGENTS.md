@@ -33,17 +33,20 @@ Always commit on respective frontend backend  branch  when  small  todo is done 
 ## Commit/PR Policy (user confirmed)
 
 - Do NOT commit or push after every tiny step. Push only when: (a) the complete task list / todo is done, OR (b) a major chunk of work is complete (~2 hours of coding), OR (c) the user asks for a progress push.
-- There must ALWAYS be a commit to both the frontend and backend branch once the current todo/task list is done.
-- After pushing new work to the frontend repo (`develop01`), always raise the PR to `luxinfra-frontend` and auto-merge it (see Frontend Auto-Sync rule below).
+- Never commit directly to `main`, `develop*`, `luxinfra`, `luxinfra-frontend`, or any other protected/deployment branch.
+- Create a descriptive branch such as `feature/<feature-name>` or `fix/<issue-name>` for every change set.
+- After implementation and testing, commit and push only the feature/fix branch and raise a pull request to the intended protected branch.
+- Never merge or auto-merge the pull request. The user reviews and approves every merge explicitly.
+- Do not deploy the branch or update a deployment branch unless the user explicitly instructs it after testing.
 
 https://github.com/shiv10r/VSRSystemsBackend/tree/develop03
 bakcned 03 branch
 
-## Frontend Auto-Sync (develop01 -> luxinfra-frontend)
+## Pull Request Workflow
 
-- After pushing new work to `origin/develop01` (repo `shiv10r/assistant1`), automatically raise a PR from `develop01` to `luxinfra-frontend` and merge it (squash) so the luxinfra frontend branch stays in sync.
-- `gh` CLI is not installed on this machine. Use the GitHub REST API directly: extract the stored credential via `git credential fill` (protocol=https, host=github.com), then POST `/repos/shiv10r/assistant1/pulls` (head=develop01, base=luxinfra-frontend) and PUT `/repos/shiv10r/assistant1/pulls/{number}/merge` with `merge_method=squash`.
-- If the API returns "No commits between luxinfra-frontend and develop01", the branches are already in sync — skip and report that nothing was merged.
-- Never force-push or rewrite `luxinfra-frontend`; only ever merge `develop01` into it.
+- Frontend pull requests normally target `luxinfra-frontend`; backend pull requests normally target `develop03` unless the user specifies another base.
+- Include validation results and known limitations in the PR description.
+- Leave every created PR open and unmerged for user approval.
+- Never force-push or rewrite a protected branch.
 
 First complete all the tasks of TodoHomeService.md then todo.md

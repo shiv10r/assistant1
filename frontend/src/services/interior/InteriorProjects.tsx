@@ -1,28 +1,34 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
 import { Home, Plus, Search, Trash2, ArrowRight, Pencil } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
-import type { InteriorProject, InteriorRoom, InteriorDesign, PropertyType, RoomType } from './types'
+import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorPhase, InteriorPriority, PropertyType, RoomType } from './types'
 import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { Stepper } from '../../platform/ui'
 import { PROPERTY_TYPES, ROOM_TYPES } from './types'
+import { LocationPicker } from '../../platform/maps'
 
-const emptyProject = { name: '', propertyType: 'Apartment' as PropertyType, location: '', totalArea: '', budget: '' }
+const emptyProject = {
+  name: '', propertyType: 'Apartment' as PropertyType, location: '', totalArea: '', budget: '', clientName: '',
+  leadDesigner: '', phase: 'Discovery' as InteriorPhase, priority: 'standard' as InteriorPriority, progress: '0',
+  targetDate: '', latitude: '', longitude: '',
+}
 const emptyRoom = { name: '', roomType: 'Living Room' as RoomType, length: '', width: '', height: '', budget: '' }
 
 const CREATE_STEPS = ['Project info', 'Rooms', 'Done']
 
 export default function InteriorProjects() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { items, add, update, remove } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
-  const { items: rooms, add: addRoom } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
-  const { items: designs } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
+  const { items: rooms, add: addRoom, remove: removeRoom } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
+  const { items: designs, remove: removeDesign } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
 
   const [query, setQuery] = useState('')
   const [step, setStep] = useState(0)
-  const [createOpen, setCreateOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
   const [editing, setEditing] = useState<InteriorProject | null>(null)
   const [projectForm, setProjectForm] = useState(emptyProject)
   const [roomList, setRoomList] = useState<typeof emptyRoom[]>([])
@@ -37,14 +43,14 @@ export default function InteriorProjects() {
   const roomCount = (projectId: string) => rooms.filter((r) => r.projectId === projectId).length
 
   const columns: DataColumn<InteriorProject>[] = [
-    { key: 'name', header: 'Project', render: (p) => <span className="font-medium">{p.name}</span>, sortValue: (p) => p.name },
+    { key: 'name', header: 'Project', render: (p) => <div><span className="font-medium">{p.name}</span><span className="block text-xs text-muted mt-0.5">{p.clientName ?? 'Client not assigned'}</span></div>, sortValue: (p) => p.name },
     { key: 'type', header: 'Type', render: (p) => p.propertyType, sortValue: (p) => p.propertyType },
     { key: 'location', header: 'Location', render: (p) => p.location, sortValue: (p) => p.location },
     {
       key: 'progress', header: 'Progress', sortValue: (p) => roomCount(p.id),
       render: (p) => (
         <span className="text-sm text-muted">
-          {num(roomCount(p.id))} rooms · {num(designCount(p.id))} designs
+          {num(p.progress ?? 0)}% · {num(roomCount(p.id))} rooms · {num(designCount(p.id))} designs
         </span>
       ),
     },
@@ -73,7 +79,11 @@ export default function InteriorProjects() {
 
   function openEdit(p: InteriorProject) {
     setEditing(p)
-    setProjectForm({ name: p.name, propertyType: p.propertyType, location: p.location, totalArea: String(p.totalArea), budget: String(p.budget) })
+    setProjectForm({
+      name: p.name, propertyType: p.propertyType, location: p.location, totalArea: String(p.totalArea), budget: String(p.budget),
+      clientName: p.clientName ?? '', leadDesigner: p.leadDesigner ?? '', phase: p.phase ?? 'Discovery', priority: p.priority ?? 'standard',
+      progress: String(p.progress ?? 0), targetDate: p.targetDate ?? '', latitude: p.latitude ?? '', longitude: p.longitude ?? '',
+    })
     setRoomList([])
     setStep(0)
     setCreateOpen(true)
@@ -91,27 +101,32 @@ export default function InteriorProjects() {
       location: projectForm.location.trim(),
       totalArea: Number(projectForm.totalArea) || 0,
       budget: Number(projectForm.budget) || 0,
+      clientName: projectForm.clientName.trim(),
+      leadDesigner: projectForm.leadDesigner.trim(),
+      phase: projectForm.phase,
+      priority: projectForm.priority,
+      progress: Math.min(100, Math.max(0, Number(projectForm.progress) || 0)),
+      targetDate: projectForm.targetDate,
+      latitude: projectForm.latitude,
+      longitude: projectForm.longitude,
     }
+    const id = editing?.id ?? genId()
     if (editing) {
       update(editing.id, payload)
+    } else {
+      add({ id, status: 'active', createdAt: new Date().toISOString(), ...payload })
+    }
+    for (const r of roomList) {
+      if (!r.name.trim()) continue
+      addRoom({
+        id: genId(), projectId: id, name: r.name.trim(), roomType: r.roomType,
+        length: Number(r.length) || 0, width: Number(r.width) || 0, height: Number(r.height) || 0,
+        budget: Number(r.budget) || 0, createdAt: new Date().toISOString(),
+      })
+    }
+    if (editing) {
       setCreateOpen(false)
     } else {
-      const id = genId()
-      add({ id, status: 'active', createdAt: new Date().toISOString(), ...payload })
-      for (const r of roomList) {
-        if (!r.name.trim()) continue
-        addRoom({
-          id: genId(),
-          projectId: id,
-          name: r.name.trim(),
-          roomType: r.roomType,
-          length: Number(r.length) || 0,
-          width: Number(r.width) || 0,
-          height: Number(r.height) || 0,
-          budget: Number(r.budget) || 0,
-          createdAt: new Date().toISOString(),
-        })
-      }
       setCreatedId(id)
       setStep(2)
     }
@@ -127,6 +142,13 @@ export default function InteriorProjects() {
 
   function addRoomRow() {
     setRoomList([...roomList, emptyRoom])
+  }
+
+  function deleteProject(project: InteriorProject) {
+    if (!window.confirm(`Delete ${project.name} and its rooms and designs?`)) return
+    rooms.filter((room) => room.projectId === project.id).forEach((room) => removeRoom(room.id))
+    designs.filter((design) => design.projectId === project.id).forEach((design) => removeDesign(design.id))
+    remove(project.id)
   }
 
   return (
@@ -156,7 +178,7 @@ export default function InteriorProjects() {
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" onClick={() => navigate(`/interior/projects/${p.id}`)} aria-label="Open"><ArrowRight className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon" onClick={() => openEdit(p)} aria-label="Edit"><Pencil className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="icon" onClick={() => remove(p.id)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => deleteProject(p)} aria-label="Delete"><Trash2 className="w-4 h-4" /></Button>
               </div>
             )}
           />
@@ -171,6 +193,10 @@ export default function InteriorProjects() {
             <div className="space-y-4">
               <div><Label required>Project name</Label><Input value={projectForm.name} onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })} placeholder="e.g. Living Room Renovation" /></div>
               <div className="grid grid-cols-2 gap-4">
+                <div><Label>Client</Label><Input value={projectForm.clientName} onChange={(e) => setProjectForm({ ...projectForm, clientName: e.target.value })} placeholder="Client name" /></div>
+                <div><Label>Lead designer</Label><Input value={projectForm.leadDesigner} onChange={(e) => setProjectForm({ ...projectForm, leadDesigner: e.target.value })} placeholder="Studio owner" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Property type</Label>
                   <Select value={projectForm.propertyType} onValueChange={(v) => setProjectForm({ ...projectForm, propertyType: v as PropertyType })}>
@@ -183,6 +209,13 @@ export default function InteriorProjects() {
                 <div><Label required>Total area (sq ft)</Label><Input type="number" value={projectForm.totalArea} onChange={(e) => setProjectForm({ ...projectForm, totalArea: e.target.value })} /></div>
                 <div><Label>Budget (₹)</Label><Input type="number" value={projectForm.budget} onChange={(e) => setProjectForm({ ...projectForm, budget: e.target.value })} /></div>
               </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div><Label>Phase</Label><Select value={projectForm.phase} onValueChange={(phase) => setProjectForm({ ...projectForm, phase: phase as InteriorPhase })}>{['Discovery', 'Concept', 'Design Development', 'Procurement', 'Execution', 'Handover'].map((phase) => <option key={phase}>{phase}</option>)}</Select></div>
+                <div><Label>Priority</Label><Select value={projectForm.priority} onValueChange={(priority) => setProjectForm({ ...projectForm, priority: priority as InteriorPriority })}><option value="standard">Standard</option><option value="priority">Priority</option><option value="signature">Signature</option></Select></div>
+                <div><Label>Progress (%)</Label><Input type="number" min="0" max="100" value={projectForm.progress} onChange={(e) => setProjectForm({ ...projectForm, progress: e.target.value })} /></div>
+                <div><Label>Target date</Label><Input type="date" value={projectForm.targetDate} onChange={(e) => setProjectForm({ ...projectForm, targetDate: e.target.value })} /></div>
+              </div>
+              <div><Label>Site location</Label><LocationPicker latitude={projectForm.latitude} longitude={projectForm.longitude} onChange={(latitude, longitude, location) => setProjectForm({ ...projectForm, latitude, longitude, ...(location ? { location } : {}) })} onAddressChange={(location) => setProjectForm({ ...projectForm, location })} /></div>
             </div>
           )}
 
@@ -197,7 +230,7 @@ export default function InteriorProjects() {
               ) : (
                 <div className="space-y-3">
                   {roomList.map((r, i) => (
-                    <div key={i} className="grid grid-cols-2 md:grid-cols-6 gap-3 items-end border border-border rounded-lg p-3 bg-surface2">
+                    <div key={i} className="grid grid-cols-2 md:grid-cols-7 gap-3 items-end border border-border rounded-lg p-3 bg-surface2">
                       <div><Label required>Name</Label><Input value={r.name} onChange={(e) => setRoomList(roomList.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} placeholder="Room name" /></div>
                       <div>
                         <Label>Type</Label>
@@ -207,6 +240,7 @@ export default function InteriorProjects() {
                       </div>
                       <div><Label>Length (ft)</Label><Input type="number" value={r.length} onChange={(e) => setRoomList(roomList.map((x, j) => (j === i ? { ...x, length: e.target.value } : x)))} /></div>
                       <div><Label>Width (ft)</Label><Input type="number" value={r.width} onChange={(e) => setRoomList(roomList.map((x, j) => (j === i ? { ...x, width: e.target.value } : x)))} /></div>
+                      <div><Label>Height (ft)</Label><Input type="number" value={r.height} onChange={(e) => setRoomList(roomList.map((x, j) => (j === i ? { ...x, height: e.target.value } : x)))} /></div>
                       <div><Label>Budget (₹)</Label><Input type="number" value={r.budget} onChange={(e) => setRoomList(roomList.map((x, j) => (j === i ? { ...x, budget: e.target.value } : x)))} /></div>
                       <Button variant="ghost" size="icon" onClick={() => setRoomList(roomList.filter((_, j) => j !== i))} aria-label="Remove room"><Trash2 className="w-4 h-4" /></Button>
                     </div>

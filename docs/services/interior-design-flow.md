@@ -1,5 +1,7 @@
 # Interior Design App — Frontend MVP Architecture
 
+> Historical MVP baseline. The implemented V2 service architecture is documented in `interior-design-service-v2.md`.
+
 ## 1. MVP Objective
 
 Build a simple, professional interior-design web application where a user can:

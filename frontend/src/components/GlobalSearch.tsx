@@ -22,6 +22,8 @@ const GROUP_ICON: Record<string, React.ReactNode> = {
   Rooms: <FiBox className="w-4 h-4" />,
   Expenses: <FiFileText className="w-4 h-4" />,
   'Interior Projects': <FiBriefcase className="w-4 h-4" />,
+  'Interior Rooms': <FiBox className="w-4 h-4" />,
+  'Interior Designs': <FiFolder className="w-4 h-4" />,
   'Interior Products': <FiBox className="w-4 h-4" />,
   'Warehouse Products': <FiBox className="w-4 h-4" />,
   'Warehouse Customers': <FiUsers className="w-4 h-4" />,
@@ -35,7 +37,7 @@ const GROUP_ICON: Record<string, React.ReactNode> = {
 }
 
 /**
- * Global application search â€” hits the backend `/api/assistant/search` endpoint
+ * Global application search - hits the backend `/api/assistant/search` endpoint
  * (projects, parties, txns, items, rooms, expenses) and scans every frontend
  * localStorage collection (warehouse, school), then navigates to the result.
  */
@@ -182,9 +184,11 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
   )
 }
 
-/** Collection metadata: localStorage key prefix â†’ target route + display group. */
-const COLLECTIONS: { key: string; group: string; to: (id: string) => string; nameField: string[] }[] = [
+/** Collection metadata: localStorage key prefix to target route and display group. */
+const COLLECTIONS: { key: string; group: string; to: (id: string, row: Record<string, unknown>) => string; nameField: string[] }[] = [
   { key: 'luxinfra:interior:projects', group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
+  { key: 'luxinfra:interior:rooms', group: 'Interior Rooms', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/rooms/${id}`, nameField: ['name', 'roomType', 'notes'] },
+  { key: 'luxinfra:interior:designs', group: 'Interior Designs', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/designs/${id}`, nameField: ['name', 'style', 'color'] },
   { key: 'luxinfra:interior:products', group: 'Interior Products', to: () => '/interior/products', nameField: ['name', 'category'] },
   { key: 'luxinfra:warehouse:products', group: 'Warehouse Products', to: () => '/warehouse/products', nameField: ['name', 'sku'] },
   { key: 'luxinfra:warehouse:customers', group: 'Warehouse Customers', to: () => '/warehouse/customers', nameField: ['name', 'company'] },
@@ -215,7 +219,7 @@ function searchLocalStorage(q: string): SearchResult[] {
         out.push({
           label: String(row.name ?? row.id ?? 'Record'),
           sub: c.group,
-          to: c.to(String(row.id ?? '')),
+          to: c.to(String(row.id ?? ''), row),
           group: c.group,
           icon: GROUP_ICON[c.group],
         })

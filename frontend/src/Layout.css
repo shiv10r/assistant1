@@ -37,65 +37,28 @@
   animation: broadcastScroll 25s linear infinite;
 }
 
-/* Topbar */
-.app { display: flex; flex-direction: column; width: 100%; max-width: 100vw; height: 100dvh; overflow: hidden; }
+/* Application chrome */
+.app { --shell-header: 64px; display: flex; flex-direction: column; width: 100%; max-width: 100vw; height: 100dvh; overflow: hidden; }
 .topbar {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex: 0 0 auto;
+  min-height: var(--shell-header); display: flex; align-items: center; gap: .8rem;
+  padding: .65rem 1rem; background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-bottom: 1px solid var(--border); backdrop-filter: blur(18px); flex: 0 0 auto; z-index: 45;
 }
-.hamburger {
-  width: 40px; height: 40px;
-  background: var(--surface-hover); color: var(--text);
-  border: none; border-radius: 10px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
-}
-.hamburger:hover { background: var(--primary); color: white; }
-.service-pill {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
-  background: var(--surface-hover); color: var(--text);
-  border: 1px solid var(--border); border-radius: 999px;
-  cursor: pointer; font: inherit;
-}
-.service-pill .pill-label { font-weight: 600; font-size: 0.85rem; }
-.service-pill .pill-switch {
-  font-size: 0.7rem; font-weight: 600; color: var(--primary);
-  padding: 0.25rem 0.6rem; border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-}
-.service-pill:hover .pill-switch { background: var(--primary); color: white; }
-.logo-mark svg { display: block; border-radius: 10px; }
-.brand { font-size: 1.25rem; font-weight: 700; }
-.brand span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.online { margin-left: auto; color: var(--accent); font-size: 0.75rem; font-weight: 600; }
-.online::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 0.4rem; }
-
-/* Plan pill + search + view-mode switch (topbar) */
-.plan-pill {
-  display: inline-flex; align-items: center; gap: 0.45rem;
-  padding: 0.3rem 0.75rem; border-radius: 999px;
-  background: var(--surface-hover); color: var(--text);
-  border: 1px solid var(--border);
-  font-size: 0.75rem; font-weight: 600; text-decoration: none;
-  transition: border-color 0.2s, color 0.2s;
-}
-.plan-pill:hover { border-color: var(--primary); color: var(--primary); }
-.plan-pill.is-pro { background: color-mix(in srgb, var(--primary) 12%, transparent); border-color: color-mix(in srgb, var(--primary) 35%, transparent); }
-.plan-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-.plan-pill.is-pro .plan-pill-dot { background: var(--primary); }
-
-.topbar-icon-btn {
-  width: 44px; height: 36px;
-  background: var(--surface-hover); color: var(--text);
-  border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s, color 0.2s;
-}
-.topbar-icon-btn:hover { background: var(--primary); color: white; }
+.hamburger { width: 40px; height: 40px; display: grid; place-items: center; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: .2s ease; }
+.hamburger:hover { color: white; background: var(--primary); border-color: var(--primary); transform: translateY(-1px); }
+.topbar-context { min-width: 150px; display: flex; flex-direction: column; line-height: 1.15; }
+.topbar-context span { color: var(--muted); font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.topbar-context strong { margin-top: .22rem; color: var(--text); font-size: .95rem; font-weight: 700; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: .45rem; }
+.topbar-search { min-width: 205px; height: 38px; padding: 0 .55rem 0 .8rem; display: flex; align-items: center; gap: .55rem; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 11px; cursor: pointer; transition: .2s ease; }
+.topbar-search:hover { color: var(--text); border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); }
+.topbar-search span { font-size: .76rem; }
+.topbar-search kbd { margin-left: auto; padding: .18rem .38rem; color: var(--dim); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; font: 600 .58rem/1 system-ui; }
+.accent-switcher { height: 38px; display: flex; align-items: center; gap: .25rem; padding: 0 .42rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 11px; }
+.accent-switcher-icon { margin-right: .1rem; color: var(--muted); }
+.accent-swatch { width: 21px; height: 21px; display: grid; place-items: center; padding: 0; color: white; background: var(--swatch); border: 2px solid var(--surface2); border-radius: 50%; cursor: pointer; box-shadow: 0 0 0 1px color-mix(in srgb, var(--swatch) 35%, transparent); transition: .16s ease; }
+.accent-swatch:hover { transform: scale(1.12); }
+.accent-swatch.is-active { box-shadow: 0 0 0 2px var(--surface2), 0 0 0 4px var(--swatch); }
 
 .view-mode-switch {
   display: inline-flex; align-items: center; gap: 2px;
@@ -109,23 +72,27 @@
 }
 .view-mode-switch button.active { background: var(--primary); color: white; }
 
-/* Body */
 .body-row { display: flex; width: 100%; min-width: 0; flex: 1 1 auto; min-height: 0; }
 
 /* Sidebar */
 .sidebar {
-  width: 280px; flex: 0 0 auto;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  padding: 1rem 0; overflow-y: auto;
-  display: flex; flex-direction: column;
-  transition: transform 0.25s ease, width 0.25s ease;
+  width: 264px; flex: 0 0 auto; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border);
+  transition: transform .25s ease, width .25s ease;
 }
+.sidebar-brand { min-height: 66px; padding: .8rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.sidebar-brand button { width: 32px; height: 32px; display: grid; place-items: center; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; cursor: pointer; }
+.sidebar-brand button:hover { color: var(--primary); border-color: var(--primary); }
+.sidebar-service { margin: .8rem; padding: .75rem; display: flex; align-items: center; gap: .7rem; background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, var(--surface2)), var(--surface2)); border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--border)); border-radius: 12px; }
+.sidebar-service-icon { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; color: white; background: var(--grad); border-radius: 10px; font-size: 1rem; font-weight: 800; }
+.sidebar-service > span:last-child { min-width: 0; display: flex; flex-direction: column; }
+.sidebar-service strong { overflow: hidden; color: var(--text); font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-service small { margin-top: .18rem; overflow: hidden; color: var(--muted); font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: .15rem .35rem .75rem; scrollbar-width: thin; }
 .nav-group { margin: 0 0 0.5rem; }
-.sidebar > nav { flex: 1 1 auto; }
 .group-header {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 0.5rem 1.25rem;
+  width: 100%; padding: 0.6rem .9rem;
   background: none; border: none; color: var(--text-muted);
   font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
   text-align: left; cursor: pointer;
@@ -135,16 +102,16 @@
 .nav-items { overflow: hidden; }
 .nav-item {
   display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.625rem 1.25rem; margin: 0 0.5rem;
-  border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500;
+  min-height: 42px; padding: 0.6rem .8rem; margin: .12rem .25rem;
+  border-radius: .72rem; border: 1px solid transparent; font-size: .82rem; font-weight: 560;
   transition: all 0.15s ease;
 }
 .nav-item svg { color: var(--text-muted); transition: color 0.15s; }
 .nav-item:hover svg { color: var(--primary); }
-.nav-item.active { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+.nav-item.active { background: color-mix(in srgb, var(--primary) 12%, transparent); border-color: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); }
 .nav-item.active svg { color: var(--primary); }
 
-.sidebar-plan { padding: 0.75rem 1rem; border-top: 1px solid var(--border); margin-top: auto; flex: 0 0 auto; }
+.sidebar-plan { padding: .7rem .8rem; border-top: 1px solid var(--border); flex: 0 0 auto; }
 .sidebar-plan-link { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.625rem; border-radius: 0.625rem; text-decoration: none; font-size: 0.8125rem; font-weight: 600; color: var(--text); transition: background 0.15s; }
 .sidebar-plan-link:hover { background: var(--surface-hover); }
 .sidebar-plan-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
@@ -152,15 +119,18 @@
 .sidebar-plan-name { text-transform: capitalize; }
 .sidebar-plan-cta { margin-left: auto; font-size: 0.6875rem; font-weight: 700; color: var(--primary-soft); background: color-mix(in srgb, var(--primary) 10%, transparent); border-radius: 999px; padding: 0.25rem 0.625rem; }
 .sidebar-plan-link:hover .sidebar-plan-cta { background: var(--primary); color: #fff; }
+.sidebar-utility-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin-top: .55rem; }
+.sidebar-utility-actions button { min-height: 32px; display: grid; place-items: center; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 8px; cursor: pointer; }
+.sidebar-utility-actions button:hover { color: var(--primary); background: var(--surface2); border-color: var(--border); }
 
-.content { flex: 1 1 auto; min-width: 0; max-width: 100%; overflow-y: auto; padding: 1.5rem; }
+.content { flex: 1 1 auto; min-width: 0; max-width: 100%; overflow-y: auto; padding: clamp(1rem, 2.1vw, 1.75rem); }
+.content.portal-content { padding: 0; }
 
 .backdrop {
-  position: fixed; inset: 0 0 0 0; top: 58px;
+  position: fixed; inset: 0; top: var(--shell-header);
   background: rgba(0,0,0,.5); z-index: 40;
 }
 
-/* Desktop collapse: hamburger hides/shows the sidebar entirely */
 @media (min-width: 901px) {
   .sidebar.collapsed {
     width: 0; min-width: 0; flex-basis: 0; padding: 0;
@@ -169,14 +139,22 @@
 }
 
 @media (max-width: 900px) {
-  .topbar { width: 100%; min-width: 0; gap: 0.5rem; padding: 0.5rem; }
-  .topbar > .logo-mark, .topbar > .online, .topbar > .plan-pill, .topbar > .view-mode-switch, .topbar > button[title^="Weather"] { display: none; }
-  .service-pill { min-width: 0; max-width: 140px; }
-  .service-pill .pill-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .service-pill .pill-switch { display: none; }
+  .app { --shell-header: 58px; }
+  .topbar { width: 100%; min-width: 0; gap: .5rem; padding: .5rem; }
+  .topbar-context { min-width: 0; flex: 1; }
+  .topbar-context span { display: none; }
+  .topbar-context strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-actions { margin-left: 0; }
+  .topbar-search { display: none; }
+  .topbar .view-mode-switch, .topbar button[title^="Weather"] { display: none; }
+  .topbar .accent-switcher { width: 82px; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
+  .topbar .accent-switcher::-webkit-scrollbar { display: none; }
+  .topbar .accent-switcher-icon { display: none; }
+  .topbar .accent-swatch { width: 18px; height: 18px; flex: 0 0 18px; }
   .content { width: 100%; min-width: 0; padding: 1rem; }
+  .content.portal-content { padding: 0; }
   .sidebar {
-    position: fixed; left: 0; top: 58px; bottom: 0;
+    position: fixed; left: 0; top: var(--shell-header); bottom: 0;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 50; box-shadow: 4px 0 16px rgba(0,0,0,.4);

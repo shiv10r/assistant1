@@ -23,6 +23,7 @@ export const Integrations = lazy(() => import('../pages/Integrations'))
 export const Insights = lazy(() => import('../pages/Insights'))
 export const Broadcast = lazy(() => import('../pages/Broadcast'))
 export const VideoCall = lazy(() => import('../pages/VideoCall'))
+export const OperationsWorkspace = lazy(() => import('../services/operations/OperationsWorkspace'))
 
 export const InteriorRoutes = lazy(MODULES_BY_KEY.interior.lazyRouteLoader)
 

@@ -53,13 +53,13 @@ export default function InteriorDesigns() {
 
   const projectDesigns = useMemo(
     () => designs
-      .filter((d) => d.projectId === id && (styleFilter === 'all' || d.style === styleFilter))
+      .filter((d) => (!id || d.projectId === id) && (styleFilter === 'all' || d.style === styleFilter))
       .filter((d) => d.name.toLowerCase().includes(query.toLowerCase()))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [designs, id, query, styleFilter]
   )
 
-  if (!project) {
+  if (id && !project) {
     return (
       <div className="space-y-6">
         <Button variant="outline" onClick={() => navigate('/interior/projects')}><ArrowLeft className="w-4 h-4" /> Back to projects</Button>
@@ -85,13 +85,13 @@ export default function InteriorDesigns() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" onClick={() => navigate(`/interior/projects/${project.id}`)}><ArrowLeft className="w-4 h-4" /> Back to {project.name}</Button>
-        <Button onClick={() => navigate(`/interior/projects/${project.id}/generate`)}><Sparkles className="w-4 h-4" /> New design</Button>
+        {project ? <Button variant="outline" onClick={() => navigate(`/interior/projects/${project.id}`)}><ArrowLeft className="w-4 h-4" /> Back to {project.name}</Button> : <div><span className="interior-eyebrow !text-primary">Curated concepts</span><h1 className="text-3xl font-semibold text-text mt-2">Design studio</h1><p className="text-sm text-muted mt-1">Review, compare and approve every concept across the portfolio.</p></div>}
+        <Button onClick={() => navigate(project ? `/interior/projects/${project.id}/generate` : '/interior/projects')}><Sparkles className="w-4 h-4" /> {project ? 'New design' : 'Choose project'}</Button>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>AI designs</CardTitle>
+          <CardTitle>{project ? `${project.name} concepts` : 'All design concepts'}</CardTitle>
           <Badge variant="info" size="sm">{num(projectDesigns.length)} result{projectDesigns.length === 1 ? '' : 's'}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -117,7 +117,7 @@ export default function InteriorDesigns() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {projectDesigns.map((d, i) => (
                 <Card key={d.id} className="overflow-hidden flex flex-col">
-                  <button className="block w-full relative group" onClick={() => navigate(`/interior/projects/${project.id}/designs/${d.id}`)}>
+                  <button className="block w-full relative group" onClick={() => navigate(`/interior/projects/${d.projectId}/designs/${d.id}`)}>
                     {designPreview(d, i)}
                     <span className="absolute top-2 left-2">
                       <Badge variant={d.status === 'completed' ? 'success' : d.status === 'generating' ? 'warning' : 'danger'} size="sm">{d.status}</Badge>
@@ -130,7 +130,7 @@ export default function InteriorDesigns() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="font-medium text-text truncate">{d.name}</p>
-                        <p className="text-xs text-muted">{d.style} · {d.color} · v{d.currentVersion}</p>
+                        <p className="text-xs text-muted">{projects.find((item) => item.id === d.projectId)?.name ?? 'Project'} · {d.style} · {d.color} · v{d.currentVersion}</p>
                       </div>
                       <button onClick={() => toggleFavorite(d)} className="flex-shrink-0" aria-label="Toggle favourite">
                         <Heart className={`w-5 h-5 transition-colors ${d.favorite ? 'text-rose-500 fill-rose-500' : 'text-muted hover:text-rose-400'}`} />
@@ -157,8 +157,8 @@ export default function InteriorDesigns() {
         <div className="space-y-4">
           <p className="text-sm text-muted">Copy this link to share "{shareDesign?.name}" with your team.</p>
           <div className="flex gap-2">
-            <Input readOnly value={shareDesign ? `${window.location.origin}/interior/projects/${project.id}/designs/${shareDesign.id}` : ''} />
-            <Button variant="outline" onClick={() => { if (shareDesign) navigator.clipboard?.writeText(`${window.location.origin}/interior/projects/${project.id}/designs/${shareDesign.id}`) }}>Copy</Button>
+            <Input readOnly value={shareDesign ? `${window.location.origin}/interior/projects/${shareDesign.projectId}/designs/${shareDesign.id}` : ''} />
+            <Button variant="outline" onClick={() => { if (shareDesign) navigator.clipboard?.writeText(`${window.location.origin}/interior/projects/${shareDesign.projectId}/designs/${shareDesign.id}`) }}>Copy</Button>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setShareOpen(false)}>Close</Button>
