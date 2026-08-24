@@ -207,6 +207,8 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
     setBusy(true)
     setNotice(null)
     const errors: string[] = []
+    const notifications = new Set<string>()
+    let notificationWarning = false
     let uploaded = 0
     try {
       for (const file of selected) {
@@ -217,7 +219,9 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
         }
         try {
           const id = genId()
-          await fileStorage.upload(id, file)
+          const result = await fileStorage.upload(id, file)
+          if (fileStorage.kind === 'supabase') notifications.add(result.message)
+          if (fileStorage.kind === 'supabase' && !result.notificationSent) notificationWarning = true
           files.add({ id, name: file.name, size: file.size, type: file.type || 'application/octet-stream', workId, uploadedAt: new Date().toISOString(), storage: fileStorage.kind })
           uploaded += 1
         } catch (error) {
@@ -225,7 +229,7 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
         }
       }
       const uploadedText = uploaded ? `${uploaded} file${uploaded === 1 ? '' : 's'} uploaded.` : ''
-      setNotice({ text: [uploadedText, ...errors].filter(Boolean).join(' '), error: errors.length > 0 })
+      setNotice({ text: [uploadedText, ...notifications, ...errors].filter(Boolean).join(' '), error: errors.length > 0 || notificationWarning })
     } finally {
       event.target.value = ''
       setBusy(false)
