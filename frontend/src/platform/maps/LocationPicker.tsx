@@ -6,13 +6,7 @@ import { FiSearch, FiMapPin, FiLoader } from 'react-icons/fi'
 import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { getTheme } from '../../theme'
-
-interface NominatimResult {
-  place_id: number
-  display_name: string
-  lat: string
-  lon: string
-}
+import { api, type MapLocation } from '../api'
 
 interface LocationPickerProps {
   latitude?: string
@@ -21,22 +15,9 @@ interface LocationPickerProps {
   onAddressChange?: (address: string) => void
 }
 
-let lastSearchTs = 0
-
-async function geocode(query: string): Promise<NominatimResult[]> {
-  const now = Date.now()
-  const wait = Math.max(0, 1000 - (now - lastSearchTs))
-  if (wait > 0) await new Promise((r) => setTimeout(r, wait))
-  lastSearchTs = Date.now()
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(query)}`
-  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } })
-  if (!res.ok) throw new Error('Search failed')
-  return res.json()
-}
-
 export default function LocationPicker({ latitude, longitude, onChange, onAddressChange }: LocationPickerProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<NominatimResult[]>([])
+  const [results, setResults] = useState<MapLocation[]>([])
   const [searching, setSearching] = useState(false)
   const [searchErr, setSearchErr] = useState('')
   const [showResults, setShowResults] = useState(false)
@@ -89,7 +70,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     setSearching(true)
     setSearchErr('')
     try {
-      const r = await geocode(query.trim())
+      const r = await api.maps.search(query.trim())
       setResults(r)
       setShowResults(true)
     } catch (e) {
@@ -100,13 +81,15 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     }
   }
 
-  function pick(r: NominatimResult) {
-    setQuery(r.display_name)
+  function pick(r: MapLocation) {
+    const latitudeValue = String(r.latitude)
+    const longitudeValue = String(r.longitude)
+    setQuery(r.label)
     setShowResults(false)
-    setMarker(r.lat, r.lon)
-    onChange(r.lat, r.lon, r.display_name)
-    if (onAddressChange) onAddressChange(r.display_name)
-    if (mapRef.current) mapRef.current.setView([Number(r.lat), Number(r.lon)], 15)
+    setMarker(latitudeValue, longitudeValue)
+    onChange(latitudeValue, longitudeValue, r.label)
+    if (onAddressChange) onAddressChange(r.label)
+    if (mapRef.current) mapRef.current.setView([r.latitude, r.longitude], 15)
   }
 
   function useMyLocation() {
@@ -151,12 +134,12 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
             {results.map((r) => (
               <button
                 type="button"
-                key={r.place_id}
+                key={r.id}
                 onClick={() => pick(r)}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-surface2 flex items-start gap-2"
               >
                 <FiMapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="min-w-0">{r.display_name}</span>
+                <span className="min-w-0">{r.label}</span>
               </button>
             ))}
           </div>
