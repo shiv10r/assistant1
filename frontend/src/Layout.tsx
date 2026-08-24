@@ -31,6 +31,7 @@ import {
   FiTag,
   FiHeart,
   FiCloud,
+  FiArrowLeft,
   FiArrowRight,
   FiCode,
 } from 'react-icons/fi'
@@ -365,7 +366,7 @@ const COMMON_GROUPS: NavGroup[] = [
     { label: 'Settings', to: '/settings', icon: <FiSettings className="w-5 h-5" /> },
   ]},
   { title: 'Collaboration', items: [
-    { label: 'Video Call', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
+    { label: 'Meetings & Calls', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
     { label: 'Broadcast', to: '/broadcast', icon: <IoMegaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
   ]},
   { title: 'Administration', items: [
@@ -381,10 +382,11 @@ const COMMON_GROUPS: NavGroup[] = [
 function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const serviceGroups = service ? SERVICE_GROUPS[service.id] : []
   const config = operationsConfig(service?.id)
+  const hasNativePortfolio = config ? ['interior', 'warehouse', 'school'].includes(config.id) : false
   const operations: NavGroup[] = config ? [{
     title: service?.shell === 'portal' ? 'My workspace' : 'Operations',
     items: [
-      ...(config.id === 'interior' ? [] : [
+      ...(hasNativePortfolio ? [] : [
         { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
         { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
       ]),
@@ -412,6 +414,7 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
 const SIDEBAR_KEY = 'lux_sidebar_open'
+const SIDEBAR_WIDE_KEY = 'vsr_sidebar_wide'
 
 function defaultSidebarOpen(): boolean {
   const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -423,6 +426,7 @@ export default function Layout() {
   const username = getUsername() || 'User'
   const role = getRole()
   const [open, setOpen] = useState(defaultSidebarOpen)
+  const [sidebarWide, setSidebarWide] = useState(() => localStorage.getItem(SIDEBAR_WIDE_KEY) === '1')
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
@@ -454,6 +458,14 @@ export default function Layout() {
     setOpen(prev => {
       const next = !prev
       localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0')
+      return next
+    })
+  }
+
+  function toggleSidebarWidth() {
+    setSidebarWide((current) => {
+      const next = !current
+      localStorage.setItem(SIDEBAR_WIDE_KEY, next ? '1' : '0')
       return next
     })
   }
@@ -519,6 +531,9 @@ export default function Layout() {
         <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
           <MdMenu className="w-6 h-6" />
         </button>
+        <button className="topbar-back" onClick={() => navigate(-1)} aria-label="Go back" title="Go back">
+          <FiArrowLeft className="w-5 h-5" /><span>Back</span>
+        </button>
         <div className="topbar-context">
           <span>{service?.label ?? 'VSR Systems'}</span>
           <strong>{pageTitle}</strong>
@@ -571,7 +586,7 @@ export default function Layout() {
       </header>
 
       <div className="body-row">
-        <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
+        <nav className={cn('sidebar', open ? 'open' : 'collapsed', sidebarWide && 'wide')}>
           <div className="sidebar-brand">
             <VsrLogo size={34} wordmark />
             <button onClick={() => navigate('/')} title="Switch workspace"><FiGrid className="w-4 h-4" /></button>
@@ -582,7 +597,7 @@ export default function Layout() {
           </div>
           <div className="sidebar-section-controls">
             <span>Navigation</span>
-            <button onClick={() => setCollapsedGroups(collapsedGroups.size ? new Set() : new Set(groups.map((group) => group.title)))}>{collapsedGroups.size ? 'Expand all' : 'Collapse all'}</button>
+            <div><button onClick={toggleSidebarWidth}>{sidebarWide ? 'Compact' : 'Widen'}</button><button onClick={() => setCollapsedGroups(collapsedGroups.size ? new Set() : new Set(groups.map((group) => group.title)))}>{collapsedGroups.size ? 'Expand all' : 'Collapse all'}</button></div>
           </div>
           <div className="sidebar-scroll">{groups.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)
@@ -630,7 +645,6 @@ export default function Layout() {
             <div className="sidebar-utility-actions">
               <button onClick={() => navigate('/settings')} title="Settings"><FiSettings className="w-4 h-4" /></button>
               <button onClick={() => navigate('/account')} title="Account"><FiUser className="w-4 h-4" /></button>
-              <button onClick={signOut} title="Sign out"><MdLogout className="w-4 h-4" /></button>
             </div>
           </div>
         </nav>

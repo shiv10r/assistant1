@@ -52,8 +52,8 @@ export default function VideoCall() {
     <>
       <div className="page-head">
         <div>
-          <h1 className="text-2xl font-bold">Video Call</h1>
-          <p className="text-text/60 text-sm mt-1">Create links for Google Meet, Teams, or an embedded Jitsi room.</p>
+          <h1 className="text-2xl font-bold">Meetings &amp; Calls</h1>
+          <p className="text-text/60 text-sm mt-1">Launch Google Meet, Microsoft Teams, or an embedded Jitsi room, then share the invite link.</p>
         </div>
         {room && (
           <Button onClick={copy} variant="outline">
