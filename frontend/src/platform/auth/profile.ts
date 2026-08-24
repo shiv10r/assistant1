@@ -19,8 +19,23 @@ export function getEdition(): Edition {
   return localStorage.getItem(EDITION_KEY) === 'gold' ? 'gold' : 'standard'
 }
 
+export function applyEdition(edition: Edition): void {
+  document.documentElement.dataset.edition = edition
+}
+
+export function initEdition(): Edition {
+  const edition = getEdition()
+  applyEdition(edition)
+  return edition
+}
+
 export function setEdition(edition: Edition): void {
   localStorage.setItem(EDITION_KEY, edition)
+  applyEdition(edition)
+
+  const accent = edition === 'gold' ? 'amber' : 'cobalt'
+  localStorage.setItem('lux_ui_accent', accent)
+  document.documentElement.dataset.accent = accent
 }
 
 export function getUserProfile(username: string): UserProfile {

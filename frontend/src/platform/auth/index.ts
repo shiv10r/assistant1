@@ -12,8 +12,10 @@ export {
 } from './session'
 
 export {
+  applyEdition,
   getEdition,
   getUserProfile,
+  initEdition,
   onUserProfileChange,
   saveUserProfile,
   setEdition,
