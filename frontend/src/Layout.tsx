@@ -406,9 +406,7 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
       { to: `/${config.id}/operations/team`, label: 'Team Workspace', icon: <FiUsers className="w-5 h-5" /> },
     ],
   }] : []
-  return service?.shell === 'portal'
-    ? [...operations, ...coordination, ...serviceGroups]
-    : [...operations, ...coordination, ...serviceGroups, ...COMMON_GROUPS]
+  return [...operations, ...coordination, ...serviceGroups, ...COMMON_GROUPS]
 }
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
