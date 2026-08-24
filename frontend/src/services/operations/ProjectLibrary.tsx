@@ -16,18 +16,21 @@ export default function ProjectLibrary({ config, work, library }: { config: Oper
   const [form, setForm] = useState(emptyForm)
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null)
   const filtered = library.items.filter((item) => (status === 'All' || item.status === status) && `${item.title} ${item.customer} ${item.location} ${item.fileName}`.toLowerCase().includes(query.toLowerCase()))
 
   const add = async () => {
     if (!form.title.trim()) return
-    setBusy(true); setNotice('')
+    setBusy(true); setNotice(null)
     const fileId = file ? genId() : undefined
     if (file && fileId) {
       const validation = storageFileError(file)
-      if (validation) { setNotice(validation); setBusy(false); return }
-      try { await fileStorage.upload(fileId, file) }
-      catch (error) { setNotice(error instanceof Error ? error.message : 'Upload failed.'); setBusy(false); return }
+      if (validation) { setNotice({ text: validation, error: true }); setBusy(false); return }
+      try {
+        const result = await fileStorage.upload(fileId, file)
+        if (fileStorage.kind === 'supabase') setNotice({ text: result.message, error: !result.notificationSent })
+      }
+      catch (error) { setNotice({ text: error instanceof Error ? error.message : 'Upload failed.', error: true }); setBusy(false); return }
     }
     library.add({
       id: genId(), title: form.title.trim(), customer: form.customer.trim() || `Previous ${config.customer}`,
@@ -42,6 +45,7 @@ export default function ProjectLibrary({ config, work, library }: { config: Oper
   return <div className="operations-page">
     <header className="ops-page-head"><div><span>Reusable project memory</span><h1>{capitalize(config.libraryLabel)}</h1><p>Store previous outcomes, photos and project files in one searchable archive.</p></div><Button onClick={() => setOpen(true)}><Plus className="w-4 h-4" /> Add previous {config.item}</Button></header>
     <div className="ops-sync-banner"><Database /><div><strong>{fileStorage.kind === 'supabase' ? 'Supabase project storage enabled' : 'Private browser storage'}</strong><p>Metadata is synchronized through PostgreSQL. Files use {fileStorage.kind === 'supabase' ? 'private Supabase objects with signed access' : 'local browser storage until Supabase is enabled'}.</p></div><Badge variant="success">{fileStorage.kind === 'supabase' ? 'Cloud files' : 'Local files'}</Badge></div>
+    {notice && <div role={notice.error ? 'alert' : 'status'} className={notice.error ? 'rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700' : 'rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-700'}>{notice.text}</div>}
     <div className="ops-library-toolbar"><div><Search className="w-4 h-4" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${config.libraryLabel}`} /></div><Select value={status} onValueChange={setStatus}><option>All</option>{STATUSES.map((item) => <option key={item}>{item}</option>)}</Select></div>
     <section className="ops-library-grid">{filtered.map((item) => <article key={item.id}>
       <div className="ops-library-photo">{item.photoUrl ? <img src={item.photoUrl} alt={`${item.title} reference`} loading="lazy" /> : <Image />}<Badge variant={item.status === 'Approved' ? 'success' : item.status === 'Needs review' ? 'warning' : 'info'} size="sm">{item.status}</Badge></div>
@@ -53,7 +57,7 @@ export default function ProjectLibrary({ config, work, library }: { config: Oper
       <div><Label>Gallery photo URL (optional)</Label><Input type="url" value={form.photoUrl} onChange={(event) => setForm({ ...form, photoUrl: event.target.value })} placeholder="https://..." /></div>
       <div><Label>Upload photo or project file</Label><label className="ops-library-upload"><Upload /><span>{file ? file.name : 'Choose image, PDF, document or ZIP'}<small>Private storage, maximum 25 MB</small></span><input type="file" accept={STORAGE_FILE_ACCEPT} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label></div>
       <div><Label>Related current {config.item}</Label><Select value={form.sourceWorkId} onValueChange={(value) => setForm({ ...form, sourceWorkId: value })}><option value="">No relation</option>{work.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</Select></div>
-      {notice && <p className="text-sm text-red-500">{notice}</p>}<div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={() => void add()} disabled={!form.title.trim() || busy}>{busy ? 'Uploading...' : 'Save archive record'}</Button></div>
+      <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={() => void add()} disabled={!form.title.trim() || busy}>{busy ? 'Uploading...' : 'Save archive record'}</Button></div>
     </div></Modal>
   </div>
 }

@@ -1,4 +1,5 @@
 import { clearAuthToken, getToken, storeAuthSession } from '../auth'
+import { confirmBillableAction } from '../billing/confirmBillableAction'
 
 export { getEmail, getRole, getToken, getUsername, isAdmin, isAuthed, logout } from '../auth'
 
@@ -43,9 +44,11 @@ export interface ProjectFolder { id: number; projectId: number; name: string; cr
 export interface ProjectFile { id: number; projectId: number; folderId: number; fileName: string; filePath: string; uploadedAt: string }
 export interface FileBlobMeta { id: number; projectId: number; category: string; name: string; contentType: string; size: number; sizeLabel: string; uploadedAt: string }
 export type StorageBucket = 'project-media'
-export interface SignedUploadRequest { bucket: StorageBucket; path: string; contentType: string }
+export interface SignedUploadRequest { bucket: StorageBucket; path: string; contentType: string; billingConfirmed: boolean }
 export interface StorageObjectRequest { bucket: StorageBucket; path: string }
 export interface SignedUrlResponse { signedUrl: string }
+export interface UploadCompletedRequest extends StorageObjectRequest { fileName: string; contentType: string; sizeBytes: number }
+export interface UploadCompletedResponse { notificationSent: boolean; message: string }
 
 export interface ProjectDetail { project: Project; parties: SiteParty[]; tasks: ProjectTask[]; txns: ProjectTxn[]; materials: MaterialTxn[]; inventory: { material: string; qty: number; unit: string }[]; logs: SiteLog[]; mom: MeetingMinute[]; design: DesignFile[]; folders: ProjectFolder[] }
 export interface CashData { balance: number; entries: CashEntry[] }
@@ -363,7 +366,12 @@ export interface AssistantSearch {
 
 const send = (text: string) => post<ChatMessage[]>('/api/assistant/send', { text })
 const aiStatus = () => get<AiStatus>('/api/assistant/ai/status')
-const aiChat = (text: string, history: AiChatTurn[]) => post<AiReply>('/api/assistant/ai', { text, history })
+const aiChat = (text: string, history: AiChatTurn[]) => {
+  if (!confirmBillableAction('Cloud AI request', 'This request may consume configured AI provider credits or quota.')) {
+    return Promise.reject(new Error('AI request cancelled. No cloud AI resource was used.'))
+  }
+  return post<AiReply>('/api/assistant/ai', { text, history })
+}
 const search = (q: string, projectId?: number) => get<AssistantSearch>(`/api/assistant/search?q=${encodeURIComponent(q)}${projectId ? `&projectId=${projectId}` : ''}`)
 const dashboard = () => get<Dashboard>('/api/dashboard')
 const report = (period: string) => get<ReportData>(`/api/reports?period=${period.toLowerCase()}`)
@@ -484,14 +492,15 @@ const weather = (latitude: number, longitude: number) =>
 
 const storage = {
   createSignedUpload: (request: SignedUploadRequest) => post<SignedUrlResponse>('/api/storage/uploads/sign', request),
-  uploadToSignedUrl: async (signedUrl: string, file: File) => {
+  uploadToSignedUrl: async (signedUrl: string, file: File, contentType = file.type || 'application/octet-stream') => {
     const response = await fetch(signedUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      headers: { 'Content-Type': contentType },
       body: file,
     })
     if (!response.ok) throw new Error(`Upload failed (${response.status})`)
   },
+  uploadCompleted: (request: UploadCompletedRequest) => post<UploadCompletedResponse>('/api/storage/uploads/completed', request),
   signedDownload: (request: StorageObjectRequest) => post<SignedUrlResponse>('/api/storage/downloads/sign', request),
   remove: (request: StorageObjectRequest) => del('/api/storage/objects', request),
 }
