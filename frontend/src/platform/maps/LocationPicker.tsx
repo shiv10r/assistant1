@@ -148,6 +148,9 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
 
       {searchErr && <p className="text-xs text-red-500">{searchErr}</p>}
       {showResults && results.length === 0 && !searching && <p className="text-xs text-muted">No places found. Try a different name.</p>}
+      <p className="text-[11px] text-muted">
+        Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors.
+      </p>
 
       <div ref={containerRef} style={{ height: '240px', zIndex: 0 }} className="w-full rounded-xl overflow-hidden border border-border" />
 

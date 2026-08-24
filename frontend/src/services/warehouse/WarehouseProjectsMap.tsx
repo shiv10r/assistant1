@@ -470,6 +470,7 @@ export default function WarehouseProjectsMap() {
             <PlaceSearch placeholder="From — search a place, e.g. Delhi" onPick={(p) => { setFromLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
             <PlaceSearch placeholder="To — search a place or site address" onPick={(p) => { setToLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
           </div>
+          <p className="text-[11px] text-muted">Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors.</p>
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={showRoute} disabled={routing || !fromLoc || !toLoc}>
               <Navigation className="w-4 h-4" /> {routing ? 'Routing…' : 'Show route'}
