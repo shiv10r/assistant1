@@ -6,7 +6,7 @@ Status: Approved (scope + nav + route registration confirmed by user)
 ## 1. Purpose
 
 Implement the remaining V1 warehouse modules from `docs/services/warehouse-management-v1.md`
-(§8, 12, 14, 18, 19, 20, 22, 23, 24, 25) as extensions of the existing LuxInfra warehouse
+(§8, 12, 14, 18, 19, 20, 22, 23, 24, 25) as extensions of the existing VSR Systems warehouse
 service at `frontend/src/services/warehouse/`. Everything stays frontend-only and
 localStorage-backed via `useLocalCollection` (key prefix `warehouse:`), consistent with the
 5 pages already shipped.
@@ -31,7 +31,7 @@ localStorage-backed via `useLocalCollection` (key prefix `warehouse:`), consiste
 ### Explicitly out of scope
 
 - Barcode/QR scanner (§21) — requires new dependency (`html5-qrcode`); spec §49.18 forbids new libs. The nav already links to `/billing/items` for scanning.
-- Users/Roles/Permissions, Notifications, Audit Logs, Reports (§28-30, 39-40) — exist at app level in LuxInfra; not part of the warehouse service.
+- Users/Roles/Permissions, Notifications, Audit Logs, Reports (§28-30, 39-40) — exist at app level in VSR Systems; not part of the warehouse service.
 - Backend API integration (§34, 42) — no warehouse backend exists; warehouse is a localStorage prototype.
 - V2/V3 features (§46) — forecasting, RFID, IoT, etc. not implemented.
 

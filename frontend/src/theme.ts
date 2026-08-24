@@ -1,9 +1,20 @@
 export type Theme = 'dark' | 'light'
 export type WeatherTheme = 'sunny' | 'cloudy' | 'rain' | 'storm' | 'snow' | 'night' | 'default'
+export type AccentId = 'cobalt' | 'violet' | 'teal' | 'rose' | 'amber' | 'paper'
+
+export const ACCENT_OPTIONS: readonly { id: AccentId; label: string; color: string }[] = [
+  { id: 'cobalt', label: 'Cobalt', color: '#2563EB' },
+  { id: 'violet', label: 'Violet', color: '#7C3AED' },
+  { id: 'teal', label: 'Teal', color: '#0F8F83' },
+  { id: 'rose', label: 'Rose', color: '#D94F70' },
+  { id: 'amber', label: 'Amber', color: '#D97706' },
+  { id: 'paper', label: 'Paper', color: '#F8FAFC' },
+]
 
 const KEY = 'lux_theme'
 const WEATHER_MODE_KEY = 'lux_weather_mode'
 const WEATHER_KEY = 'lux_weather_theme'
+const ACCENT_KEY = 'lux_ui_accent'
 
 export function getTheme(): Theme {
   return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark'
@@ -39,4 +50,20 @@ export function initWeatherTheme(): WeatherTheme {
   const t = (localStorage.getItem(WEATHER_KEY) as WeatherTheme) || 'default'
   document.documentElement.dataset.weather = t
   return t
+}
+
+export function getAccent(): AccentId {
+  const stored = localStorage.getItem(ACCENT_KEY)
+  return ACCENT_OPTIONS.some((option) => option.id === stored) ? stored as AccentId : 'cobalt'
+}
+
+export function applyAccent(accent: AccentId) {
+  document.documentElement.dataset.accent = accent
+  localStorage.setItem(ACCENT_KEY, accent)
+}
+
+export function initAccent(): AccentId {
+  const accent = getAccent()
+  document.documentElement.dataset.accent = accent
+  return accent
 }

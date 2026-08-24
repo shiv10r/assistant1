@@ -28,6 +28,8 @@ export default function InteriorDesignDetails() {
 
   const room = design ? rooms.find((r) => r.id === design.roomId) : undefined
   const currentVersion = design?.versions.find((v) => v.version === design.currentVersion)
+  const currentStyle = currentVersion?.style ?? design?.style ?? 'Modern'
+  const currentColor = currentVersion?.color ?? design?.color ?? 'Grey'
   const versionProducts = useMemo(() => {
     if (!currentVersion) return []
     return currentVersion.productIds.map((pid) => products.find((p) => p.id === pid)).filter((p): p is InteriorProduct => Boolean(p))
@@ -47,7 +49,7 @@ export default function InteriorDesignDetails() {
   const toggleSaved = () => { update(design.id, { saved: !design.saved }) }
 
   const download = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520"><rect width="800" height="520" fill="#1e293b"/><text x="40" y="60" fill="#fff" font-size="28" font-family="sans-serif">${design.name}</text><text x="40" y="100" fill="#94a3b8" font-size="18" font-family="sans-serif">${design.style} · ${design.color} · v${design.currentVersion}</text><text x="40" y="140" fill="#fff" font-size="20" font-family="sans-serif">${money(design.budget)}</text></svg>`
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520"><rect width="800" height="520" fill="#1e293b"/><text x="40" y="60" fill="#fff" font-size="28" font-family="sans-serif">${design.name}</text><text x="40" y="100" fill="#94a3b8" font-size="18" font-family="sans-serif">${currentStyle} · ${currentColor} · v${design.currentVersion}</text><text x="40" y="140" fill="#fff" font-size="20" font-family="sans-serif">${money(currentVersion?.budget ?? design.budget)}</text></svg>`
     const blob = new Blob([svg], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -58,7 +60,8 @@ export default function InteriorDesignDetails() {
   }
 
   const applyVersion = (v: { version: number }) => {
-    update(design.id, { currentVersion: v.version })
+    const version = design.versions.find((item) => item.version === v.version)
+    update(design.id, { currentVersion: v.version, ...(version ? { style: version.style, color: version.color, budget: version.budget } : {}) })
   }
 
   const saveModify = () => {
@@ -94,7 +97,7 @@ export default function InteriorDesignDetails() {
         <Button variant="outline" onClick={() => navigate(`/interior/projects/${project.id}/designs`)}><ArrowLeft className="w-4 h-4" /> Back to designs</Button>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setCompareOpen(true)} disabled={design.versions.length < 2}><History className="w-4 h-4" /> Compare versions</Button>
-          <Button size="sm" onClick={() => { setModifyStyle(design.style); setModifyColor(design.color); setModifyPrompt(''); setModifyOpen(true) }}><Wand2 className="w-4 h-4" /> Modify</Button>
+          <Button size="sm" onClick={() => { setModifyStyle(currentStyle); setModifyColor(currentColor); setModifyPrompt(''); setModifyOpen(true) }}><Wand2 className="w-4 h-4" /> Modify</Button>
         </div>
       </div>
 
@@ -105,8 +108,8 @@ export default function InteriorDesignDetails() {
             <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted">
               <span>{room?.name ?? 'Room'}</span>
               <span>·</span>
-              <Badge variant="info" size="sm">{design.style}</Badge>
-              <Badge variant="outline" size="sm">{design.color}</Badge>
+              <Badge variant="info" size="sm">{currentStyle}</Badge>
+              <Badge variant="outline" size="sm">{currentColor}</Badge>
               <span>·</span>
               <span>v{design.currentVersion}</span>
               <span>·</span>
@@ -121,7 +124,7 @@ export default function InteriorDesignDetails() {
         </CardHeader>
         <CardContent className="space-y-4">
           {currentVersion && (
-            <div className="rounded-lg overflow-hidden border border-border"><InteriorDesignVersionPreview design={design} version={currentVersion.version} style={design.style} /></div>
+            <div className="rounded-lg overflow-hidden border border-border"><InteriorDesignVersionPreview design={design} version={currentVersion.version} style={currentStyle} /></div>
           )}
           {currentVersion?.prompt && <p className="text-sm text-muted italic">"{currentVersion.prompt}"</p>}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border">

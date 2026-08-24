@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
-import { ArrowLeft, Plus, Sparkles, Trash2, Camera, MapPin, Ruler, Wallet, CalendarDays, Eye } from 'lucide-react'
+import { ArrowLeft, Plus, Sparkles, Trash2, Camera, MapPin, Ruler, Wallet, CalendarDays, Eye, Navigation, ClipboardCheck, FileText } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import type { InteriorProject, InteriorRoom, InteriorDesign, RoomType } from './types'
 import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
@@ -14,7 +14,7 @@ export default function InteriorProjectDetails() {
   const navigate = useNavigate()
   const { items: projects } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
   const { items: rooms, add, remove } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
-  const { items: designs } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
+  const { items: designs, remove: removeDesign } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
 
   const project = projects.find((p) => p.id === id)
 
@@ -52,14 +52,26 @@ export default function InteriorProjectDetails() {
     setForm(emptyRoom)
   }
 
+  const deleteRoom = (room: InteriorRoom) => {
+    if (!window.confirm(`Delete ${room.name} and its designs?`)) return
+    designs.filter((design) => design.roomId === room.id).forEach((design) => removeDesign(design.id))
+    remove(room.id)
+  }
+
+  const navigateToSite = () => {
+    const destination = project.latitude && project.longitude ? `${project.latitude},${project.longitude}` : project.location
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={() => navigate('/interior/projects')}><ArrowLeft className="w-4 h-4" /> Back to projects</Button>
+      <div className="flex flex-wrap justify-between gap-2"><Button variant="outline" onClick={() => navigate('/interior/projects')}><ArrowLeft className="w-4 h-4" /> Back to projects</Button><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={navigateToSite}><Navigation className="w-4 h-4" /> Navigate</Button><Button variant="outline" onClick={() => navigate(`/interior/projects/${project.id}/quotation`)}><FileText className="w-4 h-4" /> Estimate</Button><Button onClick={() => navigate(`/interior/projects/${project.id}/designs`)}><Sparkles className="w-4 h-4" /> Design studio</Button></div></div>
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>
             <CardTitle>{project.name}</CardTitle>
+            <p className="text-sm text-muted mt-1">{project.clientName ?? 'Client not assigned'} · led by {project.leadDesigner ?? 'unassigned designer'}</p>
             <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted">
               <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {project.location || '—'}</span>
               <span className="flex items-center gap-1"><Ruler className="w-4 h-4" /> {num(project.totalArea)} sq ft</span>
@@ -67,7 +79,7 @@ export default function InteriorProjectDetails() {
               <span className="flex items-center gap-1"><CalendarDays className="w-4 h-4" /> {fmtDate(project.createdAt)}</span>
             </div>
           </div>
-          <Badge variant={project.status === 'active' ? 'success' : project.status === 'completed' ? 'info' : 'outline'}>{project.status}</Badge>
+          <div className="text-right"><Badge variant={project.status === 'active' ? 'success' : project.status === 'completed' ? 'info' : 'outline'}>{project.phase ?? project.status}</Badge><p className="text-xs text-muted mt-2">{project.progress ?? 0}% complete</p></div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -88,6 +100,7 @@ export default function InteriorProjectDetails() {
               <p className="text-xl font-semibold mt-1">{num(unusedArea)} <span className="text-xs text-muted font-normal">sq ft</span></p>
             </div>
           </div>
+          <div className="interior-progress-track mt-4"><div className="interior-progress-fill" style={{ width: `${project.progress ?? 0}%` }} /></div>
         </CardContent>
       </Card>
 
@@ -137,7 +150,7 @@ export default function InteriorProjectDetails() {
                     <span className="text-xs text-muted">{num(roomDesigns.length)} design{roomDesigns.length === 1 ? '' : 's'}</span>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="sm" onClick={() => navigate(`/interior/projects/${project.id}/rooms/${r.id}`)}>Open</Button>
-                      <Button variant="ghost" size="icon" onClick={() => remove(r.id)} aria-label="Delete room"><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => deleteRoom(r)} aria-label="Delete room"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </div>
                 </CardContent>
@@ -167,6 +180,8 @@ export default function InteriorProjectDetails() {
           </Card>
         </>
       )}
+
+      <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5"><div className="flex items-center gap-3"><span className="interior-signal-icon"><ClipboardCheck className="w-4 h-4" /></span><div><p className="text-sm font-semibold text-text">Ready to coordinate delivery?</p><p className="text-xs text-muted">Track approvals, procurement and site work in the execution studio.</p></div></div><Button variant="outline" onClick={() => navigate('/interior/execution')}>Open execution</Button></CardContent></Card>
 
       <Modal open={roomOpen} onClose={() => setRoomOpen(false)} title="Add room" size="md">
         <div className="space-y-4">

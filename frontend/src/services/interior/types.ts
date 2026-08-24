@@ -6,6 +6,10 @@ export type RoomType = 'Living Room' | 'Master Bedroom' | 'Kitchen' | 'Bathroom'
 
 export type ProjectStatus = 'active' | 'completed' | 'archived'
 
+export type InteriorPhase = 'Discovery' | 'Concept' | 'Design Development' | 'Procurement' | 'Execution' | 'Handover'
+
+export type InteriorPriority = 'standard' | 'priority' | 'signature'
+
 export interface InteriorProject {
   id: string
   name: string
@@ -15,6 +19,14 @@ export interface InteriorProject {
   budget: number
   status: ProjectStatus
   createdAt: string
+  clientName?: string
+  leadDesigner?: string
+  phase?: InteriorPhase
+  priority?: InteriorPriority
+  progress?: number
+  targetDate?: string
+  latitude?: string
+  longitude?: string
 }
 
 export interface InteriorRoom {
@@ -80,6 +92,43 @@ export interface InteriorProduct {
   width?: string
   depth?: string
   description?: string
+}
+
+export type InteriorTaskStatus = 'not-started' | 'in-progress' | 'blocked' | 'completed'
+
+export interface InteriorTask {
+  id: string
+  projectId: string
+  title: string
+  phase: InteriorPhase
+  owner: string
+  dueDate: string
+  status: InteriorTaskStatus
+  progress: number
+}
+
+export type ProcurementStatus = 'planned' | 'quoted' | 'ordered' | 'in-transit' | 'delivered' | 'delayed'
+
+export interface InteriorProcurement {
+  id: string
+  projectId: string
+  item: string
+  category: ProductCategory
+  vendor: string
+  amount: number
+  expectedDate: string
+  status: ProcurementStatus
+}
+
+export type DecisionStatus = 'pending' | 'approved' | 'changes-requested'
+
+export interface InteriorDecision {
+  id: string
+  projectId: string
+  title: string
+  requestedFrom: string
+  dueDate: string
+  status: DecisionStatus
 }
 
 export const PRODUCT_CATEGORIES: ProductCategory[] = ['Furniture', 'Lighting', 'Decor', 'Flooring', 'Wall', 'Kitchen', 'Bedroom']

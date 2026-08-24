@@ -1,6 +1,6 @@
-# LuxInfra
+# VSR Systems
 
-LuxInfra is a multi-service business operations application for interior design, warehouse management, school management, billing, analytics, and reporting.
+VSR Systems is a multi-service business operations application for interior design, warehouse management, school management, billing, analytics, and reporting.
 
 ## Repository Layout
 

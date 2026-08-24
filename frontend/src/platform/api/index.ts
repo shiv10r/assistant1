@@ -27,6 +27,7 @@ export interface BankAccount { id: number; name: string; accNo: string; ifsc: st
 export type Settings = Record<string, string>
 
 export interface Project { id: number; name: string; address: string; value: number; status: string; createdAt: string; latitude?: number; longitude?: number }
+export interface MapLocation { id: string; label: string; latitude: number; longitude: number; provider: string }
 export interface SiteParty { id: number; projectId: number; name: string; phone: string; role: string; openingBalance: number; balanceType: string; currentBalance: number; dailyRate: number; isActive: boolean }
 export interface ProjectTask { id: number; projectId: number; name: string; status: string; members: string; location: string; durationDays: number; startDate: string; endDate: string; estQuantity: number; progressPercent: number; imagePath: string; link: string }
 export interface ProjectTxn { id: number; projectId: number; type: string; partyId: number; partyName: string; amount: number; description: string; referenceNumber: string; paymentMethod: string; costCode: string; date: string }
@@ -237,10 +238,13 @@ function authHeaders(): Record<string, string> {
   return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
-async function get<T>(url: string): Promise<T> {
-  const r = await fetch(BASE + url, { headers: authHeaders() })
+async function get<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const r = await fetch(BASE + url, { headers: authHeaders(), signal })
   if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
-  if (!r.ok) throw new Error(`API error ${r.status}`)
+  if (!r.ok) {
+    const problem = await r.json().catch(() => null) as { detail?: string; error?: string } | null
+    throw new Error(problem?.detail || problem?.error || `API error ${r.status}`)
+  }
   return r.json()
 }
 
@@ -299,7 +303,7 @@ async function fetchBlob(url: string): Promise<{ blob: Blob; name: string }> {
   if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) throw new Error(`API error ${r.status}`)
   const blob = await r.blob()
-  const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'luxinfra-download'
+  const name = (r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/i)?.[1]) ?? 'vsrsystems-download'
   return { blob, name }
 }
 
@@ -606,6 +610,13 @@ const insights = {
   backupEmail: () => post<{ ok: boolean; code?: string; message?: string; error?: string; to?: string }>('/api/insights/backup-email', {}),
 }
 
+const maps = {
+  search: (query: string, limit = 6, signal?: AbortSignal) =>
+    get<MapLocation[]>(`/api/maps/search?query=${encodeURIComponent(query)}&limit=${limit}`, signal),
+  reverse: (latitude: number, longitude: number, signal?: AbortSignal) =>
+    get<MapLocation>(`/api/maps/reverse?latitude=${latitude}&longitude=${longitude}`, signal),
+}
+
 export const api = {
   get,
   send,
@@ -624,6 +635,7 @@ export const api = {
   integrations,
   modules,
   insights,
+  maps,
   analytics: () => get<AnalyticsData>('/api/analytics'),
   reportKpis,
   scheduleEmail: (email: string, period?: string, periodLabel?: string) => post<{ ok: boolean; to?: string; fileName?: string; code?: string; message?: string; error?: string }>('/api/reports/schedule-email', { email, period, periodLabel }),

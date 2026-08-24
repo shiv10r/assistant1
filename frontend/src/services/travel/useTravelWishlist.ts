@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
-import { usePersistedDocument } from '../../lib/localStore'
+import { getStorageKey, usePersistedDocument } from '../../lib/localStore'
 
-const WISHLIST_KEY = 'luxinfra:travel:wishlist'
+const WISHLIST_KEY = getStorageKey('travel:wishlist')
 
 function readWishlist(): ReadonlySet<string> {
   const value = localStorage.getItem(WISHLIST_KEY)

@@ -6,13 +6,7 @@ import { FiSearch, FiMapPin, FiLoader } from 'react-icons/fi'
 import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { getTheme } from '../../theme'
-
-interface NominatimResult {
-  place_id: number
-  display_name: string
-  lat: string
-  lon: string
-}
+import { api, type MapLocation } from '../api'
 
 interface LocationPickerProps {
   latitude?: string
@@ -21,22 +15,9 @@ interface LocationPickerProps {
   onAddressChange?: (address: string) => void
 }
 
-let lastSearchTs = 0
-
-async function geocode(query: string): Promise<NominatimResult[]> {
-  const now = Date.now()
-  const wait = Math.max(0, 1000 - (now - lastSearchTs))
-  if (wait > 0) await new Promise((r) => setTimeout(r, wait))
-  lastSearchTs = Date.now()
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(query)}`
-  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } })
-  if (!res.ok) throw new Error('Search failed')
-  return res.json()
-}
-
 export default function LocationPicker({ latitude, longitude, onChange, onAddressChange }: LocationPickerProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<NominatimResult[]>([])
+  const [results, setResults] = useState<MapLocation[]>([])
   const [searching, setSearching] = useState(false)
   const [searchErr, setSearchErr] = useState('')
   const [showResults, setShowResults] = useState(false)
@@ -54,7 +35,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     const dark = getTheme() === 'dark'
     const map = L.map(containerRef.current, { center: [20.5937, 78.9629], zoom: 5 })
     L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`, {
-      attribution: 'Â© OpenStreetMap contributors',
+      attribution: '(c) OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
     mapRef.current = map
@@ -89,7 +70,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     setSearching(true)
     setSearchErr('')
     try {
-      const r = await geocode(query.trim())
+      const r = await api.maps.search(query.trim())
       setResults(r)
       setShowResults(true)
     } catch (e) {
@@ -100,13 +81,15 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
     }
   }
 
-  function pick(r: NominatimResult) {
-    setQuery(r.display_name)
+  function pick(r: MapLocation) {
+    const latitudeValue = String(r.latitude)
+    const longitudeValue = String(r.longitude)
+    setQuery(r.label)
     setShowResults(false)
-    setMarker(r.lat, r.lon)
-    onChange(r.lat, r.lon, r.display_name)
-    if (onAddressChange) onAddressChange(r.display_name)
-    if (mapRef.current) mapRef.current.setView([Number(r.lat), Number(r.lon)], 15)
+    setMarker(latitudeValue, longitudeValue)
+    onChange(latitudeValue, longitudeValue, r.label)
+    if (onAddressChange) onAddressChange(r.label)
+    if (mapRef.current) mapRef.current.setView([r.latitude, r.longitude], 15)
   }
 
   function useMyLocation() {
@@ -134,7 +117,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowResults(false) }}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch() } }}
-          placeholder="Search place, city, areaâ€¦ e.g. Dadar, Mumbai"
+          placeholder="Search place, city, area... e.g. Dadar, Mumbai"
           className="w-full rounded-lg border border-border bg-surface2/60 pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary"
         />
         <button
@@ -151,12 +134,12 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
             {results.map((r) => (
               <button
                 type="button"
-                key={r.place_id}
+                key={r.id}
                 onClick={() => pick(r)}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-surface2 flex items-start gap-2"
               >
                 <FiMapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="min-w-0">{r.display_name}</span>
+                <span className="min-w-0">{r.label}</span>
               </button>
             ))}
           </div>
@@ -165,15 +148,18 @@ export default function LocationPicker({ latitude, longitude, onChange, onAddres
 
       {searchErr && <p className="text-xs text-red-500">{searchErr}</p>}
       {showResults && results.length === 0 && !searching && <p className="text-xs text-muted">No places found. Try a different name.</p>}
+      <p className="text-[11px] text-muted">
+        Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors.
+      </p>
 
       <div ref={containerRef} style={{ height: '240px', zIndex: 0 }} className="w-full rounded-xl overflow-hidden border border-border" />
 
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={useMyLocation} disabled={locating}>
-          <IoLocate className="w-3.5 h-3.5" /> {locating ? 'Locatingâ€¦' : 'Use my location'}
+          <IoLocate className="w-3.5 h-3.5" /> {locating ? 'Locating...' : 'Use my location'}
         </Button>
         <span className={cn('text-xs', hasCoords ? 'text-emerald-600' : 'text-muted')}>
-          {hasCoords ? `ðŸ“ ${lat}, ${lng}` : 'No coordinates set â€” search or click the map'}
+          {hasCoords ? `Location: ${lat}, ${lng}` : 'No coordinates set - search or click the map'}
         </span>
       </div>
     </div>

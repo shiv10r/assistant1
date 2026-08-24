@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import './interior.css'
 
 const InteriorHome = lazy(() => import('./InteriorHome'))
 const InteriorProjects = lazy(() => import('./InteriorProjects'))
@@ -10,6 +11,8 @@ const InteriorDesigns = lazy(() => import('./InteriorDesigns'))
 const InteriorDesignDetails = lazy(() => import('./InteriorDesignDetails'))
 const InteriorQuotation = lazy(() => import('./InteriorQuotation'))
 const InteriorProducts = lazy(() => import('./InteriorProducts'))
+const InteriorSites = lazy(() => import('./InteriorSites'))
+const InteriorExecution = lazy(() => import('./InteriorExecution'))
 
 export default function InteriorRoutes() {
   return (
@@ -23,7 +26,10 @@ export default function InteriorRoutes() {
       <Route path="projects/:id/designs" element={<InteriorDesigns />} />
       <Route path="projects/:id/designs/:designId" element={<InteriorDesignDetails />} />
       <Route path="projects/:id/quotation" element={<InteriorQuotation />} />
+      <Route path="designs" element={<InteriorDesigns />} />
       <Route path="products" element={<InteriorProducts />} />
+      <Route path="sites" element={<InteriorSites />} />
+      <Route path="execution" element={<InteriorExecution />} />
       <Route path="*" element={<Navigate to="/interior/dashboard" replace />} />
     </Routes>
   )

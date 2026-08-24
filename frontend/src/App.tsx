@@ -6,7 +6,7 @@ import {
   Account, Activity, Analytics, Assistant, Backup, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
   VideoCall, InteriorRoutes, WarehouseRoutes, SchoolRoutes, HotelRoutes, TravelRoutes, NewsRoutes,
-  JobsRoutes, CommerceRoutes, BankRoutes, MedicalRoutes, HomeServicesRoutes,
+  JobsRoutes, CommerceRoutes, BankRoutes, MedicalRoutes, HomeServicesRoutes, OperationsWorkspace,
   Layout, Login, ServiceChooser,
 } from './routes/lazyRoutes'
 
@@ -87,6 +87,7 @@ export default function App() {
           <Route path="/plans" element={<Plans />} />
           <Route path="/account" element={<Account />} />
           <Route path="/video" element={<VideoCall />} />
+          <Route path="/:service/operations/:view?" element={<OperationsWorkspace />} />
 
           {/* Warehouse service: module-owned route bundle */}
           <Route path="/warehouse/*" element={<WarehouseRoutes />} />

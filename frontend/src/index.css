@@ -55,7 +55,7 @@
 }
 
 /* ---------- Weather app mode ----------
-   Subtle tint of the LuxInfra tokens driven by the site weather.
+   Subtle tint of the VSR Systems tokens driven by the site weather.
    Keeps the base dark/light surfaces and component structure intact. */
 :root[data-theme='dark'][data-weather='sunny'] {
   --bg: #151208;
@@ -177,6 +177,20 @@
   --grad: linear-gradient(135deg, #3D5FC4 0%, #6E4FED 100%);
   --ring: rgba(61,95,196,.25);
 }
+
+/* Explicit user accents override weather hue while preserving semantic status colors. */
+:root[data-accent='cobalt'] { --primary: #4F86F7; --primary-soft: #8CB2FF; --grad: linear-gradient(135deg, #4F86F7, #315CCF); --ring: rgba(79,134,247,.34); }
+:root[data-theme='light'][data-accent='cobalt'] { --primary: #2563EB; --primary-soft: #1D4ED8; --grad: linear-gradient(135deg, #3B82F6, #1D4ED8); --ring: rgba(37,99,235,.24); }
+:root[data-accent='violet'] { --primary: #9B7BFF; --primary-soft: #BEA8FF; --grad: linear-gradient(135deg, #9B7BFF, #6D43D6); --ring: rgba(155,123,255,.34); }
+:root[data-theme='light'][data-accent='violet'] { --primary: #7C3AED; --primary-soft: #6D28D9; --grad: linear-gradient(135deg, #8B5CF6, #6D28D9); --ring: rgba(124,58,237,.24); }
+:root[data-accent='teal'] { --primary: #2CB5A8; --primary-soft: #6DD5CA; --grad: linear-gradient(135deg, #2CB5A8, #087A72); --ring: rgba(44,181,168,.34); }
+:root[data-theme='light'][data-accent='teal'] { --primary: #0F8F83; --primary-soft: #0B746B; --grad: linear-gradient(135deg, #14A89A, #087A72); --ring: rgba(15,143,131,.24); }
+:root[data-accent='rose'] { --primary: #F0708D; --primary-soft: #F5A2B5; --grad: linear-gradient(135deg, #F0708D, #B9365A); --ring: rgba(240,112,141,.34); }
+:root[data-theme='light'][data-accent='rose'] { --primary: #D94F70; --primary-soft: #BB3456; --grad: linear-gradient(135deg, #E96885, #BB3456); --ring: rgba(217,79,112,.24); }
+:root[data-accent='amber'] { --primary: #FF9638; --primary-soft: #FFB066; --grad: linear-gradient(135deg, #FF9638, #E8761D); --ring: rgba(255,150,56,.34); }
+:root[data-theme='light'][data-accent='amber'] { --primary: #D97706; --primary-soft: #B45309; --grad: linear-gradient(135deg, #F59E0B, #D97706); --ring: rgba(217,119,6,.24); }
+:root[data-accent='paper'] { --primary: #F8FAFC; --primary-soft: #CBD5E1; --grad: linear-gradient(135deg, #F8FAFC, #94A3B8); --ring: rgba(248,250,252,.3); }
+:root[data-theme='light'][data-accent='paper'] { --primary: #334155; --primary-soft: #475569; --grad: linear-gradient(135deg, #64748B, #1E293B); --ring: rgba(51,65,85,.22); }
 
 * { box-sizing: border-box; }
 

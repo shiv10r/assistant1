@@ -2,6 +2,24 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import { api } from '../platform/api'
 
+const STORAGE_PREFIX = 'vsrsystems'
+const LEGACY_STORAGE_PREFIX = ['lux', 'infra'].join('')
+
+export function getStorageKey(key: string): string {
+  const storageKey = `${STORAGE_PREFIX}:${key}`
+  try {
+    const legacyKey = `${LEGACY_STORAGE_PREFIX}:${key}`
+    if (localStorage.getItem(storageKey) === null) {
+      const legacyValue = localStorage.getItem(legacyKey)
+      if (legacyValue !== null) localStorage.setItem(storageKey, legacyValue)
+    }
+    localStorage.removeItem(legacyKey)
+  } catch {
+    // Browser storage may be unavailable; backend persistence still works.
+  }
+  return storageKey
+}
+
 function readLocal<T>(storageKey: string, seed: T): T {
   try {
     const raw = localStorage.getItem(storageKey)
@@ -12,7 +30,7 @@ function readLocal<T>(storageKey: string, seed: T): T {
 }
 
 export function usePersistedDocument<T>(key: string, seed: T): readonly [T, Dispatch<SetStateAction<T>>] {
-  const storageKey = `luxinfra:${key}`
+  const storageKey = getStorageKey(key)
   const [value, setValue] = useState<T>(() => readLocal(storageKey, seed))
   const [hydratedKey, setHydratedKey] = useState<string | null>(null)
   const changedLocally = useRef(false)

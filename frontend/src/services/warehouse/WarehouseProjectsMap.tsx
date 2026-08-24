@@ -12,6 +12,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Navigation, LocateFixed, Search, Route, Crosshair, Radio, Sparkles, Car, ExternalLink } from 'lucide-react'
 import { getTheme } from '../../theme'
+import { api } from '../../platform/api'
 
 type Place = { label: string; lat: number; lng: number }
 type Tagged = { p: ProjectRecord; lat: number; lng: number; approx: boolean }
@@ -20,20 +21,30 @@ function PlaceSearch({ placeholder, onPick }: { placeholder: string; onPick: (p:
   const [q, setQ] = useState('')
   const [sugg, setSugg] = useState<Place[]>([])
   const timer = useRef<number | null>(null)
+  const request = useRef<AbortController | null>(null)
+  useEffect(() => () => {
+    if (timer.current) window.clearTimeout(timer.current)
+    request.current?.abort()
+  }, [])
   const pick = (p: Place) => { setQ(p.label); setSugg([]); onPick(p) }
   const search = (v: string) => {
     setQ(v)
     if (timer.current) window.clearTimeout(timer.current)
-    if (!v.trim()) { setSugg([]); return }
+    request.current?.abort()
+    setSugg([])
+    if (v.trim().length < 3) return
     timer.current = window.setTimeout(async () => {
+      const controller = new AbortController()
+      request.current = controller
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(v)}`)
-        const data = await res.json()
-        setSugg((data ?? []).map((r: { display_name: string; lat: string; lon: string }) => ({
-          label: r.display_name, lat: Number(r.lat), lng: Number(r.lon),
+        const data = await api.maps.search(v.trim(), 5, controller.signal)
+        setSugg(data.map((result) => ({
+          label: result.label, lat: result.latitude, lng: result.longitude,
         })))
-      } catch { setSugg([]) }
-    }, 350)
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) setSugg([])
+      }
+    }, 500)
   }
   return (
     <div className="relative">
@@ -162,13 +173,12 @@ export default function WarehouseProjectsMap() {
       for (const p of todo) {
         if (cancelled) return
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(p.address ?? '')}`)
-          const data = await res.json()
-          if (!cancelled && data?.[0]) {
-            setGeocoded((prev) => new Map(prev).set(p.id, { lat: Number(data[0].lat), lng: Number(data[0].lon) }))
+          const data = await api.maps.search(p.address ?? '', 1)
+          if (!cancelled && data[0]) {
+            setGeocoded((prev) => new Map(prev).set(p.id, { lat: data[0].latitude, lng: data[0].longitude }))
           }
-        } catch { /* geocoder down — tag manually instead */ }
-        await new Promise((r) => setTimeout(r, 1150))
+        } catch { /* Provider unavailable: users can still tag the project manually. */ }
+        await new Promise((r) => setTimeout(r, 250))
       }
     })()
     return () => { cancelled = true }
@@ -460,6 +470,7 @@ export default function WarehouseProjectsMap() {
             <PlaceSearch placeholder="From — search a place, e.g. Delhi" onPick={(p) => { setFromLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
             <PlaceSearch placeholder="To — search a place or site address" onPick={(p) => { setToLoc(p); mapRef.current?.setView([p.lat, p.lng], 13) }} />
           </div>
+          <p className="text-[11px] text-muted">Search powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Geoapify</a> and OpenStreetMap contributors.</p>
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={showRoute} disabled={routing || !fromLoc || !toLoc}>
               <Navigation className="w-4 h-4" /> {routing ? 'Routing…' : 'Show route'}

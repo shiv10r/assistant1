@@ -89,7 +89,9 @@ import {
 } from 'react-icons/io5'
 import { WeatherCard } from './platform/dashboard'
 import GlobalSearch from './components/GlobalSearch'
+import { AccentSwitcher } from './components/AccentSwitcher'
 import { VsrLogo } from './components/VsrLogo'
+import { operationsConfig } from './services/operations/config'
 import { Modal } from './platform/ui'
 import { usePlan } from './hooks/usePlan'
 import { useViewMode } from './hooks/useViewMode'
@@ -105,8 +107,12 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
     { title: 'Interior Design', items: [
       { label: 'Overview', to: '/interior/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
       { label: 'Projects', to: '/interior/projects', icon: <MdWork className="w-5 h-5" /> },
-      { label: 'Products', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },
-      { label: 'AI Designs', to: '/interior/projects', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'Design Studio', to: '/interior/designs', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'Product Library', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },
+    ]},
+    { title: 'Delivery', items: [
+      { label: 'Site Planner', to: '/interior/sites', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Execution', to: '/interior/execution', icon: <FiCheckSquare className="w-5 h-5" /> },
     ]},
     { title: 'Transactions', items: [
       { label: 'Invoices & Billing', to: '/billing', icon: <MdReceipt className="w-5 h-5" /> },
@@ -369,7 +375,20 @@ const COMMON_GROUPS: NavGroup[] = [
 /** Service-specific groups first, then the groups common to every workspace. */
 function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const serviceGroups = service ? SERVICE_GROUPS[service.id] : []
-  return service?.shell === 'portal' ? serviceGroups : [...serviceGroups, ...COMMON_GROUPS]
+  const config = operationsConfig(service?.id)
+  const operations: NavGroup[] = config ? [{
+    title: service?.shell === 'portal' ? 'My workspace' : 'Operations',
+    items: [
+      { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/visits`, label: `${config.visit.replace(/\b\w/g, (letter) => letter.toUpperCase())}s`, icon: <FiCalendar className="w-5 h-5" /> },
+      ...(config.map ? [{ to: `/${config.id}/operations/map`, label: `${config.location.replace(/\b\w/g, (letter) => letter.toUpperCase())} Map`, icon: <FiMap className="w-5 h-5" /> }] : []),
+      ...(config.attendance ? [{ to: `/${config.id}/operations/attendance`, label: 'Attendance', icon: <FiClock className="w-5 h-5" /> }] : []),
+      { to: `/${config.id}/operations/assistant`, label: 'Operations AI', icon: <IoSparkles className="w-5 h-5" /> },
+      { to: `/${config.id}/operations/files`, label: 'Workspace Files', icon: <MdDescription className="w-5 h-5" /> },
+    ],
+  }] : []
+  return service?.shell === 'portal' ? [...operations, ...serviceGroups] : [...operations, ...serviceGroups, ...COMMON_GROUPS]
 }
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
@@ -447,6 +466,8 @@ export default function Layout() {
   const service = serviceFromPath(location.pathname) ?? getLastService()
   const groups = navGroupsFor(service)
   const isPortal = service?.shell === 'portal'
+  const pageSegment = location.pathname.split('/').filter(Boolean).at(-1) ?? 'overview'
+  const pageTitle = pageSegment.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -461,34 +482,25 @@ export default function Layout() {
 
   return (
     <div className="app">
-<header className="topbar">
+      <header className="topbar">
         <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
           <MdMenu className="w-6 h-6" />
         </button>
-        {service && (
-          <button className="service-pill" onClick={() => navigate('/')} title="Switch service">
-            <span className="pill-label">{service.label}</span>
-            <span className="pill-switch">Switch service</span>
+        <div className="topbar-context">
+          <span>{service?.label ?? 'VSR Systems'}</span>
+          <strong>{pageTitle}</strong>
+        </div>
+        <div className="topbar-actions">
+          <button className="topbar-search" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
+            <FiSearch className="w-4 h-4" /><span>Search workspace</span><kbd>Ctrl K</kbd>
           </button>
-        )}
-        <VsrLogo size={38} wordmark className="logo-mark" />
-        {!isPortal && <>
-          <div className="online">● Online</div>
-          <NavLink
-            to="/plans"
-            className={`plan-pill ${plan === 'free' ? '' : 'is-pro'}`}
-            title={`Current plan: ${PLAN_LABEL[plan] ?? 'Free'}`}
-          >
-            <span className="plan-pill-dot" />
-            <span>{PLAN_LABEL[plan] ?? 'Free'}</span>
-          </NavLink>
-          <button className="topbar-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Global search" title="Search anything (Ctrl+K)">
-            <FiSearch className="w-5 h-5" />
-          </button>
+          {!isPortal && (
           <div className="view-mode-switch" title="Simple / Advanced view">
             <button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')} aria-label="Simple view">Simple</button>
             <button className={mode === 'advanced' ? 'active' : ''} onClick={() => setMode('advanced')} aria-label="Advanced view">Advanced</button>
           </div>
+          )}
+          <AccentSwitcher />
           <Button
             variant="ghost"
             size="icon"
@@ -501,18 +513,26 @@ export default function Layout() {
               ? <span className="text-base leading-none">{conditionMeta(weather.weather.weatherCode, weather.weather.isDay).icon}</span>
               : <FiCloud className="w-5 h-5" />}
           </Button>
-        </>}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-          {theme === 'dark' ? <MdWbSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
-        </Button>
-        <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
-          <MdLogout className="w-5 h-5" />
-        </Button>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === 'dark' ? <MdWbSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/account')} aria-label="Account" title="Account">
+            <FiUser className="w-5 h-5" />
+          </Button>
+        </div>
       </header>
 
       <div className="body-row">
         <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
-          {groups.map((g) => {
+          <div className="sidebar-brand">
+            <VsrLogo size={34} wordmark />
+            <button onClick={() => navigate('/')} title="Switch workspace"><FiGrid className="w-4 h-4" /></button>
+          </div>
+          <div className="sidebar-service">
+            <span className="sidebar-service-icon">{service?.icon || 'V'}</span>
+            <span><strong>{service?.label ?? 'Workspace'}</strong><small>{service?.tagline ?? 'Business operations'}</small></span>
+          </div>
+          <div className="sidebar-scroll">{groups.map((g) => {
             const isCollapsed = collapsedGroups.has(g.title)
             return (
               <div className="nav-group" key={g.title}>
@@ -548,21 +568,25 @@ export default function Layout() {
                 )}
               </div>
             )
-          })}
-          {!isPortal && <div className="sidebar-plan">
+          })}</div>
+          <div className="sidebar-plan">
             <NavLink to="/plans" className="sidebar-plan-link">
               <span className={`sidebar-plan-dot ${plan === 'free' ? '' : 'is-pro'}`} />
               <span className="sidebar-plan-name">{PLAN_LABEL[plan] ?? 'Free'}</span>
               <span className="sidebar-plan-cta">{plan === 'free' ? 'Upgrade' : 'Manage'}</span>
             </NavLink>
-          </div>}
+            <div className="sidebar-utility-actions">
+              <button onClick={() => navigate('/settings')} title="Settings"><FiSettings className="w-4 h-4" /></button>
+              <button onClick={() => navigate('/account')} title="Account"><FiUser className="w-4 h-4" /></button>
+              <button onClick={signOut} title="Sign out"><MdLogout className="w-4 h-4" /></button>
+            </div>
+          </div>
         </nav>
         {open && isMobile() && <div className="backdrop" onClick={() => setOpen(false)} />}
 
-        <main className="content"><Outlet /></main>
+        <main className={cn('content', isPortal && 'portal-content')}><Outlet /></main>
       </div>
-      {!isPortal && <>
-        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
         <Modal open={weatherOpen} onClose={() => setWeatherOpen(false)} title="Weather" description={weatherOn ? 'Weather app mode is on — theme follows site weather' : 'View weather for your location'}>
         <div className="space-y-4">
           <WeatherCard useMyLocation siteName="Your location" className="w-full" />
@@ -575,7 +599,6 @@ export default function Layout() {
           <p className="text-[11px] text-muted">Weather data by <a className="text-primary hover:underline" href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> — free &amp; open source, no API key needed.</p>
         </div>
         </Modal>
-      </>}
     </div>
   )
 }

@@ -63,7 +63,7 @@ export function InteriorGenerateProgress({ stage, progress, name, roomName, onGe
           <Palette className="w-4 h-4" /> Style concepts
         </div>
       </div>
-      <Badge variant="info" size="sm">Frontend preview</Badge>
+      <Badge variant="info" size="sm">AI concept simulation</Badge>
     </div>
   )
 }
