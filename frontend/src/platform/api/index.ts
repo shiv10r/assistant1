@@ -205,6 +205,9 @@ export interface StockRow { id: number; name: string; unit: string; category: st
 export interface LabourRow { id: number; name: string; workers: number; presentDays: number; wages: number; wagesLabel: string; avgPerWorker: number }
 export interface DelayedRow { id: number; party: string; refLabel: string; balance: number; balanceLabel: string; daysOverdue: number; interest: number; interestLabel: string }
 export interface AdvanceRow { id: number; name: string; status: string; advance: number; advanceLabel: string; spent: number; spentLabel: string; remaining: number; remainingLabel: string }
+export interface PlatformChatMessage { messageId: string; conversationId: string; senderUserId: string; messageType: string; text?: string; sentAt: string }
+export interface PlatformChatPage { items: PlatformChatMessage[]; nextCursor?: string }
+type ApiEnvelope<T> = { success: boolean; data?: T; message?: string; errors?: string[] }
 
 // ---------------- core ----------------
 function finishLogin(data: { token: string; username: string; role: string }, email = '') {
@@ -242,8 +245,8 @@ async function get<T>(url: string, signal?: AbortSignal): Promise<T> {
   const r = await fetch(BASE + url, { headers: authHeaders(), signal })
   if (r.status === 401) { clearAuthToken(); throw new Error('Unauthorized') }
   if (!r.ok) {
-    const problem = await r.json().catch(() => null) as { detail?: string; error?: string } | null
-    throw new Error(problem?.detail || problem?.error || `API error ${r.status}`)
+    const problem = await r.json().catch(() => null) as { detail?: string; error?: string; message?: string; errors?: string[] } | null
+    throw new Error(problem?.detail || problem?.error || problem?.message || problem?.errors?.[0] || `API error ${r.status}`)
   }
   return r.json()
 }
@@ -295,6 +298,20 @@ const moduleData = {
       body: JSON.stringify(value),
     })
     if (!r.ok) throw new Error(`API error ${r.status}`)
+  },
+}
+
+const chat = {
+  async messages(conversationId: string, before?: string): Promise<PlatformChatPage> {
+    const query = before ? `?before=${encodeURIComponent(before)}` : ''
+    const response = await get<ApiEnvelope<PlatformChatPage>>(`/api/v1/chat/conversations/${encodeURIComponent(conversationId)}/messages${query}`)
+    if (!response.success || !response.data) throw new Error(response.message || 'Messages are unavailable.')
+    return response.data
+  },
+  async send(conversationId: string, text: string): Promise<PlatformChatMessage> {
+    const response = await post<ApiEnvelope<PlatformChatMessage>>(`/api/v1/chat/conversations/${encodeURIComponent(conversationId)}/messages`, { text })
+    if (!response.success || !response.data) throw new Error(response.message || 'Message could not be sent.')
+    return response.data
   },
 }
 
@@ -642,6 +659,7 @@ export const api = {
   get,
   send,
   moduleData,
+  chat,
   aiStatus,
   aiChat,
   search,

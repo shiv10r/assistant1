@@ -56,6 +56,7 @@ export type Meeting = {
   link: string
   participants: string[]
   status: 'Planned' | 'Live' | 'Completed' | 'Cancelled'
+  provider?: 'meet' | 'teams' | 'jitsi'
 }
 
 export type TeamMember = {
@@ -93,6 +94,8 @@ export type LibraryProject = {
   sourceWorkId: string
   syncProvider: 'PostgreSQL'
   syncedAt: string
+  fileId?: string
+  storage?: 'browser' | 'supabase'
 }
 
 export type LocalCollection<T extends { id: string }> = {

@@ -28,6 +28,12 @@ const ALLOWED_MIME_TYPES = new Set([
   'application/zip',
 ])
 const ALLOWED_EXTENSIONS = new Set(['pdf', 'gif', 'jpg', 'jpeg', 'png', 'webp', 'csv', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'])
+const MIME_BY_EXTENSION: Record<string, string> = {
+  pdf: 'application/pdf', gif: 'image/gif', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  csv: 'text/csv', txt: 'text/plain', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', zip: 'application/zip',
+}
 
 export const STORAGE_FILE_ACCEPT = [...ALLOWED_MIME_TYPES, ...[...ALLOWED_EXTENSIONS].map((extension) => `.${extension}`)].join(',')
 
@@ -40,6 +46,8 @@ export function storageFileError(file: File): string | null {
   }
   return null
 }
+
+const uploadContentType = (file: File) => MIME_BY_EXTENSION[file.name.split('.').pop()?.toLowerCase() ?? ''] ?? file.type
 
 function assertValidFile(file: File) {
   const error = storageFileError(file)
@@ -110,7 +118,7 @@ export const supabaseFileStorage: FileStorageProvider = {
     const signed = await api.storage.createSignedUpload({
       bucket: STORAGE_BUCKET,
       path,
-      contentType: file.type || 'application/octet-stream',
+      contentType: uploadContentType(file),
     })
     await api.storage.uploadToSignedUrl(signed.signedUrl, file)
   },

@@ -6,7 +6,7 @@ export default function OperationsCapabilityCards({ config, counts }: { config: 
   const navigate = useNavigate()
   const base = `/${config.id}/operations`
   const cards = [
-    { view: 'collaboration', icon: MessageSquareText, eyebrow: 'Live workspace', title: capitalize(config.channelLabel), detail: `${counts.discussions} updates · mentions, hurdles and meetings`, status: 'Interactive' },
+    { view: 'visits', icon: MessageSquareText, eyebrow: 'Scheduled coordination', title: capitalize(config.channelLabel), detail: `${counts.discussions} updates · mentions, hurdles and meetings`, status: 'Interactive' },
     { view: 'tracking', icon: Flag, eyebrow: 'Global control', title: capitalize(config.timelineLabel), detail: `${counts.checkpoints} ${config.checkpoint}s across all ${config.items}`, status: 'Tracked' },
     { view: 'team', icon: UsersRound, eyebrow: 'Role clarity', title: `${capitalize(config.people)} roster`, detail: `${counts.team} participants with service-specific roles`, status: 'Ready' },
     { view: 'library', icon: Database, eyebrow: 'PostgreSQL metadata', title: capitalize(config.libraryLabel), detail: `${counts.library} reusable records with photos and file details`, status: 'Synced' },
