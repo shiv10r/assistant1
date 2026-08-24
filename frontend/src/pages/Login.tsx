@@ -131,7 +131,7 @@ export default function Login({ onAuthed }: { onAuthed: () => void }) {
                 <span className="edition-select">{edition === 'gold' ? 'Selected' : 'Choose Gold'}</span>
               </button>
             </div>
-            <button type="button" className="login-btn edition-continue" onClick={() => setStep('auth')}>Continue with {edition === 'gold' ? 'Gold' : 'Standard'}</button>
+            <button type="button" className={`login-btn edition-continue ${edition}`} onClick={() => setStep('auth')}>Continue with {edition === 'gold' ? 'Gold' : 'Standard'}</button>
             <p className="login-hint edition-note">Your edition choice is saved on this device.</p>
           </>
         ) : (
