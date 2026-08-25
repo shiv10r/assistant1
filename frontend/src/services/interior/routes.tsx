@@ -13,6 +13,7 @@ const InteriorQuotation = lazy(() => import('./InteriorQuotation'))
 const InteriorProducts = lazy(() => import('./InteriorProducts'))
 const InteriorSites = lazy(() => import('./InteriorSites'))
 const InteriorExecution = lazy(() => import('./InteriorExecution'))
+const InteriorNotifications = lazy(() => import('./pages/InteriorNotifications'))
 
 export default function InteriorRoutes() {
   return (
@@ -30,6 +31,7 @@ export default function InteriorRoutes() {
       <Route path="products" element={<InteriorProducts />} />
       <Route path="sites" element={<InteriorSites />} />
       <Route path="execution" element={<InteriorExecution />} />
+      <Route path="notifications" element={<InteriorNotifications />} />
       <Route path="*" element={<Navigate to="/interior/dashboard" replace />} />
     </Routes>
   )
