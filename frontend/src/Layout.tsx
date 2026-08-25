@@ -106,6 +106,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   interior: [
     { title: 'Interior Design', items: [
       { label: 'Overview', to: '/interior/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Clients', to: '/interior/clients', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Projects', to: '/interior/projects', icon: <MdWork className="w-5 h-5" /> },
       { label: 'Design Studio', to: '/interior/designs', icon: <IoSparkles className="w-5 h-5" /> },
       { label: 'Product Library', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },

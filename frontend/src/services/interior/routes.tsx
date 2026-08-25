@@ -4,6 +4,7 @@ import './interior.css'
 
 const InteriorHome = lazy(() => import('./InteriorHome'))
 const InteriorProjects = lazy(() => import('./InteriorProjects'))
+const InteriorClients = lazy(() => import('./InteriorClients'))
 const InteriorProjectDetails = lazy(() => import('./InteriorProjectDetails'))
 const InteriorRoomDetails = lazy(() => import('./InteriorRoomDetails'))
 const InteriorGenerate = lazy(() => import('./InteriorGenerate'))
@@ -21,6 +22,7 @@ export default function InteriorRoutes() {
       <Route index element={<InteriorHome />} />
       <Route path="dashboard" element={<InteriorHome />} />
       <Route path="projects" element={<InteriorProjects />} />
+      <Route path="clients" element={<InteriorClients />} />
       <Route path="projects/:id" element={<InteriorProjectDetails />} />
       <Route path="projects/:id/rooms/:roomId" element={<InteriorRoomDetails />} />
       <Route path="projects/:id/generate" element={<InteriorGenerate />} />
