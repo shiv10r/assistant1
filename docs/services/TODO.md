@@ -27,6 +27,10 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
    - ✅ Frontend: PermissionGate component created (`platform/ui/PermissionGate.tsx`), exported from `platform/ui/index.ts`.
    - 🟡 TODO: Frontend PermissionGate integration across module UIs; unit tests for the 10 non-home-services chat authorizers.
 2. Notification delivery.
+   - ✅ School, Bank, Medical: Notification pages + persisted storage.
+   - ✅ Warehouse, Hotel, News, Jobs, Commerce, Travel, Interior: Notification pages + routes added.
+   - ✅ Home Services: Notification system in `homeServicesStore` + API.
+   - 🟡 TODO: Configure Resend API on Render for email delivery; add unread count badges to module shells; implement notification delivery retries.
 3. Documents and storage platform.
 4. Settings, branding, and feature flags.
 5. Observability and resilience.
