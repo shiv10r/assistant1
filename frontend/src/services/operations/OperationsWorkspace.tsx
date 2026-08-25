@@ -13,7 +13,7 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Label, 
 import { genId, useLocalCollection } from '../../lib/localStore'
 import { useViewMode } from '../../hooks/useViewMode'
 import LocationPicker from '../../platform/maps'
-import { fileStorage, fileStorageFor, STORAGE_FILE_ACCEPT, storageFileError } from './fileStorage'
+import { fileStorage, fileStorageFor, STORAGE_FILE_ACCEPT, storageFileError, confirmBillableAction } from './fileStorage'
 import { operationsConfig, type OperationsConfig } from './config'
 import CollaborationWorkspace from './CollaborationWorkspace'
 import OperationsCapabilityCards from './OperationsCapabilityCards'
@@ -215,6 +215,10 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
         const validationError = storageFileError(file)
         if (validationError) {
           errors.push(validationError)
+          continue
+        }
+        if (!confirmBillableAction('Cloud file upload', `${file.name} (${formatBytes(file.size)}) will be uploaded to private Supabase Storage. A completion email will use the configured email provider quota.`)) {
+          errors.push('Upload cancelled by user.')
           continue
         }
         try {
