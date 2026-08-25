@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Empty, Modal, PageHead } from '../ui'
 import { useLocalCollection, genId } from '../../lib/localStore'
 import { fmtDate, isValidMobile, mobileDigits, money, num, todayISO } from '../../lib/utils'
+import './attendance.css'
 
 /** Minimal worker shape — any service's staff record satisfies it. */
 export interface AttendanceWorker {
@@ -112,7 +113,8 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
   }
 
   const saveHours = (w: AttendanceWorker) => {
-    const v = Number(hours[w.id]) || 0
+    const v = Math.min(24, Math.max(0, Number(hours[w.id]) || 0))
+    setHours((current) => ({ ...current, [w.id]: String(v) }))
     setSavingHour(w.id)
     upsertRecord(w, { hours: v, status: dayRecords.find((r) => r.staffId === w.id)?.status ?? 'Present' })
     setSavingHour(null)
@@ -129,6 +131,22 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
     const existing = dayRecords.find((r) => r.staffId === w.id)
     if (!existing) attendance.add({ id: `${day}_${w.id}`, date: day, staffId: w.id, status: 'Present', hours: 8 })
     setPunchBusy(null)
+  }
+
+  const doPunchAll = (kind: 'In' | 'Out') => {
+    if (!workers.items.length) return
+    const when = new Date().toISOString()
+    const entries = workers.items.map((worker) => ({ id: genId(), staffId: worker.id, staffName: worker.name, kind, when, source: 'Bulk' } as Punch))
+    punches.setItems((current) => [...entries, ...current])
+    if (kind === 'In') {
+      attendance.setItems((current) => {
+        const currentIds = new Set(current.filter((record) => record.date === day).map((record) => record.staffId))
+        const added = workers.items.filter((worker) => !currentIds.has(worker.id)).map((worker) => ({ id: `${day}_${worker.id}`, date: day, staffId: worker.id, status: 'Present', hours: 8 }))
+        return [...added, ...current.map((record) => record.date === day ? { ...record, status: 'Present', hours: record.hours || 8 } : record)]
+      })
+    }
+    setLastPunch({ ...entries[0], staffName: `${entries.length} workers` })
+    setErr('')
   }
 
   const saveWorker = () => {
@@ -190,6 +208,8 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
           <button className="btn ghost" disabled={!provider || !!punchBusy} onClick={() => doPunch('Out')}>
             {punchBusy === 'Out' ? 'Punching…' : 'Remote Punch Out'}
           </button>
+          <button className="btn ghost" disabled={!workers.items.length} onClick={() => doPunchAll('In')}>Punch all in</button>
+          <button className="btn ghost" disabled={!workers.items.length} onClick={() => doPunchAll('Out')}>Punch all out</button>
           <button className="btn ghost" disabled={!provider} onClick={() => { setErr(''); setReqOpen(true) }}>📝 WFH / Leave Request</button>
           <button className="btn danger" disabled={!provider || sosBusy} onClick={doSos}>
             {sosBusy ? 'Sending SOS…' : '🚨 SOS'}
@@ -247,7 +267,7 @@ export default function AttendanceModule({ collection, seed, backTo, title, sub 
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <input
-                      type="number" min={0} step={0.5} value={hours[w.id] ?? ''} placeholder="0"
+                      type="number" min={0} max={24} step={0.5} value={hours[w.id] ?? ''} placeholder="0"
                       style={{ width: 64, padding: '6px 8px' }}
                       onChange={(e) => setHours({ ...hours, [w.id]: e.target.value })}
                       onBlur={() => saveHours(w)}

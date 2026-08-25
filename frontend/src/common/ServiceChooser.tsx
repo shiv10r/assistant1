@@ -8,7 +8,7 @@ import { getEdition, getEmail, getRole, getUsername, getUserProfile, logout } fr
 import './ServiceChooser.css'
 import { VsrLogo } from '../components/VsrLogo'
 
-type Category = ServiceDef['category']
+type Category = 'operations' | 'travel' | 'marketplace' | 'career' | 'finance' | 'health' | 'news'
 type Filter = 'all' | Category
 
 const WORKSPACE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -29,8 +29,19 @@ const CATEGORIES: { id: Category; label: string; description: string }[] = [
   { id: 'operations', label: 'Business operations', description: 'Run teams, assets and daily delivery' },
   { id: 'travel', label: 'Travel and stays', description: 'Plan journeys and guest experiences' },
   { id: 'marketplace', label: 'Marketplace', description: 'Products and trusted home services' },
-  { id: 'personal', label: 'Personal services', description: 'Career, finance, health and news' },
+  { id: 'career', label: 'Career', description: 'Jobs, applications and professional growth' },
+  { id: 'finance', label: 'Finance', description: 'Accounts, payments and personal banking' },
+  { id: 'health', label: 'Health', description: 'Appointments, records and medical care' },
+  { id: 'news', label: 'News', description: 'Current stories, reporting and saved reads' },
 ]
+
+function categoryFor(service: ServiceDef): Category {
+  if (service.id === 'jobs') return 'career'
+  if (service.id === 'bank') return 'finance'
+  if (service.id === 'medical') return 'health'
+  if (service.id === 'news') return 'news'
+  return service.category === 'personal' ? 'career' : service.category
+}
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrator',
@@ -102,13 +113,13 @@ export default function ServiceChooser() {
         <div className="chooser-filters" role="toolbar" aria-label="Filter services">
           <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>All services <span>{SERVICES.length}</span></button>
           {CATEGORIES.map((category) => (
-            <button key={category.id} className={filter === category.id ? 'active' : ''} onClick={() => setFilter(category.id)}>{category.label} <span>{SERVICES.filter((service) => service.category === category.id).length}</span></button>
+            <button key={category.id} className={filter === category.id ? 'active' : ''} onClick={() => setFilter(category.id)}>{category.label} <span>{SERVICES.filter((service) => categoryFor(service) === category.id).length}</span></button>
           ))}
         </div>
 
         <div className="chooser-rails">
           {visibleCategories.map((category) => {
-            const services = SERVICES.filter((service) => service.category === category.id)
+            const services = SERVICES.filter((service) => categoryFor(service) === category.id)
             return (
               <section className="chooser-rail-section" key={category.id}>
                 <div className="chooser-rail-head">

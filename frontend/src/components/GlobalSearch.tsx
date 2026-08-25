@@ -187,6 +187,7 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
 
 /** Collection metadata: localStorage key prefix to target route and display group. */
 const COLLECTIONS: { key: string; group: string; to: (id: string, row: Record<string, unknown>) => string; nameField: string[] }[] = [
+  { key: getStorageKey('interior:clients'), group: 'Interior Clients', to: () => '/interior/clients', nameField: ['name', 'email', 'phone'] },
   { key: getStorageKey('interior:projects'), group: 'Interior Projects', to: (id) => `/interior/projects/${id}`, nameField: ['name', 'location'] },
   { key: getStorageKey('interior:rooms'), group: 'Interior Rooms', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/rooms/${id}`, nameField: ['name', 'roomType', 'notes'] },
   { key: getStorageKey('interior:designs'), group: 'Interior Designs', to: (id, row) => `/interior/projects/${String(row.projectId ?? '')}/designs/${id}`, nameField: ['name', 'style', 'color'] },

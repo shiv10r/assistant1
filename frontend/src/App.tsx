@@ -1,6 +1,8 @@
 import { Suspense, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isAuthed } from './platform/auth'
+import { PermissionGate } from './platform/ui'
 import {
   Account, Activity, Analytics, Assistant, BillingHome, BillingSettings, Broadcast,
   CashBank, Catalog, Dashboard, Insights, Integrations, Plans, Reports, Settings, TxnForm, Users,
@@ -14,6 +16,10 @@ function Redirect({ to }: { to: string }) {
   const location = useLocation()
   const rest = location.pathname.replace(/^\/([^/]+)/, '')
   return <Navigate to={`${to}${rest}`} replace />
+}
+
+function AdminOnly({ children }: { children: ReactNode }) {
+  return <PermissionGate allowedRoles={['admin']} fallback={<Navigate to="/dashboard" replace />}>{children}</PermissionGate>
 }
 
 export default function App() {
@@ -50,19 +56,19 @@ export default function App() {
           <Route path="/reports" element={<Reports />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/activity" element={<Activity />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<AdminOnly><Settings /></AdminOnly>} />
 
           <Route path="/billing" element={<BillingHome />} />
           <Route path="/billing/sale" element={<TxnForm />} />
           <Route path="/billing/items" element={<Catalog />} />
           <Route path="/billing/cashbank" element={<CashBank />} />
-          <Route path="/billing/settings" element={<BillingSettings />} />
+          <Route path="/billing/settings" element={<AdminOnly><BillingSettings /></AdminOnly>} />
 
           <Route path="/broadcast" element={<Broadcast />} />
-          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/integrations" element={<AdminOnly><Integrations /></AdminOnly>} />
           <Route path="/insights" element={<Insights />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/plans" element={<Plans />} />
+          <Route path="/users" element={<AdminOnly><Users /></AdminOnly>} />
+          <Route path="/plans" element={<AdminOnly><Plans /></AdminOnly>} />
           <Route path="/account" element={<Account />} />
           <Route path="/video" element={<VideoCall />} />
           <Route path="/:service/operations/:view?" element={<OperationsWorkspace />} />

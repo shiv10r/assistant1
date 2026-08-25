@@ -3,15 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
 import { Home, Plus, Search, Trash2, ArrowRight, Pencil } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
-import type { InteriorProject, InteriorRoom, InteriorDesign, InteriorPhase, InteriorPriority, PropertyType, RoomType } from './types'
-import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
+import type { InteriorClient, InteriorProject, InteriorRoom, InteriorDesign, InteriorPhase, InteriorPriority, PropertyType, RoomType } from './types'
+import { CLIENT_SEED, PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
 import { DataTable, type DataColumn } from '../../platform/tables'
 import { Stepper } from '../../platform/ui'
 import { PROPERTY_TYPES, ROOM_TYPES } from './types'
 import { LocationPicker } from '../../platform/maps'
 
 const emptyProject = {
-  name: '', propertyType: 'Apartment' as PropertyType, location: '', totalArea: '', budget: '', clientName: '',
+  name: '', propertyType: 'Apartment' as PropertyType, location: '', totalArea: '', budget: '', clientId: '', clientName: '',
   leadDesigner: '', phase: 'Discovery' as InteriorPhase, priority: 'standard' as InteriorPriority, progress: '0',
   targetDate: '', latitude: '', longitude: '',
 }
@@ -25,12 +25,13 @@ export default function InteriorProjects() {
   const { items, add, update, remove } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
   const { items: rooms, add: addRoom, remove: removeRoom } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
   const { items: designs, remove: removeDesign } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
+  const { items: clients } = useLocalCollection<InteriorClient>('interior:clients', CLIENT_SEED)
 
   const [query, setQuery] = useState('')
   const [step, setStep] = useState(0)
   const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
   const [editing, setEditing] = useState<InteriorProject | null>(null)
-  const [projectForm, setProjectForm] = useState(emptyProject)
+  const [projectForm, setProjectForm] = useState({ ...emptyProject, clientId: searchParams.get('client') ?? '' })
   const [roomList, setRoomList] = useState<typeof emptyRoom[]>([])
   const [createdId, setCreatedId] = useState('')
 
@@ -71,7 +72,7 @@ export default function InteriorProjects() {
 
   function openAdd() {
     setEditing(null)
-    setProjectForm(emptyProject)
+    setProjectForm({ ...emptyProject, clientId: searchParams.get('client') ?? '' })
     setRoomList([])
     setStep(0)
     setCreateOpen(true)
@@ -81,7 +82,7 @@ export default function InteriorProjects() {
     setEditing(p)
     setProjectForm({
       name: p.name, propertyType: p.propertyType, location: p.location, totalArea: String(p.totalArea), budget: String(p.budget),
-      clientName: p.clientName ?? '', leadDesigner: p.leadDesigner ?? '', phase: p.phase ?? 'Discovery', priority: p.priority ?? 'standard',
+      clientId: p.clientId ?? clients.find((client) => client.name === p.clientName)?.id ?? '', clientName: p.clientName ?? '', leadDesigner: p.leadDesigner ?? '', phase: p.phase ?? 'Discovery', priority: p.priority ?? 'standard',
       progress: String(p.progress ?? 0), targetDate: p.targetDate ?? '', latitude: p.latitude ?? '', longitude: p.longitude ?? '',
     })
     setRoomList([])
@@ -101,7 +102,8 @@ export default function InteriorProjects() {
       location: projectForm.location.trim(),
       totalArea: Number(projectForm.totalArea) || 0,
       budget: Number(projectForm.budget) || 0,
-      clientName: projectForm.clientName.trim(),
+      clientId: projectForm.clientId || undefined,
+      clientName: clients.find((client) => client.id === projectForm.clientId)?.name,
       leadDesigner: projectForm.leadDesigner.trim(),
       phase: projectForm.phase,
       priority: projectForm.priority,
@@ -193,7 +195,7 @@ export default function InteriorProjects() {
             <div className="space-y-4">
               <div><Label required>Project name</Label><Input value={projectForm.name} onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })} placeholder="e.g. Living Room Renovation" /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><Label>Client</Label><Input value={projectForm.clientName} onChange={(e) => setProjectForm({ ...projectForm, clientName: e.target.value })} placeholder="Client name" /></div>
+                <div><Label>Client</Label><Select value={projectForm.clientId} onValueChange={(clientId) => setProjectForm({ ...projectForm, clientId })}><option value="">Unassigned</option>{clients.filter((client) => client.status !== 'inactive').map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</Select></div>
                 <div><Label>Lead designer</Label><Input value={projectForm.leadDesigner} onChange={(e) => setProjectForm({ ...projectForm, leadDesigner: e.target.value })} placeholder="Studio owner" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">

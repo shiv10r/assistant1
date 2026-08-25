@@ -10,6 +10,16 @@ export type InteriorPhase = 'Discovery' | 'Concept' | 'Design Development' | 'Pr
 
 export type InteriorPriority = 'standard' | 'priority' | 'signature'
 
+export interface InteriorClient {
+  id: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  status: 'lead' | 'active' | 'inactive'
+  createdAt: string
+}
+
 export interface InteriorProject {
   id: string
   name: string
@@ -19,6 +29,7 @@ export interface InteriorProject {
   budget: number
   status: ProjectStatus
   createdAt: string
+  clientId?: string
   clientName?: string
   leadDesigner?: string
   phase?: InteriorPhase

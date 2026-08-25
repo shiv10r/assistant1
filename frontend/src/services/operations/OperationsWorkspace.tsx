@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -26,9 +26,11 @@ import { getTheme } from '../../theme'
 import './operations.css'
 import './operations-workspaces.css'
 
-type View = 'overview' | 'portfolio' | 'visits' | 'map' | 'attendance' | 'assistant' | 'files' | 'collaboration' | 'tracking' | 'library' | 'team'
+const VisualWorkflowWorkspace = lazy(() => import('./VisualWorkflowWorkspace'))
 
-const VIEWS: View[] = ['overview', 'portfolio', 'visits', 'map', 'attendance', 'assistant', 'files', 'collaboration', 'tracking', 'library', 'team']
+type View = 'overview' | 'visual-workflow' | 'portfolio' | 'visits' | 'map' | 'attendance' | 'assistant' | 'files' | 'tracking' | 'library' | 'team'
+
+const VIEWS: View[] = ['overview', 'visual-workflow', 'portfolio', 'visits', 'map', 'attendance', 'assistant', 'files', 'tracking', 'library', 'team']
 const STATUS_VARIANT = (status: string) => status === 'Completed' || status === 'Confirmed' ? 'success' : status === 'Review' || status === 'Interview' ? 'warning' : status === 'Cancelled' ? 'danger' : 'info'
 const futureDate = (days: number) => { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10) }
 
@@ -66,13 +68,13 @@ function OperationsWorkspace({ config, view }: { config: OperationsConfig; view:
   const { isAdvanced } = useViewMode()
   const workers: AttendanceWorker[] = config.team.map((person, index) => ({ id: `${config.id}-person-${index + 1}`, ...person, status: 'active' }))
 
+  if (view === 'visual-workflow') return <Suspense fallback={<div className="ops-empty" role="status"><Sparkles /><h2>Loading visual workflow</h2><p>Preparing the live operations canvas.</p></div>}><VisualWorkflowWorkspace key={config.id} config={config} /></Suspense>
   if (view === 'attendance') return <AttendanceModule collection={`${config.id}:operations-team`} seed={workers} backTo={`/${config.id}/operations/overview`} title={`${capitalize(config.people)} attendance`} sub={`Presence, hours, leave and emergency coordination for your ${config.people}.`} />
   if (view === 'portfolio') return <Portfolio config={config} work={work} />
-  if (view === 'visits') return <Visits config={config} work={work.items} visits={visits} />
+  if (view === 'visits') return <Visits config={config} work={work.items} visits={visits} discussions={discussions} meetings={meetings} team={team.items} />
   if (view === 'map') return <OperationsMap config={config} work={work.items} />
   if (view === 'assistant') return <OperationsAssistant config={config} work={work.items} visits={visits.items} />
   if (view === 'files') return <OperationsFiles config={config} work={work.items} files={files} />
-  if (view === 'collaboration') return <CollaborationWorkspace config={config} work={work.items} discussions={discussions} meetings={meetings} team={team.items} />
   if (view === 'tracking') return <TrackingTimeline config={config} work={work.items} checkpoints={checkpoints} isAdvanced={isAdvanced} />
   if (view === 'library') return <ProjectLibrary config={config} work={work.items} library={library} />
   if (view === 'team') return <TeamRoster config={config} team={team} isAdvanced={isAdvanced} />
@@ -146,7 +148,7 @@ function Portfolio({ config, work }: { config: OperationsConfig; work: ReturnTyp
   </div>
 }
 
-function Visits({ config, work, visits }: { config: OperationsConfig; work: WorkItem[]; visits: ReturnType<typeof useLocalCollection<Visit>> }) {
+function Visits({ config, work, visits, discussions, meetings, team }: { config: OperationsConfig; work: WorkItem[]; visits: ReturnType<typeof useLocalCollection<Visit>>; discussions: ReturnType<typeof useLocalCollection<Discussion>>; meetings: ReturnType<typeof useLocalCollection<Meeting>>; team: TeamMember[] }) {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ workId: work[0]?.id ?? '', title: '', date: futureDate(1), time: '10:00', owner: '', notes: '' })
   const sorted = [...visits.items].sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
@@ -154,6 +156,7 @@ function Visits({ config, work, visits }: { config: OperationsConfig; work: Work
   return <div className="operations-page"><OperationsHeader config={config} eyebrow="Field coordination" title={`${capitalize(config.visit)} schedule`} action={<Button onClick={() => setOpen(true)}><Plus className="w-4 h-4" /> Schedule</Button>} />
     <section className="ops-visit-timeline">{sorted.map((visit) => { const item = work.find((candidate) => candidate.id === visit.workId); return <article key={visit.id} className={visit.status === 'Completed' ? 'is-complete' : ''}><div className="ops-date-block"><strong>{new Date(`${visit.date}T00:00:00`).getDate()}</strong><span>{new Date(`${visit.date}T00:00:00`).toLocaleDateString([], { month: 'short' })}</span></div><div className="ops-timeline-line"><i /></div><div className="ops-visit-card"><div><span className="ops-visit-time">{visit.time} · {item?.location ?? config.location}</span><h2>{visit.title}</h2><p>{item?.title ?? `General ${config.visit}`} · {visit.owner}</p>{visit.notes && <small>{visit.notes}</small>}</div><div className="ops-visit-actions"><Select value={visit.status} onValueChange={(status) => visits.update(visit.id, { status: status as Visit['status'] })}><option>Scheduled</option><option>In progress</option><option>Completed</option><option>Cancelled</option></Select><Button variant="ghost" size="icon" onClick={() => visits.remove(visit.id)} aria-label="Delete visit"><X className="w-4 h-4" /></Button></div></div></article> })}</section>
     {!sorted.length && <div className="ops-empty"><CalendarDays /><h2>No {config.visit}s scheduled</h2><p>Add the next customer or field touchpoint.</p></div>}
+    <CollaborationWorkspace embedded config={config} work={work} discussions={discussions} meetings={meetings} team={team} />
     <Modal open={open} onClose={() => setOpen(false)} title={`Schedule ${config.visit}`} size="md"><div className="space-y-4"><div><Label required>Title</Label><Input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></div><div><Label>{capitalize(config.item)}</Label><Select value={form.workId} onValueChange={(workId) => setForm({ ...form, workId })}>{work.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</Select></div><div className="grid grid-cols-2 gap-4"><div><Label>Date</Label><Input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} /></div><div><Label>Time</Label><Input type="time" value={form.time} onChange={(event) => setForm({ ...form, time: event.target.value })} /></div></div><div><Label>Owner</Label><Input value={form.owner} onChange={(event) => setForm({ ...form, owner: event.target.value })} /></div><div><Label>Brief</Label><Textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></div><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={save}>Schedule</Button></div></div></Modal>
   </div>
 }
@@ -165,16 +168,19 @@ function OperationsMap({ config, work }: { config: OperationsConfig; work: WorkI
   const [selected, setSelected] = useState(work[0]?.id ?? '')
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null)
   const [statusFilter, setStatusFilter] = useState('All')
+  const [detailsOpen, setDetailsOpen] = useState(true)
+  const [maximized, setMaximized] = useState(false)
   const located = work.filter((item) => item.lat && item.lng && (statusFilter === 'All' || item.status === statusFilter))
   const chosen = work.find((item) => item.id === selected)
   const statuses = [...new Set(work.map((item) => item.status))]
   useEffect(() => { if (!mapNode.current || map.current) return; const instance = L.map(mapNode.current).setView([20.5937, 78.9629], 5); const tiles = getTheme() === 'dark' ? 'dark_all' : 'light_all'; L.tileLayer(`https://{s}.basemaps.cartocdn.com/${tiles}/{z}/{x}/{y}{r}.png`, { attribution: '(c) OpenStreetMap', maxZoom: 19 }).addTo(instance); map.current = instance; return () => { instance.remove(); map.current = null } }, [])
   useEffect(() => { if (!map.current) return; layer.current?.remove(); const next = L.layerGroup().addTo(map.current); layer.current = next; located.forEach((item) => { const node = document.createElement('div'); node.className = 'ops-map-tooltip'; const strong = document.createElement('strong'); strong.textContent = item.title; const small = document.createElement('small'); small.textContent = `${item.status} · ${item.progress}%`; node.append(strong, small); const marker = L.circleMarker([item.lat, item.lng], { radius: selected === item.id ? 11 : 8, color: '#fff', weight: 3, fillColor: selected === item.id ? '#0F8F83' : '#2563EB', fillOpacity: 1 }).addTo(next).bindTooltip(node); marker.on('click', () => setSelected(item.id)) }); if (position) L.circleMarker([position.lat, position.lng], { radius: 7, color: '#fff', weight: 3, fillColor: '#D94F70', fillOpacity: 1 }).addTo(next).bindTooltip('Your location'); if (located.length) map.current.fitBounds(L.latLngBounds(located.map((item) => [item.lat, item.lng])), { padding: [50, 50], maxZoom: 12 }); return () => { next.remove() } }, [located, position, selected])
+  useEffect(() => { const timer = window.setTimeout(() => map.current?.invalidateSize(), 260); return () => window.clearTimeout(timer) }, [detailsOpen, maximized])
   const locate = () => navigator.geolocation?.getCurrentPosition((result) => { const next = { lat: result.coords.latitude, lng: result.coords.longitude }; setPosition(next); map.current?.setView([next.lat, next.lng], 11) })
   const directions = () => { if (!chosen) return; window.open(`https://www.google.com/maps/dir/?api=1&destination=${chosen.lat},${chosen.lng}`, '_blank', 'noopener') }
   return <div className="operations-page"><OperationsHeader config={config} eyebrow="Location intelligence" title={capitalize(config.mapNetworkLabel)} action={<Button variant="outline" onClick={locate}><Navigation className="w-4 h-4" /> Find me</Button>} />
     <section className="ops-map-summary"><div><MapPin /><span><strong>{located.length}</strong><small>mapped {config.mapPointLabel}s</small></span></div><div><span className="ops-map-dot is-active" /><span><strong>{work.filter((item) => !['Completed', 'Cancelled'].includes(item.status)).length}</strong><small>active locations</small></span></div><div><span className="ops-map-dot is-progress" /><span><strong>{work.length ? Math.round(work.reduce((sum, item) => sum + item.progress, 0) / work.length) : 0}%</strong><small>network progress</small></span></div><div className="ops-map-filters"><button className={statusFilter === 'All' ? 'is-active' : ''} onClick={() => setStatusFilter('All')}>All</button>{statuses.map((status) => <button key={status} className={statusFilter === status ? 'is-active' : ''} onClick={() => setStatusFilter(status)}>{status}</button>)}</div></section>
-    <div className="ops-map-layout"><div className="ops-map-stage"><div ref={mapNode} className="ops-map-canvas" /><div className="ops-map-legend"><span><i className="is-work" /> {capitalize(config.mapPointLabel)}</span>{position && <span><i className="is-you" /> Your location</span>}</div></div><aside><span className="ops-map-count">{located.length} {config.mapPointLabel}{located.length === 1 ? '' : 's'} in view</span>{located.map((item) => <button key={item.id} className={selected === item.id ? 'is-active' : ''} onClick={() => { setSelected(item.id); map.current?.setView([item.lat, item.lng], 13) }}><MapPin className="w-4 h-4" /><span><strong>{item.title}</strong><small>{item.location} · {item.progress}% complete</small><i><b style={{ width: `${item.progress}%` }} /></i></span></button>)}{chosen && <div className="ops-map-selected"><span>Selected {config.mapPointLabel}</span><h3>{chosen.title}</h3><p>{chosen.customer} · {chosen.owner}</p><div><Badge variant={STATUS_VARIANT(chosen.status)} size="sm">{chosen.status}</Badge><strong>{money(chosen.value)}</strong></div><Button className="w-full" onClick={directions} disabled={!chosen.lat || !chosen.lng}><Navigation className="w-4 h-4" /> Directions to {config.mapPointLabel}</Button></div>}</aside></div>
+    <div className={`ops-map-layout${detailsOpen ? '' : ' is-panel-hidden'}${maximized ? ' is-expanded' : ''}`}><div className="ops-map-stage"><div ref={mapNode} className="ops-map-canvas" /><div className="ops-map-view-controls"><button onClick={() => setMaximized((value) => !value)}>{maximized ? 'Restore map' : 'Maximize map'}</button><button onClick={() => setDetailsOpen((value) => !value)}>{detailsOpen ? 'Hide details' : 'Show details'}</button></div><div className="ops-map-legend"><span><i className="is-work" /> {capitalize(config.mapPointLabel)}</span>{position && <span><i className="is-you" /> Your location</span>}</div></div><aside><span className="ops-map-count">{located.length} {config.mapPointLabel}{located.length === 1 ? '' : 's'} in view</span>{located.map((item) => <button key={item.id} className={selected === item.id ? 'is-active' : ''} onClick={() => { setSelected(item.id); map.current?.setView([item.lat, item.lng], 13) }}><MapPin className="w-4 h-4" /><span><strong>{item.title}</strong><small>{item.location} · {item.progress}% complete</small><i><b style={{ width: `${item.progress}%` }} /></i></span></button>)}{chosen && <div className="ops-map-selected"><span>Selected {config.mapPointLabel}</span><h3>{chosen.title}</h3><p>{chosen.customer} · {chosen.owner}</p><div><Badge variant={STATUS_VARIANT(chosen.status)} size="sm">{chosen.status}</Badge><strong>{money(chosen.value)}</strong></div><Button className="w-full" onClick={directions} disabled={!chosen.lat || !chosen.lng}><Navigation className="w-4 h-4" /> Directions to {config.mapPointLabel}</Button></div>}</aside></div>
   </div>
 }
 
@@ -201,6 +207,8 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
     setBusy(true)
     setNotice(null)
     const errors: string[] = []
+    const notifications = new Set<string>()
+    let notificationWarning = false
     let uploaded = 0
     try {
       for (const file of selected) {
@@ -211,7 +219,9 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
         }
         try {
           const id = genId()
-          await fileStorage.upload(id, file)
+          const result = await fileStorage.upload(id, file)
+          if (fileStorage.kind === 'supabase') notifications.add(result.message)
+          if (fileStorage.kind === 'supabase' && !result.notificationSent) notificationWarning = true
           files.add({ id, name: file.name, size: file.size, type: file.type || 'application/octet-stream', workId, uploadedAt: new Date().toISOString(), storage: fileStorage.kind })
           uploaded += 1
         } catch (error) {
@@ -219,7 +229,7 @@ function OperationsFiles({ config, work, files }: { config: OperationsConfig; wo
         }
       }
       const uploadedText = uploaded ? `${uploaded} file${uploaded === 1 ? '' : 's'} uploaded.` : ''
-      setNotice({ text: [uploadedText, ...errors].filter(Boolean).join(' '), error: errors.length > 0 })
+      setNotice({ text: [uploadedText, ...notifications, ...errors].filter(Boolean).join(' '), error: errors.length > 0 || notificationWarning })
     } finally {
       event.target.value = ''
       setBusy(false)

@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input, Label, Modal, Select, money, num, fmtDate } from '../../platform/ui'
 import { ArrowLeft, Plus, Sparkles, Trash2, Camera, MapPin, Ruler, Wallet, CalendarDays, Eye, Navigation, ClipboardCheck, FileText } from 'lucide-react'
 import { useLocalCollection, genId } from '../../lib/localStore'
-import type { InteriorProject, InteriorRoom, InteriorDesign, RoomType } from './types'
-import { PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
+import type { InteriorClient, InteriorProject, InteriorRoom, InteriorDesign, RoomType } from './types'
+import { CLIENT_SEED, PROJECT_SEED, ROOM_SEED, DESIGN_SEED } from './seed'
 import { ROOM_TYPES } from './types'
 
 const emptyRoom = { name: '', roomType: 'Living Room' as RoomType, length: '', width: '', height: '', budget: '' }
@@ -15,8 +15,10 @@ export default function InteriorProjectDetails() {
   const { items: projects } = useLocalCollection<InteriorProject>('interior:projects', PROJECT_SEED)
   const { items: rooms, add, remove } = useLocalCollection<InteriorRoom>('interior:rooms', ROOM_SEED)
   const { items: designs, remove: removeDesign } = useLocalCollection<InteriorDesign>('interior:designs', DESIGN_SEED)
+  const { items: clients } = useLocalCollection<InteriorClient>('interior:clients', CLIENT_SEED)
 
   const project = projects.find((p) => p.id === id)
+  const client = clients.find((item) => item.id === project?.clientId || (!project?.clientId && item.name === project?.clientName))
 
   const [roomOpen, setRoomOpen] = useState(false)
   const [form, setForm] = useState(emptyRoom)
@@ -71,7 +73,8 @@ export default function InteriorProjectDetails() {
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>
             <CardTitle>{project.name}</CardTitle>
-            <p className="text-sm text-muted mt-1">{project.clientName ?? 'Client not assigned'} · led by {project.leadDesigner ?? 'unassigned designer'}</p>
+            <p className="text-sm text-muted mt-1">{client?.name ?? project.clientName ?? 'Client not assigned'} · led by {project.leadDesigner ?? 'unassigned designer'}</p>
+            {client && <p className="mt-1 text-xs text-muted">{client.email || 'No email'} · {client.phone || 'No phone'}</p>}
             <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted">
               <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {project.location || '—'}</span>
               <span className="flex items-center gap-1"><Ruler className="w-4 h-4" /> {num(project.totalArea)} sq ft</span>

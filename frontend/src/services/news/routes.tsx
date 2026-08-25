@@ -8,6 +8,7 @@ const Search = lazy(() => import('./NewsSearch'))
 const Bookmarks = lazy(() => import('./NewsBookmarks'))
 const Category = lazy(() => import('./NewsCategory'))
 const Article = lazy(() => import('./NewsArticle'))
+const NewsNotifications = lazy(() => import('./pages/NewsNotifications'))
 
 export default function NewsRoutes() {
   return <Routes>
@@ -16,6 +17,7 @@ export default function NewsRoutes() {
     <Route path="trending" element={<Trending />} />
     <Route path="search" element={<Search />} />
     <Route path="bookmarks" element={<Bookmarks />} />
+    <Route path="notifications" element={<NewsNotifications />} />
     <Route path="category/:categorySlug" element={<Category />} />
     <Route path=":slug" element={<Article />} />
     <Route path="*" element={<Navigate to="/news" replace />} />

@@ -22,7 +22,6 @@ import {
   FiClock,
   FiMessageSquare,
   FiSettings,
-  FiVideo,
   FiShield,
   FiCreditCard,
   FiUser,
@@ -31,8 +30,10 @@ import {
   FiTag,
   FiHeart,
   FiCloud,
+  FiArrowLeft,
   FiArrowRight,
   FiCode,
+  FiGitBranch,
 } from 'react-icons/fi'
 import {
   MdDashboard,
@@ -95,9 +96,10 @@ import { Modal } from './platform/ui'
 import { usePlan } from './hooks/usePlan'
 import { useViewMode } from './hooks/useViewMode'
 import { cn, Button } from './platform/ui'
+import { useNotificationUnreadCount } from './platform/notifications/notificationUnread'
 import './Layout.css'
 
-type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; notification?: boolean; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
 /** Groups shown only while inside a given service's workspace — everything service-specific lives here. */
@@ -105,9 +107,11 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   interior: [
     { title: 'Interior Design', items: [
       { label: 'Overview', to: '/interior/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Clients', to: '/interior/clients', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Projects', to: '/interior/projects', icon: <MdWork className="w-5 h-5" /> },
       { label: 'Design Studio', to: '/interior/designs', icon: <IoSparkles className="w-5 h-5" /> },
       { label: 'Product Library', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/interior/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'Delivery', items: [
       { label: 'Site Planner', to: '/interior/sites', icon: <FiMap className="w-5 h-5" /> },
@@ -123,6 +127,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   warehouse: [
     { title: 'Warehouse Store', items: [
       { label: 'Overview', to: '/warehouse/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Notifications', to: '/warehouse/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'Retailers & Vendors', items: [
       { label: 'Retailers', to: '/warehouse/customers', icon: <FiUsers className="w-5 h-5" /> },
@@ -225,7 +230,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Notices', to: '/school/notices', icon: <IoMegaphone className="w-5 h-5" /> },
       { label: 'Events', to: '/school/events', icon: <FiCalendar className="w-5 h-5" /> },
       { label: 'Messaging', to: '/school/messaging', icon: <FiMessageSquare className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/school/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/school/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'PTM', to: '/school/ptm', icon: <MdCalendarToday className="w-5 h-5" /> },
       { label: 'Surveys', to: '/school/surveys', icon: <FiClipboard className="w-5 h-5" /> },
     ]},
@@ -263,6 +268,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Rooms', to: '/hotel/rooms', icon: <BiBuildingHouse className="w-5 h-5" /> },
       { label: 'Guests', to: '/hotel/guests', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/hotel/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   travel: [
@@ -273,6 +279,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Group Trips', to: '/travel/group-trips', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Customize Trip', to: '/travel/customize', icon: <IoSparkles className="w-5 h-5" /> },
       { label: 'My Trips', to: '/travel/my-trips', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/travel/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   news: [
@@ -282,6 +289,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Trending', to: '/news/trending', icon: <MdBarChart className="w-5 h-5" /> },
       { label: 'Search', to: '/news/search', icon: <FiSearch className="w-5 h-5" /> },
       { label: 'Saved Stories', to: '/news/bookmarks', icon: <MdBookmarkBorder className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/news/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'News Desks', items: [
       { label: 'India', to: '/news/category/india', icon: <MdFlag className="w-5 h-5" /> },
@@ -300,6 +308,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Applications', to: '/jobs/applications', icon: <FiClipboard className="w-5 h-5" /> },
       { label: 'Profile', to: '/jobs/profile', icon: <FiUser className="w-5 h-5" /> },
       { label: 'Saved Jobs', to: '/jobs/saved', icon: <MdBookmarkBorder className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/jobs/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   commerce: [
@@ -311,6 +320,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Brands', to: '/commerce/brands', icon: <MdBuild className="w-5 h-5" /> },
       { label: 'Wishlist', to: '/commerce/wishlist', icon: <FiHeart className="w-5 h-5" /> },
       { label: 'Cart', to: '/commerce/cart', icon: <FiShoppingCart className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/commerce/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   bank: [
@@ -325,7 +335,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Loans', to: '/bank/loans', icon: <MdBuild className="w-5 h-5" /> },
       { label: 'Statements', to: '/bank/statements', icon: <MdFileDownload className="w-5 h-5" /> },
       { label: 'Bills', to: '/bank/bills', icon: <MdReceipt className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/bank/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/bank/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'Documents', to: '/bank/documents', icon: <MdDescription className="w-5 h-5" /> },
       { label: 'Profile & Security', to: '/bank/profile', icon: <IoShield className="w-5 h-5" /> },
       { label: 'Admin Console', to: '/bank/admin', icon: <MdMonitor className="w-5 h-5" /> },
@@ -341,7 +351,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Lab Results', to: '/medical/labs', icon: <MdScience className="w-5 h-5" /> },
       { label: 'Billing', to: '/medical/billing', icon: <MdReceipt className="w-5 h-5" /> },
       { label: 'Clinical Records', to: '/medical/records', icon: <FiClipboard className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/medical/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/medical/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'Admin Console', to: '/medical/admin', icon: <MdSettings className="w-5 h-5" /> },
     ]},
   ],
@@ -363,9 +373,6 @@ const COMMON_GROUPS: NavGroup[] = [
   { title: 'Workspace', items: [
     { label: 'Chat', to: '/assistant', icon: <FiMessageSquare className="w-5 h-5" /> },
     { label: 'Settings', to: '/settings', icon: <FiSettings className="w-5 h-5" /> },
-  ]},
-  { title: 'Collaboration', items: [
-    { label: 'Video Call', to: '/video', icon: <FiVideo className="w-5 h-5" /> },
     { label: 'Broadcast', to: '/broadcast', icon: <IoMegaphone className="w-5 h-5" />, badge: 'PRO', premium: true },
   ]},
   { title: 'Administration', items: [
@@ -381,10 +388,12 @@ const COMMON_GROUPS: NavGroup[] = [
 function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const serviceGroups = service ? SERVICE_GROUPS[service.id] : []
   const config = operationsConfig(service?.id)
+  const hasNativePortfolio = config ? ['interior', 'warehouse', 'school'].includes(config.id) : false
   const operations: NavGroup[] = config ? [{
     title: service?.shell === 'portal' ? 'My workspace' : 'Operations',
     items: [
-      ...(config.id === 'interior' ? [] : [
+      { to: `/${config.id}/operations/visual-workflow`, label: 'Visual Workflow', icon: <FiGitBranch className="w-5 h-5" /> },
+      ...(hasNativePortfolio ? [] : [
         { to: `/${config.id}/operations/overview`, label: 'Overview', icon: <FiGrid className="w-5 h-5" /> },
         { to: `/${config.id}/operations/portfolio`, label: config.items.replace(/\b\w/g, (letter) => letter.toUpperCase()), icon: <IoBriefcase className="w-5 h-5" /> },
       ]),
@@ -398,20 +407,20 @@ function navGroupsFor(service: ServiceDef | null): NavGroup[] {
   const coordination: NavGroup[] = config ? [{
     title: 'Coordination',
     items: [
-      { to: `/${config.id}/operations/collaboration`, label: 'Collaboration', icon: <FiMessageSquare className="w-5 h-5" /> },
       { to: `/${config.id}/operations/tracking`, label: 'Tracking Timeline', icon: <FiCheckSquare className="w-5 h-5" /> },
       { to: `/${config.id}/operations/library`, label: 'Project Library', icon: <FiBookOpen className="w-5 h-5" /> },
       { to: `/${config.id}/operations/team`, label: 'Team Workspace', icon: <FiUsers className="w-5 h-5" /> },
     ],
   }] : []
-  return service?.shell === 'portal'
-    ? [...operations, ...coordination, ...serviceGroups]
-    : [...operations, ...coordination, ...serviceGroups, ...COMMON_GROUPS]
+  return [...operations, ...coordination, ...serviceGroups, ...COMMON_GROUPS]
 }
 
 const PLAN_LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Business' }
 
 const SIDEBAR_KEY = 'lux_sidebar_open'
+const SIDEBAR_WIDTH_KEY = 'vsr_sidebar_width'
+const SIDEBAR_MIN = 270
+const SIDEBAR_MAX = 460
 
 function defaultSidebarOpen(): boolean {
   const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -423,6 +432,7 @@ export default function Layout() {
   const username = getUsername() || 'User'
   const role = getRole()
   const [open, setOpen] = useState(defaultSidebarOpen)
+  const [sidebarWidth, setSidebarWidth] = useState(() => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Number(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || 310)))
   const [theme, setTheme] = useState<Theme>(getTheme())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [weatherOn, setWeatherOn] = useState(isWeatherMode())
@@ -458,6 +468,25 @@ export default function Layout() {
     })
   }
 
+  function startSidebarResize(event: React.PointerEvent<HTMLDivElement>) {
+    if (isMobile()) return
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = sidebarWidth
+    document.body.classList.add('is-resizing-sidebar')
+    const move = (pointer: PointerEvent) => setSidebarWidth(Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, startWidth + pointer.clientX - startX)))
+    const stop = (pointer: PointerEvent) => {
+      const width = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, startWidth + pointer.clientX - startX))
+      setSidebarWidth(width)
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(width))
+      document.body.classList.remove('is-resizing-sidebar')
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
+  }
+
   function isMobile() {
     return typeof window !== 'undefined' && window.innerWidth <= 900
   }
@@ -487,6 +516,7 @@ export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const service = serviceFromPath(location.pathname) ?? getLastService()
+  const notificationUnread = useNotificationUnreadCount(service?.id ?? '')
   const groups = navGroupsFor(service)
   const isPortal = service?.shell === 'portal'
   const pageSegment = location.pathname.split('/').filter(Boolean).at(-1) ?? 'overview'
@@ -518,6 +548,9 @@ export default function Layout() {
       <header className="topbar">
         <button className="hamburger" onClick={toggleSidebar} aria-label="Menu" title={open ? 'Hide menu' : 'Show menu'}>
           <MdMenu className="w-6 h-6" />
+        </button>
+        <button className="topbar-back" onClick={() => navigate(-1)} aria-label="Go back" title="Go back">
+          <FiArrowLeft className="w-5 h-5" /><span>Back</span>
         </button>
         <div className="topbar-context">
           <span>{service?.label ?? 'VSR Systems'}</span>
@@ -571,7 +604,7 @@ export default function Layout() {
       </header>
 
       <div className="body-row">
-        <nav className={cn('sidebar', open ? 'open' : 'collapsed')}>
+        <nav className={cn('sidebar', open ? 'open' : 'collapsed')} style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}>
           <div className="sidebar-brand">
             <VsrLogo size={34} wordmark />
             <button onClick={() => navigate('/')} title="Switch workspace"><FiGrid className="w-4 h-4" /></button>
@@ -613,7 +646,9 @@ export default function Layout() {
                       >
                         <span className="flex-shrink-0">{it.icon}</span>
                         <span className="truncate">{it.label}</span>
-                        {it.badge && <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{it.badge}</span>}
+                        {it.notification && notificationUnread > 0
+                          ? <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{notificationUnread}</span>
+                          : it.badge && <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{it.badge}</span>}
                       </NavLink>
                     ))}
                   </div>
@@ -630,9 +665,9 @@ export default function Layout() {
             <div className="sidebar-utility-actions">
               <button onClick={() => navigate('/settings')} title="Settings"><FiSettings className="w-4 h-4" /></button>
               <button onClick={() => navigate('/account')} title="Account"><FiUser className="w-4 h-4" /></button>
-              <button onClick={signOut} title="Sign out"><MdLogout className="w-4 h-4" /></button>
             </div>
           </div>
+          <div className="sidebar-resizer" role="separator" aria-label="Resize navigation" aria-orientation="vertical" onPointerDown={startSidebarResize} />
         </nav>
         {open && isMobile() && <div className="backdrop" onClick={() => setOpen(false)} />}
 

@@ -1,8 +1,11 @@
 import { api } from '../../api'
+import { confirmBillableAction } from '../../platform/billing/confirmBillableAction'
+
+export type StorageUploadResult = { notificationSent: boolean; message: string }
 
 export interface FileStorageProvider {
   kind: FileStorageKind
-  upload(id: string, file: File): Promise<void>
+  upload(id: string, file: File): Promise<StorageUploadResult>
   download(id: string, fileName: string): Promise<void>
   remove(id: string): Promise<void>
 }
@@ -28,6 +31,12 @@ const ALLOWED_MIME_TYPES = new Set([
   'application/zip',
 ])
 const ALLOWED_EXTENSIONS = new Set(['pdf', 'gif', 'jpg', 'jpeg', 'png', 'webp', 'csv', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip'])
+const MIME_BY_EXTENSION: Record<string, string> = {
+  pdf: 'application/pdf', gif: 'image/gif', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  csv: 'text/csv', txt: 'text/plain', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', zip: 'application/zip',
+}
 
 export const STORAGE_FILE_ACCEPT = [...ALLOWED_MIME_TYPES, ...[...ALLOWED_EXTENSIONS].map((extension) => `.${extension}`)].join(',')
 
@@ -40,6 +49,8 @@ export function storageFileError(file: File): string | null {
   }
   return null
 }
+
+const uploadContentType = (file: File) => MIME_BY_EXTENSION[file.name.split('.').pop()?.toLowerCase() ?? ''] ?? file.type
 
 function assertValidFile(file: File) {
   const error = storageFileError(file)
@@ -77,6 +88,7 @@ export const browserFileStorage: FileStorageProvider = {
     const { database, store } = await transaction('readwrite')
     await requestResult(store.put(file, id))
     database.close()
+    return { notificationSent: false, message: 'Saved privately in this browser. No cloud resource was used.' }
   },
   async download(id, fileName) {
     const { database, store } = await transaction('readonly')
@@ -106,15 +118,22 @@ export const supabaseFileStorage: FileStorageProvider = {
   kind: 'supabase',
   async upload(id, file) {
     assertValidFile(file)
+    if (!confirmBillableAction('Cloud file upload', `${file.name} (${formatBytes(file.size)}) will be uploaded to private Supabase Storage. A completion email will use the configured email provider quota.`)) {
+      throw new Error('Upload cancelled. No cloud resource was used.')
+    }
     const path = objectPath(id)
+    const contentType = uploadContentType(file)
     const signed = await api.storage.createSignedUpload({
       bucket: STORAGE_BUCKET,
       path,
-      contentType: file.type || 'application/octet-stream',
+      contentType,
+      billingConfirmed: true,
     })
-    await api.storage.uploadToSignedUrl(signed.signedUrl, file)
+    await api.storage.uploadToSignedUrl(signed.signedUrl, file, contentType)
+    return api.storage.uploadCompleted({ bucket: STORAGE_BUCKET, path, fileName: file.name, contentType, sizeBytes: file.size })
   },
   async download(id, fileName) {
+    if (!confirmBillableAction('Cloud file download', `${fileName} will use Supabase Storage data transfer.`)) return
     const signed = await api.storage.signedDownload({ bucket: STORAGE_BUCKET, path: objectPath(id) })
     const anchor = document.createElement('a')
     anchor.href = signed.signedUrl
@@ -125,6 +144,11 @@ export const supabaseFileStorage: FileStorageProvider = {
   async remove(id) {
     await api.storage.remove({ bucket: STORAGE_BUCKET, path: objectPath(id) })
   },
+}
+
+function formatBytes(value: number) {
+  if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`
 }
 
 // Browser storage remains the safe default; deployments can opt into the signed Supabase provider.

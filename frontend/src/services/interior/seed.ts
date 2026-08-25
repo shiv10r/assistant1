@@ -1,6 +1,12 @@
 import type {
-  InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct, InteriorTask, InteriorProcurement, InteriorDecision,
+  InteriorClient, InteriorProject, InteriorRoom, InteriorDesign, InteriorProduct, InteriorTask, InteriorProcurement, InteriorDecision,
 } from './types'
+
+export const CLIENT_SEED: InteriorClient[] = [
+  { id: 'int-client-1', name: 'Aarav Mehta', email: 'aarav@example.com', phone: '+91 98111 22334', address: 'Mumbai, Maharashtra', status: 'active', createdAt: '2026-07-20T10:00:00.000Z' },
+  { id: 'int-client-2', name: 'Mira Shah', email: 'mira@example.com', phone: '+91 98222 33445', address: 'Pune, Maharashtra', status: 'active', createdAt: '2026-07-25T10:00:00.000Z' },
+  { id: 'int-client-3', name: 'Rohan Iyer', email: 'rohan@example.com', phone: '+91 98333 44556', address: 'Bengaluru, Karnataka', status: 'active', createdAt: '2026-06-10T10:00:00.000Z' },
+]
 
 export const PROJECT_SEED: InteriorProject[] = [
   {
@@ -12,7 +18,7 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 250000,
     status: 'active',
     createdAt: '2026-07-28T10:00:00.000Z',
-    clientName: 'Aarav Mehta', leadDesigner: 'Nisha Rao', phase: 'Design Development', priority: 'signature', progress: 58,
+    clientId: 'int-client-1', clientName: 'Aarav Mehta', leadDesigner: 'Nisha Rao', phase: 'Design Development', priority: 'signature', progress: 58,
     targetDate: '2026-10-18', latitude: '19.0760', longitude: '72.8777',
   },
   {
@@ -24,7 +30,7 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 180000,
     status: 'active',
     createdAt: '2026-08-02T09:30:00.000Z',
-    clientName: 'Mira Shah', leadDesigner: 'Kabir Sen', phase: 'Concept', priority: 'priority', progress: 34,
+    clientId: 'int-client-2', clientName: 'Mira Shah', leadDesigner: 'Kabir Sen', phase: 'Concept', priority: 'priority', progress: 34,
     targetDate: '2026-11-06', latitude: '18.5204', longitude: '73.8567',
   },
   {
@@ -36,7 +42,7 @@ export const PROJECT_SEED: InteriorProject[] = [
     budget: 300000,
     status: 'completed',
     createdAt: '2026-06-15T12:00:00.000Z',
-    clientName: 'Rohan Iyer', leadDesigner: 'Nisha Rao', phase: 'Handover', priority: 'standard', progress: 100,
+    clientId: 'int-client-3', clientName: 'Rohan Iyer', leadDesigner: 'Nisha Rao', phase: 'Handover', priority: 'standard', progress: 100,
     targetDate: '2026-08-12', latitude: '12.9716', longitude: '77.5946',
   },
 ]

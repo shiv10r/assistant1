@@ -34,7 +34,7 @@ export const MODULE_REGISTRY = [
   {
     key: 'interior', name: 'VSR Interiors', tagline: 'Spaces, projects, AI designs & estimates', category: 'operations', icon: '🏠',
     gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)', baseRoute: '/interior', entryRoute: '/interior/dashboard',
-    navigation: ['/interior/dashboard', '/interior/projects', '/interior/designs', '/interior/products', '/interior/sites', '/interior/execution'], permissions: [],
+    navigation: ['/interior/dashboard', '/interior/clients', '/interior/projects', '/interior/designs', '/interior/products', '/interior/sites', '/interior/execution'], permissions: [],
     lazyRouteLoader: () => import('../services/interior/routes'), enabled: true,
   },
   {

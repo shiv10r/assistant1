@@ -6,6 +6,7 @@ const Reservations = lazy(() => import('./HotelReservations'))
 const Rooms = lazy(() => import('./HotelRooms'))
 const Guests = lazy(() => import('./HotelGuests'))
 const Housekeeping = lazy(() => import('./HotelHousekeeping'))
+const HotelNotifications = lazy(() => import('./pages/HotelNotifications'))
 
 export default function HotelRoutes() {
   return <Routes>
@@ -15,6 +16,7 @@ export default function HotelRoutes() {
     <Route path="rooms" element={<Rooms />} />
     <Route path="guests" element={<Guests />} />
     <Route path="housekeeping" element={<Housekeeping />} />
+    <Route path="notifications" element={<HotelNotifications />} />
     <Route path="*" element={<Navigate to="/hotel" replace />} />
   </Routes>
 }

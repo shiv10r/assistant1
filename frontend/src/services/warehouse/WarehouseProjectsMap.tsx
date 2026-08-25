@@ -148,6 +148,8 @@ export default function WarehouseProjectsMap() {
   const [locModal, setLocModal] = useState<ProjectRecord | null>(null)
   const [locBusy, setLocBusy] = useState(false)
   const [locF, setLocF] = useState({ latitude: '', longitude: '', address: '' })
+  const [detailsOpen, setDetailsOpen] = useState(true)
+  const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -164,6 +166,11 @@ export default function WarehouseProjectsMap() {
       mapRef.current = null
     }
   }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => mapRef.current?.invalidateSize(), 260)
+    return () => window.clearTimeout(timer)
+  }, [detailsOpen, maximized])
 
   useEffect(() => {
     const todo = projects.filter((p) => !p.latitude && !p.longitude && p.address?.trim())
@@ -505,8 +512,16 @@ export default function WarehouseProjectsMap() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-3 mb-4">
-        <div className="lg:col-span-1 space-y-3 max-h-[620px] overflow-y-auto pr-1">
+      <div className={`${maximized ? 'fixed top-[76px] inset-x-3 bottom-3 z-[44] bg-bg p-3' : 'mb-4'} grid gap-4 ${detailsOpen ? 'lg:grid-cols-3' : 'grid-cols-1'}`}>
+        <Card className={`${detailsOpen ? 'lg:col-span-2' : ''} mb-0 overflow-hidden relative ${maximized ? 'h-full' : ''}`}>
+          <div className="absolute right-3 top-3 z-[500] flex gap-2">
+            <button type="button" onClick={() => setMaximized((value) => !value)} className="rounded-lg border border-slate-300 bg-white/95 px-3 py-2 text-xs font-bold text-slate-800 shadow">{maximized ? 'Restore map' : 'Maximize map'}</button>
+            <button type="button" onClick={() => setDetailsOpen((value) => !value)} className="rounded-lg border border-slate-300 bg-white/95 px-3 py-2 text-xs font-bold text-slate-800 shadow">{detailsOpen ? 'Hide details' : 'Show details'}</button>
+          </div>
+          <div ref={containerRef} style={{ height: maximized ? '100%' : '620px', zIndex: 0 }} className="w-full" />
+        </Card>
+
+        {detailsOpen && <div className={`lg:col-span-1 space-y-3 overflow-y-auto pr-1 ${maximized ? 'max-h-full' : 'max-h-[620px]'}`}>
           {!userLoc && (
             <Card>
               <CardContent className="p-4">
@@ -592,11 +607,7 @@ export default function WarehouseProjectsMap() {
               description="Create a warehouse project first — then tag its location here to plot it on the map."
             />
           )}
-        </div>
-
-        <Card className="mb-0 overflow-hidden lg:col-span-2 relative">
-          <div ref={containerRef} style={{ height: '620px', zIndex: 0 }} className="w-full" />
-        </Card>
+        </div>}
       </div>
 
       <Modal open={locModal !== null} onClose={() => setLocModal(null)} title="Set project location" description={locModal ? `${locModal.name} — search the address, use your location, or click the map.` : ''} size="md">
