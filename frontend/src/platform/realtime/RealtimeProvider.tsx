@@ -33,7 +33,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     connection.current = hub
     hub.on('realtimeEvent', (event: RealtimeEventEnvelope) => window.dispatchEvent(new CustomEvent('vsr:realtime', { detail: event })))
     hub.onreconnecting(() => setStatus('reconnecting'))
-    hub.onreconnected(async () => { setStatus('connected'); await Promise.all([...subscriptions.current].map((id) => hub.invoke('SubscribeToHomeServicesBooking', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToChatConversation', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToSchoolMessage', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToWarehouseMessage', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToHomeServicesMessage', id))) })
+    hub.onreconnected(async () => { setStatus('connected'); await Promise.all([...subscriptions.current].map((id) => hub.invoke('SubscribeToHomeServicesBooking', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToChatConversation', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.Invoke('SubscribeToSchoolMessage', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToWarehouseMessage', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToHomeServicesMessage', id))); await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToTravelMessage', id))) })
     hub.onclose(() => setStatus('disconnected'))
     setStatus('connecting')
     void hub.start().then(async () => {
@@ -43,6 +43,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToSchoolMessage', id)))
       await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToWarehouseMessage', id)))
       await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToHomeServicesMessage', id)))
+      await Promise.all([...chatSubscriptions.current].map((id) => hub.invoke('SubscribeToTravelMessage', id)))
     }).catch(() => setStatus('disconnected'))
     return () => { connection.current = null; void hub.stop() }
   }, [])
@@ -86,6 +87,14 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const unsubscribeFromHomeServices = async (conversationId: string) => {
     chatSubscriptions.current.delete(conversationId)
     if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('UnsubscribeFromHomeServicesMessage', conversationId)
+  }
+  const subscribeToTravel = async (conversationId: string) => {
+    chatSubscriptions.current.add(conversationId)
+    if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('SubscribeToTravelMessage', conversationId)
+  }
+  const unsubscribeFromTravel = async (conversationId: string) => {
+    chatSubscriptions.current.delete(conversationId)
+    if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('UnsubscribeFromTravelMessage', conversationId)
   }
 
   return <RealtimeContext.Provider value={{ status, subscribeToBooking, unsubscribeFromBooking, subscribeToChat, unsubscribeFromChat }}>{children}</RealtimeContext.Provider>
