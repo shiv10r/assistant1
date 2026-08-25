@@ -7,6 +7,7 @@ const Packages = lazy(() => import('./TravelPackages'))
 const GroupTrips = lazy(() => import('./TravelGroupTrips'))
 const Customize = lazy(() => import('./TravelCustomize'))
 const MyTrips = lazy(() => import('./TravelMyTrips'))
+const TravelNotifications = lazy(() => import('./pages/TravelNotifications'))
 
 export default function TravelRoutes() {
   return <Routes>
@@ -16,6 +17,7 @@ export default function TravelRoutes() {
     <Route path="group-trips" element={<GroupTrips />} />
     <Route path="customize" element={<Customize />} />
     <Route path="my-trips" element={<MyTrips />} />
+    <Route path="notifications" element={<TravelNotifications />} />
     <Route path="*" element={<Navigate to="/travel" replace />} />
   </Routes>
 }
