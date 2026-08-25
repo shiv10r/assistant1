@@ -11,6 +11,7 @@ const Wishlist = lazy(() => import('./CommerceWishlist'))
 const Offers = lazy(() => import('./CommerceOffers'))
 const Brands = lazy(() => import('./CommerceBrands'))
 const Search = lazy(() => import('./CommerceSearch'))
+const CommerceNotifications = lazy(() => import('./pages/CommerceNotifications'))
 
 export default function CommerceRoutes() {
   return <Routes>
@@ -24,6 +25,7 @@ export default function CommerceRoutes() {
     <Route path="offers" element={<Offers />} />
     <Route path="brands" element={<Brands />} />
     <Route path="search" element={<Search />} />
+    <Route path="notifications" element={<CommerceNotifications />} />
     <Route path="*" element={<Navigate to="/commerce" replace />} />
   </Routes>
 }
