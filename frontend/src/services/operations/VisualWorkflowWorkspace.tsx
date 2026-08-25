@@ -21,7 +21,6 @@ import useEmblaCarousel from 'embla-carousel-react'
 import * as maplibregl from 'maplibre-gl'
 import type { Html5Qrcode } from 'html5-qrcode'
 import { Lottie } from 'lottie-react'
-import { Card, Metric, ProgressBar, Text } from '@tremor/react'
 import {
   ArrowLeft, ArrowRight, CalendarDays, ChevronDown, ChevronsUpDown, Database, GripVertical,
   MapPin, Maximize2, Network, PackageCheck, Play, QrCode,
@@ -193,12 +192,15 @@ function CommandView({ config, tasks }: { config: OperationsConfig; tasks: Workf
 }
 
 function Kpi({ label, value, progress, note, tone }: { label: string; value: string; progress: number; note: string; tone?: 'risk' }) {
-  return <Card className={`vw-kpi${tone ? ` is-${tone}` : ''}`} decoration="top" decorationColor={tone ? 'rose' : 'blue'}>
-    <Text className="vw-kpi-label">{label}</Text>
-    <Metric className="vw-kpi-value">{value}</Metric>
-    <ProgressBar value={progress} color={tone ? 'rose' : 'blue'} className="vw-kpi-progress" />
-    <Text className="vw-kpi-note">{note}</Text>
-  </Card>
+  const boundedProgress = Math.max(0, Math.min(100, progress))
+  return <article className={`vw-kpi${tone ? ` is-${tone}` : ''}`}>
+    <p className="vw-kpi-label">{label}</p>
+    <p className="vw-kpi-value">{value}</p>
+    <div className="vw-kpi-progress" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(boundedProgress)}>
+      <span style={{ width: `${boundedProgress}%` }} />
+    </div>
+    <p className="vw-kpi-note">{note}</p>
+  </article>
 }
 
 function VelocityChart({ tasks }: { tasks: WorkflowTask[] }) {
