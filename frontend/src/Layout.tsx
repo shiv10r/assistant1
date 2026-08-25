@@ -96,9 +96,10 @@ import { Modal } from './platform/ui'
 import { usePlan } from './hooks/usePlan'
 import { useViewMode } from './hooks/useViewMode'
 import { cn, Button } from './platform/ui'
+import { useNotificationUnreadCount } from './platform/notifications/notificationUnread'
 import './Layout.css'
 
-type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
+type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; notification?: boolean; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
 type NavGroup = { title: string; items: NavItem[]; collapsible?: boolean }
 
 /** Groups shown only while inside a given service's workspace — everything service-specific lives here. */
@@ -110,6 +111,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Projects', to: '/interior/projects', icon: <MdWork className="w-5 h-5" /> },
       { label: 'Design Studio', to: '/interior/designs', icon: <IoSparkles className="w-5 h-5" /> },
       { label: 'Product Library', to: '/interior/products', icon: <FiPackage className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/interior/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'Delivery', items: [
       { label: 'Site Planner', to: '/interior/sites', icon: <FiMap className="w-5 h-5" /> },
@@ -125,6 +127,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
   warehouse: [
     { title: 'Warehouse Store', items: [
       { label: 'Overview', to: '/warehouse/dashboard', icon: <MdDashboard className="w-5 h-5" />, end: true },
+      { label: 'Notifications', to: '/warehouse/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'Retailers & Vendors', items: [
       { label: 'Retailers', to: '/warehouse/customers', icon: <FiUsers className="w-5 h-5" /> },
@@ -227,7 +230,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Notices', to: '/school/notices', icon: <IoMegaphone className="w-5 h-5" /> },
       { label: 'Events', to: '/school/events', icon: <FiCalendar className="w-5 h-5" /> },
       { label: 'Messaging', to: '/school/messaging', icon: <FiMessageSquare className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/school/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/school/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'PTM', to: '/school/ptm', icon: <MdCalendarToday className="w-5 h-5" /> },
       { label: 'Surveys', to: '/school/surveys', icon: <FiClipboard className="w-5 h-5" /> },
     ]},
@@ -265,6 +268,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Rooms', to: '/hotel/rooms', icon: <BiBuildingHouse className="w-5 h-5" /> },
       { label: 'Guests', to: '/hotel/guests', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Housekeeping', to: '/hotel/housekeeping', icon: <IoSparkles className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/hotel/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   travel: [
@@ -275,6 +279,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Group Trips', to: '/travel/group-trips', icon: <FiUsers className="w-5 h-5" /> },
       { label: 'Customize Trip', to: '/travel/customize', icon: <IoSparkles className="w-5 h-5" /> },
       { label: 'My Trips', to: '/travel/my-trips', icon: <MdCalendarToday className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/travel/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   news: [
@@ -284,6 +289,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Trending', to: '/news/trending', icon: <MdBarChart className="w-5 h-5" /> },
       { label: 'Search', to: '/news/search', icon: <FiSearch className="w-5 h-5" /> },
       { label: 'Saved Stories', to: '/news/bookmarks', icon: <MdBookmarkBorder className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/news/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
     { title: 'News Desks', items: [
       { label: 'India', to: '/news/category/india', icon: <MdFlag className="w-5 h-5" /> },
@@ -302,6 +308,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Applications', to: '/jobs/applications', icon: <FiClipboard className="w-5 h-5" /> },
       { label: 'Profile', to: '/jobs/profile', icon: <FiUser className="w-5 h-5" /> },
       { label: 'Saved Jobs', to: '/jobs/saved', icon: <MdBookmarkBorder className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/jobs/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   commerce: [
@@ -313,6 +320,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Brands', to: '/commerce/brands', icon: <MdBuild className="w-5 h-5" /> },
       { label: 'Wishlist', to: '/commerce/wishlist', icon: <FiHeart className="w-5 h-5" /> },
       { label: 'Cart', to: '/commerce/cart', icon: <FiShoppingCart className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/commerce/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
     ]},
   ],
   bank: [
@@ -327,7 +335,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Loans', to: '/bank/loans', icon: <MdBuild className="w-5 h-5" /> },
       { label: 'Statements', to: '/bank/statements', icon: <MdFileDownload className="w-5 h-5" /> },
       { label: 'Bills', to: '/bank/bills', icon: <MdReceipt className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/bank/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/bank/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'Documents', to: '/bank/documents', icon: <MdDescription className="w-5 h-5" /> },
       { label: 'Profile & Security', to: '/bank/profile', icon: <IoShield className="w-5 h-5" /> },
       { label: 'Admin Console', to: '/bank/admin', icon: <MdMonitor className="w-5 h-5" /> },
@@ -343,7 +351,7 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Lab Results', to: '/medical/labs', icon: <MdScience className="w-5 h-5" /> },
       { label: 'Billing', to: '/medical/billing', icon: <MdReceipt className="w-5 h-5" /> },
       { label: 'Clinical Records', to: '/medical/records', icon: <FiClipboard className="w-5 h-5" /> },
-      { label: 'Notifications', to: '/medical/notifications', icon: <MdNotifications className="w-5 h-5" /> },
+      { label: 'Notifications', to: '/medical/notifications', icon: <MdNotifications className="w-5 h-5" />, notification: true },
       { label: 'Admin Console', to: '/medical/admin', icon: <MdSettings className="w-5 h-5" /> },
     ]},
   ],
@@ -508,6 +516,7 @@ export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const service = serviceFromPath(location.pathname) ?? getLastService()
+  const notificationUnread = useNotificationUnreadCount(service?.id ?? '')
   const groups = navGroupsFor(service)
   const isPortal = service?.shell === 'portal'
   const pageSegment = location.pathname.split('/').filter(Boolean).at(-1) ?? 'overview'
@@ -637,7 +646,9 @@ export default function Layout() {
                       >
                         <span className="flex-shrink-0">{it.icon}</span>
                         <span className="truncate">{it.label}</span>
-                        {it.badge && <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{it.badge}</span>}
+                        {it.notification && notificationUnread > 0
+                          ? <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{notificationUnread}</span>
+                          : it.badge && <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">{it.badge}</span>}
                       </NavLink>
                     ))}
                   </div>

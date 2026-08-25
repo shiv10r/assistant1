@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Bell, CheckCheck, Search, Star } from 'lucide-react'
 import { useLocalCollection } from '../../lib/localStore'
 import { DataTable, type DataColumn } from '../tables'
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, KPICard, StatusBadge } from '../ui'
+import { notifyUnreadChanged } from './notificationUnread'
 
 type NotificationItem = {
   id: string
@@ -40,6 +41,8 @@ export function NotificationCenter({ moduleKey, moduleName }: NotificationCenter
   )
   const unread = items.filter((item) => !item.read).length
   const important = items.filter((item) => item.important).length
+
+  useEffect(() => notifyUnreadChanged(moduleKey), [moduleKey, unread])
 
   const columns: DataColumn<NotificationItem>[] = [
     {
