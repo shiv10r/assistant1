@@ -22,6 +22,7 @@ const WarehousePacking = lazy(() => import('./WarehousePacking'))
 const WarehouseDispatch = lazy(() => import('./WarehouseDispatch'))
 const WarehouseReturns = lazy(() => import('./WarehouseReturns'))
 const WarehouseStockCount = lazy(() => import('./WarehouseStockCount'))
+const WarehouseNotifications = lazy(() => import('./pages/WarehouseNotifications'))
 
 export default function WarehouseRoutes() {
   return (
@@ -48,6 +49,7 @@ export default function WarehouseRoutes() {
       <Route path="dispatch" element={<WarehouseDispatch />} />
       <Route path="returns" element={<WarehouseReturns />} />
       <Route path="stock-count" element={<WarehouseStockCount />} />
+      <Route path="notifications" element={<WarehouseNotifications />} />
       <Route path="*" element={<Navigate to="/warehouse/dashboard" replace />} />
     </Routes>
   )

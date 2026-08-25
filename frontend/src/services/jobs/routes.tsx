@@ -21,9 +21,9 @@ export default function JobsRoutes() {
     <Route path="applications" element={<Applications />} />
     <Route path="saved" element={<Saved />} />
     <Route path="profile" element={<Profile />} />
+    <Route path="notifications" element={<JobsNotifications />} />
     <Route path=":slug/apply" element={<ApplicationFlow />} />
     <Route path=":slug" element={<JobDetail />} />
-    <Route path="notifications" element={<JobsNotifications />} />
     <Route path="*" element={<Navigate to="/jobs" replace />} />
   </Routes>
 }

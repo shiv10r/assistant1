@@ -17,9 +17,9 @@ export default function NewsRoutes() {
     <Route path="trending" element={<Trending />} />
     <Route path="search" element={<Search />} />
     <Route path="bookmarks" element={<Bookmarks />} />
+    <Route path="notifications" element={<NewsNotifications />} />
     <Route path="category/:categorySlug" element={<Category />} />
     <Route path=":slug" element={<Article />} />
-    <Route path="notifications" element={<NewsNotifications />} />
     <Route path="*" element={<Navigate to="/news" replace />} />
   </Routes>
 }
