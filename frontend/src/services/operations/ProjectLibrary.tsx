@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Archive, Database, Download, FileText, Image, Plus, Search, Upload } from 'lucide-react'
 import { Badge, Button, Input, Label, Modal, Select, fmtDate } from '../../platform/ui'
 import { genId } from '../../lib/localStore'
-import { fileStorage, fileStorageFor, STORAGE_FILE_ACCEPT, storageFileError, confirmBillableAction } from './fileStorage'
+import { fileStorage, fileStorageFor, STORAGE_FILE_ACCEPT, storageFileError } from './fileStorage'
 import type { OperationsConfig } from './config'
 import type { LibraryProject, LocalCollection, WorkItem } from './types'
 
@@ -26,7 +26,6 @@ export default function ProjectLibrary({ config, work, library }: { config: Oper
     if (file && fileId) {
       const validation = storageFileError(file)
       if (validation) { setNotice({ text: validation, error: true }); setBusy(false); return }
-      if (!confirmBillableAction('Cloud file upload', `${file.name} (${formatBytes(file.size)}) will be uploaded to private Supabase Storage. A completion email will use the configured email provider quota.`)) { setBusy(false); return }
       try {
         const result = await fileStorage.upload(fileId, file)
         if (fileStorage.kind === 'supabase') setNotice({ text: result.message, error: !result.notificationSent })
