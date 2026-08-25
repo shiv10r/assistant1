@@ -9,8 +9,8 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
 | Done | 5 |
 | Partially done | 6 |
 | Pending | 10 |
-| Blocked | 2 |
-| **Total** | **23** |
+| Blocked | 1 |
+| **Total** | **22** |
 
 ## Done (5)
 
@@ -39,8 +39,15 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
    - ✅ Operations workspace (OperationsWorkspace, ProjectLibrary) uses `fileStorage` with supabase opt-in.
    - 🟡 TODO: Integrate document metadata platform across remaining modules; add per-module document UI; ensure VITE_FILE_STORAGE_PROVIDER works consistently; add document routing per module.
 4. Settings, branding, and feature flags.
+   - ✅ Backend configuration contracts and feature-flag service baseline added.
+   - 🟡 TODO: Persist settings by organization; add authorized settings APIs and frontend controls; enforce module visibility from the organization configuration.
 5. Observability and resilience.
+   - ✅ Correlation IDs, structured logging context, OpenTelemetry instrumentation, optional OTLP export, and standard resilience for map, weather, and job-scraper clients added.
+   - ✅ Correlation middleware tests added.
+   - 🟡 TODO: Configure production telemetry export and dashboards; add service-level alerts and resilience coverage where retry semantics are safe.
 6. Product deepening.
+   - ✅ Interior client registry and explicit client-to-project links added as the first workflow slice.
+   - 🟡 TODO: Complete the remaining module workflows and backend persistence sequences defined in the master plan.
 
 ## Pending (10)
 
@@ -55,10 +62,9 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
 9. Support and ticketing platform.
 10. Railway backend module.
 
-## Blocked (2)
+## Blocked (1)
 
-1. Rotate the exposed Supabase database password and move it to Render `ConnectionStrings__DefaultConnection`. Requires production credential access.
-2. Configure and validate email delivery using Render `RESEND_API_KEY` and `UPLOAD_NOTIFICATION_EMAIL`. Requires Render configuration access.
+1. Configure and validate email delivery using Render `RESEND_API_KEY` and `UPLOAD_NOTIFICATION_EMAIL`. Requires Render configuration access.
 
 ## Status Rules
 
