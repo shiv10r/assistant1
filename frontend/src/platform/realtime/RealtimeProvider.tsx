@@ -34,11 +34,13 @@ type RealtimeContextValue = {
   unsubscribeFromMedical: (conversationId: string) => Promise<void>
   subscribeToTypingIndicator: (conversationId: string) => Promise<void>
   unsubscribeFromTypingIndicator: (conversationId: string) => Promise<void>
+  subscribeToMessageRead: (conversationId: string) => Promise<void>
+  unsubscribeFromMessageRead: (conversationId: string) => Promise<void>
   subscribeToPresence: (tenantId: string) => Promise<void>
   unsubscribeFromPresence: (tenantId: string) => Promise<void>
 }
 
-const RealtimeContext = createContext<RealtimeContextValue>({ status: 'disconnected', subscribeToBooking: async () => undefined, unsubscribeFromBooking: async () => undefined, subscribeToChat: async () => undefined, unsubscribeFromChat: async () => undefined, subscribeToSchool: async () => undefined, unsubscribeFromSchool: async () => undefined, subscribeToWarehouse: async () => undefined, unsubscribeFromWarehouse: async () => undefined, subscribeToHomeServices: async () => undefined, unsubscribeFromHomeServices: async () => undefined, subscribeToTravel: async () => undefined, unsubscribeFromTravel: async () => undefined, subscribeToRailway: async () => undefined, unsubscribeFromRailway: async () => undefined, subscribeToHotel: async () => undefined, unsubscribeFromHotel: async () => undefined, subscribeToNews: async () => undefined, unsubscribeFromNews: async () => undefined, subscribeToJobs: async () => undefined, unsubscribeFromJobs: async () => undefined, subscribeToCommerce: async () => undefined, unsubscribeFromCommerce: async () => undefined, subscribeToBank: async () => undefined, unsubscribeFromBank: async () => undefined, subscribeToMedical: async () => undefined, unsubscribeFromMedical: async () => undefined, subscribeToTypingIndicator: async () => undefined, unsubscribeFromTypingIndicator: async () => undefined, subscribeToPresence: async () => undefined, unsubscribeFromPresence: async () => undefined })
+const RealtimeContext = createContext<RealtimeContextValue>({ status: 'disconnected', subscribeToBooking: async () => undefined, unsubscribeFromBooking: async () => undefined, subscribeToChat: async () => undefined, unsubscribeFromChat: async () => undefined, subscribeToSchool: async () => undefined, unsubscribeFromSchool: async () => undefined, subscribeToWarehouse: async () => undefined, unsubscribeFromWarehouse: async () => undefined, subscribeToHomeServices: async () => undefined, unsubscribeFromHomeServices: async () => undefined, subscribeToTravel: async () => undefined, unsubscribeFromTravel: async () => undefined, subscribeToRailway: async () => undefined, unsubscribeFromRailway: async () => undefined, subscribeToHotel: async () => undefined, unsubscribeFromHotel: async () => undefined, subscribeToNews: async () => undefined, unsubscribeFromNews: async () => undefined, subscribeToJobs: async () => undefined, unsubscribeFromJobs: async () => undefined, subscribeToCommerce: async () => undefined, unsubscribeFromCommerce: async () => undefined, subscribeToBank: async () => undefined, unsubscribeFromBank: async () => undefined, subscribeToMedical: async () => undefined, unsubscribeFromMedical: async () => undefined, subscribeToTypingIndicator: async () => undefined, unsubscribeFromTypingIndicator: async () => undefined, subscribeToMessageRead: async () => undefined, unsubscribeFromMessageRead: async () => undefined, subscribeToPresence: async () => undefined, unsubscribeFromPresence: async () => undefined })
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
   const connection = useRef<HubConnection | null>(null)
@@ -191,6 +193,14 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const unsubscribeFromTypingIndicator = async (conversationId: string) => {
     chatSubscriptions.current.delete(conversationId)
     if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('UnsubscribeFromTypingIndicator', conversationId)
+  }
+  const subscribeToMessageRead = async (conversationId: string) => {
+    chatSubscriptions.current.add(conversationId)
+    if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('SubscribeToMessageRead', conversationId)
+  }
+  const unsubscribeFromMessageRead = async (conversationId: string) => {
+    chatSubscriptions.current.delete(conversationId)
+    if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('UnsubscribeFromMessageRead', conversationId)
   }
   const subscribeToPresence = async (tenantId: string) => {
     if (connection.current?.state === HubConnectionState.Connected) await connection.current.invoke('SubscribeToPresence', tenantId)
