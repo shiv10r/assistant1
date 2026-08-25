@@ -10,6 +10,7 @@ const Saved = lazy(() => import('./JobsSaved'))
 const Profile = lazy(() => import('./CandidateProfile'))
 const ApplicationFlow = lazy(() => import('./JobApplicationFlow'))
 const JobDetail = lazy(() => import('./JobDetail'))
+const JobsNotifications = lazy(() => import('./pages/JobsNotifications'))
 
 export default function JobsRoutes() {
   return <Routes>
@@ -22,6 +23,7 @@ export default function JobsRoutes() {
     <Route path="profile" element={<Profile />} />
     <Route path=":slug/apply" element={<ApplicationFlow />} />
     <Route path=":slug" element={<JobDetail />} />
+    <Route path="notifications" element={<JobsNotifications />} />
     <Route path="*" element={<Navigate to="/jobs" replace />} />
   </Routes>
 }
