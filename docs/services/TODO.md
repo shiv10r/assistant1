@@ -23,9 +23,9 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
 ## Partially Done (6)
 
 1. Permissions and RBAC.
-   - ✅ Backend RBAC: Permission/Role entities, 11 chat context authorizers, unit tests for home-services.
-   - ✅ Frontend: PermissionGate component created (`platform/ui/PermissionGate.tsx`), exported from `platform/ui/index.ts`.
-   - 🟡 TODO: Frontend PermissionGate integration across module UIs; unit tests for the 10 non-home-services chat authorizers.
+   - ✅ Backend RBAC: Permission/Role entities and module-aware chat authorization. Home Services uses booking ownership; other recognized modules fail closed for non-administrators.
+   - ✅ Frontend: PermissionGate created, exported, and applied to platform administration routes.
+   - 🟡 TODO: Add organization-aware permission assignments and domain ownership providers before granting non-administrators access to other module conversations.
 2. Notification delivery.
    - ✅ School, Bank, Medical: Notification pages + persisted storage.
    - ✅ Warehouse, Hotel, News, Jobs, Commerce, Travel, Interior: Notification pages + routes added.
