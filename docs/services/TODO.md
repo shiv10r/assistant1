@@ -23,6 +23,9 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
 ## Partially Done (6)
 
 1. Permissions and RBAC.
+   - ✅ Backend RBAC: Permission/Role entities, 11 chat context authorizers, unit tests for home-services.
+   - ✅ Frontend: PermissionGate component created (`platform/ui/PermissionGate.tsx`), exported from `platform/ui/index.ts`.
+   - 🟡 TODO: Frontend PermissionGate integration across module UIs; unit tests for the 10 non-home-services chat authorizers.
 2. Notification delivery.
 3. Documents and storage platform.
 4. Settings, branding, and feature flags.
