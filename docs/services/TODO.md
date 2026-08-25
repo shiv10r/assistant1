@@ -32,6 +32,12 @@ Source: `VSR_RealWorld_Features_Integration_Master_Plan.md`
    - ✅ Home Services: Notification system in `homeServicesStore` + API.
    - 🟡 TODO: Configure Resend API on Render for email delivery; add unread count badges to module shells; implement notification delivery retries.
 3. Documents and storage platform.
+   - ✅ Supabase signed URL storage (private bucket `project-media`, 25 MB limit) with browser fallback.
+   - ✅ Browser IndexedDB storage (`vsr-workspace-files` DB) as default provider.
+   - ✅ `ModuleDataDocument` generic metadata entity; `ChatMessageDocument` for MongoDB chat messages.
+   - ✅ Billing confirmation gate (`confirmBillableAction`) centralizes cost-aware upload/download gates.
+   - ✅ Operations workspace (OperationsWorkspace, ProjectLibrary) uses `fileStorage` with supabase opt-in.
+   - 🟡 TODO: Integrate document metadata platform across remaining modules; add per-module document UI; ensure VITE_FILE_STORAGE_PROVIDER works consistently; add document routing per module.
 4. Settings, branding, and feature flags.
 5. Observability and resilience.
 6. Product deepening.
