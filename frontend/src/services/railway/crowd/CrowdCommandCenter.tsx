@@ -35,6 +35,7 @@ export default function CrowdCommandCenter() {
         <Link className={section === 'crowd' ? 'active' : ''} to="/railway/crowd">Overview</Link>
         <Link className={section === 'alerts' ? 'active' : ''} to="/railway/crowd/alerts">Alerts</Link>
         <Link className={section === 'sources' ? 'active' : ''} to="/railway/crowd/sources">Sources</Link>
+        <Link className={section === 'incidents' ? 'active' : ''} to="/railway/crowd/incidents">Incidents</Link>
         <Link className={section === 'imports' ? 'active' : ''} to="/railway/crowd/imports">Manual & CSV</Link>
       </nav>
       {loading ? <div className="railway-panel" role="status">Loading aggregate station status...</div> : null}
@@ -42,6 +43,7 @@ export default function CrowdCommandCenter() {
       {!loading && section === 'crowd' ? <Overview data={data} /> : null}
       {!loading && section === 'alerts' ? <Alerts alerts={data.alerts} onChanged={refresh} /> : null}
       {!loading && section === 'sources' ? <Sources sources={data.sources} onChanged={refresh} /> : null}
+      {!loading && section === 'incidents' ? <Incidents incidents={data.incidents} sources={data.sources} onChanged={refresh} /> : null}
       {!loading && section === 'imports' ? <ManualAndCsv sources={data.sources} onChanged={refresh} /> : null}
     </div>
   )
@@ -90,6 +92,14 @@ function Sources({ sources, onChanged }: { sources: CrowdSource[]; onChanged: ()
   async function rotate(sourceId: string) { const result = await crowdApi.rotateCredential(sourceId); setCredential(result.data?.signingSecret ?? null); if (!result.error) await onChanged() }
   return <div className="crowd-split"><section className="railway-panel"><div className="railway-panel-head"><div><span>Feed health</span><h2>Configured sources</h2></div></div><div className="crowd-stack">{sources.map((source) => <article className="crowd-source" key={source.id}><span className={source.enabled ? 'online' : ''}><FiRadio /></span><div><strong>{source.name}</strong><small>{source.adapterType} · station {shortId(source.stationId)}</small><p>{source.lastObservationAt ? `Last observation ${formatTime(source.lastObservationAt)}` : 'Waiting for first observation'}</p></div><button onClick={() => void rotate(source.id)}>Rotate key</button></article>)}</div></section>
     <section className="railway-panel"><div className="railway-panel-head"><div><span>Source registry</span><h2>Add aggregate feed</h2></div></div><form className="crowd-form" onSubmit={create}>{Object.entries(form).map(([key, value]) => <label key={key}><span>{label(key)}</span><input required value={value} onChange={(event) => setForm({ ...form, [key]: event.target.value })} /></label>)}<button type="submit">Create source</button></form>{credential ? <div className="crowd-credential"><strong>Copy this secret now</strong><code>{credential}</code><small>It will not be displayed again.</small></div> : null}</section></div>
+}
+
+function Incidents({ incidents, sources, onChanged }: { incidents: CrowdIncident[]; sources: CrowdSource[]; onChanged: () => Promise<void> }) {
+  const [sourceId, setSourceId] = useState(sources[0]?.id ?? ''); const [title, setTitle] = useState('')
+  const source = sources.find((item) => item.id === sourceId)
+  async function create(event: React.FormEvent) { event.preventDefault(); if (!source) return; await crowdApi.openIncident(source.divisionId, source.stationId, title); setTitle(''); await onChanged() }
+  async function respond(incident: CrowdIncident) { const action = prompt('Response action'); if (action) { await crowdApi.recordResponse(incident.id, action); await onChanged() } }
+  return <div className="crowd-split"><section className="railway-panel"><div className="railway-panel-head"><div><span>Response coordination</span><h2>Incident timeline</h2></div></div><div className="crowd-stack">{incidents.map((item) => <article className="crowd-alert-card" key={item.id}><div><strong>{item.title}</strong><p>{item.status} · Station {shortId(item.stationId)}</p><small>{item.responseLog || `Opened ${formatTime(item.openedAt)}`}</small></div>{item.status === 'Open' ? <><button onClick={() => void respond(item)}>Add response</button><button onClick={() => void crowdApi.createIncidentWorkOrder(item.id, 'High')}>Create work</button><button onClick={() => void crowdApi.closeIncident(item.id).then(onChanged)}>Close</button></> : null}</article>)}</div></section><section className="railway-panel"><h2>Open incident</h2><form className="crowd-form" onSubmit={create}><label><span>Station source</span><select value={sourceId} onChange={(event) => setSourceId(event.target.value)}>{sources.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label><span>Title</span><input required value={title} onChange={(event) => setTitle(event.target.value)} /></label><button>Open incident</button></form></section></div>
 }
 
 type CsvRow = SubmitCrowdObservation & { error?: string }

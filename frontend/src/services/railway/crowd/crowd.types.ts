@@ -48,6 +48,8 @@ export type CrowdIncident = {
   title: string
   status: string
   openedAt: string
+  responseLog: string
+  closedAt?: string
   version: number
 }
 
@@ -78,5 +80,8 @@ export const crowdApi = {
   incidents: () => railwayRequest<CrowdIncident[]>('/api/railway/crowd/incidents'),
   openIncident: (divisionId: string, stationId: string, title: string) =>
     railwayRequest<{ id: string }>('/api/railway/crowd/incidents', { method: 'POST', body: { divisionId, stationId, title } }),
+  recordResponse: (incidentId: string, action: string) => railwayRequest<void>(`/api/railway/crowd/incidents/${incidentId}/responses`, { method: 'POST', body: { action } }),
+  closeIncident: (incidentId: string) => railwayRequest<void>(`/api/railway/crowd/incidents/${incidentId}/close`, { method: 'POST' }),
+  createIncidentWorkOrder: (incidentId: string, priority: string) => railwayRequest<{ workOrderId: string }>(`/api/railway/crowd/incidents/${incidentId}/work-order`, { method: 'POST', body: { priority } }),
   quarantine: () => railwayRequest<Array<{ id: string; sourceId: string; reason: string; payloadHash: string; createdAt: string }>>('/api/railway/crowd/ingestion/quarantine'),
 }

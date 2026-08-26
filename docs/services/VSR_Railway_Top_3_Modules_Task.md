@@ -597,13 +597,13 @@ public async Task Evidence_remains_quarantined_when_scanner_is_unavailable()
 }
 ```
 
-- [ ] **Checklist 22: Run tests and confirm failure**
+- [x] **Checklist 22: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~RailwayInfrastructureTests|FullyQualifiedName~RailwayOfflineSyncTests"`
 
 Expected: FAIL because event publishing, evidence scanning, offline sync, and Railway hub contracts are absent.
 
-- [ ] **Checklist 23: Implement atomic outbox dispatch and idempotent consumption**
+- [x] **Checklist 23: Implement atomic outbox dispatch and idempotent consumption**
 
 ```csharp
 public interface IRailwayDomainEvent
@@ -748,15 +748,15 @@ public enum DefectStatus { Open, Triaged, WorkPlanned, Resolved, Verified, Close
 
 Pin each assignment to an immutable template version. Validate typed checklist responses, configured limits, evidence requirements, location exceptions, review decisions, and amendment linkage inside domain methods.
 
-- [ ] **Checklist 31: Write failing API authorization and idempotency tests**
+- [x] **Checklist 31: Write failing API authorization and idempotency tests**
 
 Assert that an inspector can execute only assigned work, a reviewer cannot review outside scope, duplicate submit commands return the original result, and another organization receives a non-disclosing denial.
 
-- [ ] **Checklist 32: Implement handlers and APIs**
+- [x] **Checklist 32: Implement handlers and APIs**
 
 Implement create/publish template, create plan, generate/list assignments, start/save/submit run, review run, amend run, list/detail defects, and triage defect. Register and test `inspection.start`, `inspection.save-response`, `inspection.attach-evidence`, and `inspection.submit` handlers in `RailwayOfflineCommandRegistry`; each reuses the same authorized application command as the online API. `InspectionScheduleWorker` leases due plan occurrences and creates one assignment per plan/target/due-window idempotency key; tests cover recurring timezone boundaries, disabled plans, missed-run catch-up policy, worker restart, and duplicate execution. Emit outbox events and audit safety-relevant decisions.
 
-- [ ] **Checklist 33: Add migration and run the Railway backend suite**
+- [x] **Checklist 33: Add migration and run the Railway backend suite**
 
 Run: `dotnet ef migrations add AddRailwayInspections --project VSRSystemsBackend.Api`
 
