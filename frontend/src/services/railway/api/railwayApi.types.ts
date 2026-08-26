@@ -4,6 +4,18 @@ export type PageResult<T> = {
   total: number | null
 }
 
+export type RailwayCapabilities = {
+  organizationId: string
+  railwayEnabled: boolean
+  inspectionEnabled: boolean
+  maintenanceEnabled: boolean
+  crowdEnabled: boolean
+  liveCrowdAdaptersEnabled: boolean
+  aiEnabled: boolean
+  offlinePackMaxAgeHours: number
+  permissions: readonly string[]
+}
+
 export type RailwayRequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown

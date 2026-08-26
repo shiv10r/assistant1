@@ -14,6 +14,19 @@ export type ModuleKey =
   | 'medical'
   | 'home-services'
 
+export type ModuleNavigationItem = {
+  label: string
+  to: string
+  iconKey: string
+  end?: boolean
+  permission?: string
+}
+
+export type ModuleNavigationGroup = {
+  title: string
+  items: readonly ModuleNavigationItem[]
+}
+
 export type ModuleRegistration = {
   key: ModuleKey
   name: string
@@ -23,7 +36,7 @@ export type ModuleRegistration = {
   gradient: string
   baseRoute: string
   entryRoute: string
-  navigation: readonly string[]
+  navigation: readonly ModuleNavigationGroup[]
   permissions: readonly string[]
   lazyRouteLoader: () => Promise<{ default: ComponentType }>
   enabled: boolean
@@ -34,71 +47,142 @@ export const MODULE_REGISTRY = [
   {
     key: 'interior', name: 'VSR Interiors', tagline: 'Spaces, projects, AI designs & estimates', category: 'operations', icon: '🏠',
     gradient: 'linear-gradient(135deg, #7C4DFF 0%, #00B8D9 100%)', baseRoute: '/interior', entryRoute: '/interior/dashboard',
-    navigation: ['/interior/dashboard', '/interior/clients', '/interior/projects', '/interior/designs', '/interior/products', '/interior/sites', '/interior/execution'], permissions: [],
+    navigation: [{ title: 'Interior Design', items: [
+      { label: 'Overview', to: '/interior/dashboard', iconKey: 'dashboard', end: true },
+      { label: 'Clients', to: '/interior/clients', iconKey: 'users' },
+      { label: 'Projects', to: '/interior/projects', iconKey: 'work' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/interior/routes'), enabled: true,
   },
   {
     key: 'warehouse', name: 'VSR Warehouse', tagline: 'Inventory, suppliers, orders & fulfilment', category: 'operations', icon: '📦',
     gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)', baseRoute: '/warehouse', entryRoute: '/warehouse/dashboard',
-    navigation: ['/warehouse/dashboard', '/warehouse/inventory', '/warehouse/orders'], permissions: [],
+    navigation: [{ title: 'Warehouse', items: [
+      { label: 'Overview', to: '/warehouse/dashboard', iconKey: 'dashboard', end: true },
+      { label: 'Inventory', to: '/warehouse/inventory', iconKey: 'package' },
+      { label: 'Orders', to: '/warehouse/orders', iconKey: 'clipboard' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/warehouse/routes'), enabled: true,
   },
   {
     key: 'school', name: 'VSR School', tagline: 'Students, academics, fees & attendance', category: 'operations', icon: '🎓',
     gradient: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)', baseRoute: '/school', entryRoute: '/school',
-    navigation: ['/school', '/school/students', '/school/attendance', '/school/fees'], permissions: [],
+    navigation: [{ title: 'School', items: [
+      { label: 'Overview', to: '/school', iconKey: 'dashboard', end: true },
+      { label: 'Students', to: '/school/students', iconKey: 'users' },
+      { label: 'Attendance', to: '/school/attendance', iconKey: 'clock' },
+      { label: 'Fees', to: '/school/fees', iconKey: 'receipt' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/school/routes'), enabled: true,
   },
   {
     key: 'hotel', name: 'VSR Hotels', tagline: 'Reservations, rooms, guests & housekeeping', category: 'travel', icon: '', gradient: 'linear-gradient(135deg, #0F766E 0%, #2563EB 100%)',
-    baseRoute: '/hotel', entryRoute: '/hotel', navigation: ['/hotel', '/hotel/reservations', '/hotel/rooms'], permissions: [],
+    baseRoute: '/hotel', entryRoute: '/hotel', navigation: [{ title: 'Hotel', items: [
+      { label: 'Overview', to: '/hotel', iconKey: 'dashboard', end: true },
+      { label: 'Reservations', to: '/hotel/reservations', iconKey: 'calendar' },
+      { label: 'Rooms', to: '/hotel/rooms', iconKey: 'building' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/hotel/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'railway', name: 'VSR Railway', tagline: 'Routes, stations, fleet readiness & daily movement', category: 'operations', icon: 'R',
     gradient: 'linear-gradient(135deg, #0F766E 0%, #164E63 55%, #172554 100%)', baseRoute: '/railway', entryRoute: '/railway',
-    navigation: ['/railway', '/railway/routes', '/railway/stations', '/railway/fleet'], permissions: [],
+    navigation: [
+      { title: 'Rail Network', items: [
+        { label: 'Overview', to: '/railway', iconKey: 'train', end: true },
+        { label: 'Routes & Timetable', to: '/railway/routes', iconKey: 'clock' },
+        { label: 'Stations', to: '/railway/stations', iconKey: 'map' },
+        { label: 'Fleet Readiness', to: '/railway/fleet', iconKey: 'truck' },
+      ] },
+      { title: 'Inspection & Defects', items: [
+        { label: 'Inspections', to: '/railway/inspections', iconKey: 'clipboard', permission: 'railway.inspections.read' },
+        { label: 'Templates', to: '/railway/inspections/templates', iconKey: 'list', permission: 'railway.inspections.read' },
+        { label: 'Plans', to: '/railway/inspections/plans', iconKey: 'calendar', permission: 'railway.inspections.read' },
+        { label: 'Assignments', to: '/railway/inspections/assignments', iconKey: 'users', permission: 'railway.inspections.execute' },
+        { label: 'Defects', to: '/railway/defects', iconKey: 'warning', permission: 'railway.defects.read' },
+      ] },
+      { title: 'Maintenance', items: [
+        { label: 'Dashboard', to: '/railway/maintenance', iconKey: 'tools', permission: 'railway.maintenance.read' },
+        { label: 'Work Orders', to: '/railway/maintenance/work-orders', iconKey: 'clipboard', permission: 'railway.work-orders.read' },
+        { label: 'Calendar', to: '/railway/maintenance/calendar', iconKey: 'calendar', permission: 'railway.maintenance.read' },
+        { label: 'My Work', to: '/railway/maintenance/my-work', iconKey: 'tools', permission: 'railway.work-orders.read' },
+      ] },
+      { title: 'Crowd Operations', items: [
+        { label: 'Command Center', to: '/railway/crowd', iconKey: 'users', permission: 'railway.crowd.read' },
+        { label: 'Alerts', to: '/railway/crowd/alerts', iconKey: 'warning', permission: 'railway.crowd.read' },
+        { label: 'Sources', to: '/railway/crowd/sources', iconKey: 'activity', permission: 'railway.crowd.read' },
+        { label: 'Imports', to: '/railway/crowd/imports', iconKey: 'upload', permission: 'railway.crowd.ingest' },
+      ] },
+    ], permissions: ['railway.inspections.read', 'railway.defects.read', 'railway.maintenance.read', 'railway.crowd.read'],
     lazyRouteLoader: () => import('../services/railway/routes'), enabled: true,
   },
   {
     key: 'travel', name: 'VSR Travel', tagline: 'Destinations, packages, group trips & custom journeys', category: 'travel', icon: '', gradient: 'linear-gradient(135deg, #0284C7 0%, #4F46E5 100%)',
-    baseRoute: '/travel', entryRoute: '/travel', navigation: ['/travel', '/travel/destinations', '/travel/packages'], permissions: [],
+    baseRoute: '/travel', entryRoute: '/travel', navigation: [{ title: 'Travel', items: [
+      { label: 'Discover', to: '/travel', iconKey: 'dashboard', end: true },
+      { label: 'Destinations', to: '/travel/destinations', iconKey: 'map' },
+      { label: 'Packages', to: '/travel/packages', iconKey: 'package' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/travel/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'news', name: 'VSR News', tagline: 'Breaking stories, trusted reporting & saved reads', category: 'personal', icon: '',
     gradient: 'linear-gradient(135deg, #A62421 0%, #6F1715 100%)', baseRoute: '/news', entryRoute: '/news',
-    navigation: ['/news', '/news/latest', '/news/trending'], permissions: [],
+    navigation: [{ title: 'News', items: [
+      { label: 'Top Stories', to: '/news', iconKey: 'dashboard', end: true },
+      { label: 'Latest', to: '/news/latest', iconKey: 'clock' },
+      { label: 'Trending', to: '/news/trending', iconKey: 'activity' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/news/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'jobs', name: 'VSR Jobs', tagline: 'Search roles, compare employers & save opportunities', category: 'personal', icon: '',
     gradient: 'linear-gradient(135deg, #175EAA 0%, #087B70 100%)', baseRoute: '/jobs', entryRoute: '/jobs',
-    navigation: ['/jobs', '/jobs/search', '/jobs/applications'], permissions: [],
+    navigation: [{ title: 'Jobs', items: [
+      { label: 'Discover', to: '/jobs', iconKey: 'work', end: true },
+      { label: 'Search', to: '/jobs/search', iconKey: 'search' },
+      { label: 'Applications', to: '/jobs/applications', iconKey: 'clipboard' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/jobs/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'commerce', name: 'VSR Commerce', tagline: 'Discover, compare & shop quality products', category: 'marketplace', icon: '',
     gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)', baseRoute: '/commerce', entryRoute: '/commerce',
-    navigation: ['/commerce', '/commerce/products', '/commerce/cart'], permissions: [],
+    navigation: [{ title: 'Commerce', items: [
+      { label: 'Overview', to: '/commerce', iconKey: 'dashboard', end: true },
+      { label: 'Products', to: '/commerce/products', iconKey: 'package' },
+      { label: 'Cart', to: '/commerce/cart', iconKey: 'cart' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/commerce/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'bank', name: 'VSR Bank', tagline: 'Accounts, transfers, cards & secure banking', category: 'personal', icon: '',
     gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0E7490 100%)', baseRoute: '/bank', entryRoute: '/bank',
-    navigation: ['/bank', '/bank/accounts', '/bank/transfers'], permissions: [],
+    navigation: [{ title: 'Bank', items: [
+      { label: 'Overview', to: '/bank', iconKey: 'dashboard', end: true },
+      { label: 'Accounts', to: '/bank/accounts', iconKey: 'wallet' },
+      { label: 'Transfers', to: '/bank/transfers', iconKey: 'activity' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/bank/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'medical', name: 'VSR Medical', tagline: 'Doctors, appointments, records & prescriptions', category: 'personal', icon: '',
     gradient: 'linear-gradient(135deg, #047857 0%, #0E7490 100%)', baseRoute: '/medical', entryRoute: '/medical',
-    navigation: ['/medical', '/medical/doctors', '/medical/appointments'], permissions: [],
+    navigation: [{ title: 'Medical', items: [
+      { label: 'Overview', to: '/medical', iconKey: 'dashboard', end: true },
+      { label: 'Doctors', to: '/medical/doctors', iconKey: 'users' },
+      { label: 'Appointments', to: '/medical/appointments', iconKey: 'calendar' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/medical/routes'), enabled: true, shell: 'portal',
   },
   {
     key: 'home-services', name: 'VSR Home Services', tagline: 'Verified pros for repairs, cleaning & home care', category: 'marketplace', icon: '',
     gradient: 'linear-gradient(135deg, #B45309 0%, #DC2626 100%)', baseRoute: '/home-services', entryRoute: '/home-services',
-    navigation: ['/home-services', '/home-services/categories', '/home-services/bookings'], permissions: [],
+    navigation: [{ title: 'Home Services', items: [
+      { label: 'Overview', to: '/home-services', iconKey: 'dashboard', end: true },
+      { label: 'Categories', to: '/home-services/categories', iconKey: 'list' },
+      { label: 'Bookings', to: '/home-services/bookings', iconKey: 'calendar' },
+    ] }], permissions: [],
     lazyRouteLoader: () => import('../services/home-services/routes'), enabled: true, shell: 'portal',
   },
 ] as const satisfies readonly ModuleRegistration[]

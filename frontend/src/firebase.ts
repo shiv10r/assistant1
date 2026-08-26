@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPasswor
 import { getMessaging, getToken, type Messaging } from 'firebase/messaging'
 import { getAnalytics, isSupported as analyticsSupported, logEvent, type Analytics } from 'firebase/analytics'
 import { getPerformance, type FirebasePerformance } from 'firebase/performance'
-import { api, BASE, type FirebaseWebConfig } from './api'
+import { api, type FirebaseWebConfig } from './api'
 
 let cached: { config: FirebaseWebConfig; app: FirebaseApp | null; auth: Auth | null; messaging: Messaging | null; analytics: Analytics | null; perf: FirebasePerformance | null } | null = null
 
@@ -75,7 +75,8 @@ export async function signInWithEmail(email: string, password: string): Promise<
 export async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null
   try {
-    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js?api=' + encodeURIComponent(BASE))
+    const reg = await navigator.serviceWorker.getRegistration('/sw.js')
+      ?? await navigator.serviceWorker.register('/sw.js')
     await navigator.serviceWorker.ready
     await reg.update()
     return reg

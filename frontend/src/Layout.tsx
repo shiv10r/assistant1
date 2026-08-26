@@ -34,6 +34,7 @@ import {
   FiArrowRight,
   FiCode,
   FiGitBranch,
+  FiActivity,
 } from 'react-icons/fi'
 import {
   MdDashboard,
@@ -97,6 +98,9 @@ import { usePlan } from './hooks/usePlan'
 import { useViewMode } from './hooks/useViewMode'
 import { cn, Button } from './platform/ui'
 import { useNotificationUnreadCount } from './platform/notifications/notificationUnread'
+import { MODULES_BY_KEY, type ModuleNavigationItem } from './app/moduleRegistry'
+import { railwayRequest } from './services/railway/api/railwayApi'
+import type { RailwayCapabilities } from './services/railway/api/railwayApi.types'
 import './Layout.css'
 
 type NavItem = { label: string; to: string; icon: React.ReactNode; end?: boolean; badge?: string; notification?: boolean; adminOnly?: boolean; premium?: boolean; hideFor?: ServiceId[] }
@@ -389,8 +393,53 @@ const COMMON_GROUPS: NavGroup[] = [
 ]
 
 /** Service-specific groups first, then the groups common to every workspace. */
-function navGroupsFor(service: ServiceDef | null): NavGroup[] {
-  const serviceGroups = service ? SERVICE_GROUPS[service.id] : []
+function railwayRegistryGroups(capabilities: RailwayCapabilities | null): NavGroup[] {
+  return MODULES_BY_KEY.railway.navigation
+    .filter((group) => {
+      if (group.title === 'Inspection & Defects') return capabilities?.inspectionEnabled
+      if (group.title === 'Maintenance') return capabilities?.maintenanceEnabled
+      if (group.title === 'Crowd Operations') return capabilities?.crowdEnabled
+      return true
+    })
+    .map((group) => {
+      const items = group.items as readonly ModuleNavigationItem[]
+      return {
+        title: group.title,
+        items: items
+        .filter((item) => !item.permission || capabilities?.permissions.includes(item.permission))
+        .map((item) => ({
+          label: item.label,
+          to: item.to,
+          end: item.end,
+          icon: railwayNavigationIcon(item.iconKey),
+        })),
+      }
+    })
+    .filter((group) => group.items.length > 0)
+}
+
+function railwayNavigationIcon(iconKey: string): React.ReactNode {
+  const className = 'w-5 h-5'
+  switch (iconKey) {
+    case 'train': return <MdTrain className={className} />
+    case 'clock': return <FiClock className={className} />
+    case 'map': return <FiMap className={className} />
+    case 'truck': return <FiTruck className={className} />
+    case 'users': return <FiUsers className={className} />
+    case 'warning': return <MdWarning className={className} />
+    case 'calendar': return <FiCalendar className={className} />
+    case 'activity': return <FiActivity className={className} />
+    case 'upload': return <MdFileDownload className={className} />
+    case 'tools': return <MdBuild className={className} />
+    case 'list': return <FiList className={className} />
+    default: return <FiClipboard className={className} />
+  }
+}
+
+function navGroupsFor(service: ServiceDef | null, railwayCapabilities: RailwayCapabilities | null): NavGroup[] {
+  const serviceGroups = service?.id === 'railway'
+    ? railwayRegistryGroups(railwayCapabilities)
+    : service ? SERVICE_GROUPS[service.id] : []
   const config = operationsConfig(service?.id)
   const hasNativePortfolio = config ? ['interior', 'warehouse', 'school'].includes(config.id) : false
   const operations: NavGroup[] = config ? [{
@@ -444,6 +493,7 @@ export default function Layout() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [profile, setProfile] = useState(() => getUserProfile(username))
+  const [railwayCapabilities, setRailwayCapabilities] = useState<RailwayCapabilities | null>(null)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const { plan } = usePlan()
   const { mode, setMode } = useViewMode()
@@ -521,10 +571,18 @@ export default function Layout() {
   const navigate = useNavigate()
   const service = serviceFromPath(location.pathname) ?? getLastService()
   const notificationUnread = useNotificationUnreadCount(service?.id ?? '')
-  const groups = navGroupsFor(service)
+  const groups = navGroupsFor(service, railwayCapabilities)
   const isPortal = service?.shell === 'portal'
   const pageSegment = location.pathname.split('/').filter(Boolean).at(-1) ?? 'overview'
   const pageTitle = pageSegment.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+
+  useEffect(() => {
+    if (service?.id !== 'railway') return
+    const controller = new AbortController()
+    railwayRequest<RailwayCapabilities>('/api/railway/capabilities', { signal: controller.signal })
+      .then(({ data }) => setRailwayCapabilities(data))
+    return () => controller.abort()
+  }, [service?.id])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

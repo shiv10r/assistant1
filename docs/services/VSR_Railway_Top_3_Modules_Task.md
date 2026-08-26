@@ -16,12 +16,12 @@
 
 | Total tasks | Done | In progress | Pending | Blocked | Progress |
 |---:|---:|---:|---:|---:|---:|
-| 14 | 0 | 0 | 14 | 0 | 0% |
+| 14 | 0 | 2 | 12 | 0 | 0% |
 
 | # | Task | Status |
 |---:|---|---|
-| 1 | Railway backend boundary and tenant scope | Pending |
-| 2 | Frontend Railway contract, tests, and route shell | Pending |
+| 1 | Railway backend boundary and tenant scope | In Progress |
+| 2 | Frontend Railway contract, tests, and route shell | In Progress |
 | 3 | Shared Railway master data | Pending |
 | 4 | Events, evidence scanning, offline sync, and realtime | Pending |
 | 5 | Inspection, review, and defect backend | Pending |
@@ -216,7 +216,7 @@ Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~Railw
 
 Expected: FAIL because the Railway module, scope accessor, capability endpoint, entity base, and OpenAPI contract do not exist.
 
-- [ ] **Step 4: Add the minimum Railway scope, feature-gate contract, and entity base**
+- [x] **Step 4: Add the minimum Railway scope, feature-gate contract, and entity base**
 
 ```csharp
 public sealed record RailwayScope(
@@ -257,7 +257,7 @@ public abstract class RailwayEntity
 
 Implement claim parsing through the existing identity/organization contracts. Do not create a second JWT parser or trust organization IDs from request bodies. Resolve `RAILWAY_ENABLED`, `RAILWAY_INSPECTION_ENABLED`, `RAILWAY_MAINTENANCE_ENABLED`, `RAILWAY_CROWD_ENABLED`, `RAILWAY_LIVE_ADAPTERS_ENABLED`, and `RAILWAY_AI_ENABLED` through the shared feature-flag service with organization overrides.
 
-- [ ] **Step 5: Register the module and database boundary**
+- [x] **Step 5: Register the module and database boundary**
 
 ```csharp
 builder.Services.AddRailwayModule(builder.Configuration);
@@ -306,7 +306,7 @@ git commit -m "feat(railway): establish tenant-scoped module boundary"
 - Consumes: `BASE`, `getToken()`, shared UI primitives, current module registry, and React Router.
 - Produces: `railwayRequest<T>()`, `RailwayApiError`, generated DTOs, `PageResult<T>`, Railway permission constants, organization-scoped capability state, structured registry navigation, and lazy route groups for the three capabilities.
 
-- [ ] **Step 1: Add Vitest and DOM test configuration**
+- [x] **Step 1: Add Vitest and DOM test configuration**
 
 Run: `npm install --save-dev vitest jsdom @testing-library/react @testing-library/user-event fake-indexeddb openapi-typescript`
 
@@ -323,7 +323,7 @@ Add these scripts:
 
 Change the config import to `import { defineConfig } from 'vitest/config'`. Configure a `test` block in `vite.config.ts` with `environment: 'jsdom'`, `globals: false`, and a setup file at `tests/railway/setup.ts` that installs `fake-indexeddb`.
 
-- [ ] **Step 2: Write failing API contract tests**
+- [x] **Step 2: Write failing API contract tests**
 
 ```ts
 it('adds authorization, idempotency, and expected version headers', async () => {
@@ -351,7 +351,7 @@ Run: `npm run test:railway`
 
 Expected: FAIL because the Railway API client and test setup are absent.
 
-- [ ] **Step 4: Implement the shared API types and request boundary**
+- [x] **Step 4: Implement the shared API types and request boundary**
 
 ```ts
 export type PageResult<T> = {
@@ -381,7 +381,7 @@ export class RailwayApiError extends Error {
 
 Handle `401` through the existing session boundary, preserve correlation IDs, and never send tenant scope from browser storage as an authorization substitute.
 
-- [ ] **Step 5: Add placeholder-free route shells with explicit unavailable states**
+- [x] **Step 5: Add placeholder-free route shells with explicit unavailable states**
 
 Expand `ModuleRegistration.navigation` from route strings to structured groups and migrate every existing registry entry in the same change:
 

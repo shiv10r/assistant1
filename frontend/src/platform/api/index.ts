@@ -1,13 +1,13 @@
 import { clearAuthToken, getToken, storeAuthSession } from '../auth'
 import { confirmBillableAction } from '../billing/confirmBillableAction'
+import { API_BASE } from './baseUrl'
 
 export { getEmail, getRole, getToken, getUsername, isAdmin, isAuthed, logout } from '../auth'
 
 // Dev: BASE = '' -> Vite proxies /api to the local backend.
 // Prod: default to the deployed Render API so no VITE_API_URL env var is required in Netlify.
-export const BASE =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  (import.meta.env.PROD ? 'https://vsrsystemsbackend-1.onrender.com' : '')
+export const BASE = API_BASE
+export { API_BASE } from './baseUrl'
 
 // ---------------- types ----------------
 export interface ChatMessage { text: string; isUser: boolean; isReport?: boolean; reportTitle?: string; rows?: ReportRow[]; totalLabel?: string }
