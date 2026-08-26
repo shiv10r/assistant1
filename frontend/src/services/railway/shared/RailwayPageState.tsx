@@ -1,16 +1,10 @@
-import React from 'react'
-import { railwayPermissions } from './railwayPermissions'
+import type { ReactNode } from 'react'
 
 type RailwayPageStateProps = {
   railwayEnabled: boolean
   onEnable?: () => void
-  children?: React.ReactNode
-  fallback?: React.ReactNode
-}
-
-type RailwayPageStateState = {
-  enabled: boolean
-  loading: boolean
+  children?: ReactNode
+  fallback?: ReactNode
 }
 
 export function RailwayPageState({
@@ -20,14 +14,18 @@ export function RailwayPageState({
   fallback,
 }: RailwayPageStateProps) {
   if (!railwayEnabled) {
-    return fallback || (
-      <div>
-        <h2>Railway Not Enabled</h2>
-        <p>This railway module is not enabled for your organization.</p>
-        {onEnable && <button onClick={onEnable}>Enable Railway</button>}
-      </div>
+    return (
+      fallback ?? (
+        <div>
+          <h2>Railway Not Enabled</h2>
+          <p>This railway module is not enabled for your organization.</p>
+          {onEnable && <button onClick={onEnable}>Enable Railway</button>}
+        </div>
+      )
     )
   }
 
-  return children || fallback
+  return <>{children}</>
 }
+
+export default RailwayPageState

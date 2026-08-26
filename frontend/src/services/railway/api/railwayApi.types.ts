@@ -13,11 +13,23 @@ export type RailwayRequestOptions = {
 }
 
 export class RailwayApiError extends Error {
+  status: number
+  code: string
+  fieldErrors: Record<string, readonly string[]>
+  correlationId: string | null
+
   constructor(
     message: string,
-    readonly status: number,
-    readonly code: string,
-    readonly fieldErrors: Readonly<Record<string, readonly string[]>>,
-    readonly correlationId: string | null,
-  ) { super(message) }
+    status: number,
+    code: string = '',
+    fieldErrors: Record<string, readonly string[]> = {},
+    correlationId: string | null = null,
+  ) {
+    super(message)
+    this.name = 'RailwayApiError'
+    this.status = status
+    this.code = code
+    this.fieldErrors = fieldErrors
+    this.correlationId = correlationId
+  }
 }

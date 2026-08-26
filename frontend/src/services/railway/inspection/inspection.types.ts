@@ -75,12 +75,12 @@ export type Defect = {
   raisedAt: string
   resolvedAt?: string
   assignedWorkOrderId?: string
-  evidence: readonly {
+  evidence: {
     localId: string
     sha256: string
     uploadedAt: string
     url?: string
-  }
+  }[]
   review?: {
     reviewedBy: string
     reviewedAt: string
@@ -100,11 +100,11 @@ export type InspectionEvent =
   | { type: 'InspectionAmended'; runId: string; amendmentId: string; timestamp: string }
 
 export type RailwayInspectionApi = {
-  getTemplates: (orgId: string, divId: string) => Promise<InspectionTemplate[]>
+  getTemplates: () => Promise<InspectionTemplate[]>
   createRun: (orgId: string, divId: string, templateVersion: string, stationId: string) => Promise<InspectionRun>
   submitFinding: (runId: string, itemId: string, response: string, evidence?: { localId: string; sha256: string }) => Promise<InspectionRun>
   raiseDefect: (runId: string, description: string, severity: Defect['severity'], evidence?: { localId: string; sha256: string }) => Promise<Defect>
   resolveDefect: (defectId: string, decision: 'Accept' | 'Reject', reason?: string) => Promise<Defect>
   createWorkOrder: (sourceId: string, priority: string, assignedTo: string) => Promise<{ workOrderId: string }>
-  listDefects: (organizationId: string, divisionId: string, status?: Defect['status']) => Promise<Defect[]>
+  listDefects: (status?: Defect['status']) => Promise<Defect[]>
 }

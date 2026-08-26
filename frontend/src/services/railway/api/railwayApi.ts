@@ -1,59 +1,47 @@
-import { BASE } from '../../platform/api'
-import type { PageResult, RailwayRequestOptions, RailwayApiError } from './railwayApi.types'
+import { BASE, getToken } from '../../../platform/api'
+import { RailwayApiError } from './railwayApi.types'
+import type { RailwayRequestOptions } from './railwayApi.types'
+
+type Envelope<T> = { success: boolean; data: T | null; message: string | null; errors?: string[]; correlationId?: string }
 
 export async function railwayRequest<T>(
   path: string,
-  options: RailwayRequestOptions = {}
+  options: RailwayRequestOptions = {},
 ): Promise<{ data: T | null; error: RailwayApiError | null }> {
-  const {
-    method = 'GET',
-    body,
-    signal,
-    idempotencyKey,
-    expectedVersion,
-  } = options
+  const { method = 'GET', body, signal, idempotencyKey, expectedVersion } = options
 
-  const headers: Record<string, string> = {
-    ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }),
-    ...(expectedVersion && { 'If-Match': `"${expectedVersion}"` }),
-  }
+  const headers: Record<string, string> = {}
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
+  if (expectedVersion !== undefined) headers['If-Match'] = `"${expectedVersion}"`
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
 
-  const url = BASE + path
-  const config: RequestInit = {
-    method,
-    headers: {
-      ...headers,
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...(await import('../auth/session').getToken() ? { Authorization: `Bearer ${(await import('../auth/session').getToken())!}` } : {}),
-    },
-    signal,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  }
+  const token = getToken()
+  if (token) headers['Authorization'] = `Bearer ${token}`
 
   try {
-    const response = await fetch(url, config)
-    const data = (await response.json()) as { success: boolean; data: T | null; message: string | null; errors: string[]; timestamp: string; correlationId?: string }
+    const response = await fetch(BASE + path, {
+      method,
+      headers,
+      signal,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
 
-    if (!response.ok) {
-      const error: RailwayApiError = {
-        message: data.message || `API error ${response.status}`,
-        status: response.status,
-        code: data.errors?.[0] || '',
-        fieldErrors: {},
-        correlationId: data.correlationId || null,
+    const payload = (await response.json().catch(() => null)) as Envelope<T> | null
+
+    if (!response.ok || !payload?.success) {
+      return {
+        data: null,
+        error: new RailwayApiError(
+          payload?.message ?? `API error ${response.status}`,
+          response.status,
+          payload?.errors?.[0] ?? '',
+        ),
       }
-      return { data: null, error }
     }
 
-    return { data: data.data ?? null, error: null }
-  } catch (err: any) {
-    const error: RailwayApiError = {
-      message: err.message || 'Network error',
-      status: 0,
-      code: 'network_error',
-      fieldErrors: {},
-      correlationId: null,
-    }
-    return { data: null, error }
+    return { data: payload.data ?? null, error: null }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Network error'
+    return { data: null, error: new RailwayApiError(message, 0, 'network_error') }
   }
 }

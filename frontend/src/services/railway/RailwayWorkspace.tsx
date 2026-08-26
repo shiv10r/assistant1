@@ -91,8 +91,8 @@ function Overview() {
             <p><FiCheckCircle /> Crew sign-on completed for morning departures.</p>
             <p><FiTool /> Unit 092 inspection due before 16:00.</p>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </>
   )
 }

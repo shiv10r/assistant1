@@ -1,202 +1,97 @@
-import { railwayRequest } from '../api/railwayApi'
-import type { RailwayApiError, RailwayRequestOptions } from '../api/railwayApi.types'
-import type { OfflineRailwayCommand, OfflineDbState, RailwayOfflineDb } from './railwayOffline.types'
-import type { InspectionRun, Defect, InspectionEvent } from '../inspection/inspection.types'
+import type { OfflineDbState, OfflineRailwayCommand, PurgeResult } from './railwayOffline.types'
 
-const SYNC_ENDPOINT = '/api/railway/offline-sync'
-const MAX_RETRIES = 3
-const RETRY_DELAY_MS = 2000
+const MAX_AGE_DEFAULT = 72 // hours
 
-export class RailwayOfflineSync implements RailwayOfflineDb {
-  private db: OfflineDbState
-  private pendingSync: Set<string>
-  private readonly MAX_AGE_DEFAULT = 72 // hours
+/**
+ * In-memory implementation of the offline command queue boundary.
+ * The IndexedDB-backed variant lives in railwayOfflineDb.ts; both share
+ * this contract so screens and sync logic are storage-agnostic.
+ */
+export class RailwayOfflineQueue {
+  private state: OfflineDbState
 
-  constructor(initialState: OfflineDbState = this.initialState()) {
-    this.db = initialState
-    this.pendingSync = new Set()
+  constructor(initial?: Partial<OfflineDbState>) {
+    this.state = {
+      commands: initial?.commands ?? {},
+      assignments: initial?.assignments ?? {},
+      syncResults: initial?.syncResults ?? {},
+      lastPurgeAt: initial?.lastPurgeAt ?? new Date().toISOString(),
+      offlinePackMaxAgeHours: initial?.offlinePackMaxAgeHours ?? MAX_AGE_DEFAULT,
+    }
   }
-
-  private initialState(): OfflineDbState => ({
-    commands: {},
-    assignments: {},
-    syncResults: {},
-    lastPurgeAt: new Date().toISOString(),
-    offlinePackMaxAgeHours: this.MAX_AGE_DEFAULT,
-  })
-
-  // --- Command store ---
 
   getCommand(commandId: string): OfflineRailwayCommand | undefined {
-    return this.db.commands[commandId]
+    return this.state.commands[commandId]
   }
 
-  listCommands(
-    scope: 'user' | 'org' | 'div',
-    userId?: string,
-    organizationId?: string,
-    divisionId?: string,
-  ): OfflineRailwayCommand[] {
-    return Object.values(this.db.commands).filter((cmd) => {
-      const matchesScope =
-        scope === 'user'
-          ? cmd.aggregateId.startsWith(`user:${userId || ''}`)
-          : scope === 'org'
-          ? cmd.aggregateId.startsWith(`org:${organizationId || ''}`)
-          : scope === 'div'
-          ? cmd.aggregateId.startsWith(`div:${divisionId || ''}`)
-          : true
-
-      const matchesTime =
-        new Date(cmd.capturedAt).getTime() >
-        new Date(this.db.lastPurgeAt).getTime()
-
-      return matchesScope && matchesTime
-    })
+  listCommands(): OfflineRailwayCommand[] {
+    return Object.values(this.state.commands)
   }
 
   queueCommand(command: OfflineRailwayCommand): void {
-    // Encrypt authored records with per-user scope
-    if (command.type.startsWith('authored:')) {
-      // Store with user scope key
-      this.db.commands[command.commandId] = {
-        ...command,
-        capturedAt: new Date().toISOString(),
-      }
-    } else {
-      // Server-derived commands - require auth scope match
-      this.db.commands[command.commandId] = command
-    }
+    this.state.commands[command.commandId] = { ...command }
   }
 
   updateCommandState(
     commandId: string,
-    state: OfflineRailwayCommand['state'],
-    evidence?: { localId: string; sha256: string },
+    newState: OfflineRailwayCommand['state'],
   ): void {
-    if (this.db.commands[commandId]) {
-      this.db.commands[commandId].state = state
-      if (evidence) {
-        this.db.commands[commandId].evidence = evidence
-      }
+    const existing = this.state.commands[commandId]
+    if (existing) {
+      this.state.commands[commandId] = { ...existing, state: newState }
     }
   }
-
-  // --- Assignment store ---
-
-  getAssignment(assignmentId: string): OfflineAssignment | undefined {
-    return Object.values(this.db.assignments).find(
-      (a) => a.assignmentId === assignmentId,
-    )
-  }
-
-  listAssignments(
-    scope: 'user' | 'org' | 'div',
-    userId?: string,
-    organizationId?: string,
-    divisionId?: string,
-  ): OfflineAssignment[] {
-    return Object.values(this.db.assignments).filter((assignment) => {
-      const matchesScope =
-        scope === 'user'
-          ? assignment.userId === userId
-          : scope === 'org'
-          ? assignment.organizationId === organizationId
-          : scope === 'div'
-          ? assignment.divisionId === divisionId
-          : true
-
-      const isRecent =
-        new Date(assignment.capturedAt).getTime() >
-        new Date(this.db.lastPurgeAt).getTime()
-
-      return matchesScope && isRecent
-    })
-  }
-
-  queueAssignment(assignment: OfflineAssignment): void {
-    this.db.assignments[assignment.assignmentId] = {
-      ...assignment,
-      capturedAt: new Date().toISOString(),
-    }
-  }
-
-  updateAssignmentState(
-    assignmentId: string,
-    state: OfflineAssignment['status'],
-    findings?: OfflineAssignment['findings'],
-  ): void {
-    if (this.db.assignments[assignmentId]) {
-      this.db.assignments[assignmentId].status = state
-      if (findings) {
-        this.db.assignments[assignmentId].findings = findings
-      }
-    }
-  }
-
-  // --- State ---
 
   getState(): OfflineDbState {
-    return { ...this.db }
+    return { ...this.state, commands: { ...this.state.commands } }
   }
 
-  // --- Purge ---
-
+  /**
+   * Purge expired server-derived data. Unsynchronized user-authored work is
+   * retained until successful sync or explicit discard.
+   */
   purgeExpired(maxAgeHours?: number): PurgeResult {
-    const ageHours = maxAgeHours ?? this.db.offlinePackMaxAgeHours
-    const cutoff = new Date()
-    cutoff.setHours(cutoff.getHours() - ageHours)
-    const cutoffStr = cutoff.toISOString()
+    const hours = maxAgeHours ?? this.state.offlinePackMaxAgeHours
+    const cutoff = Date.now() - hours * 3_600_000
 
     const purgedCommands: string[] = []
     const purgedAssignments: string[] = []
     const retainedUnsynced: string[] = []
 
-    // Purge server-derived commands older than cutoff
-    for (const [commandId, command] of Object.entries(this.db.commands) as [
-      string,
-      OfflineRailwayCommand,
-    ][]) {
-      if (new Date(command.capturedAt) < new Date(cutoffStr)) {
-        // Only purge server-derived, retain unsynchronized authored drafts
-        if (command.type.startsWith('server:')) {
-          delete this.db.commands[commandId]
-          purgedCommands.push(commandId)
+    for (const [id, cmd] of Object.entries(this.state.commands)) {
+      if (new Date(cmd.capturedAt).getTime() < cutoff) {
+        if (cmd.type.startsWith('server:')) {
+          delete this.state.commands[id]
+          purgedCommands.push(id)
+        } else if (cmd.state === 'pending' || cmd.state === 'rejected' || cmd.state === 'conflicted') {
+          retainedUnsynced.push(id)
         } else {
-          // Retain authored drafts
-          retainedUnsynced.push(commandId)
+          delete this.state.commands[id]
+          purgedCommands.push(id)
         }
       }
     }
 
-    // Purge assignments older than cutoff
-    for (const [assignmentId, assignment] of Object.entries(
-      this.db.assignments,
-    ) as [string, OfflineAssignment][]) {
-      if (new Date(assignment.capturedAt) < new Date(cutoffStr)) {
-        if (assignment.type.startsWith('server:')) {
-          delete this.db.assignments[assignmentId]
-          purgedAssignments.push(assignmentId)
-        } else {
-          retainedUnsynced.push(assignmentId)
-        }
+    for (const [id, assignment] of Object.entries(this.state.assignments)) {
+      if (new Date(assignment.capturedAt).getTime() < cutoff && !assignment.assignmentId.startsWith('authored:')) {
+        delete this.state.assignments[id]
+        purgedAssignments.push(id)
       }
     }
 
-    // Update last purge timestamp
-    this.db.lastPurgeAt = new Date().toISOString()
+    this.state.lastPurgeAt = new Date().toISOString()
 
     return {
       purgedCommands,
       purgedAssignments,
       retainedUnsynced,
-      message: `Purged ${purgedCommands.length} commands and ${purgedAssignments.length} assignments (retained ${
-        retainedUnsynced.length
-      } unsynchronized drafts)`,
+      message:
+        `Purged ${purgedCommands.length} commands and ${purgedAssignments.length} assignments; ` +
+        `retained ${retainedUnsynced.length} unsynchronized drafts`,
     }
   }
 
-  whenIdle(): Promise<void> {
-    return Promise.resolve()
+  async whenIdle(): Promise<void> {
+    await Promise.resolve()
   }
 }

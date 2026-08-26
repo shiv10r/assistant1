@@ -14,19 +14,6 @@ export type ModuleKey =
   | 'medical'
   | 'home-services'
 
-export type ModuleNavigationItem = {
-  label: string
-  to: string
-  iconKey: string
-  end?: boolean
-  permission?: string
-}
-
-export type ModuleNavigationGroup = {
-  title: string
-  items: readonly ModuleNavigationItem[]
-}
-
 export type ModuleRegistration = {
   key: ModuleKey
   name: string
@@ -36,65 +23,7 @@ export type ModuleRegistration = {
   gradient: string
   baseRoute: string
   entryRoute: string
-  navigation: readonly ModuleNavigationGroup[]
-  permissions: readonly string[]
-  lazyRouteLoader: () => Promise<{ default: ComponentType }>
-  enabled: boolean
-  shell?: 'portal'
-}
-
-export type ModuleNavigationData = {
-  [key: string]: {
-    navigation: ModuleNavigationGroup[]
-    permissions: string[]
-  }
-}
-
-export type ModuleRegistration = {
-  key: ModuleKey
-  name: string
-  tagline: string
-  category: 'operations' | 'travel' | 'marketplace' | 'personal'
-  icon: string
-  gradient: string
-  baseRoute: string
-  entryRoute: string
-  navigation: readonly ModuleNavigationGroup[]
-  permissions: readonly string[]
-  lazyRouteLoader: () => Promise<{ default: ComponentType }>
-  enabled: boolean
-  shell?: 'portal'
-}
-
-export const railwayNavigation: ModuleNavigationGroup[] = [
-  { title: 'Network', items: [
-    { label: 'Network Overview', to: '/railway', iconKey: 'R', end: true },
-    { label: 'Routes & Timetable', to: '/railway/routes', iconKey: 'Clock' },
-    { label: 'Stations', to: '/railway/stations', iconKey: 'Map' },
-    { label: 'Fleet Readiness', to: '/railway/fleet', iconKey: 'Truck' },
-  ]},
-  { title: 'Inspections', items: [
-    { label: 'Inspections', to: '/railway/inspections', iconKey: 'Clipboard', permission: 'railway.inspections.read' },
-    { label: 'Defects', to: '/railway/defects', iconKey: 'Warning', permission: 'railway.defects.read' },
-  ]},
-  { title: 'Maintenance', items: [
-    { label: 'Maintenance', to: '/railway/maintenance', iconKey: 'Tools', permission: 'railway.maintenance.read' },
-  ]},
-  { title: 'Crowd Operations', items: [
-    { label: 'Crowd', to: '/railway/crowd', iconKey: 'People', permission: 'railway.crowd.read' },
-  ]},
-]
-
-export type ModuleRegistration = {
-  key: ModuleKey
-  name: string
-  tagline: string
-  category: 'operations' | 'travel' | 'marketplace' | 'personal'
-  icon: string
-  gradient: string
-  baseRoute: string
-  entryRoute: string
-  navigation: readonly ModuleNavigationGroup[]
+  navigation: readonly string[]
   permissions: readonly string[]
   lazyRouteLoader: () => Promise<{ default: ComponentType }>
   enabled: boolean
@@ -128,7 +57,7 @@ export const MODULE_REGISTRY = [
   {
     key: 'railway', name: 'VSR Railway', tagline: 'Routes, stations, fleet readiness & daily movement', category: 'operations', icon: 'R',
     gradient: 'linear-gradient(135deg, #0F766E 0%, #164E63 55%, #172554 100%)', baseRoute: '/railway', entryRoute: '/railway',
-    navigation: railwayNavigation, permissions: [],
+    navigation: ['/railway', '/railway/routes', '/railway/stations', '/railway/fleet'], permissions: [],
     lazyRouteLoader: () => import('../services/railway/routes'), enabled: true,
   },
   {

@@ -6,7 +6,6 @@ import type { Theme } from './theme'
 import { useWeather } from './hooks/useWeather'
 import { conditionMeta } from './lib/weather'
 import { serviceFromPath, getLastService, type ServiceDef, type ServiceId } from './lib/services'
-import { MODULE_REGISTRY, type ModuleKey } from './app/moduleRegistry'
 import {
   FiPackage,
   FiTruck,
@@ -71,7 +70,8 @@ import {
   MdLayers,
   MdBuild,
   MdSchool,
-MdSavings,
+  MdSavings,
+  MdTrain,
 } from 'react-icons/md'
 import {
   BiBuildingHouse,
@@ -253,7 +253,18 @@ const SERVICE_GROUPS: Record<ServiceId, NavGroup[]> = {
       { label: 'Projects', to: '/school/projects', icon: <IoBriefcase className="w-5 h-5" /> },
     ]},
   ],
-railway: MODULE_REGISTRY.find((m) => m.key === 'railway')?.navigation,
+  railway: [
+    { title: 'Rail Network', items: [
+      { label: 'Network Overview', to: '/railway', icon: <MdTrain className="w-5 h-5" />, end: true },
+      { label: 'Routes & Timetable', to: '/railway/routes', icon: <FiClock className="w-5 h-5" /> },
+      { label: 'Stations', to: '/railway/stations', icon: <FiMap className="w-5 h-5" /> },
+      { label: 'Fleet Readiness', to: '/railway/fleet', icon: <FiTruck className="w-5 h-5" /> },
+    ]},
+    { title: 'Rail Capabilities', items: [
+      { label: 'Maintenance', to: '/railway/maintenance', icon: <MdBuild className="w-5 h-5" /> },
+      { label: 'Crowd Command', to: '/railway/crowd', icon: <FiUsers className="w-5 h-5" /> },
+    ]},
+  ],
   hotel: [
     { title: 'Hotel Operations', items: [
       { label: 'Overview', to: '/hotel', icon: <MdDashboard className="w-5 h-5" />, end: true },

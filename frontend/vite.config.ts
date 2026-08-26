@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import vitePwa from 'vite-plugin-pwa'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    vitePwa({
+    VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
@@ -40,35 +40,8 @@ export default defineConfig({
           },
         ],
       },
-      workboxOptions: {
-        skipWaiting: true,
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/.*railway.*/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'railway-api',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
-              },
-              cacheLife: { maxAgeSeconds: 60 * 60 * 24 * 30 },
-              networkTimeout: { sec: 5 },
-            },
-          },
-          {
-            urlPattern: /\.(?:png|jpg|svg|js|css|json)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'railway-assets',
-              expiration: {
-                maxEntries: 300,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-              },
-            },
-          },
-        ],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       },
     }),
   ],
