@@ -25,6 +25,7 @@ export function storeAuthSession(session: AuthSession, email = ''): void {
 
 export function clearAuthToken(): void {
   localStorage.removeItem(TOKEN_KEY)
+  window.dispatchEvent(new Event('vsr:session-cleared'))
 }
 
 export function logout(): void {
@@ -32,4 +33,5 @@ export function logout(): void {
   localStorage.removeItem(ROLE_KEY)
   localStorage.removeItem(USER_KEY)
   localStorage.removeItem(EMAIL_KEY)
+  window.dispatchEvent(new Event('vsr:session-cleared'))
 }

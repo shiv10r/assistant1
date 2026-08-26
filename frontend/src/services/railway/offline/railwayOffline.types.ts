@@ -1,3 +1,5 @@
+export type RailwayOfflineScope = { userId: string; organizationId: string }
+
 export type OfflineRailwayCommand = {
   commandId: string
   idempotencyKey: string

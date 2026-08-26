@@ -16,13 +16,13 @@
 
 | Total tasks | Done | In progress | Pending | Blocked | Progress |
 |---:|---:|---:|---:|---:|---:|
-| 14 | 0 | 2 | 12 | 0 | 0% |
+| 14 | 0 | 3 | 11 | 0 | 0% |
 
 | # | Task | Status |
 |---:|---|---|
 | 1 | Railway backend boundary and tenant scope | In Progress |
 | 2 | Frontend Railway contract, tests, and route shell | In Progress |
-| 3 | Shared Railway master data | Pending |
+| 3 | Shared Railway master data | In Progress |
 | 4 | Events, evidence scanning, offline sync, and realtime | Pending |
 | 5 | Inspection, review, and defect backend | Pending |
 | 6 | Offline inspection PWA | Pending |
@@ -165,7 +165,7 @@ VSRSystemsBackend.Api.Tests/Modules/Railway/
 - Produces: `RailwayScope`, `IRailwayScopeAccessor.GetRequiredScope()`, `IRailwayFeatureGate`, `RailwayEntity`, `RailwayDbContext`, `/api/railway/capabilities`, `AddRailwayModule(...)`, and `MapRailwayEndpoints(...)`.
 - Produces for tests: deterministic `RailwayTestData` scope, asset, track segment, template, inspection run, work order, crowd observation, and domain-event builders used by later Railway tests.
 
-- [ ] **Step 1: Characterize and gate shared platform prerequisites**
+- [ ] **Checklist 1: Characterize and gate shared platform prerequisites**
 
 Create a compatibility test that resolves and exercises the existing organization scope, permission checker, append-only audit writer, transactional outbox, background dispatcher, private file storage, feature-flag reader, correlation context, and PostgreSQL registration. Record the concrete implementation and registration path for each in `VSRSystemsBackend.Api/Modules/Railway/PLATFORM_COMPATIBILITY.md`.
 
@@ -179,7 +179,7 @@ Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~Railw
 
 Expected: PASS with all required shared services resolved and the compatibility document naming each registration.
 
-- [ ] **Step 2: Write failing scope, capabilities, and registration tests**
+- [ ] **Checklist 2: Write failing scope, capabilities, and registration tests**
 
 ```csharp
 [Fact]
@@ -210,13 +210,13 @@ The OpenAPI test enumerates every `/api/railway` operation and fails when an ope
 
 `RailwayOpenApiExportTests` boots the API in-process with `WebApplicationFactory`, resolves `ISwaggerProvider`, keeps `/api/railway` paths and referenced schemas, sorts output deterministically, and writes to the path supplied by `RAILWAY_OPENAPI_OUTPUT`. `scripts/export-railway-openapi.ps1 -OutputPath artifacts/openapi/railway.json` sets that variable and runs the focused test; it never opens a listening port.
 
-- [ ] **Step 3: Run the focused backend tests and confirm failure**
+- [ ] **Checklist 3: Run the focused backend tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~RailwayScopeTests|FullyQualifiedName~RailwayModuleRegistrationTests|FullyQualifiedName~RailwayOpenApiContractTests"`
 
 Expected: FAIL because the Railway module, scope accessor, capability endpoint, entity base, and OpenAPI contract do not exist.
 
-- [x] **Step 4: Add the minimum Railway scope, feature-gate contract, and entity base**
+- [x] **Checklist 4: Add the minimum Railway scope, feature-gate contract, and entity base**
 
 ```csharp
 public sealed record RailwayScope(
@@ -257,7 +257,7 @@ public abstract class RailwayEntity
 
 Implement claim parsing through the existing identity/organization contracts. Do not create a second JWT parser or trust organization IDs from request bodies. Resolve `RAILWAY_ENABLED`, `RAILWAY_INSPECTION_ENABLED`, `RAILWAY_MAINTENANCE_ENABLED`, `RAILWAY_CROWD_ENABLED`, `RAILWAY_LIVE_ADAPTERS_ENABLED`, and `RAILWAY_AI_ENABLED` through the shared feature-flag service with organization overrides.
 
-- [x] **Step 5: Register the module and database boundary**
+- [x] **Checklist 5: Register the module and database boundary**
 
 ```csharp
 builder.Services.AddRailwayModule(builder.Configuration);
@@ -266,7 +266,7 @@ app.MapRailwayEndpoints();
 
 Configure all Railway queries with mandatory organization filtering and explicit division authorization in application handlers. Add a migration history location owned by `RailwayDbContext` without creating a second physical database.
 
-- [ ] **Step 6: Run tests and backend build**
+- [x] **Checklist 6: Run tests and backend build**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~Railway"`
 
@@ -274,7 +274,7 @@ Run: `dotnet build VSRSystemsBackend.Api`
 
 Expected: PASS with no warnings introduced by Railway registration.
 
-- [ ] **Step 7: Commit the backend foundation on its feature branch**
+- [x] **Checklist 7: Commit the backend foundation on its feature branch**
 
 ```bash
 git add VSRSystemsBackend.Api/Modules/Railway VSRSystemsBackend.Api/Platform VSRSystemsBackend.Api/Program.cs VSRSystemsBackend.Api.Tests/VSRSystemsBackend.Api.Tests.csproj VSRSystemsBackend.Api.Tests/Modules/Railway VSRSystemsBackend.Api.Tests/Platform scripts/export-railway-openapi.ps1
@@ -306,7 +306,7 @@ git commit -m "feat(railway): establish tenant-scoped module boundary"
 - Consumes: `BASE`, `getToken()`, shared UI primitives, current module registry, and React Router.
 - Produces: `railwayRequest<T>()`, `RailwayApiError`, generated DTOs, `PageResult<T>`, Railway permission constants, organization-scoped capability state, structured registry navigation, and lazy route groups for the three capabilities.
 
-- [x] **Step 1: Add Vitest and DOM test configuration**
+- [x] **Checklist 8: Add Vitest and DOM test configuration**
 
 Run: `npm install --save-dev vitest jsdom @testing-library/react @testing-library/user-event fake-indexeddb openapi-typescript`
 
@@ -323,7 +323,7 @@ Add these scripts:
 
 Change the config import to `import { defineConfig } from 'vitest/config'`. Configure a `test` block in `vite.config.ts` with `environment: 'jsdom'`, `globals: false`, and a setup file at `tests/railway/setup.ts` that installs `fake-indexeddb`.
 
-- [x] **Step 2: Write failing API contract tests**
+- [x] **Checklist 9: Write failing API contract tests**
 
 ```ts
 it('adds authorization, idempotency, and expected version headers', async () => {
@@ -345,13 +345,13 @@ it('adds authorization, idempotency, and expected version headers', async () => 
 
 Also assert that a Problem Details response becomes `RailwayApiError` with `status`, `code`, `fieldErrors`, and `correlationId`.
 
-- [ ] **Step 3: Run the frontend tests and confirm failure**
+- [ ] **Checklist 10: Run the frontend tests and confirm failure**
 
 Run: `npm run test:railway`
 
 Expected: FAIL because the Railway API client and test setup are absent.
 
-- [x] **Step 4: Implement the shared API types and request boundary**
+- [x] **Checklist 11: Implement the shared API types and request boundary**
 
 ```ts
 export type PageResult<T> = {
@@ -381,7 +381,7 @@ export class RailwayApiError extends Error {
 
 Handle `401` through the existing session boundary, preserve correlation IDs, and never send tenant scope from browser storage as an authorization substitute.
 
-- [x] **Step 5: Add placeholder-free route shells with explicit unavailable states**
+- [x] **Checklist 12: Add placeholder-free route shells with explicit unavailable states**
 
 Expand `ModuleRegistration.navigation` from route strings to structured groups and migrate every existing registry entry in the same change:
 
@@ -416,7 +416,7 @@ In update mode, the Node script copies the normalized Railway schema to `openapi
 
 Update Railway registration routes and permissions, then project the approved navigation groups into the existing shell.
 
-- [ ] **Step 6: Run tests and frontend quality gates**
+- [ ] **Checklist 13: Run tests and frontend quality gates**
 
 Run: `npm run test:railway`
 
@@ -450,7 +450,7 @@ Expected: all commands PASS.
 - Consumes: Task 1 scope and database; Task 2 API client and shared states.
 - Produces: Division, corridor, route, timetable-service, track-segment, station, zone, platform, asset-type, and asset query contracts used by all later tasks and existing Railway views.
 
-- [ ] **Step 1: Write failing tenant, geospatial, and retirement tests**
+- [x] **Checklist 14: Write failing tenant, geospatial, and retirement tests**
 
 ```csharp
 [Fact]
@@ -480,13 +480,13 @@ public void Track_segment_requires_valid_linestring_geometry()
 }
 ```
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 15: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~MasterDataTests"`
 
 Expected: FAIL because master-data entities and handlers do not exist.
 
-- [ ] **Step 3: Implement the master-data aggregates and mappings**
+- [x] **Checklist 16: Implement the master-data aggregates and mappings**
 
 Use these stable identifiers and relationships:
 
@@ -507,15 +507,15 @@ public sealed record AssetSummary(
 
 Add PostGIS mappings for `TrackSegment.Geometry` and point locations. Model `Route` as corridor/station context and `TimetableService` as an effective-dated service, departure window, platform assignment, and operating status. Enforce unique codes within organization and applicable division scope. Use retirement timestamps for records referenced by operations.
 
-- [ ] **Step 4: Implement paginated APIs and permission checks**
+- [x] **Checklist 17: Implement paginated APIs and permission checks**
 
 Expose the master-data routes plus `/api/railway/timetable-services`. Require read permission for queries and manage permission for create/update/retire. Validate every referenced parent belongs to the same organization.
 
-- [ ] **Step 5: Write and implement the frontend master-data view**
+- [x] **Checklist 18: Write and implement the frontend master-data view**
 
 Test that filters remain in the URL, primary columns survive at 375 px, loading/errors are explicit, and unauthorized manage actions are absent. Implement server-paginated tables with detail drawers using shared UI primitives. Replace fixture-backed route, station, and fleet reads with the generated route/timetable, station, and asset contracts while preserving their current URLs.
 
-- [ ] **Step 6: Add and verify the migration**
+- [ ] **Checklist 19: Add and verify the migration**
 
 Run: `dotnet ef migrations add AddRailwayMasterData --project VSRSystemsBackend.Api`
 
@@ -529,7 +529,7 @@ Run from `frontend`: `npm run generate:railway-api -- --schema ../../VSRSystemsB
 
 Expected: migration applies to an empty PostgreSQL test database and all focused tests PASS.
 
-- [ ] **Step 7: Commit the deployable master-data slice in each repository**
+- [ ] **Checklist 20: Commit the deployable master-data slice in each repository**
 
 Backend commit: `feat(railway): add scoped network and asset master data`
 
@@ -561,7 +561,7 @@ Frontend commit: `feat(railway): add persisted master data workspace`
 - Consumes: Task 1's verified shared audit, transactional outbox, private storage, SignalR, correlation, feature flags, and background dispatcher.
 - Produces: Versioned `IRailwayDomainEvent`, `IRailwayEventPublisher`, `IRailwayEvidenceService`, fail-closed malware scanning, `/api/railway/offline-sync`, command receipts, `IRailwayRealtimePublisher`, signed upload contracts, and authorized realtime subscriptions.
 
-- [ ] **Step 1: Write failing transactional and isolation tests**
+- [ ] **Checklist 21: Write failing transactional and isolation tests**
 
 ```csharp
 [Fact]
@@ -597,13 +597,13 @@ public async Task Evidence_remains_quarantined_when_scanner_is_unavailable()
 }
 ```
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 22: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~RailwayInfrastructureTests|FullyQualifiedName~RailwayOfflineSyncTests"`
 
 Expected: FAIL because event publishing, evidence scanning, offline sync, and Railway hub contracts are absent.
 
-- [ ] **Step 3: Implement atomic outbox dispatch and idempotent consumption**
+- [ ] **Checklist 23: Implement atomic outbox dispatch and idempotent consumption**
 
 ```csharp
 public interface IRailwayDomainEvent
@@ -620,11 +620,11 @@ public interface IRailwayDomainEvent
 
 Adapt Railway domain events to the shared transactional outbox verified in Task 1. Persist each event with aggregate changes in one transaction. Use the shared dispatcher leases, attempts, and operator-visible dead-letter state; do not create a Railway outbox table or worker.
 
-- [ ] **Step 4: Implement signed evidence initiation and finalization**
+- [x] **Checklist 24: Implement signed evidence initiation and finalization**
 
 Initiation validates record ownership, permission, file size, allowed MIME type, and evidence category. Finalization verifies object metadata, checksum, and owner linkage, then leaves evidence quarantined. `RailwayEvidenceScanWorker` streams the object through the platform `IFileMalwareScanner`; only a clean result releases it. Scanner timeout, unavailability, malformed response, or detected malware fails closed and remains quarantined with audit/alert state. Configure the production adapter for ClamAV through `MALWARE_SCANNER_HOST` and `MALWARE_SCANNER_PORT`.
 
-- [ ] **Step 5: Implement authorized partial-success offline sync**
+- [x] **Checklist 25: Implement authorized partial-success offline sync**
 
 ```csharp
 public sealed record RailwayOfflineCommandEnvelope(
@@ -651,7 +651,7 @@ public interface IRailwayOfflineCommandHandler
 
 The registry rejects duplicate command-type registrations and unknown command types. The sync handler derives owner scope from authentication, resolves an `IRailwayOfflineCommandHandler`, dispatches commands in per-aggregate order, and stores a receipt keyed by organization/user/idempotency key. It returns one result per command and continues unrelated aggregates after a rejection. Duplicate results return the original authoritative version. Conflict results return safe current-version comparison data. Add tests for duplicate/unknown registrations, mixed batch outcomes, duplicate retry, stale version, cross-tenant IDs, unauthorized assignment, missing evidence, and rollback of only the failed command.
 
-- [ ] **Step 6: Implement scoped Railway realtime subscriptions**
+- [x] **Checklist 26: Implement scoped Railway realtime subscriptions**
 
 Expose explicit methods such as `SubscribeToRailwayStation(Guid stationId)` and `SubscribeToRailwayAssignment(Guid assignmentId)`. Check authorization on every subscription and publish minimal invalidation envelopes:
 
@@ -666,7 +666,7 @@ export type RailwayRealtimeEvent = {
 
 The frontend hook must re-fetch authoritative queries after reconnect.
 
-- [ ] **Step 7: Verify infrastructure behavior**
+- [ ] **Checklist 27: Verify infrastructure behavior**
 
 Run backend Railway tests twice to catch non-idempotent consumers.
 
@@ -696,7 +696,7 @@ Expected: atomicity, access isolation, malware quarantine/release, offline parti
 - Consumes: Master-data target IDs, scope, outbox, evidence, audit, and realtime.
 - Produces: Versioned templates, plans, assignments, runs, reviews, defects, `DefectRaised`, and `CriticalDefectRaised`.
 
-- [ ] **Step 1: Write failing domain-policy tests**
+- [x] **Checklist 28: Write failing domain-policy tests**
 
 ```csharp
 [Fact]
@@ -732,13 +732,13 @@ public void Critical_finding_raises_critical_defect_event()
 }
 ```
 
-- [ ] **Step 2: Run domain tests and confirm failure**
+- [ ] **Checklist 29: Run domain tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~InspectionDomainTests"`
 
 Expected: FAIL because inspection aggregates are absent.
 
-- [ ] **Step 3: Implement the minimum domain state machines**
+- [x] **Checklist 30: Implement the minimum domain state machines**
 
 ```csharp
 public enum InspectionRunStatus { Draft, Submitted, Accepted, Rejected, Amended }
@@ -748,15 +748,15 @@ public enum DefectStatus { Open, Triaged, WorkPlanned, Resolved, Verified, Close
 
 Pin each assignment to an immutable template version. Validate typed checklist responses, configured limits, evidence requirements, location exceptions, review decisions, and amendment linkage inside domain methods.
 
-- [ ] **Step 4: Write failing API authorization and idempotency tests**
+- [ ] **Checklist 31: Write failing API authorization and idempotency tests**
 
 Assert that an inspector can execute only assigned work, a reviewer cannot review outside scope, duplicate submit commands return the original result, and another organization receives a non-disclosing denial.
 
-- [ ] **Step 5: Implement handlers and APIs**
+- [ ] **Checklist 32: Implement handlers and APIs**
 
 Implement create/publish template, create plan, generate/list assignments, start/save/submit run, review run, amend run, list/detail defects, and triage defect. Register and test `inspection.start`, `inspection.save-response`, `inspection.attach-evidence`, and `inspection.submit` handlers in `RailwayOfflineCommandRegistry`; each reuses the same authorized application command as the online API. `InspectionScheduleWorker` leases due plan occurrences and creates one assignment per plan/target/due-window idempotency key; tests cover recurring timezone boundaries, disabled plans, missed-run catch-up policy, worker restart, and duplicate execution. Emit outbox events and audit safety-relevant decisions.
 
-- [ ] **Step 6: Add migration and run the Railway backend suite**
+- [ ] **Checklist 33: Add migration and run the Railway backend suite**
 
 Run: `dotnet ef migrations add AddRailwayInspections --project VSRSystemsBackend.Api`
 
@@ -768,7 +768,7 @@ Run from `frontend`: `npm run generate:railway-api -- --schema ../../VSRSystemsB
 
 Expected: all inspection domain, API, persistence, tenant, and outbox tests PASS.
 
-- [ ] **Step 7: Commit the inspection backend slice**
+- [ ] **Checklist 34: Commit the inspection backend slice**
 
 ```bash
 git add VSRSystemsBackend.Api/Modules/Railway VSRSystemsBackend.Api.Tests/Modules/Railway
@@ -811,7 +811,7 @@ git commit -m "feat(railway): add inspection and defect workflows"
 - Consumes: Inspection APIs, signed uploads, current session, shared states, and Task 2 route shell.
 - Produces: `RailwayOfflineDb`, `queueRailwayCommand()`, `syncRailwayQueue()`, and complete inspection field/review screens.
 
-- [ ] **Step 1: Write failing offline isolation and recovery tests**
+- [ ] **Checklist 35: Write failing offline isolation and recovery tests**
 
 ```ts
 it('isolates cached assignments by user and organization', async () => {
@@ -856,13 +856,13 @@ it('retains old unsynchronized user-authored work during reference-pack purge', 
 })
 ```
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 36: Run tests and confirm failure**
 
 Run: `npm run test:railway -- railwayOfflineDb railwaySync`
 
 Expected: FAIL because offline storage and sync do not exist.
 
-- [ ] **Step 3: Implement the IndexedDB boundary**
+- [ ] **Checklist 37: Implement the IndexedDB boundary**
 
 ```ts
 export type OfflineRailwayCommand = {
@@ -880,15 +880,15 @@ export type OfflineRailwayCommand = {
 
 Use separate stores for server-derived assignments/reference packs and user-authored drafts, evidence blobs, outbound commands, and sync results. Keys must include user and organization scope. Encrypt authored records with AES-GCM and a non-extractable per-user CryptoKey; Railway DB APIs require the active authenticated user/organization to match that key scope. Set the default `RAILWAY_OFFLINE_PACK_MAX_AGE_HOURS` to 72; at startup and before reads, purge only expired server-derived assignments/reference data and display expiry before download. Retain unsynchronized drafts, evidence, and pending/rejected/conflicted commands until successful sync or an explicit discard requiring current authorization and confirmation. Modify `clearAuthToken()` and `logout()` to dispatch one `vsr:session-cleared` event; the Railway DB listener clears server-derived packs and locks authored stores without deleting their keys/data. The logout UI detects authored work and offers sync, cancel logout, or confirmed discard. On token expiry, authored work remains locked until the same user reauthenticates. After an online permission refresh, remove revoked server packs but keep inaccessible authored records encrypted and offer export/discard through an authorized recovery workflow. Never cache secrets or raw crowd-video data.
 
-- [ ] **Step 4: Implement sync with per-command outcomes**
+- [ ] **Checklist 38: Implement sync with per-command outcomes**
 
 Upload required evidence, call `/api/railway/offline-sync`, record authoritative versions for accepted/duplicate results, and retain error/conflict details for rejected/conflicted results. Retry only network failures and idempotent operations.
 
-- [ ] **Step 5: Write failing runner interaction tests**
+- [ ] **Checklist 39: Write failing runner interaction tests**
 
 Test required-item validation, measurement-limit findings, camera/file evidence references, denied geolocation exception reason, draft recovery, offline submission, sync status, review rejection, and accessible field labels.
 
-- [ ] **Step 6: Implement inspection pages and PWA configuration**
+- [ ] **Checklist 40: Implement inspection pages and PWA configuration**
 
 Run: `npm install --save-dev vite-plugin-pwa`
 
@@ -896,7 +896,7 @@ Use `vite-plugin-pwa` in `injectManifest` mode with `frontend/src/service-worker
 
 Implement the template editor/version publisher, plan calendar, assignment planner, “My inspections,” runner, review queue, and defect register routes defined by the architecture; do not leave these as route-shell unavailable states after this task.
 
-- [ ] **Step 7: Run frontend checks**
+- [ ] **Checklist 41: Run frontend checks**
 
 Run: `npm run test:railway`
 
@@ -906,7 +906,7 @@ Run: `npm run lint -- --deny-warnings`
 
 Expected: all tests and build checks PASS. User validates install, camera, GPS, 375 px layout, and offline/reconnect behavior manually.
 
-- [ ] **Step 8: Commit the inspection frontend slice**
+- [ ] **Checklist 42: Commit the inspection frontend slice**
 
 ```bash
 git add frontend/src/services/railway frontend/src/platform/auth/session.ts frontend/src/platform/api frontend/src/firebase.ts frontend/src/service-worker.js frontend/public/firebase-messaging-sw.js frontend/public/pwa frontend/src/app/moduleRegistry.ts frontend/src/Layout.tsx frontend/vite.config.ts frontend/package.json frontend/package-lock.json frontend/tests/railway
@@ -932,7 +932,7 @@ git commit -m "feat(railway): add offline inspection workspace"
 - Consumes: Defect events, master data, qualifications, evidence, audit, scope, workers, and outbox.
 - Produces: Maintenance plans, work orders, assignments, tasks, logs, permits, verification, SLA events, and completion events.
 
-- [ ] **Step 1: Write failing transition and policy tests**
+- [x] **Checklist 43: Write failing transition and policy tests**
 
 ```csharp
 [Theory]
@@ -965,13 +965,13 @@ public async Task Critical_defect_event_creates_one_critical_priority_draft_orde
 }
 ```
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 44: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~WorkOrderDomainTests"`
 
 Expected: FAIL because maintenance aggregates and handlers do not exist.
 
-- [ ] **Step 3: Implement the explicit work-order lifecycle**
+- [x] **Checklist 45: Implement the explicit work-order lifecycle**
 
 ```csharp
 public enum WorkOrderStatus
@@ -983,15 +983,15 @@ public enum WorkOrderStatus
 
 Domain methods own transitions and require actor, timestamp, reason where applicable, expected version, and policy evidence. Completion creates immutable history and a follow-up order is required for new work.
 
-- [ ] **Step 4: Implement maintenance plans, scheduling, SLA, and event handlers**
+- [ ] **Checklist 46: Implement maintenance plans, scheduling, SLA, and event handlers**
 
 Generate work idempotently from preventive plans. Calculate SLA from priority and safety class. Pausing SLA requires an allowed block reason. A critical defect automatically creates one critical-priority draft order; a high defect creates one high-priority draft order; medium and low defects remain in the triage queue until a planner explicitly creates work. Event handlers never directly update Inspection tables.
 
-- [ ] **Step 5: Implement APIs and authorization tests**
+- [ ] **Checklist 47: Implement APIs and authorization tests**
 
 Cover create, triage, approve, schedule, assign, start, block/unblock, task completion, labor/material logging, permit attachment, submit verification, verify, reject verification, cancel, and history. Register and test `work-order.start`, `work-order.complete-task`, `work-order.log-labor`, `work-order.use-material`, `work-order.attach-permit`, `work-order.attach-evidence`, `work-order.block`, `work-order.unblock`, and `work-order.submit-verification` handlers in `RailwayOfflineCommandRegistry`; each reuses the online application command and assignment authorization. Enforce assignment for technician execution and separate verifier policy.
 
-- [ ] **Step 6: Add migration and run tests**
+- [ ] **Checklist 48: Add migration and run tests**
 
 Run: `dotnet ef migrations add AddRailwayMaintenance --project VSRSystemsBackend.Api`
 
@@ -1003,7 +1003,7 @@ Run from `frontend`: `npm run generate:railway-api -- --schema ../../VSRSystemsB
 
 Expected: all Railway tests PASS, including duplicate defect-event delivery.
 
-- [ ] **Step 7: Commit the maintenance backend slice**
+- [ ] **Checklist 49: Commit the maintenance backend slice**
 
 ```bash
 git add VSRSystemsBackend.Api/Modules/Railway VSRSystemsBackend.Api.Tests/Modules/Railway
@@ -1031,11 +1031,11 @@ git commit -m "feat(railway): add maintenance work order lifecycle"
 - Consumes: Work-order APIs, offline queue, signed evidence, realtime invalidations, and Railway permissions.
 - Produces: Planner list/board/calendar surfaces and offline-ready technician execution.
 
-- [ ] **Step 1: Write failing role and transition tests**
+- [ ] **Checklist 50: Write failing role and transition tests**
 
 Test that planners see triage/approval/scheduling actions, technicians see only assigned execution actions, verifiers cannot verify their own safety-classified work, invalid transitions are absent, and server conflicts display comparison/recovery controls.
 
-- [ ] **Step 2: Write failing offline technician tests**
+- [ ] **Checklist 51: Write failing offline technician tests**
 
 ```ts
 it('retains labor, materials, permit, tasks, and evidence after reconnect conflict', async () => {
@@ -1053,21 +1053,21 @@ it('prevents final submission until required permit and evidence are synced', as
 })
 ```
 
-- [ ] **Step 3: Run focused tests and confirm failure**
+- [ ] **Checklist 52: Run focused tests and confirm failure**
 
 Run: `npm run test:railway -- workOrderLifecycle maintenanceOffline`
 
 Expected: FAIL because maintenance screens and command types do not exist.
 
-- [ ] **Step 4: Implement planner and supervisor views**
+- [ ] **Checklist 53: Implement planner and supervisor views**
 
 Add URL-backed filters, server pagination, status board, team-capacity calendar, preventive-maintenance plan editor, work-order detail, immutable history, SLA indicators, assignment, approval, and a dedicated verification queue. Use status text/icons in addition to color. Implement every maintenance route listed in the architecture; this task removes the maintenance route-shell unavailable states.
 
-- [ ] **Step 5: Extend offline packs and sync for technician commands**
+- [ ] **Checklist 54: Extend offline packs and sync for technician commands**
 
 Support start, task completion, labor log, material usage, permit, evidence, block/unblock, and submit-verification commands. Preserve command order per aggregate while allowing unrelated aggregate queues to continue.
 
-- [ ] **Step 6: Verify frontend quality**
+- [ ] **Checklist 55: Verify frontend quality**
 
 Run: `npm run test:railway`
 
@@ -1077,7 +1077,7 @@ Run: `npm run lint -- --deny-warnings`
 
 Expected: all checks PASS. User manually validates 375 px technician execution and desktop planner density.
 
-- [ ] **Step 7: Commit the maintenance frontend slice**
+- [ ] **Checklist 56: Commit the maintenance frontend slice**
 
 ```bash
 git add frontend/src/services/railway frontend/tests/railway
@@ -1105,7 +1105,7 @@ git commit -m "feat(railway): add maintenance planning and field work"
 - Consumes: Station zones, scope, audit, outbox, background jobs, realtime, and evidence/import storage.
 - Produces: Normalized observations, source health, risk snapshots, threshold alerts, incidents, response actions, and `CrowdThresholdBreached`.
 
-- [ ] **Step 1: Write failing privacy, normalization, and threshold tests**
+- [ ] **Checklist 57: Write failing privacy, normalization, and threshold tests**
 
 ```csharp
 [Fact]
@@ -1145,13 +1145,13 @@ public void Threshold_breach_creates_one_open_alert_and_event()
 }
 ```
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 58: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~CrowdDomainTests|FullyQualifiedName~CrowdApiTests"`
 
 Expected: FAIL because Crowd Operations does not exist.
 
-- [ ] **Step 3: Implement source, observation, policy, alert, and incident models**
+- [ ] **Checklist 59: Implement source, observation, policy, alert, and incident models**
 
 ```csharp
 public sealed record NormalizedCrowdObservation(
@@ -1172,15 +1172,15 @@ public sealed record NormalizedCrowdObservation(
 
 Use effective-dated threshold policies and auditable overrides. Keep original and override values. Store aggregate observations only.
 
-- [ ] **Step 4: Implement manual and staged CSV ingestion**
+- [ ] **Checklist 60: Implement manual and staged CSV ingestion**
 
 Manual input uses authenticated operator permissions. CSV upload parses into staging rows, returns row-level errors, and requires approval before observations become authoritative. Duplicate source event IDs are harmless.
 
-- [ ] **Step 5: Implement risk, alert, and incident workflows**
+- [ ] **Checklist 61: Implement risk, alert, and incident workflows**
 
 Calculate occupancy, trend, freshness, confidence, and risk level by zone/station. Create/update alerts, acknowledgement timers, escalation, versioned playbooks, response actions, incidents, and closure. Publish minimal realtime invalidations.
 
-- [ ] **Step 6: Add migration and run tests**
+- [ ] **Checklist 62: Add migration and run tests**
 
 Run: `dotnet ef migrations add AddRailwayCrowdOperations --project VSRSystemsBackend.Api`
 
@@ -1192,7 +1192,7 @@ Run from `frontend`: `npm run generate:railway-api -- --schema ../../VSRSystemsB
 
 Expected: all Railway tests PASS, including stale data and source isolation.
 
-- [ ] **Step 7: Commit the crowd backend slice**
+- [ ] **Checklist 63: Commit the crowd backend slice**
 
 ```bash
 git add VSRSystemsBackend.Api/Modules/Railway VSRSystemsBackend.Api.Tests/Modules/Railway
@@ -1218,29 +1218,29 @@ git commit -m "feat(railway): add crowd operations and alerting"
 - Consumes: Crowd APIs, station/zone data, map capability, realtime hook, and permission constants.
 - Produces: Multi-station overview, station-zone risk view, source health, alert queue, incident response, manual entry, and CSV import UI.
 
-- [ ] **Step 1: Write failing command-center state tests**
+- [ ] **Checklist 64: Write failing command-center state tests**
 
 Test normal/warning/critical/degraded states, data age and confidence display, realtime invalidation followed by REST refresh, alert acknowledgement, overdue escalation, manual entry, and failed-source fallback.
 
-- [ ] **Step 2: Write failing import tests**
+- [ ] **Checklist 65: Write failing import tests**
 
 Test upload validation summary, row-level errors, approval permission, idempotent retry, and rejection without publishing observations.
 
-- [ ] **Step 3: Run tests and confirm failure**
+- [ ] **Checklist 66: Run tests and confirm failure**
 
 Run: `npm run test:railway -- crowdCommandCenter crowdImports`
 
 Expected: FAIL because crowd screens do not exist.
 
-- [ ] **Step 4: Implement command and station views**
+- [ ] **Checklist 67: Implement command and station views**
 
 Show station selector, zone map, occupancy/flow, freshness, confidence, trend, active alerts, acknowledgement timer, incident timeline, response playbook, and team actions. Use existing map primitives and a table/list fallback so information is not map-only.
 
-- [ ] **Step 5: Implement source and import administration**
+- [ ] **Checklist 68: Implement source and import administration**
 
 Show source status, last observation, lag, confidence, rejection rate, enabled state, and credential rotation metadata without exposing secrets. Add manual count, staged CSV, and historical analytics/forecast-quality workflows. Manual entry remains available when live adapters are disabled or degraded. Implement every Crowd route listed in the architecture; this task removes the Crowd route-shell unavailable states except vendor-specific adapter configuration gated by `RAILWAY_LIVE_ADAPTERS_ENABLED`.
 
-- [ ] **Step 6: Verify frontend checks**
+- [ ] **Checklist 69: Verify frontend checks**
 
 Run: `npm run test:railway`
 
@@ -1252,7 +1252,7 @@ Run: `npm run check:chunks`
 
 Expected: all checks PASS. User manually validates desktop command density, mobile incident response, keyboard navigation, and map/list equivalence.
 
-- [ ] **Step 7: Commit the crowd frontend slice**
+- [ ] **Checklist 70: Commit the crowd frontend slice**
 
 ```bash
 git add frontend/src/services/railway frontend/tests/railway
@@ -1275,7 +1275,7 @@ git commit -m "feat(railway): add station crowd command center"
 - Consumes: Normalized observation handler, source registry, secret manager, rate limiting, correlation, and audit.
 - Produces: One stable adapter interface for approved gate, CCTV-analytics, Wi-Fi aggregate, and IoT providers.
 
-- [ ] **Step 1: Write failing adapter contract and security tests**
+- [ ] **Checklist 71: Write failing adapter contract and security tests**
 
 ```csharp
 public interface ICrowdObservationAdapter
@@ -1289,21 +1289,21 @@ public interface ICrowdObservationAdapter
 
 Test invalid signature, expired timestamp, replayed nonce, disabled source, wrong organization, excessive rate, malformed payload, future-invalid observation, and valid credential rotation overlap.
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [ ] **Checklist 72: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~CrowdAdapterContractTests|FullyQualifiedName~CrowdIngestionSecurityTests"`
 
 Expected: FAIL because live ingestion contracts are absent.
 
-- [ ] **Step 3: Implement the provider-neutral ingestion boundary**
+- [ ] **Checklist 73: Implement the provider-neutral ingestion boundary**
 
 Authenticate source credentials independently from user JWTs. Verify HMAC signature, timestamp, nonce, body digest, source state, and owner scope. Normalize provider payloads through registered adapters and submit through the same application handler used by manual/CSV inputs.
 
-- [ ] **Step 4: Implement quarantine and replay tooling**
+- [ ] **Checklist 74: Implement quarantine and replay tooling**
 
 Quarantine malformed batches with safe diagnostics and redacted payload metadata. Authorized replay uses the original source event IDs and remains idempotent. Expose source health and quarantine counts, not raw secrets.
 
-- [ ] **Step 5: Run tests and capacity probe**
+- [ ] **Checklist 75: Run tests and capacity probe**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~Railway"`
 
@@ -1318,7 +1318,7 @@ The test uses Task 1's guarded Testcontainers PostgreSQL/PostGIS fixture and an 
 
 Expected: security and idempotency tests PASS; the capacity test meets all four thresholds with no unbounded queue growth.
 
-- [ ] **Step 6: Commit the adapter framework**
+- [ ] **Checklist 76: Commit the adapter framework**
 
 ```bash
 git add VSRSystemsBackend.Api/Modules/Railway VSRSystemsBackend.Api.Tests/Modules/Railway
@@ -1343,7 +1343,7 @@ git commit -m "feat(railway): add secure crowd adapter framework"
 - Consumes: Outbox events, work-order commands, notifications, reports, AI gateway, and all three capability query APIs.
 - Produces: Incident-to-work-order commands, work-completion-to-defect updates, integrated overview, notifications, reports, and advisory summaries. Task 7's `DefectEventHandlers` remains the sole owner of defect-to-work-order creation.
 
-- [ ] **Step 1: Write failing end-to-end application-flow tests**
+- [ ] **Checklist 77: Write failing end-to-end application-flow tests**
 
 ```csharp
 [Fact]
@@ -1376,29 +1376,29 @@ public async Task Crowd_incident_can_create_a_linked_order_through_application_c
 }
 ```
 
-- [ ] **Step 2: Write failing AI safety tests**
+- [ ] **Checklist 78: Write failing AI safety tests**
 
 Reject prompts or tool requests that attempt signalling, route control, evacuation execution, isolation, or return-to-service. Assert that responses include source references, generated time, provider/model metadata, and advisory status.
 
-- [ ] **Step 3: Run tests and confirm failure**
+- [ ] **Checklist 79: Run tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~RailwayIntegrationFlowTests|FullyQualifiedName~RailwayAiSafetyTests"`
 
 Expected: FAIL because cross-capability policies and advisory boundary are absent.
 
-- [ ] **Step 4: Implement idempotent event handlers and policies**
+- [ ] **Checklist 80: Implement idempotent event handlers and policies**
 
 Keep one owner per effect. `DefectEventHandlers` from Task 7 alone consumes `CriticalDefectRaised`/`DefectRaised` to create work orders. `RailwayIntegrationEventHandlers` consumes `WorkOrderCompleted` to call the Defect resolution command. Crowd incident work is created by an explicit authorized application command. Notification handlers may consume the same events but cannot create work. All handlers call target capability commands, never write another capability's tables, and store consumed event IDs. Delivery failure never rolls back operational state.
 
-- [ ] **Step 5: Implement reports and advisory AI**
+- [ ] **Checklist 81: Implement reports and advisory AI**
 
 Generate inspection, defect ageing, work-order SLA, crowd incident, and source-health reports as background jobs with signed private outputs. Send only approved, minimized data to AI and store provenance plus human acceptance when advice affects work.
 
-- [ ] **Step 6: Implement the persisted integrated overview**
+- [ ] **Checklist 82: Implement the persisted integrated overview**
 
 Replace fixture KPI and activity values with one scoped dashboard query for due inspections, critical defects, crowd risk, active incidents, overdue work, asset health, and recent auditable activity. Keep existing routes/stations/fleet available while converting their values to persisted APIs.
 
-- [ ] **Step 7: Verify integration and frontend checks**
+- [ ] **Checklist 83: Verify integration and frontend checks**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~Railway"`
 
@@ -1424,25 +1424,25 @@ Expected: all checks PASS and duplicate event delivery causes no duplicate work 
 - Consumes: Current OpenTelemetry, health, logging, secret, rate-limit, Netlify, Render, Supabase, and feature-flag conventions.
 - Produces: Railway metrics/traces, readiness checks, rate limits, secure headers, migration verification, rollback steps, alerts, and operator ownership.
 
-- [ ] **Step 1: Write failing security boundary tests**
+- [ ] **Checklist 84: Write failing security boundary tests**
 
 Cover cross-organization IDs in routes and bodies, cross-division resources, station and assignment ownership, permission combinations, export access, SignalR groups, evidence URLs, source credentials, replay, and non-disclosing forbidden/not-found behavior.
 
-- [ ] **Step 2: Write failing migration and health tests**
+- [ ] **Checklist 85: Write failing migration and health tests**
 
 Use the Task 1 Testcontainers fixture only. Apply all migrations to a fresh `postgis/postgis:16-3.4` container, upgrade a previous Railway schema snapshot in a second container, verify PostGIS extension plus required indexes/constraints, and assert readiness fails for required database/outbox dependencies while liveness remains process-only. The test aborts before migration if the connection does not match the fixture container host and random port.
 
-- [ ] **Step 3: Run focused tests and confirm failure**
+- [ ] **Checklist 86: Run focused tests and confirm failure**
 
 Run: `dotnet test VSRSystemsBackend.Api.Tests --filter "FullyQualifiedName~RailwaySecurityTests|FullyQualifiedName~RailwayMigrationTests"`
 
 Expected: FAIL until policies, checks, and migration assertions are complete.
 
-- [ ] **Step 4: Add Railway telemetry and alertable metrics**
+- [ ] **Checklist 87: Add Railway telemetry and alertable metrics**
 
 Record API latency/error, database pressure, outbox age/dead letters, worker failures, crowd freshness/lag/confidence, realtime reconnect/fan-out, sync outcomes, upload failures, overdue inspections, defect ageing, SLA risk, and alert acknowledgement. Do not put tenant identifiers, evidence content, secrets, or personal data in metric dimensions.
 
-- [ ] **Step 5: Add production configuration and runbook**
+- [ ] **Checklist 88: Add production configuration and runbook**
 
 Document current platform connection/JWT/storage variables without renaming them. Configure Netlify `VITE_API_URL` with the deployed Render API origin and verify both the application API client and generated `/sw.js` resolve Firebase configuration against that origin in a production build. Add and document `RAILWAY_ENABLED`, `RAILWAY_INSPECTION_ENABLED`, `RAILWAY_MAINTENANCE_ENABLED`, `RAILWAY_CROWD_ENABLED`, `RAILWAY_LIVE_ADAPTERS_ENABLED`, `RAILWAY_AI_ENABLED`, `RAILWAY_OUTBOX_BATCH_SIZE`, `RAILWAY_OUTBOX_POLL_SECONDS`, `RAILWAY_CROWD_STALE_SECONDS`, `RAILWAY_OFFLINE_PACK_MAX_AGE_HOURS` with default `72`, `RAILWAY_MAX_EVIDENCE_BYTES`, `RAILWAY_ALLOWED_EVIDENCE_TYPES`, `MALWARE_SCANNER_HOST`, and `MALWARE_SCANNER_PORT`. Return the offline-pack maximum age through `/api/railway/capabilities`; do not expose scanner details.
 
@@ -1450,7 +1450,7 @@ Add a private, non-public `vsr-malware-scanner` Render service using image `clam
 
 Document secret source, PostGIS setup, worker process, WebSocket support, storage bucket, migration command, health URLs, dashboards, alert owners, credential rotation, source disablement, dead-letter replay, backup restore, rollback, and incident escalation. Include exact safe commands used by the repositories.
 
-- [ ] **Step 6: Verify release candidates locally**
+- [ ] **Checklist 89: Verify release candidates locally**
 
 Backend:
 
@@ -1476,7 +1476,7 @@ npm run check:legacy-ui
 
 Expected: all commands PASS against disposable development infrastructure.
 
-- [ ] **Step 7: Commit the hardening chunk in each repository**
+- [ ] **Checklist 90: Commit the hardening chunk in each repository**
 
 Backend commit: `chore(railway): harden production operations`
 
@@ -1498,7 +1498,7 @@ Frontend/docs commit: `chore(railway): add production deployment controls`
 - Consumes: Every previous task and production-like test configuration.
 - Produces: Verified release candidates, truthful Railway overview, no authoritative fixtures, updated status documentation, and open frontend/backend pull requests.
 
-- [ ] **Step 1: Add backend acceptance scenarios**
+- [ ] **Checklist 91: Add backend acceptance scenarios**
 
 Automate these API/application scenarios:
 
@@ -1511,11 +1511,11 @@ Automate these API/application scenarios:
 7. Outbox outage recovers without losing committed events.
 8. Backup-restored database passes Railway health and data-integrity checks.
 
-- [ ] **Step 2: Add frontend acceptance tests**
+- [ ] **Checklist 92: Add frontend acceptance tests**
 
 Assert route availability by permission, URL-backed filters, explicit async states, offline conflict recovery, realtime refresh, accessible labels, no raw fixture KPIs presented as live, and primary field actions usable in a 375 px DOM viewport.
 
-- [ ] **Step 3: Run all automated verification**
+- [ ] **Checklist 93: Run all automated verification**
 
 Run all backend tests and migration checks from Task 13.
 
@@ -1525,19 +1525,19 @@ Run: `git diff --check`
 
 Expected: all commands PASS with no whitespace errors.
 
-- [ ] **Step 4: Perform user-owned manual validation**
+- [ ] **Checklist 94: Perform user-owned manual validation**
 
 Provide the user a checklist for 375 px, 768 px, and 1280 px layouts; keyboard navigation; screen-reader names; PWA install/update; camera; GPS permission denial; offline/reconnect; large evidence upload; crowd source failure; desktop command-center density; and map/list parity. Record results and defects in the runbook. Do not launch browser automation without explicit user approval.
 
-- [ ] **Step 5: Retire only replaced Railway fixtures**
+- [ ] **Checklist 95: Retire only replaced Railway fixtures**
 
 Remove `routeRows`, `stations`, `fleet`, and static KPI/activity data only after their persisted query paths pass acceptance. Keep clearly labelled demonstration seed data in development database migrations or seed tools, never embedded as production UI truth.
 
-- [ ] **Step 6: Update status documents accurately**
+- [ ] **Checklist 96: Update status documents accurately**
 
 Mark the Railway backend item complete in `docs/services/TODO.md` only when backend persistence, authorization, frontend integration, deployment checks, and tests pass. Recalculate status totals. Record limitations such as adapter vendors not yet approved without describing the core Railway module as complete if production gates remain open.
 
-- [ ] **Step 7: Inspect and commit final intended changes**
+- [ ] **Checklist 97: Inspect and commit final intended changes**
 
 In each repository run:
 
@@ -1549,7 +1549,7 @@ git log --oneline -10
 
 Stage only intended Railway, test, runbook, and updated Markdown files. Commit remaining changes with concise repository-style messages. Do not amend, force-push, or include unrelated worktree changes.
 
-- [ ] **Step 8: Push feature branches and create pull requests**
+- [ ] **Checklist 98: Push feature branches and create pull requests**
 
 Push the frontend feature branch and open a pull request targeting `luxinfra-frontend`.
 

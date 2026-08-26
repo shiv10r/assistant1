@@ -95,6 +95,10 @@ function schemaType(schema) {
 }
 
 function typeName(name) {
-  const safe = String(name).split('.').at(-1).replace(/[^A-Za-z0-9_$]/g, '_')
+  const value = String(name)
+  const genericName = value.match(/^([A-Za-z0-9_$]+Of)(.+)$/)
+  const genericPrefix = genericName?.[1] ?? ''
+  const leafName = (genericName?.[2] ?? value).split('.').at(-1)
+  const safe = `${genericPrefix}${leafName}`.replace(/[^A-Za-z0-9_$]/g, '_')
   return /^[A-Za-z_$]/.test(safe) ? safe : `Schema_${safe}`
 }
