@@ -1,0 +1,17 @@
+export const railwayPermissions = {
+  INSPECTIONS_READ: 'railway.inspections.read',
+  INSPECTIONS_EXECUTE: 'railway.inspections.execute',
+  INSPECTIONS_SUBMIT: 'railway.inspections.submit',
+  INSPECTIONS_REVIEW: 'railway.inspections.review',
+  DEFECTS_READ: 'railway.defects.read',
+  DEFECTS_RAISE: 'railway.defects.raise',
+  DEFECTS_TRIAGE: 'railway.defects.triage',
+  CROWD_READ: 'railway.crowd.read',
+  CROWD_INGEST: 'railway.crowd.ingest',
+  CROWD_ACKNOWLEDGE: 'railway.crowd.acknowledge',
+  WORK_ORDERS_READ: 'railway.work-orders.read',
+  WORK_ORDERS_CREATE: 'railway.work-orders.create',
+  WORK_ORDERS_APPROVE: 'railway.work-orders.approve',
+  WORK_ORDERS_ASSIGN: 'railway.work-orders.assign',
+  MAINTENANCE_READ: 'railway.maintenance.read',
+}

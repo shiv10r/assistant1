@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FiActivity, FiArrowRight, FiCheckCircle, FiClock, FiMap, FiMapPin, FiNavigation, FiTool } from 'react-icons/fi'
+import RailwayPageState from './shared/RailwayPageState'
 import './railway.css'
 
 type RailwayView = 'overview' | 'routes' | 'stations' | 'fleet'
@@ -32,35 +33,40 @@ const viewCopy: Record<RailwayView, { eyebrow: string; title: string; descriptio
   fleet: { eyebrow: 'Rolling stock', title: 'Fleet readiness', description: 'Review assigned units and surface equipment requiring attention.' },
 }
 
-export default function RailwayWorkspace({ view }: { view: RailwayView }) {
+export default function RailwayWorkspace({ railwayEnabled = true, view }: { view: RailwayView; railwayEnabled?: boolean }) {
   const copy = viewCopy[view]
 
   return (
-    <div className="railway-page">
-      <section className="railway-hero">
-        <div className="railway-hero-copy">
-          <span className="railway-eyebrow">{copy.eyebrow}</span>
-          <h1>{copy.title}</h1>
-          <p>{copy.description}</p>
-          {view === 'overview' && (
-            <div className="railway-hero-actions">
-              <Link to="/railway/routes">View live routes <FiArrowRight /></Link>
-              <Link to="/railway/stations" className="secondary">Station status</Link>
-            </div>
-          )}
-        </div>
-        <div className="railway-line" aria-label="Network status: Western corridor operating normally">
-          <div className="railway-line-top"><FiNavigation /><span>Western corridor</span><strong>Operating normally</strong></div>
-          <div className="railway-track"><i /><i /><i /><i /></div>
-          <div className="railway-stop-labels"><span>Mumbai</span><span>Surat</span><span>Vadodara</span><span>Ahmedabad</span></div>
-        </div>
-      </section>
+    <RailwayPageState
+      railwayEnabled={railwayEnabled}
+      fallback={<div>Railway module disabled for this organization</div>}
+    >
+      <div className="railway-page">
+        <section className="railway-hero">
+          <div className="railway-hero-copy">
+            <span className="railway-eyebrow">{copy.eyebrow}</span>
+            <h1>{copy.title}</h1>
+            <p>{copy.description}</p>
+            {view === 'overview' && (
+              <div className="railway-hero-actions">
+                <Link to="/railway/routes">View live routes <FiArrowRight /></Link>
+                <Link to="/railway/stations" className="secondary">Station status</Link>
+              </div>
+            )}
+          </div>
+          <div className="railway-line" aria-label="Network status: Western corridor operating normally">
+            <div className="railway-line-top"><FiNavigation /><span>Western corridor</span><strong>Operating normally</strong></div>
+            <div className="railway-track"><i /><i /><i /><i /></div>
+            <div className="railway-stop-labels"><span>Mumbai</span><span>Surat</span><span>Vadodara</span><span>Ahmedabad</span></div>
+          </div>
+        </section>
 
-      {view === 'overview' && <Overview />}
-      {view === 'routes' && <RoutesTable />}
-      {view === 'stations' && <Stations />}
-      {view === 'fleet' && <Fleet />}
-    </div>
+        {view === 'overview' && <Overview />}
+        {view === 'routes' && <RoutesTable compact />}
+        {view === 'stations' && <Stations />}
+        {view === 'fleet' && <Fleet />}
+      </div>
+    </RailwayPageState>
   )
 }
 
@@ -85,8 +91,8 @@ function Overview() {
             <p><FiCheckCircle /> Crew sign-on completed for morning departures.</p>
             <p><FiTool /> Unit 092 inspection due before 16:00.</p>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   )
 }
